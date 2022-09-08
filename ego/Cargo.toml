@@ -1,0 +1,9 @@
+[workspace]
+members = [
+    "lib/ego_utils",
+    "lib/ego_roles",
+]
+
+[profile.release]
+lto = true
+opt-level = 'z'
