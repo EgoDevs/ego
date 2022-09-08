@@ -111,7 +111,7 @@ pub struct AppVersionSubmitRequest {
 
 #[derive(Clone, Debug, CandidType, Deserialize, Serialize)]
 pub struct AppVersionSubmitResponse {
-  pub ret: bool,
+  pub app_version: AppVersion,
 }
 
 #[derive(Clone, Debug, CandidType, Deserialize, Serialize)]
@@ -122,7 +122,7 @@ pub struct AppVersionRevokeRequest {
 
 #[derive(Clone, Debug, CandidType, Deserialize, Serialize)]
 pub struct AppVersionRevokeResponse {
-  pub ret: bool,
+  pub app_version: AppVersion,
 }
 
 #[derive(Clone, Debug, CandidType, Deserialize, Serialize)]
@@ -133,7 +133,7 @@ pub struct AppVersionReleaseRequest {
 
 #[derive(Clone, Debug, CandidType, Deserialize, Serialize)]
 pub struct AppVersionReleaseResponse {
-  pub ret: bool,
+  pub app_version: AppVersion,
 }
 
 #[derive(Clone, Debug, CandidType, Deserialize, Serialize)]
@@ -144,7 +144,7 @@ pub struct AppVersionApproveRequest {
 
 #[derive(Clone, Debug, CandidType, Deserialize, Serialize)]
 pub struct AppVersionApproveResponse {
-  pub ret: bool,
+  pub app_version: AppVersion,
 }
 
 #[derive(Clone, Debug, CandidType, Deserialize, Serialize)]
@@ -155,7 +155,7 @@ pub struct AppVersionRejectRequest {
 
 #[derive(Clone, Debug, CandidType, Deserialize, Serialize)]
 pub struct AppVersionRejectResponse {
-  pub ret: bool,
+  pub app_version: AppVersion,
 }
 
 #[derive(Clone, Debug, CandidType, Deserialize, Serialize)]

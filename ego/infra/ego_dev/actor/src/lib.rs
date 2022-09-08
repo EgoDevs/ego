@@ -15,7 +15,7 @@ fn init() {
   ic_cdk::println!("ego-dev: init, caller is {}", caller);
 
   APP_STORE.with(|app_store| {
-    app_store.borrow_mut().developer_main_register(caller, "admin".to_string());
+    app_store.borrow_mut().developer_register(caller, "admin".to_string());
   });
 }
 
@@ -95,12 +95,12 @@ pub fn developer_app_new(request: AppMainNewRequest) -> Result<AppMainNewRespons
 // 新建版本
 #[update(name = "app_version_new", guard = "developer_guard")]
 #[candid_method(update, rename = "app_version_new")]
-pub async fn app_version_new(
+pub fn app_version_new(
   request: AppVersionNewRequest,
 ) -> Result<AppVersionNewResponse, EgoError> {
   ic_cdk::println!("ego-dev: new_app_version");
 
-  let app_version = EgoDevService::app_version_new(ic_cdk::caller(), request.app_id, request.version).await?;
+  let app_version = EgoDevService::app_version_new(ic_cdk::caller(), request.app_id, request.version)?;
   Ok(AppVersionNewResponse { app_version })
 }
 
@@ -119,12 +119,12 @@ pub fn app_version_set_frontend_address(
 // 提交审核
 #[update(name = "app_version_submit", guard = "developer_guard")]
 #[candid_method(update, rename = "app_version_submit")]
-pub async fn app_version_submit(
+pub fn app_version_submit(
   request: AppVersionSubmitRequest,
 ) -> Result<AppVersionSubmitResponse, EgoError> {
   ic_cdk::println!("ego-dev: app_version_submit");
-  let ret = EgoDevService::app_version_submit(ic_cdk::caller(), request.app_id, request.version).await?;
-  Ok(AppVersionSubmitResponse { ret })
+  let app_version = EgoDevService::app_version_submit(ic_cdk::caller(), request.app_id, request.version)?;
+  Ok(AppVersionSubmitResponse { app_version })
 }
 
 
@@ -135,8 +135,8 @@ pub fn app_version_revoke(
   request: AppVersionRevokeRequest,
 ) -> Result<AppVersionRevokeResponse, EgoError> {
   ic_cdk::println!("ego-dev: app_version_revoke");
-  let ret = EgoDevService::app_version_revoke(ic_cdk::caller(), request.app_id, request.version)?;
-  Ok(AppVersionRevokeResponse { ret })
+  let app_version = EgoDevService::app_version_revoke(ic_cdk::caller(), request.app_id, request.version)?;
+  Ok(AppVersionRevokeResponse { app_version })
 }
 
 
@@ -147,8 +147,8 @@ pub async fn app_version_release(
   request: AppVersionReleaseRequest,
 ) -> Result<AppVersionReleaseResponse, EgoError> {
   ic_cdk::println!("ego-dev: app_version_release");
-  let ret = EgoDevService::app_version_release(ic_cdk::caller(), request.app_id, request.version).await?;
-  Ok(AppVersionReleaseResponse { ret })
+  let app_version = EgoDevService::app_version_release(ic_cdk::caller(), request.app_id, request.version)?;
+  Ok(AppVersionReleaseResponse { app_version })
 }
 
 
@@ -170,8 +170,8 @@ pub fn app_version_approve(
   request: AppVersionApproveRequest,
 ) -> Result<AppVersionApproveResponse, EgoError> {
   ic_cdk::println!("ego-dev: app_version_approve");
-  let ret = EgoDevService::app_version_approve(request.app_id, request.version)?;
-  Ok(AppVersionApproveResponse { ret })
+  let app_version = EgoDevService::app_version_approve(request.app_id, request.version)?;
+  Ok(AppVersionApproveResponse { app_version })
 }
 
 // 驳回当前版本审核
@@ -181,8 +181,8 @@ pub fn app_version_reject(
   request: AppVersionRejectRequest,
 ) -> Result<AppVersionRejectResponse, EgoError> {
   ic_cdk::println!("ego-dev: app_version_reject");
-  let ret = EgoDevService::app_version_reject(request.app_id, request.version)?;
-  Ok(AppVersionRejectResponse { ret })
+  let app_version = EgoDevService::app_version_reject(request.app_id, request.version)?;
+  Ok(AppVersionRejectResponse { app_version })
 }
 
 #[update(name = "user_role_set")]
