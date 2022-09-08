@@ -1,5 +1,7 @@
 [workspace]
 members = [
+    "infra/ego_tenant/actor",
+    "infra/ego_tenant/mod",
     "infra/ego_dev/actor",
     "infra/ego_dev/mod",
     "lib/ego_utils",
