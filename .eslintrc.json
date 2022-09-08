@@ -1,0 +1,26 @@
+{
+  "root": true,
+  "extends": ["eslint:recommended", "plugin:@typescript-eslint/recommended"],
+  "parser": "@typescript-eslint/parser",
+  "parserOptions": { "project": ["tsconfig.json"] },
+  "plugins": ["@typescript-eslint"],
+  "rules": {
+    "@typescript-eslint/strict-boolean-expressions": 2,
+    "@typescript-eslint/no-non-null-asserted-optional-chain": 0,
+    "@typescript-eslint/no-non-null-assertion": 0,
+    "@typescript-eslint/no-explicit-any": 0
+  },
+  "ignorePatterns": [
+    "src/**/*.test.ts",
+    "src/frontend/generated/*",
+    "webpack.config.js",
+    "tsconfig.json",
+    "scripts/**/*",
+    "context/**/*",
+    "clients/**/*",
+    "some/**/*",
+    "ego_clients/**/modern-app-env.d.ts",
+    "jest.config.js",
+    "agents/**/*"
+  ]
+}
