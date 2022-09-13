@@ -20,7 +20,7 @@
       "ego:post_install:project": "cross-env NODE_OPTIONS=--experimental-vm-modules jest --verbose -t",
       "ego:store_web": "cd ./clients/ego_backend && pnpm install && pnpm run dev",
       "ego:wallet_web": "cd ./clients/ego_land && pnpm install && pnpm run dev",
-      "test": "cross-env NODE_OPTIONS=--experimental-vm-modules jest --testPathIgnorePatterns=/post_install/ --testPathPattern=/ego_store/",
+      "test": "cross-env NODE_OPTIONS=--experimental-vm-modules jest --testPathIgnorePatterns=/post_install/ --testPathPattern=/ego_file/",
       "ego:script": "cross-env NODE_OPTIONS=--experimental-vm-modules jest --verbose --testPathIgnorePatterns=/post_install/ -t",
       "format": "prettier --write {scripts,clients}/**/*.{js,ts,less,json}",
       "format:json": "prettier --write artifacts/**/*.json",

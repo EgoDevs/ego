@@ -1,0 +1,90 @@
+[
+    {
+        "name": "Jason Perez",
+        "derEncodedPublicKey": "302a300506032b6570032100ca59b231e67d200aad7256aea993aa9c876f1ecc152b8ccd4b23a4079e2e16aa",
+        "principal": "fhu5k-3zkjx-jlvwl-2wss2-64sh6-jhfln-4rtgu-g3ryd-oytig-u2i6l-fqe",
+        "identity": [
+            "302a300506032b6570032100ca59b231e67d200aad7256aea993aa9c876f1ecc152b8ccd4b23a4079e2e16aa",
+            "79bd47e0f3ee9a6c1845e1f115c6d62c7c19ed873fd83e4218722fe5c73fd24cca59b231e67d200aad7256aea993aa9c876f1ecc152b8ccd4b23a4079e2e16aa"
+        ],
+        "userGroup": 0,
+        "seed": "79bd47e0f3ee9a6c1845e1f115c6d62c7c19ed873fd83e4218722fe5c73fd24c"
+    },
+    {
+        "name": "Jason Lee",
+        "derEncodedPublicKey": "302a300506032b657003210095975d8957d854d94d9d25c4c2e2706c1e60f71d904b767c9808b2189fdb7f49",
+        "principal": "ufvd4-76q53-xvoze-vxg2h-hfoud-hmcqm-pnu27-v6f2k-whhyw-2zkom-wae",
+        "identity": [
+            "302a300506032b657003210095975d8957d854d94d9d25c4c2e2706c1e60f71d904b767c9808b2189fdb7f49",
+            "a01c29f3eb844982e44d598d25ef17394d1c74a1cf624dd746a0cae90efe6d2295975d8957d854d94d9d25c4c2e2706c1e60f71d904b767c9808b2189fdb7f49"
+        ],
+        "userGroup": 0,
+        "seed": "a01c29f3eb844982e44d598d25ef17394d1c74a1cf624dd746a0cae90efe6d22"
+    },
+    {
+        "name": "Kevin Hall",
+        "derEncodedPublicKey": "302a300506032b657003210095865ac84444302eb4552191e69695103fd150d766ce574da011e6c4517b40b6",
+        "principal": "2znpu-mvru4-6pfv2-3jio7-wuwab-ch2bj-y6t43-urigv-wv4tm-iug4k-7ae",
+        "identity": [
+            "302a300506032b657003210095865ac84444302eb4552191e69695103fd150d766ce574da011e6c4517b40b6",
+            "698363b2e8983e953ee2d9611f2b3816f0c64b30a74c70691ee9206d704fa56695865ac84444302eb4552191e69695103fd150d766ce574da011e6c4517b40b6"
+        ],
+        "userGroup": 1,
+        "seed": "698363b2e8983e953ee2d9611f2b3816f0c64b30a74c70691ee9206d704fa566"
+    },
+    {
+        "name": "Maria Perez",
+        "derEncodedPublicKey": "302a300506032b6570032100a6e971734bb494d6b07dc1c8aefe84f58adeefcce407251c210cd6b9afc4d73a",
+        "principal": "o4onq-2fscn-p5riz-fe2t7-c44op-75pln-6k5ey-blfpl-qitlf-evhd3-oqe",
+        "identity": [
+            "302a300506032b6570032100a6e971734bb494d6b07dc1c8aefe84f58adeefcce407251c210cd6b9afc4d73a",
+            "fb96c9a75299fdadd36045752783910de0e6923caee2655776a62e27adedd0a4a6e971734bb494d6b07dc1c8aefe84f58adeefcce407251c210cd6b9afc4d73a"
+        ],
+        "userGroup": 1,
+        "seed": "fb96c9a75299fdadd36045752783910de0e6923caee2655776a62e27adedd0a4"
+    },
+    {
+        "name": "Karen Lewis",
+        "derEncodedPublicKey": "302a300506032b6570032100d9f0ee511b5c107517b5197f2e5bb198ca27e3fc23647c8e2bc7bb01a847cad2",
+        "principal": "fdgvt-kccrv-ubmmp-rnbxb-65oqm-gt6yu-wvfrd-fugun-pfaqk-uyyc5-tqe",
+        "identity": [
+            "302a300506032b6570032100d9f0ee511b5c107517b5197f2e5bb198ca27e3fc23647c8e2bc7bb01a847cad2",
+            "c8f64f78e061960fe7c08af9f21cbb136b32f894a3f555c1fbe3ac31f2ec385cd9f0ee511b5c107517b5197f2e5bb198ca27e3fc23647c8e2bc7bb01a847cad2"
+        ],
+        "userGroup": 2,
+        "seed": "c8f64f78e061960fe7c08af9f21cbb136b32f894a3f555c1fbe3ac31f2ec385c"
+    },
+    {
+        "name": "Kevin Walker",
+        "derEncodedPublicKey": "302a300506032b65700321007944ab738a2f8620de90a6ae63ec37451c3122938fbae5361810260140a6fb8e",
+        "principal": "sgxlm-luvim-ks3b2-h6i6l-deph7-okeex-gdkkn-yaeqe-g6fjm-eb5xk-6qe",
+        "identity": [
+            "302a300506032b65700321007944ab738a2f8620de90a6ae63ec37451c3122938fbae5361810260140a6fb8e",
+            "64b050768eff0375b5f7592db25293ebe964a36220084eb9510474f74182a5e97944ab738a2f8620de90a6ae63ec37451c3122938fbae5361810260140a6fb8e"
+        ],
+        "userGroup": 2,
+        "seed": "64b050768eff0375b5f7592db25293ebe964a36220084eb9510474f74182a5e9"
+    },
+    {
+        "name": "Jessica Johnson",
+        "derEncodedPublicKey": "302a300506032b657003210030220f5f36308994769025f017d867183d055602c99766d8aac22331e1cdc9f4",
+        "principal": "r3eyg-cgp6g-pta6s-csgtx-csrmx-l4ldq-2bvod-vu5d6-skiag-df5vz-oqe",
+        "identity": [
+            "302a300506032b657003210030220f5f36308994769025f017d867183d055602c99766d8aac22331e1cdc9f4",
+            "c0de683fbf851316dcd7d88e78d2424d229859bd32ea990ba26840f4e409fe3e30220f5f36308994769025f017d867183d055602c99766d8aac22331e1cdc9f4"
+        ],
+        "userGroup": 3,
+        "seed": "c0de683fbf851316dcd7d88e78d2424d229859bd32ea990ba26840f4e409fe3e"
+    },
+    {
+        "name": "Michelle Anderson",
+        "derEncodedPublicKey": "302a300506032b657003210081719832e9b7c7d320f19b50499ed4c425399b3d93f201248aaf3adcc4a0a95a",
+        "principal": "ij5ya-5x2ee-lxidm-53rnf-lkef6-qyjoa-hvhfl-am3wq-yo5qc-55hwz-rae",
+        "identity": [
+            "302a300506032b657003210081719832e9b7c7d320f19b50499ed4c425399b3d93f201248aaf3adcc4a0a95a",
+            "dc0a095ec76c7a7b8caa7a49f0c7539f2937985f26eea15bde9d5193f961795081719832e9b7c7d320f19b50499ed4c425399b3d93f201248aaf3adcc4a0a95a"
+        ],
+        "userGroup": 3,
+        "seed": "dc0a095ec76c7a7b8caa7a49f0c7539f2937985f26eea15bde9d5193f9617950"
+    }
+]

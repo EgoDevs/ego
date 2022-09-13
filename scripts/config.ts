@@ -29,6 +29,20 @@ export const infraConfig: Configs = [
     config: './configs/ego_tenant.json',
     post_install_sequence: 100,
   },
+  {
+    category: 'infra',
+    package: 'ego_dev',
+    bin_name: 'ego-dev',
+    config: './configs/ego_dev.json',
+    post_install_sequence: 100,
+  },
+  {
+    category: 'infra',
+    package: 'ego_file',
+    bin_name: 'ego-file',
+    config: './configs/ego_file.json',
+    post_install_sequence: 100,
+  },
 ];
 
 export const appsConfig: Configs = [];

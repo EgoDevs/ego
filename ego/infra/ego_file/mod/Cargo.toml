@@ -1,0 +1,25 @@
+[package]
+name = "ego_file_mod"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+path = "src/mod.rs"
+
+[dependencies]
+ic-cdk = "0.5.0"
+ic-cdk-macros = "0.5.0"
+ic-types = "0.4.0"
+ic-certified-map = "0.3.0"
+candid = "0.7.14"
+hex = "0.4.3"
+hex-literal = "0.3.4"
+itertools = "0.10.3"
+serde = "1.0.136"
+serde_json = "1.0.79"
+serde_bytes = "0.11.5"
+serde_cbor = "0.11.2"
+serde_with = "1.12.0"
+md5 = "0.7.0"
+ego_utils = { path = "../../../lib/ego_utils" }
+ego_users = { path = "../../../lib/ego_users" }

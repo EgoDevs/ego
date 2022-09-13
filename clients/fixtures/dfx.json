@@ -1,0 +1,27 @@
+{
+    "canisters": {
+        "app_1": {
+            "type": "custom",
+            "candid": "app_1.did",
+            "wasm": "app_1.wasm"
+        }
+    },
+    "defaults": {
+        "build": {
+            "packtool": ""
+        }
+    },
+    "networks": {
+        "local": {
+            "bind": "127.0.0.1:8000",
+            "type": "ephemeral"
+        },
+        "mainnet": {
+            "providers": [
+                "https://identity.ic0.app"
+            ],
+            "type": "persistent"
+        }
+    },
+    "version": 1
+}

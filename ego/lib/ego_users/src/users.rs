@@ -1,8 +1,6 @@
-use ic_cdk::caller;
 use ic_cdk::export::candid::{CandidType, Deserialize};
 use ic_types::Principal;
 use serde::Serialize;
-use std::cell::RefCell;
 
 /// OwnerTrait, keep it simple
 pub trait OwnerTrait {
@@ -35,7 +33,7 @@ pub trait UserTrait {
     fn check_user(&self, who: Principal) -> bool;
 }
 
-#[derive(CandidType, Serialize, Deserialize, Debug, Clone)]
+#[derive(CandidType, Serialize, Deserialize, Clone, Debug)]
 pub struct User {
     owners: Vec<Principal>,
     users: Vec<Principal>,
@@ -97,99 +95,4 @@ impl UserTrait for User {
         ic_cdk::println!("check user: {}", who);
         self.users.contains(&who)
     }
-}
-
-thread_local! {
-    pub static USER: RefCell<User> = RefCell::new(User::default());
-}
-
-///
-///  Guard methods, use in authorized api function
-///  We use OWNER to store state
-///
-#[inline(always)]
-pub fn owner_guard() -> bool {
-    USER.with(|b| b.borrow().check_owner(caller()))
-}
-
-pub fn role_owner_set(principals: Vec<Principal>) {
-    USER.with(|s| s.borrow_mut().role_owner_set(principals))
-}
-
-pub fn role_owner_add(principal: Principal) {
-    USER.with(|s| s.borrow_mut().role_owner_add(principal))
-}
-
-pub fn role_owner_remove(principal: Principal) {
-    USER.with(|s| s.borrow_mut().role_owner_remove(principal))
-}
-
-#[inline(always)]
-pub fn user_guard() -> bool {
-    USER.with(|b| b.borrow().check_user(caller()))
-}
-
-pub fn role_user_set(principals: Vec<Principal>) {
-    USER.with(|s| s.borrow_mut().role_user_set(principals))
-}
-
-pub fn role_user_add(principal: Principal) {
-    USER.with(|s| s.borrow_mut().role_user_add(principal))
-}
-
-pub fn role_user_remove(principal: Principal) {
-    USER.with(|s| s.borrow_mut().role_user_remove(principal))
-}
-
-/// Lifetime functions, use them in your project
-/// You can combine them with other state(s)
-/// examples:
-/// ```rust
-///
-/// #[derive(Clone, Debug, CandidType, Deserialize)]
-/// struct StableState {
-///   my_state: MyState,
-///   owner: crate::ego_owner::Owner,
-/// }
-///
-///
-/// #[candid_method(init, rename = "init")]
-/// #[init]
-/// fn canister_init() {
-///     crate::ego_owner::init();
-/// }
-/// ```
-/// #[pre_upgrade]
-/// pub fn pre_upgrade() {
-///   let stable_state = STATE.with(|s| StableState {
-///     my_state: s.my_state,
-///     owner: crate::ego_owner::role_pre_upgrade(),
-///   });
-///   ic_cdk::storage::stable_save((stable_state,)).expect("failed to save stable state");
-/// }
-///
-/// #[post_upgrade]
-/// pub fn post_upgrade() {
-///       let (StableState { owner, my_state },): (StableState,) =
-///   ic_cdk::storage::stable_restore().expect("failed to restore stable state");
-///   crate::ego_owner::role_post_upgrade(owner);
-///   STATE.with(|s| {
-///       s.my_state = my_state;
-///   };
-/// }
-///
-///
-pub fn init() {
-    USER.with(|s| {
-        let mut s = s.borrow_mut();
-        s.role_owner_add(caller())
-    });
-}
-
-pub fn role_pre_upgrade() -> User {
-    USER.with(|s| s.take().into())
-}
-
-pub fn role_post_upgrade(stable_state: User) {
-    USER.with(|s| s.replace(stable_state));
 }

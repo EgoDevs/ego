@@ -1,0 +1,13 @@
+[
+    {
+        "name": "Patricia Martin",
+        "derEncodedPublicKey": "3056301006072a8648ce3d020106052b8104000a03420004105c890e6c04be85a41e0a5e08c86f60ed6568b30393fca6742e8fb5c4c2d040b05da3ac406db25f84707c28f077a48ac6a19ddd1b200c374fc7f9f15805e9d3",
+        "principal": "wzmn5-x5ep5-jbbjy-uexkb-aj7gf-kq2mo-ujdws-iizyz-qbdq3-wywpm-4qe",
+        "identity": [
+            "04105c890e6c04be85a41e0a5e08c86f60ed6568b30393fca6742e8fb5c4c2d040b05da3ac406db25f84707c28f077a48ac6a19ddd1b200c374fc7f9f15805e9d3",
+            "144b35fcd60880c475a34fd8bcebc29d9aa4103a6961787bff90c751c365aae3"
+        ],
+        "userGroup": 0,
+        "seed": "484f0202e1b3556867c477f49a5dd218662a9f18b4d9cfcd1400abc3555cb71f609c5c5c44dbb4513286cff67a5a16529cfe433aebc7717b06e71911bb3520be"
+    }
+]

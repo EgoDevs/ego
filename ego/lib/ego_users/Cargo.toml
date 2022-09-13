@@ -1,5 +1,5 @@
 [package]
-name = "ego_roles"
+name = "ego_users"
 version = "0.1.0"
 edition = "2021"
 
