@@ -6,9 +6,7 @@ import { getActor } from '@/settings/agent';
 import { identity } from '@/settings/identity';
 import { idlFactory } from '@/idls/ego_file.idl';
 
-import {
-  FileMainReadRequest, FileMainReadResponse, FileMainWriteRequest, FileMainWriteResponse, _SERVICE,
-} from '@/idls/ego_file';
+import {_SERVICE} from '@/idls/ego_file';
 
 const file_id = 'app_1';
 
