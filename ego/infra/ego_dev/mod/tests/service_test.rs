@@ -8,7 +8,7 @@ use ego_utils::types::Version;
 
 static FILE_CANISTER_ID: &str = "amybd-zyaaa-aaaah-qc4hq-cai";
 
-static AUDITER_PRINCIPAL_ID: &str = "cjqby-fnt3r-gjbkx-zfnqw-647jl-ri4mu-h2cpw-yrsvq-5t32f-x3nbo-7qe";
+static AUDITER_PRINCIPAL_ID: &str = "22ayq-aiaaa-aaaai-qgmma-cai";
 
 static EXIST_PRINCIPAL_ID: &str = "5oynr-yl472-mav57-c2oxo-g7woc-yytib-mp5bo-kzg3b-622pu-uatef-uqe";
 static EXIST_APP_ID: &str = "app_1";

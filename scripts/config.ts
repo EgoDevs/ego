@@ -50,6 +50,13 @@ export const infraConfig: Configs = [
     config: './configs/ego_cron.json',
     post_install_sequence: 100,
   },
+  {
+    category: 'infra',
+    package: 'ego_store',
+    bin_name: 'ego-store',
+    config: './configs/ego_store.json',
+    post_install_sequence: 100,
+  },
 ];
 
 export const appsConfig: Configs = [];
