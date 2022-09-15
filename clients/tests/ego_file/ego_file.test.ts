@@ -53,5 +53,25 @@ describe('file operation', () => {
 
     console.log(`file_main_read fileMd5:[%s] data hash:[%s]`, fileMd5, ret_hash);
     expect(fileMd5 == ret_hash)
+
+    let response3 = await file_canister.state_persist();
+    console.log("state_persist: ", response3)
+
+    let response4 = await file_canister.state_restore();
+    console.log("state_restore: ", response4)
+
+    let response5 = await file_canister.file_main_read({
+      fid: file_id,
+    });
+
+    let data5 = response5.Ok.data;
+
+    let ret_hash5 = crypto
+      .createHash('md5')
+      .update(data5 as BinaryLike)
+      .digest('hex');
+
+    console.log(`file_main_read after state persist fileMd5:[%s] data hash:[%s]`, fileMd5, ret_hash);
+    expect(fileMd5 == ret_hash5)
   });
 });
