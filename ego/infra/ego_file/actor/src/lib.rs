@@ -33,7 +33,7 @@ fn init() {
 fn file_main_write(req: FileMainWriteRequest) -> Result<FileMainWriteResponse, EgoError> {
     ic_cdk::println!("ego-file: file_main_write");
 
-    let ret = EgoFileService::file_main_set(&req.fid, &req.hash, req.data)?;
+    let ret = EgoFileService::file_main_write(&req.fid, &req.hash, req.data)?;
     Ok(FileMainWriteResponse {ret})
 }
 

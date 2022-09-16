@@ -6,10 +6,9 @@ use serde::Serialize;
 
 use ic_ledger_types::{Memo};
 use ego_utils::types::{EgoError, Version};
-use crate::order::{Order, OrderStatus, OrderType};
+use crate::order::{Order, OrderStatus};
 use crate::tenant::Tenant;
 use crate::types::{EgoStoreErr, QueryParam};
-use crate::types::EgoStoreErr::AppNotExists;
 use crate::wallet::*;
 
 pub type AppId = String;
@@ -46,7 +45,7 @@ impl AppStore {
   pub fn app_main_list(&self, query_param: &QueryParam) -> Result<Vec<App>, EgoError> {
     match query_param {
       QueryParam::ByCategory { category } => {
-        Ok(self.apps.iter().filter_map(|(app_id, app)| {
+        Ok(self.apps.iter().filter_map(|(_app_id, app)| {
           if app.category == *category {
             Some(app.clone())
           } else {
@@ -67,7 +66,7 @@ impl AppStore {
 
   pub fn wallet_main_new(&mut self, wallet_id: Principal) -> Result<Principal, EgoError> {
     match self.wallets.get(&wallet_id) {
-      Some(_) => Err(EgoStoreErr::WalletEsists.into()),
+      Some(_) => Err(EgoStoreErr::WalletExists.into()),
       None => {
         let tenant_id = self.tenant_get()?;
         let wallet = self.wallets.entry(wallet_id).or_insert(Wallet::new(tenant_id, wallet_id));
@@ -175,7 +174,7 @@ impl AppStore {
 
   pub fn admin_tenant_add(&mut self, tenant_id: &Principal) -> Result<bool, EgoError> {
     match self.tenants.get(tenant_id) {
-      Some(tenant) => Err(EgoStoreErr::TenantExists.into()),
+      Some(_) => Err(EgoStoreErr::TenantExists.into()),
       None => {
         self.tenants.insert(tenant_id.clone(), Tenant::new(tenant_id.clone()));
         Ok(true)

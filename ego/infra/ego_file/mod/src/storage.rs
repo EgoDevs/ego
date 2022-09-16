@@ -7,6 +7,7 @@ use ic_cdk::api::{
     trap,
 };
 use ego_utils::types::EgoError;
+use crate::file::File;
 use crate::types::EgoFileError;
 
 const KB: u64 = 1024;
@@ -22,7 +23,7 @@ pub const WASM_PAGE_SIZE: u64 = 64 * KB;
 pub struct Storage {
     pub length: u64,
     pub capacity: u64,
-    pub files: BTreeMap<String, u64>,
+    pub files: BTreeMap<String, File>,
 }
 
 impl Storage {
@@ -82,39 +83,36 @@ impl Storage {
             return Err(EgoFileError::InvalidFileHash.into());
         }
 
-        let file_num = match self.files.get(fid) {
-            Some(file_num) => *file_num,
+        let file = match self.files.get(fid) {
+            Some(file) => file,
             None => {
                 let file_num = self.next_file_num()?;
-                self.files.insert(fid.to_string(), file_num);
-                file_num
+                let file = File::new(fid.to_string(), file_num, hash.to_string(), data.len());
+                self.files.insert(fid.to_string(), file.clone());
+                self.files.get(fid).unwrap()
             }
         };
 
         //write file
-        let file_offset = HEADER_SIZE + file_num * DEFAULT_FILE_SIZE;
-        stable64_write(file_offset, &(data.len() as u64).to_le_bytes()); // file length
+        let file_offset = HEADER_SIZE + file.file_num * DEFAULT_FILE_SIZE;
 
-        ic_cdk::println!("==> write file to file_num: {}, offset: {}, with len: {}", file_num, file_offset, data.len());
-
-        stable64_write(file_offset + std::mem::size_of::<u64>() as u64, &data);
+        ic_cdk::println!("==> write file to file_num: {}, offset: {}, with len: {}", file.file_num, file_offset, data.len());
+        stable64_write(file_offset, &data);
         Ok(true)
     }
 
     /// Reads file from stable memory.
     pub fn file_read(&self, fid: &str) -> Result<Vec<u8>, EgoError> {
         match self.files.get(fid) {
-            Some(file_num) => {
-                let file_offset = HEADER_SIZE + file_num * DEFAULT_FILE_SIZE;
+            Some(file) => {
+                let file_offset = HEADER_SIZE + file.file_num * DEFAULT_FILE_SIZE;
 
                 // read file
                 let mut buf = vec![0; DEFAULT_FILE_SIZE as usize];
+                let len = file.file_size;
                 stable64_read(file_offset, &mut buf); // file length
-                let len = u64::from_le_bytes(buf[0..8].try_into().unwrap()) as usize;
-
-                ic_cdk::println!("==> read file from file_num: {}, offset: {}, with len: {}", file_num, file_offset, len);
-
-                let data = buf[8..8 + len].to_vec();
+                ic_cdk::println!("==> read file from file_num: {}, offset: {}, with len: {}", file.file_num, file_offset, len);
+                let data = buf[0..len].to_vec();
                 Ok(data)
             },
             None => Err(EgoFileError::FidNotFound.into())
