@@ -3,7 +3,7 @@ use ic_ledger_types::Memo;
 use ic_types::Principal;
 use serde::Serialize;
 
-use crate::app::*;
+use crate::ego_store::*;
 use ego_utils::types::EgoError;
 use crate::order::Order;
 
@@ -19,22 +19,22 @@ pub enum EgoStoreErr {
     TenantExists,
     AppAlreadyInstall,
     AppNotInstall,
-    WalletEsists
+    WalletExists
 }
 
 impl From<EgoStoreErr> for EgoError {
     fn from(e: EgoStoreErr) -> Self {
         match e{
-            EgoStoreErr::AppExists => EgoError::new(1001, "ego-store: app exists"),
-            EgoStoreErr::AppNotExists=> EgoError::new(1002, "ego-store: app not exists"),
-            EgoStoreErr::NoTenant => EgoError::new(1006, "ego-store: no ego tenant installed"),
-            EgoStoreErr::UnAuthorized => EgoError::new(1007, "ego-store: unauthorized"),
-            EgoStoreErr::OrderNotExists => EgoError::new(1009, "ego-store: order not exists"),
-            EgoStoreErr::WalletNotExists => EgoError::new(1012, "ego-store: wallet not exists"),
-            EgoStoreErr::WalletEsists => EgoError::new(1013, "ego-store: wallet exists"),
-            EgoStoreErr::TenantExists => EgoError::new(1014, "ego-store: tenant exists"),
-            EgoStoreErr::AppAlreadyInstall => EgoError::new(1015, "ego-store: app already installed"),
-            EgoStoreErr::AppNotInstall => EgoError::new(1016, "ego-store: app not install"),
+            EgoStoreErr::AppExists => EgoError::new(3001, "ego-store: app exists"),
+            EgoStoreErr::AppNotExists=> EgoError::new(3002, "ego-store: app not exists"),
+            EgoStoreErr::NoTenant => EgoError::new(3003, "ego-store: no ego tenant installed"),
+            EgoStoreErr::UnAuthorized => EgoError::new(3004, "ego-store: unauthorized"),
+            EgoStoreErr::OrderNotExists => EgoError::new(3005, "ego-store: order not exists"),
+            EgoStoreErr::WalletNotExists => EgoError::new(3006, "ego-store: wallet not exists"),
+            EgoStoreErr::WalletExists => EgoError::new(3007, "ego-store: wallet exists"),
+            EgoStoreErr::TenantExists => EgoError::new(3008, "ego-store: tenant exists"),
+            EgoStoreErr::AppAlreadyInstall => EgoError::new(3009, "ego-store: app already installed"),
+            EgoStoreErr::AppNotInstall => EgoError::new(3010, "ego-store: app not install"),
             EgoStoreErr::SystemError(msg) => msg.into(),
         }
     }
@@ -160,7 +160,7 @@ pub struct WalletOrderListResponse {
 
 #[derive(Clone, Debug, CandidType, Deserialize, Serialize)]
 pub struct WalletTenantGetResponse {
-    pub wallet_id: Option<Principal>
+    pub tenant_id: Principal
 }
 
 

@@ -19,4 +19,12 @@ serde = "1.0"
 serde_json = "1.0"
 serde_bytes = "0.11"
 ic-ledger-types = "0.1.2"
+md5 = "0.7.0"
+async-trait = "0.1.57"
 ego_utils = { path = "../../../lib/ego_utils" }
+ego_file_mod = { path = "../../ego_file/mod"}
+
+
+[dev-dependencies]
+mockall = "0.11.2"
+tokio = {version="1.21.0", features=["full"]}

@@ -6,14 +6,14 @@ use ic_types::Principal;
 #[derive(CandidType, Serialize, Deserialize, Clone, Debug)]
 pub struct Tenant{
   pub wallet_count: u16,
-  pub tenant_id: Principal
+  pub canister_id: Principal
 }
 
 impl Eq for Tenant {}
 
 impl PartialEq<Self> for Tenant {
   fn eq(&self, other: &Self) -> bool {
-    self.tenant_id == other.tenant_id
+    self.canister_id == other.canister_id
   }
 }
 
@@ -31,6 +31,6 @@ impl Ord for Tenant {
 
 impl Tenant {
   pub fn new(tenant_id: Principal) -> Self{
-    Tenant{tenant_id, wallet_count: 0}
+    Tenant{ canister_id: tenant_id, wallet_count: 0}
   }
 }

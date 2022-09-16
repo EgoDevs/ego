@@ -1,4 +1,4 @@
-use crate::app::{AppStore};
+use crate::ego_store::{AppStore};
 use std::cell::RefCell;
 
 thread_local! {

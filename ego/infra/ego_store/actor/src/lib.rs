@@ -2,7 +2,7 @@ use candid::candid_method;
 use ic_cdk_macros::*;
 use ic_cdk::storage;
 
-use ego_store_mod::app::AppStore;
+use ego_store_mod::ego_store::AppStore;
 use ego_store_mod::service::*;
 use ego_store_mod::state::{APP_STORE};
 use ego_store_mod::types::*;
@@ -54,7 +54,7 @@ pub fn app_main_get(request: GetAppRequest) -> Result<GetAppResponse, EgoError> 
 
 #[update(name = "wallet_main_new")]
 #[candid_method(update, rename = "wallet_main_new")]
-pub fn wallet_main_new(request: WalletMainNewRequest) -> Result<WalletMainNewResponse, EgoError> {
+pub fn wallet_main_new() -> Result<WalletMainNewResponse, EgoError> {
   ic_cdk::println!("ego-store: wallet_main_new");
   match EgoStoreService::wallet_main_new(ic_cdk::caller()) {
     Ok(tenant_id) => Ok(WalletMainNewResponse { tenant_id }),
@@ -64,10 +64,10 @@ pub fn wallet_main_new(request: WalletMainNewRequest) -> Result<WalletMainNewRes
 
 #[query(name = "wallet_tenant_get")]
 #[candid_method(query, rename = "wallet_tenant_get")]
-pub fn wallet_tenant_get() -> Result<WalletTanentGetResponse, EgoError> {
+pub fn wallet_tenant_get() -> Result<WalletTenantGetResponse, EgoError> {
   ic_cdk::println!("ego-store: wallet_tenant_get");
   match EgoStoreService::wallet_tenant_get(ic_cdk::caller()) {
-    Ok(tenant_id) => Ok(WalletTanentGetResponse { tenant_id }),
+    Ok(tenant_id) => Ok(WalletTenantGetResponse { tenant_id }),
     Err(e) => Err(e),
   }
 }
@@ -139,18 +139,18 @@ pub async fn wallet_order_new(request: WalletOrderNewRequest) -> Result<WalletOr
 // TODO: should add guard here, only ledger can call this method
 #[update(name = "wallet_order_notify")]
 #[candid_method(update, rename = "wallet_order_notify")]
-pub async fn wallet_order_notify(request: WalletOrderNotifyRequest) -> Result<WalletOrderNotifyResponse, EgoError> {
+pub fn wallet_order_notify(request: WalletOrderNotifyRequest) -> Result<WalletOrderNotifyResponse, EgoError> {
   ic_cdk::println!("ego_store: wallet_order_notify");
 
-  match EgoStoreService::wallet_order_notify(request.memo).await {
+  match EgoStoreService::wallet_order_notify(request.memo) {
     Ok(ret) => Ok(WalletOrderNotifyResponse { ret }),
     Err(e) => Err(e),
   }
 }
 
 /********************  owner methods  ********************/
-#[query(name = "wallet_app_upgrade")]
-#[candid_method(update, rename = "wallet_app_upgrade")]
+#[query(name = "admin_tenant_add")]
+#[candid_method(update, rename = "admin_tenant_add")]
 pub fn admin_tenant_add(req: AdminTenantAddRequest) -> Result<AdminTenantAddResponse, EgoError> {
   ic_cdk::println!("ego_store: admin_tenant_add");
 

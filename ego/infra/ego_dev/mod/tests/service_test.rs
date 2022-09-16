@@ -2,17 +2,34 @@ use ic_types::Principal;
 
 use ego_dev_mod::app::{App, AppVersion, AppVersionStatus, Category};
 use ego_dev_mod::developer::Developer;
+use ego_dev_mod::file::File;
 use ego_dev_mod::service::EgoDevService;
-use ego_dev_mod::state::APP_STORE;
+use ego_dev_mod::state::EGO_DEV;
 use ego_utils::types::Version;
+use ego_dev_mod::c2c::ego_file::TEgoFile;
+use ego_utils::types::EgoError;
+use async_trait::async_trait;
+use mockall::mock;
+
+mock! {
+  Dump {}
+
+  #[async_trait]
+  impl TEgoFile for Dump {
+    async fn file_main_write(&self, canister_id: Principal, fid: String, hash: String, data: Vec<u8>) -> Result<bool, EgoError>;
+  }
+}
 
 static FILE_CANISTER_ID: &str = "amybd-zyaaa-aaaah-qc4hq-cai";
 
 static AUDITER_PRINCIPAL_ID: &str = "22ayq-aiaaa-aaaai-qgmma-cai";
 
-static EXIST_PRINCIPAL_ID: &str = "5oynr-yl472-mav57-c2oxo-g7woc-yytib-mp5bo-kzg3b-622pu-uatef-uqe";
+static DEVELOPER_PRINCIPAL_ID: &str = "5oynr-yl472-mav57-c2oxo-g7woc-yytib-mp5bo-kzg3b-622pu-uatef-uqe";
 static EXIST_APP_ID: &str = "app_1";
 static EXIST_APP_NAME: &str = "app 1";
+
+static RELEASED_APP_ID: &str = "app_2";
+static RELEASED_APP_NAME: &str = "app 2";
 
 static TEST_PRINCIPAL_ID: &str = "d2qpe-l63sh-47jxj-2764e-pa6i7-qocm4-icuie-nt2lb-yiwwk-bmq7z-pqe";
 static TEST_APP_ID: &str = "test_app";
@@ -20,30 +37,42 @@ static TEST_APP_NAME: &str = "test app";
 
 
 pub fn set_up() {
-  let developer_principal = Principal::from_text(EXIST_PRINCIPAL_ID.to_string()).unwrap();
+  let developer_principal = Principal::from_text(DEVELOPER_PRINCIPAL_ID.to_string()).unwrap();
   let auditer_principal = Principal::from_text(AUDITER_PRINCIPAL_ID.to_string()).unwrap();
   let file_canister = Principal::from_text(FILE_CANISTER_ID.to_string()).unwrap();
 
   let version = Version::new(1, 0, 1);
 
-  APP_STORE.with(|app_store| {
+  EGO_DEV.with(|ego_dev| {
+    // add file canister
+    ego_dev.borrow_mut().files.insert(file_canister, File::new(file_canister));
+
     // registered developer
     let developer = Developer::new(developer_principal, "dev 1".to_string());
-    app_store.borrow_mut().developers.insert(developer_principal, developer);
+    ego_dev.borrow_mut().developers.insert(developer_principal, developer);
 
     // registered auditer
     let mut auditer = Developer::new(auditer_principal, "audit 1".to_string());
     auditer.is_app_auditer = true;
-    app_store.borrow_mut().developers.insert(auditer_principal, auditer);
+    ego_dev.borrow_mut().developers.insert(auditer_principal, auditer);
 
-    // created app
-    let mut app = App::new(developer_principal, EXIST_APP_ID.to_string(), EXIST_APP_NAME.to_string(), Category::Vault, file_canister, 0f32);
+    // submitted app
+    let mut app = App::new(developer_principal, EXIST_APP_ID.to_string(), EXIST_APP_NAME.to_string(), Category::Vault,  0f32);
     let mut app_version = AppVersion::new(EXIST_APP_ID.to_string(), file_canister, version);
     app_version.status = AppVersionStatus::SUBMITTED;
     app.versions.push(app_version);
 
     app.audit_version = Some(version);
-    app_store.borrow_mut().apps.insert(EXIST_APP_ID.to_string(), app);
+    ego_dev.borrow_mut().apps.insert(EXIST_APP_ID.to_string(), app);
+
+    // relesed app
+    let mut app = App::new(developer_principal, RELEASED_APP_ID.to_string(), RELEASED_APP_NAME.to_string(), Category::Vault,  0f32);
+    let mut app_version = AppVersion::new(RELEASED_APP_ID.to_string(), file_canister, version);
+    app_version.status = AppVersionStatus::RELEASED;
+    app.versions.push(app_version);
+
+    app.release_version = Some(version);
+    ego_dev.borrow_mut().apps.insert(RELEASED_APP_ID.to_string(), app);
   });
 }
 
@@ -150,7 +179,7 @@ fn app_version_new_success(){
 }
 
 #[test]
-fn app_version_submit_flow(){
+fn app_version_submit_process(){
   set_up();
 
   let version = Version::new(1, 0, 1);
@@ -198,7 +227,7 @@ fn app_version_submit_flow(){
 fn app_version_approve(){
   set_up();
 
-  let developer = Principal::from_text(EXIST_PRINCIPAL_ID.to_string()).unwrap();
+  let developer = Principal::from_text(DEVELOPER_PRINCIPAL_ID.to_string()).unwrap();
   let version = Version::new(1, 0, 1);
 
   // check before audit
@@ -235,7 +264,7 @@ fn app_version_wait_for_audit(){
 fn app_version_reject(){
   set_up();
 
-  let developer = Principal::from_text(EXIST_PRINCIPAL_ID.to_string()).unwrap();
+  let developer = Principal::from_text(DEVELOPER_PRINCIPAL_ID.to_string()).unwrap();
   let version = Version::new(1, 0, 1);
 
   // check before audit
@@ -265,7 +294,7 @@ fn app_version_reject(){
 fn app_version_release(){
   set_up();
 
-  let developer = Principal::from_text(EXIST_PRINCIPAL_ID.to_string()).unwrap();
+  let developer = Principal::from_text(DEVELOPER_PRINCIPAL_ID.to_string()).unwrap();
   let version = Version::new(1, 0, 1);
 
   // approve version
@@ -283,4 +312,71 @@ fn app_version_release(){
   let app_version = app.version_get(version).unwrap();
   assert_eq!(version, app_version.version);
   assert_eq!(AppVersionStatus::RELEASED, app_version.status);
+}
+
+fn get_md5(data: &Vec<u8>) -> String {
+  let digest = md5::compute(data);
+  return format!("{:?}", digest);
+}
+
+
+#[tokio::test]
+async fn app_version_upload_wasm() {
+  set_up();
+
+  let developer_principal = Principal::from_text(DEVELOPER_PRINCIPAL_ID.to_string()).unwrap();
+  let version = Version::new(1, 0, 1);
+  let data = vec![1,0,1,0,1,0,0,0,1];
+
+  let mut service = MockDump::new();
+
+  service.expect_file_main_write().returning(|_, _, _, _| Ok(true));
+  match EgoDevService::app_version_upload_wasm(service, developer_principal, EXIST_APP_ID.to_string(), version, data.clone(), get_md5(&data)).await {
+    Ok(ret) => {
+      assert!(ret)
+    },
+    Err(_) => {
+      panic!("should not go here")
+    },
+  }
+}
+
+#[tokio::test]
+async fn app_version_upload_wasm_not_exist_app() {
+  let developer_principal = Principal::from_text(DEVELOPER_PRINCIPAL_ID.to_string()).unwrap();
+  let version = Version::new(1, 0, 1);
+  let data = vec![1,0,1,0,1,0,0,0,1];
+
+  let mut service = MockDump::new();
+
+  service.expect_file_main_write().returning(|_, _, _, _| Ok(true));
+  match EgoDevService::app_version_upload_wasm(service, developer_principal, EXIST_APP_ID.to_string(), version, data.clone(), get_md5(&data)).await {
+    Ok(_) => {
+      panic!("should not go here")
+    },
+    Err(e) => {
+      assert_eq!(1002, e.code)
+    },
+  }
+}
+
+#[tokio::test]
+async fn app_version_upload_wasm_released_app() {
+  set_up();
+
+  let developer_principal = Principal::from_text(DEVELOPER_PRINCIPAL_ID.to_string()).unwrap();
+  let version = Version::new(1, 0, 1);
+  let data = vec![1,0,1,0,1,0,0,0,1];
+
+  let mut service = MockDump::new();
+
+  service.expect_file_main_write().returning(|_, _, _, _| Ok(true));
+  match EgoDevService::app_version_upload_wasm(service, developer_principal, RELEASED_APP_ID.to_string(), version, data.clone(), get_md5(&data)).await {
+    Ok(_) => {
+      panic!("should not go here")
+    },
+    Err(e) => {
+      assert_eq!(1013, e.code)
+    },
+  }
 }

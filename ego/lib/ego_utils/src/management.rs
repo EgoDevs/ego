@@ -9,7 +9,7 @@ use serde::{Deserialize};
 
 use crate::types::{Cycles, EgoError};
 
-pub struct IcpManagement{
+pub struct ICPManagement {
 
 }
 
@@ -23,7 +23,7 @@ struct DepositCyclesArgs {
   pub canister_id: Principal,
 }
 
-impl IcpManagement{
+impl ICPManagement {
   async fn code_install(&self, canister_id: Principal, mode: CanisterInstallMode, wasm_module: Vec<u8>) -> Result<(), EgoError>{
     let install_config = InstallCodeArgument {
       mode,
@@ -91,7 +91,7 @@ impl IcpManagement{
 }
 
 #[async_trait]
-impl Management for IcpManagement {
+impl Management for ICPManagement {
   async fn canister_main_create(&self, cycles_to_use: Cycles) -> Result<Principal, EgoError> {
     let in_arg = CreateCanisterArgument {
       settings: Some(CanisterSettings {
@@ -182,6 +182,10 @@ impl Management for IcpManagement {
     }else{
       Ok(())
     }
+  }
+
+  async fn canister_controller_set(&self, canister_id: Principal, user_ids: Vec<Principal>) -> Result<(), EgoError>{
+    self.controllers_update(canister_id, user_ids).await
   }
 
   async fn canister_cycle_top_up(&self, canister_id: Principal, cycles_to_use: Cycles) -> Result<(), EgoError>{

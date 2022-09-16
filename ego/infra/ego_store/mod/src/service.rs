@@ -1,12 +1,9 @@
-use std::borrow::{Borrow, BorrowMut};
-use ic_cdk::{api, trap};
 use ic_ledger_types::Memo;
 use ic_types::Principal;
 
 use ego_utils::types::EgoError;
 
-use crate::types::*;
-use crate::app::*;
+use crate::ego_store::*;
 use crate::order::Order;
 use crate::state::APP_STORE;
 use crate::types::QueryParam;

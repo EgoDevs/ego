@@ -5,13 +5,6 @@ use serde::{Deserialize, Serialize};
 use async_trait::async_trait;
 use ic_cdk::api::management_canister::main::CanisterStatusResponse;
 
-// canister util types
-#[derive(CandidType, Deserialize)]
-pub struct CanisterUninstall {
-  pub canister_id: Principal,
-  pub arg: Vec<u8>,
-}
-
 // cycle util types
 pub type Cycles = u128;
 
@@ -101,6 +94,7 @@ pub trait Management {
   async fn canister_status_get(&self, canister_id: Principal) -> Result<CanisterStatusResponse, EgoError>;
   async fn canister_controller_add(&self, canister_id: Principal, user_id: Principal) -> Result<(), EgoError>;
   async fn canister_controller_remove(&self, canister_id: Principal, user_id: Principal) -> Result<(), EgoError>;
+  async fn canister_controller_set(&self, canister_id: Principal, user_ids: Vec<Principal>) -> Result<(), EgoError>;
 
   // cycle relative methods
   async fn canister_cycle_top_up(&self, canister_id: Principal, cycles_to_use: Cycles) -> Result<(), EgoError>;

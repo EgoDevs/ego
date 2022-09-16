@@ -1,11 +1,12 @@
 use candid::candid_method;
 use ic_cdk::storage;
 use ic_cdk_macros::*;
+use ego_dev_mod::c2c::ego_file::EgoFile;
 
-use ego_dev_mod::app::AppStore;
+use ego_dev_mod::ego_dev::EgoDev;
 use ego_dev_mod::service::*;
-use ego_dev_mod::state::APP_STORE;
-use ego_dev_mod::types::{AppMainGetRequest, AppMainGetResponse, AppMainNewRequest, AppMainNewResponse, AppVersionApproveRequest, AppVersionApproveResponse, AppVersionNewRequest, AppVersionNewResponse, AppVersionRejectRequest, AppVersionRejectResponse, AppVersionReleaseRequest, AppVersionReleaseResponse, AppVersionRevokeRequest, AppVersionRevokeResponse, AppVersionSetFrontendAddressRequest, AppVersionSetFrontendAddressResponse, AppVersionSubmitRequest, AppVersionSubmitResponse, AppVersionWaitForAuditResponse, DeveloperAppListResponse, DeveloperMainGetResponse, DeveloperMainRegisterRequest, DeveloperMainRegisterResponse, UserMainListRequest, UserMainListResponse, UserRoleSetRequest, UserRoleSetResponse};
+use ego_dev_mod::state::{EGO_DEV};
+use ego_dev_mod::types::{AdminFileAddRequest, AdminFileAddResponse, AppMainGetRequest, AppMainGetResponse, AppMainNewRequest, AppMainNewResponse, AppVersionApproveRequest, AppVersionApproveResponse, AppVersionNewRequest, AppVersionNewResponse, AppVersionRejectRequest, AppVersionRejectResponse, AppVersionReleaseRequest, AppVersionReleaseResponse, AppVersionRevokeRequest, AppVersionRevokeResponse, AppVersionSetFrontendAddressRequest, AppVersionSetFrontendAddressResponse, AppVersionSubmitRequest, AppVersionSubmitResponse, AppVersionUploadWasmRequest, AppVersionUploadWasmResponse, AppVersionWaitForAuditResponse, DeveloperAppListResponse, DeveloperMainGetResponse, DeveloperMainRegisterRequest, DeveloperMainRegisterResponse, UserMainListRequest, UserMainListResponse, UserRoleSetRequest, UserRoleSetResponse};
 use ego_utils::types::EgoError;
 
 #[init]
@@ -14,23 +15,23 @@ fn init() {
   let caller = ic_cdk::caller();
   ic_cdk::println!("ego-dev: init, caller is {}", caller);
 
-  APP_STORE.with(|app_store| {
-    app_store.borrow_mut().developer_register(caller, "admin".to_string());
+  EGO_DEV.with(|ego_dev| {
+    ego_dev.borrow_mut().developer_main_register(caller, "admin".to_string());
   });
 }
 
 #[pre_upgrade]
 fn pre_upgrade() {
   ic_cdk::println!("ego-dev: pre_upgrade");
-  APP_STORE.with(|app_store| storage::stable_save((app_store, )).unwrap());
+  EGO_DEV.with(|ego_dev| storage::stable_save((ego_dev, )).unwrap());
 }
 
 #[post_upgrade]
 fn post_upgrade() {
   ic_cdk::println!("ego-dev: post_upgrade");
-  let (old_app_store, ): (AppStore, ) = storage::stable_restore().unwrap();
-  APP_STORE.with(|app_store|
-    *app_store.borrow_mut() = old_app_store
+  let (old_ego_dev, ): (EgoDev, ) = storage::stable_restore().unwrap();
+  EGO_DEV.with(|ego_dev|
+    *ego_dev.borrow_mut() = old_ego_dev
   );
 }
 
@@ -102,6 +103,17 @@ pub fn app_version_new(
 
   let app_version = EgoDevService::app_version_new(ic_cdk::caller(), request.app_id, request.version)?;
   Ok(AppVersionNewResponse { app_version })
+}
+
+#[update(name = "app_version_upload_wasm")]
+#[candid_method(update, rename = "app_version_upload_wasm")]
+async fn app_version_upload_wasm(req: AppVersionUploadWasmRequest) -> Result<AppVersionUploadWasmResponse, EgoError> {
+  ic_cdk::println!("ego-dev: app_version_upload_wasm");
+
+  match EgoDevService::app_version_upload_wasm(EgoFile::new(), ic_cdk::caller(), req.app_id, req.version, req.data, req.hash).await {
+    Ok(ret) => Ok(AppVersionUploadWasmResponse{ret}),
+    Err(e) => Err(e.into())
+  }
 }
 
 
@@ -185,6 +197,7 @@ pub fn app_version_reject(
   Ok(AppVersionRejectResponse { app_version })
 }
 
+/********************  for app manager  ********************/
 #[update(name = "user_role_set")]
 #[candid_method(update, rename = "user_role_set")]
 pub fn user_role_set(request: UserRoleSetRequest) -> Result<UserRoleSetResponse, EgoError> {
@@ -200,4 +213,15 @@ pub fn user_main_list(request: UserMainListRequest) -> Result<UserMainListRespon
   let users = EgoDevService::user_main_list(request.name);
   Ok(UserMainListResponse { users })
 }
+
+/********************  owner methods  ********************/
+#[query(name = "admin_file_add")]
+#[candid_method(update, rename = "admin_file_add")]
+pub fn admin_file_add(req: AdminFileAddRequest) -> Result<AdminFileAddResponse, EgoError> {
+  ic_cdk::println!("ego-dev: admin_file_add");
+
+  let ret = EgoDevService::admin_file_add(req.file_id)?;
+  Ok(AdminFileAddResponse { ret })
+}
+
 

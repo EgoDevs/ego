@@ -1,5 +1,5 @@
 use ic_types::Principal;
-use ego_store_mod::app::{App, Category};
+use ego_store_mod::ego_store::{App, Category};
 use ego_store_mod::service::EgoStoreService;
 use ego_store_mod::state::APP_STORE;
 use ego_store_mod::tenant::Tenant;
@@ -111,7 +111,7 @@ fn wallet_app_install_not_exists_wallet() {
   // install with not exists wallet
   let result = EgoStoreService::wallet_app_install(wallet_id, EXISTS_APP_ID.to_string());
   assert!(result.is_err());
-  assert_eq!(1012, result.unwrap_err().code);
+  assert_eq!(3006, result.unwrap_err().code);
 }
 
 #[test]
@@ -127,7 +127,7 @@ fn wallet_app_install_not_exists_app() {
   // install app
   let result = EgoStoreService::wallet_app_install(wallet_id, "not_exists_app".to_string());
   assert!(result.is_err());
-  assert_eq!(1002, result.unwrap_err().code);
+  assert_eq!(3002, result.unwrap_err().code);
 }
 
 #[test]
@@ -139,7 +139,7 @@ fn wallet_app_install_installed_app() {
   // install app
   let result = EgoStoreService::wallet_app_install(exist_wallet_id, EXISTS_APP_ID.to_string());
   assert!(result.is_err());
-  assert_eq!(1015, result.unwrap_err().code);
+  assert_eq!(3009, result.unwrap_err().code);
 }
 
 
@@ -172,7 +172,7 @@ fn wallet_app_install_success() {
   // install same app multi times
   let result = EgoStoreService::wallet_app_install(wallet_id, EXISTS_APP_ID.to_string());
   assert!(result.is_err());
-  assert_eq!(1015, result.unwrap_err().code);
+  assert_eq!(3009, result.unwrap_err().code);
 }
 
 #[test]
@@ -184,7 +184,7 @@ fn wallet_app_upgrade_not_exists_wallet() {
   // install with not exists wallet
   let result = EgoStoreService::wallet_app_upgrade(wallet_id, EXISTS_APP_ID.to_string());
   assert!(result.is_err());
-  assert_eq!(1012, result.unwrap_err().code);
+  assert_eq!(3006, result.unwrap_err().code);
 }
 
 #[test]
@@ -200,7 +200,7 @@ fn wallet_app_upgrade_not_exists_app() {
   // install app
   let result = EgoStoreService::wallet_app_install(wallet_id, "not_exists_app".to_string());
   assert!(result.is_err());
-  assert_eq!(1002, result.unwrap_err().code);
+  assert_eq!(3002, result.unwrap_err().code);
 }
 
 #[test]
@@ -216,7 +216,7 @@ fn wallet_app_upgrade_not_installed_app() {
   // upgrade not installed app
   let result = EgoStoreService::wallet_app_upgrade(wallet_id, EXISTS_APP_ID.to_string());
   assert!(result.is_err());
-  assert_eq!(1016, result.unwrap_err().code);
+  assert_eq!(3010, result.unwrap_err().code);
 }
 
 #[test]
@@ -249,7 +249,7 @@ fn wallet_app_remove_not_exists_wallet() {
   // remove not exists wallet
   let result = EgoStoreService::wallet_app_remove(wallet_id, EXISTS_APP_ID.to_string());
   assert!(result.is_err());
-  assert_eq!(1012, result.unwrap_err().code);
+  assert_eq!(3006, result.unwrap_err().code);
 }
 
 #[test]
@@ -261,7 +261,7 @@ fn wallet_app_remove_not_exists_app() {
   // install with not exists wallet
   let result = EgoStoreService::wallet_app_remove(exist_wallet_id, "not_exists".to_string());
   assert!(result.is_err());
-  assert_eq!(1002, result.unwrap_err().code);
+  assert_eq!(3002, result.unwrap_err().code);
 }
 
 #[test]
@@ -277,7 +277,7 @@ fn wallet_app_remove_not_installed_app() {
   // remove not exists wallet
   let result = EgoStoreService::wallet_app_remove(wallet_id, EXISTS_APP_ID.to_string());
   assert!(result.is_err());
-  assert_eq!(1016, result.unwrap_err().code);
+  assert_eq!(3010, result.unwrap_err().code);
 }
 
 #[test]

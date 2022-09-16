@@ -1,7 +1,6 @@
 use std::cell::RefCell;
-
-use crate::app::AppStore;
+use crate::ego_dev::EgoDev;
 
 thread_local! {
-  pub static APP_STORE: RefCell<AppStore> = RefCell::new(AppStore::new());
+  pub static EGO_DEV: RefCell<EgoDev> = RefCell::new(EgoDev::new());
 }

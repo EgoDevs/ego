@@ -7,6 +7,8 @@ use ego_utils::types::{EgoError, Version};
 use crate::app::*;
 use crate::developer::Developer;
 
+pub type AppId = String;
+
 #[derive(Clone, Debug, CandidType, Deserialize, Serialize)]
 pub enum EgoDevErr {
   AppExists,
@@ -14,14 +16,16 @@ pub enum EgoDevErr {
   VersionExists,
   VersionNotExists,
   BucketExists,
-  NoBucket,
+  NoFile,
   UnAuthorized,
   WasmExists,
   OrderNotExists,
   EgoWalletNotExists,
-  SystemError(String),
   NotADeveloper,
   UserNotExists,
+  OperationNotPermitted,
+  EgoFileAlreadyAdded,
+  SystemError(String),
 }
 
 impl From<EgoDevErr> for EgoError {
@@ -32,21 +36,17 @@ impl From<EgoDevErr> for EgoError {
       EgoDevErr::VersionExists => EgoError::new(1003, "ego-dev: version exists"),
       EgoDevErr::VersionNotExists => EgoError::new(1004, "ego-dev: version not exists"),
       EgoDevErr::BucketExists => EgoError::new(1005, "ego-dev: bucket exists"),
-      EgoDevErr::NoBucket => EgoError::new(1006, "ego-dev: bucket not exists"),
+      EgoDevErr::NoFile => EgoError::new(1006, "ego-dev: no ego_file canister configured"),
       EgoDevErr::UnAuthorized => EgoError::new(1007, "ego-dev: unauthorized"),
       EgoDevErr::WasmExists => EgoError::new(1008, "ego-dev: wasm exists"),
       EgoDevErr::OrderNotExists => EgoError::new(1009, "ego-dev: order not exists"),
       EgoDevErr::EgoWalletNotExists => EgoError::new(1010, "ego-dev: ego wallet not exists"),
       EgoDevErr::NotADeveloper => EgoError::new(1011, "ego-dev: user is not a developer"),
       EgoDevErr::UserNotExists => EgoError::new(1012, "ego-dev: user not exists"),
+      EgoDevErr::OperationNotPermitted => EgoError::new(1013, "ego-dev: operation not permitted"),
+      EgoDevErr::EgoFileAlreadyAdded => EgoError::new(1014, "ego-dev: ego file canister already added"),
       EgoDevErr::SystemError(msg) => msg.into(),
     }
-  }
-}
-
-impl From<std::string::String> for EgoDevErr {
-  fn from(msg: String) -> Self {
-    EgoDevErr::SystemError(msg)
   }
 }
 
@@ -89,6 +89,19 @@ pub struct AppVersionNewRequest {
 #[derive(Clone, Debug, CandidType, Deserialize, Serialize)]
 pub struct AppVersionNewResponse {
   pub app_version: AppVersion,
+}
+
+#[derive(CandidType, Deserialize, Clone, Debug)]
+pub struct AppVersionUploadWasmRequest {
+  pub app_id: String,
+  pub version: Version,
+  pub data: Vec<u8>,
+  pub hash: String,
+}
+
+#[derive(CandidType, Deserialize, Clone, Debug)]
+pub struct AppVersionUploadWasmResponse {
+  pub ret: bool
 }
 
 #[derive(Clone, Debug, CandidType, Deserialize, Serialize)]
@@ -213,7 +226,6 @@ pub struct DeveloperMainGetResponse {
 #[derive(Clone, Debug, CandidType, Deserialize, Serialize)]
 pub struct UserRoleSetRequest {
   pub user_id: Principal,
-  pub is_app_developer: bool,
   pub is_app_auditer: bool,
   pub is_manager: bool,
 }
@@ -231,4 +243,15 @@ pub struct UserMainListRequest {
 #[derive(Clone, Debug, CandidType, Deserialize, Serialize)]
 pub struct UserMainListResponse {
   pub users: Vec<Developer>,
+}
+
+
+#[derive(Clone, Debug, CandidType, Deserialize, Serialize)]
+pub struct AdminFileAddRequest {
+  pub file_id: Principal
+}
+
+#[derive(Clone, Debug, CandidType, Deserialize, Serialize)]
+pub struct AdminFileAddResponse {
+  pub ret: bool,
 }

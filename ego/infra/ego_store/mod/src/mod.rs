@@ -1,5 +1,5 @@
 pub mod types;
-pub mod app;
+pub mod ego_store;
 pub mod service;
 pub mod state;
 pub mod wallet;

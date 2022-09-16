@@ -186,7 +186,7 @@ impl AppStore {
     if self.tenants.len() == 0 {
       Err(EgoStoreErr::NoTenant.into())
     } else {
-      Ok(self.tenants.values().min().unwrap().tenant_id)
+      Ok(self.tenants.values().min().unwrap().canister_id)
     }
   }
 }
