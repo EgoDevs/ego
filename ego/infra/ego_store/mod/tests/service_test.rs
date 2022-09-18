@@ -5,7 +5,7 @@ use ego_store_mod::state::APP_STORE;
 use ego_store_mod::tenant::Tenant;
 use ego_store_mod::types::QueryParam;
 use ego_store_mod::wallet::Wallet;
-use ego_utils::types::Version;
+use ego_utils::types::{Category, Version};
 
 static STORE_ID: &str = "22cl3-kqaaa-aaaaf-add7q-cai";
 
@@ -32,7 +32,7 @@ pub fn set_up() {
     app_store.borrow_mut().tenants.insert(tenant_principal, Tenant::new(tenant_principal));
 
     // add app
-    let app = App::new(EXISTS_APP_ID.to_string(), EXISTS_APP_NAME.to_string(), Category::Vault, EXISTS_APP_LOGO.to_string(), EXISTS_APP_DESCRIPTION.to_string(), version, 1.2f32);
+    let app = App::new(EXISTS_APP_ID.to_string(), EXISTS_APP_NAME.to_string(), Category::Vault, EXISTS_APP_LOGO.to_string(), EXISTS_APP_DESCRIPTION.to_string(), version, vec![], 1.2f32);
     app_store.borrow_mut().apps.insert(EXISTS_APP_ID.to_string(), app);
 
     // add wallet

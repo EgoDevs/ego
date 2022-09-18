@@ -6,3 +6,4 @@ pub mod wallet;
 pub mod order;
 pub mod tenant;
 pub mod app;
+pub mod c2c;

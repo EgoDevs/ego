@@ -1,6 +1,7 @@
 use ic_cdk::export::candid::{CandidType, Deserialize};
 use serde::Serialize;
 use ic_types::Principal;
+use ego_store_mod::app::App;
 use ego_utils::types::EgoError;
 
 #[derive(Clone, Debug, CandidType, Deserialize, Serialize)]
@@ -38,7 +39,7 @@ pub struct WalletMainAddResponse {
 
 #[derive(Clone, Debug, CandidType, Deserialize, Serialize)]
 pub struct WalletAppInstallRequest {
-    pub app_id: String,
+    pub app: App,
 }
 
 #[derive(Clone, Debug, CandidType, Deserialize, Serialize)]

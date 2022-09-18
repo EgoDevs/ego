@@ -1,8 +1,10 @@
 use ic_cdk_macros::{init, update};
 use candid::candid_method;
 use ic_cdk::caller;
+use ego_tenant_mod::c2c::ego_file::EgoFile;
+use ego_tenant_mod::c2c::ic_management::IcManagement;
 use ego_tenant_mod::service::EgoTenantService;
-use ego_tenant_mod::types::{WalletMainAddRequest, WalletMainAddResponse};
+use ego_tenant_mod::types::{WalletAppInstallRequest, WalletAppInstallResponse, WalletMainAddRequest, WalletMainAddResponse};
 use ego_utils::types::EgoError;
 
 #[init]
@@ -24,11 +26,13 @@ fn wallet_main_add(req: WalletMainAddRequest) -> Result<WalletMainAddResponse, E
 }
 
 
-// #[update(name = "wallet_app_install")]
-// #[candid_method(update, rename = "wallet_app_install")]
-// async fn wallet_app_install(req: WalletAppInstallRequest) -> Result<WalletAppInstallResponse, EgoError> {
-//     ic_cdk::println!("ego_tenant: wallet_app_install");
-//     let service = ICPManagement {};
-//     let canister_id = EgoTenantService::wallet_app_install(service, &req.app_id).await?;
-//     Ok(WalletAppInstallResponse{canister_id})
-// }
+#[update(name = "wallet_app_install")]
+#[candid_method(update, rename = "wallet_app_install")]
+async fn wallet_app_install(req: WalletAppInstallRequest) -> Result<WalletAppInstallResponse, EgoError> {
+    ic_cdk::println!("ego_tenant: wallet_app_install");
+    let management = IcManagement::new();
+    let ego_file = EgoFile::new();
+
+    let canister_id = EgoTenantService::wallet_app_install(service, &req.app_id).await?;
+    Ok(WalletAppInstallResponse{canister_id})
+}

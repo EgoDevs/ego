@@ -55,6 +55,17 @@ impl EgoTenant {
     }
   }
 
+  pub fn wallet_main_get_mut(&mut self, wallet_id: &Principal) -> Result<Wallet, EgoError> {
+    match self.wallets.get_mut(&wallet_id) {
+      Some(wallet) => {
+        Ok(wallet.clone())
+      },
+      None => {
+        Err(EgoTenantErr::WalletNotExists.into())
+      }
+    }
+  }
+
   pub fn wallet_app_install(&mut self, wallet_id: &Principal, app_id: AppId, canisters: HashMap<String, Principal>) -> Result<bool, EgoError> {
     match self.wallets.get_mut(wallet_id) {
       None => Err(EgoTenantErr::WalletNotExists.into()),

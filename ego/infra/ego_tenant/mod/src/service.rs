@@ -27,18 +27,20 @@ impl EgoTenantService {
     }
 
     pub async fn wallet_app_install<F: TEgoFile, M: TIcManagement>(wallet_id: Principal, ego_file: F, management: M, app: App) -> Result<HashMap<String, Principal>, EgoError> {
+        let mut wallet = EGO_TENANT.with(|ego_tenant| ego_tenant.borrow_mut().wallet_main_get_mut(&wallet_id))?;
+
         ic_cdk::println!("1. get app");
 
         let mut canisters = HashMap::<String, Principal>::new();
 
         ic_cdk::println!("2. create canisters");
         for wasm in app.wasms.iter().find(|wasm| wasm.canister_type == BACKEND) {
-            ic_cdk::println!("2.1 load wasm data for {}", wasm.id);
-            let data = ego_file.file_main_read(wasm.file_id.unwrap(), wasm.fid.clone()).await?;
-
-            ic_cdk::println!("2.2 create canister");
+            ic_cdk::println!("2.1 create canister");
             let canister_id = management.canister_main_create(CREATE_CANISTER_CYCLES_FEE).await?;
             canisters.insert(wasm.id.clone(), canister_id);
+
+            ic_cdk::println!("2.2 load wasm data for {}", wasm.id);
+            let data = ego_file.file_main_read(wasm.file_id.unwrap(), wasm.fid.clone()).await?;
 
             ic_cdk::println!("2.3 install code");
             management.canister_code_install(canister_id, data).await?;
@@ -47,7 +49,7 @@ impl EgoTenantService {
             management.canister_controller_set(canister_id, vec![wallet_id]).await?;
         }
 
-        EGO_TENANT.with(|ego_tenant| ego_tenant.borrow_mut().wallet_app_install(&wallet_id, app.app_id.clone(), canisters.clone()))?;
+        wallet.app_install(app.app_id,canisters.clone())?;
 
         Ok(canisters)
     }

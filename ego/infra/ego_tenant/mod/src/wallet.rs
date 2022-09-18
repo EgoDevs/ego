@@ -20,7 +20,7 @@ impl Wallet {
   }
 
   pub fn app_install(&mut self, app_id: AppId, canisters: HashMap<String, Principal>) -> Result<bool, EgoError> {
-    let canisters = canisters.iter().map(|(wasm_id, canister_id)| (wasm_id.clone(), Canister::new(wasm_id.clone(), canister_id.clone()))).collect();
+    let canisters= canisters.iter().map(|(wasm_id, canister_id)| (wasm_id.clone(), Canister::new(wasm_id.clone(), canister_id.clone()))).collect();
     self.canisters.entry(app_id).or_insert(canisters);
     Ok(true)
   }
