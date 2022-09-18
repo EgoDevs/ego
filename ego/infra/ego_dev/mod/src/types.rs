@@ -2,12 +2,10 @@ use ic_cdk::export::candid::{CandidType, Deserialize};
 use ic_types::Principal;
 use serde::Serialize;
 
-use ego_utils::types::{EgoError, Version};
+use ego_utils::types::{AppId, Category, EgoError, Version, WasmId};
 
 use crate::app::*;
 use crate::developer::Developer;
-
-pub type AppId = String;
 
 #[derive(Clone, Debug, CandidType, Deserialize, Serialize)]
 pub enum EgoDevErr {
@@ -185,7 +183,7 @@ pub struct AddBucketResponse {
 pub struct FileUploadSuccessRequest {
   pub app_id: AppId,
   pub version: Version,
-  pub fid: String,
+  pub fid: WasmId,
 }
 
 #[derive(Clone, Debug, CandidType, Deserialize, Serialize)]

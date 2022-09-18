@@ -3,8 +3,8 @@ use ic_ledger_types::Memo;
 use ic_types::Principal;
 use serde::Serialize;
 
-use crate::ego_store::*;
-use ego_utils::types::EgoError;
+use ego_utils::types::{AppId, Category, EgoError};
+use crate::app::App;
 use crate::order::Order;
 
 #[derive(Clone, Debug, CandidType, Deserialize, Serialize)]

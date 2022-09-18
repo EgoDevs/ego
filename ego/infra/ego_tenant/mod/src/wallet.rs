@@ -2,8 +2,7 @@ use std::collections::{BTreeMap, HashMap};
 use ic_cdk::export::candid::{CandidType, Deserialize};
 use ic_types::Principal;
 use serde::Serialize;
-use ego_dev_mod::types::AppId;
-use ego_utils::types::EgoError;
+use ego_utils::types::{AppId, EgoError};
 use crate::canister::Canister;
 
 #[derive(CandidType, Deserialize, Serialize, Clone, Debug)]

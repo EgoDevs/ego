@@ -5,21 +5,12 @@ use ic_types::Principal;
 use serde::Serialize;
 
 use ic_ledger_types::{Memo};
-use ego_utils::types::{EgoError, Version};
+use ego_utils::types::{AppId, EgoError};
+use crate::app::App;
 use crate::order::{Order, OrderStatus};
 use crate::tenant::Tenant;
 use crate::types::{EgoStoreErr, QueryParam};
 use crate::wallet::*;
-
-pub type AppId = String;
-pub type FileId = String;
-
-#[derive(Clone, Debug, CandidType, Deserialize, Serialize, PartialEq)]
-pub enum Category{
-  System,
-  Vault
-}
-
 
 /********************  app store  ********************/
 #[derive(CandidType, Deserialize, Serialize)]
@@ -191,36 +182,3 @@ impl AppStore {
   }
 }
 
-/********************  app  ********************/
-#[derive(CandidType, Serialize, Deserialize, Clone, Debug)]
-pub struct App {
-  pub app_id: AppId,
-  pub name: String,
-  pub category: Category,
-  pub logo: String,
-  pub description: String,
-  pub current_version: Version,
-  pub price: f32
-}
-
-
-impl App {
- pub fn to_string(&self) -> String {
-    format!("app_id: {:?},category:{:?},current_version:{:?},",
-            self.app_id, self.category,self.current_version)
-  }
-}
-
-impl App {
-  pub fn new(app_id: AppId, name: String, category: Category, logo: String, description: String, current_version: Version, price: f32) -> Self {
-    App {
-      app_id,
-      name,
-      category,
-      logo,
-      description,
-      current_version,
-      price
-    }
-  }
-}

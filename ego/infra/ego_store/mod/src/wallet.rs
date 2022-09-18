@@ -1,9 +1,9 @@
 use ic_ledger_types::Memo;
 use ic_types::Principal;
-use crate::ego_store::{App, AppId};
 use ic_cdk::export::candid::{CandidType, Deserialize};
 use serde::Serialize;
-use ego_utils::types::EgoError;
+use ego_utils::types::{AppId, EgoError};
+use crate::app::App;
 use crate::order::Order;
 use crate::types::EgoStoreErr;
 

@@ -1,9 +1,9 @@
 use ic_ledger_types::Memo;
 use ic_types::Principal;
 
-use ego_utils::types::EgoError;
+use ego_utils::types::{AppId, EgoError};
+use crate::app::App;
 
-use crate::ego_store::*;
 use crate::order::Order;
 use crate::state::APP_STORE;
 use crate::types::QueryParam;

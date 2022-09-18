@@ -6,7 +6,7 @@ use ic_cdk::api::{
     stable::{stable64_grow, stable64_read, stable64_write},
     trap,
 };
-use ego_utils::types::EgoError;
+use ego_utils::types::{EgoError, WasmId};
 use crate::file::File;
 use crate::types::EgoFileError;
 
@@ -23,7 +23,7 @@ pub const WASM_PAGE_SIZE: u64 = 64 * KB;
 pub struct Storage {
     pub length: u64,
     pub capacity: u64,
-    pub files: BTreeMap<String, File>,
+    pub files: BTreeMap<WasmId, File>,
 }
 
 impl Storage {
@@ -74,7 +74,7 @@ impl Storage {
     }
 
     /// Writes the file to stable memory.
-    pub fn file_write(&mut self, fid: &str, hash: &str, data: Vec<u8>) -> Result<bool, EgoError> {
+    pub fn file_write(&mut self, fid: &WasmId, hash: &str, data: Vec<u8>) -> Result<bool, EgoError> {
         if data.len() > DEFAULT_FILE_SIZE as usize {
             return Err(EgoFileError::FileTooLarge.into());
         }
@@ -102,7 +102,7 @@ impl Storage {
     }
 
     /// Reads file from stable memory.
-    pub fn file_read(&self, fid: &str) -> Result<Vec<u8>, EgoError> {
+    pub fn file_read(&self, fid: &WasmId) -> Result<Vec<u8>, EgoError> {
         match self.files.get(fid) {
             Some(file) => {
                 let file_offset = HEADER_SIZE + file.file_num * DEFAULT_FILE_SIZE;

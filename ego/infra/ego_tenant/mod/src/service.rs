@@ -1,11 +1,11 @@
 use std::collections::HashMap;
 use ic_types::Principal;
-use ego_dev_mod::app::CanisterType::BACKEND;
-use ego_dev_mod::types::AppId;
+use ego_store_mod::app::App;
 use ego_utils::consts::CREATE_CANISTER_CYCLES_FEE;
-use ego_utils::types::Management;
+use ego_utils::types::CanisterType::BACKEND;
 use ego_utils::types::EgoError;
-use crate::c2c::ego_dev::TEgoDev;
+use crate::c2c::ego_file::TEgoFile;
+use crate::c2c::ic_management::TIcManagement;
 use crate::state::EGO_TENANT;
 use crate::wallet::Wallet;
 
@@ -26,17 +26,15 @@ impl EgoTenantService {
         EGO_TENANT.with(|ego_tenant| ego_tenant.borrow().wallet_main_get(&wallet_id))
     }
 
-    pub async fn wallet_app_install<D: TEgoDev, M: Management>(wallet_id: Principal, dev: D, management: M, app_id: AppId) -> Result<HashMap<String, Principal>, EgoError> {
+    pub async fn wallet_app_install<F: TEgoFile, M: TIcManagement>(wallet_id: Principal, ego_file: F, management: M, app: App) -> Result<HashMap<String, Principal>, EgoError> {
         ic_cdk::println!("1. get app");
-        let app = dev.app_main_get(app_id.clone()).await?;
 
         let mut canisters = HashMap::<String, Principal>::new();
 
         ic_cdk::println!("2. create canisters");
-        let wasms = app.wasm_release_find().unwrap();
-        for wasm in wasms.iter().find(|wasm| wasm.canister_type == BACKEND) {
+        for wasm in app.wasms.iter().find(|wasm| wasm.canister_type == BACKEND) {
             ic_cdk::println!("2.1 load wasm data for {}", wasm.id);
-            let data = dev.file_main_read(app_id.clone(), wasm.id.clone()).await?;
+            let data = ego_file.file_main_read(wasm.file_id.unwrap(), wasm.fid.clone()).await?;
 
             ic_cdk::println!("2.2 create canister");
             let canister_id = management.canister_main_create(CREATE_CANISTER_CYCLES_FEE).await?;
@@ -49,7 +47,7 @@ impl EgoTenantService {
             management.canister_controller_set(canister_id, vec![wallet_id]).await?;
         }
 
-        EGO_TENANT.with(|ego_tenant| ego_tenant.borrow_mut().wallet_app_install(&wallet_id, app_id.clone(), canisters.clone()))?;
+        EGO_TENANT.with(|ego_tenant| ego_tenant.borrow_mut().wallet_app_install(&wallet_id, app.app_id.clone(), canisters.clone()))?;
 
         Ok(canisters)
     }

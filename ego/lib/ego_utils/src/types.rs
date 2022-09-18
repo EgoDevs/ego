@@ -1,9 +1,8 @@
+use std::fmt;
 use std::str::FromStr;
-use ic_types::Principal;
 use candid::{CandidType};
 use serde::{Deserialize, Serialize};
-use async_trait::async_trait;
-use ic_cdk::api::management_canister::main::CanisterStatusResponse;
+use ic_types::Principal;
 
 // cycle util types
 pub type Cycles = u128;
@@ -83,19 +82,51 @@ impl ToString for Version {
   }
 }
 
-// canister trait
-#[async_trait]
-pub trait Management {
-  // canister relative methods
-  async fn canister_main_create(&self, cycles_to_use: Cycles) -> Result<Principal, EgoError>;
-  async fn canister_code_install(&self, canister_id: Principal, wasm_module: Vec<u8>) -> Result<(), EgoError>;
-  async fn canister_code_upgrade(&self, canister_id: Principal, wasm_module: Vec<u8>) -> Result<(), EgoError>;
+// app relative types
+pub type AppId = String;
+pub type WasmId = String;
 
-  async fn canister_status_get(&self, canister_id: Principal) -> Result<CanisterStatusResponse, EgoError>;
-  async fn canister_controller_add(&self, canister_id: Principal, user_id: Principal) -> Result<(), EgoError>;
-  async fn canister_controller_remove(&self, canister_id: Principal, user_id: Principal) -> Result<(), EgoError>;
-  async fn canister_controller_set(&self, canister_id: Principal, user_ids: Vec<Principal>) -> Result<(), EgoError>;
+#[derive(Clone, Debug, CandidType, Deserialize, Serialize, PartialEq)]
+pub enum Category {
+  System,
+  Vault,
+}
 
-  // cycle relative methods
-  async fn canister_cycle_top_up(&self, canister_id: Principal, cycles_to_use: Cycles) -> Result<(), EgoError>;
+#[derive(CandidType, Serialize, Deserialize, Clone, Debug)]
+pub struct Wasm {
+  pub id: String,
+  pub app_id: AppId,
+  pub version: Version,
+  pub canister_type: CanisterType,
+  /// share frontend canister id
+  pub canister_id: Option<Principal>,
+  /// unique id of wasm file
+  pub fid: WasmId,
+  pub file_id: Option<Principal>,
+}
+
+#[derive(CandidType, Serialize, Deserialize, Clone, Debug, Eq, PartialEq)]
+pub enum CanisterType {
+  BACKEND,
+  ASSET,
+}
+
+impl fmt::Display for CanisterType {
+  fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    write!(f, "{:?}", self)
+  }
+}
+
+
+impl Wasm {
+  pub fn new(app_id: AppId, version: Version, canister_type: CanisterType, file_id: Option<Principal>) -> Self {
+    let id = format!("{}|{}", app_id.clone(), canister_type);
+    let fid = get_md5(&format!("{}|{}|{}", app_id.clone(), version.to_string(), canister_type).into_bytes());
+    Wasm { id, app_id, version, canister_type, canister_id: None, fid, file_id }
+  }
+}
+
+fn get_md5(data: &Vec<u8>) -> String {
+  let digest = md5::compute(data);
+  return format!("{:?}", digest);
 }

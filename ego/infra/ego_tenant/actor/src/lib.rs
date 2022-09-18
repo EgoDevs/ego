@@ -2,8 +2,7 @@ use ic_cdk_macros::{init, update};
 use candid::candid_method;
 use ic_cdk::caller;
 use ego_tenant_mod::service::EgoTenantService;
-use ego_tenant_mod::types::{WalletAppInstallRequest, WalletAppInstallResponse, WalletMainAddRequest, WalletMainAddResponse};
-use ego_utils::management::ICPManagement;
+use ego_tenant_mod::types::{WalletMainAddRequest, WalletMainAddResponse};
 use ego_utils::types::EgoError;
 
 #[init]

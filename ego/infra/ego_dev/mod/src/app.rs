@@ -1,19 +1,11 @@
-use std::fmt;
-
 use ic_cdk::export::candid::{CandidType, Deserialize};
 use ic_types::Principal;
 use serde::Serialize;
 
-use ego_utils::types::{EgoError, Version};
-
+use ego_utils::types::{AppId, CanisterType, Category, EgoError, Version, Wasm};
 use crate::app::CanisterType::{ASSET, BACKEND};
-use crate::types::{AppId, EgoDevErr};
+use crate::types::{EgoDevErr};
 
-#[derive(Clone, Debug, CandidType, Deserialize, Serialize, PartialEq)]
-pub enum Category {
-  System,
-  Vault,
-}
 
 
 /********************  app  ********************/
@@ -204,45 +196,6 @@ impl AppVersion {
   pub fn wasm_get(&self, canister_type: CanisterType) -> &Wasm{
     self.wasms.iter().find(|wasm| wasm.canister_type == canister_type).unwrap()
   }
-}
-
-/********************  wasm  ********************/
-#[derive(CandidType, Serialize, Deserialize, Clone, Debug, Eq, PartialEq)]
-pub enum CanisterType {
-  BACKEND,
-  ASSET,
-}
-
-impl fmt::Display for CanisterType {
-  fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-    write!(f, "{:?}", self)
-  }
-}
-
-#[derive(CandidType, Serialize, Deserialize, Clone, Debug)]
-pub struct Wasm {
-  pub id: String,
-  pub app_id: AppId,
-  pub version: Version,
-  pub canister_type: CanisterType,
-  /// share frontend canister id
-  pub canister_id: Option<Principal>,
-  /// unique id of file
-  pub fid: String,
-  pub file_id: Option<Principal>,
-}
-
-impl Wasm {
-  pub fn new(app_id: AppId, version: Version, canister_type: CanisterType, file_id: Option<Principal>) -> Self {
-    let id = format!("{}|{}", app_id.clone(), canister_type);
-    let fid = get_md5(&format!("{}|{}|{}", app_id.clone(), version.to_string(), canister_type).into_bytes());
-    Wasm { id, app_id, version, canister_type, canister_id: None, fid, file_id }
-  }
-}
-
-fn get_md5(data: &Vec<u8>) -> String {
-  let digest = md5::compute(data);
-  return format!("{:?}", digest);
 }
 
 

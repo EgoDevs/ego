@@ -1,7 +1,7 @@
 use ic_cdk::export::candid::{CandidType, Deserialize};
 use serde::Serialize;
 use ic_types::Principal;
-use crate::types::AppId;
+use ego_utils::types::AppId;
 
 #[derive(CandidType, Serialize, Deserialize, Clone, Debug)]
 pub struct Developer {

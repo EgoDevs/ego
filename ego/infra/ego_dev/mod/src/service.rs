@@ -1,7 +1,7 @@
 use ic_cdk::{api, trap};
 use ic_types::Principal;
 
-use ego_utils::types::{EgoError, Version};
+use ego_utils::types::{AppId, CanisterType, Category, EgoError, Version};
 
 use crate::app::*;
 use crate::c2c::ego_file::TEgoFile;

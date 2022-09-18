@@ -2,11 +2,11 @@
 use std::collections::{BTreeMap};
 use std::vec;
 use ic_types::Principal;
-use ego_utils::types::{EgoError};
-use crate::app::{App, Category};
+use ego_utils::types::{AppId, Category, EgoError};
+use crate::app::{App};
 use crate::developer::Developer;
 use crate::file::File;
-use crate::types::{AppId, EgoDevErr};
+use crate::types::{EgoDevErr};
 use serde::Serialize;
 use ic_cdk::export::candid::{CandidType, Deserialize};
 
