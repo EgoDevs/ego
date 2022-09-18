@@ -226,7 +226,7 @@ pub struct DeveloperMainGetResponse {
 #[derive(Clone, Debug, CandidType, Deserialize, Serialize)]
 pub struct UserRoleSetRequest {
   pub user_id: Principal,
-  pub is_app_auditer: bool,
+  pub is_app_auditor: bool,
   pub is_manager: bool,
 }
 

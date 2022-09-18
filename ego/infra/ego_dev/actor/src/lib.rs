@@ -164,10 +164,10 @@ pub async fn app_version_release(
 }
 
 
-/********************  for app auditer  ********************/
+/********************  for app auditor  ********************/
 // 待审核应用列表
 #[query(name = "app_version_wait_for_audit", guard = "auditer_guard")]
-#[candid_method(update, rename = "app_version_wait_for_audit")]
+#[candid_method(query, rename = "app_version_wait_for_audit")]
 pub fn app_version_wait_for_audit() -> Result<AppVersionWaitForAuditResponse, EgoError> {
   ic_cdk::println!("ego-dev: app_version_wait_for_audit");
 
@@ -202,11 +202,11 @@ pub fn app_version_reject(
 #[candid_method(update, rename = "user_role_set")]
 pub fn user_role_set(request: UserRoleSetRequest) -> Result<UserRoleSetResponse, EgoError> {
   ic_cdk::println!("ego-dev: user_role_set");
-  let ret = EgoDevService::user_role_set(request.user_id, request.is_app_auditer, request.is_manager)?;
+  let ret = EgoDevService::user_role_set(request.user_id, request.is_app_auditor, request.is_manager)?;
   Ok(UserRoleSetResponse { ret })
 }
 
-#[query(name = "user_main_list", guard = "manager_guard")]
+#[query(name = "user_main_list")]
 #[candid_method(query, rename = "user_main_list")]
 pub fn user_main_list(request: UserMainListRequest) -> Result<UserMainListResponse, EgoError> {
   ic_cdk::println!("ego-dev: app_version_wait_for_audit");
@@ -215,8 +215,7 @@ pub fn user_main_list(request: UserMainListRequest) -> Result<UserMainListRespon
 }
 
 /********************  owner methods  ********************/
-#[query(name = "admin_file_add")]
-#[candid_method(update, rename = "admin_file_add")]
+#[update]
 pub fn admin_file_add(req: AdminFileAddRequest) -> Result<AdminFileAddResponse, EgoError> {
   ic_cdk::println!("ego-dev: admin_file_add");
 

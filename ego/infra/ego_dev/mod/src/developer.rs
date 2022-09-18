@@ -7,7 +7,7 @@ use crate::types::AppId;
 pub struct Developer {
   pub user_id: Principal,
   pub name: String,
-  pub is_app_auditer: bool,
+  pub is_app_auditor: bool,
   pub is_manager: bool,
   pub created_apps: Vec<AppId>,
 }
@@ -17,7 +17,7 @@ impl Developer {
     Developer {
       user_id,
       name,
-      is_app_auditer: false,
+      is_app_auditor: false,
       is_manager: false,
       created_apps: vec![],
     }

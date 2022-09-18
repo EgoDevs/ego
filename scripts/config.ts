@@ -22,15 +22,15 @@ export interface ProjectConfig {
 export type Configs = Array<ProjectConfig>;
 
 export const infraConfig: Configs = [
-  {
-    category: 'infra',
-    package: 'ego_tenant',
-    bin_name: 'ego-tenant',
-    config: './configs/ego_tenant.json',
-    post_install_sequence: 100,
-    no_deploy: true,
-    no_build: true
-  },
+  // {
+  //   category: 'infra',
+  //   package: 'ego_tenant',
+  //   bin_name: 'ego-tenant',
+  //   config: './configs/ego_tenant.json',
+  //   post_install_sequence: 100,
+  //   no_deploy: true,
+  //   no_build: true
+  // },
   {
     category: 'infra',
     package: 'ego_dev',
@@ -45,24 +45,24 @@ export const infraConfig: Configs = [
     config: './configs/ego_file.json',
     post_install_sequence: 100,
   },
-  {
-    category: 'infra',
-    package: 'ego_cron',
-    bin_name: 'ego-cron',
-    config: './configs/ego_cron.json',
-    post_install_sequence: 100,
-    no_deploy: true,
-    no_build: true
-  },
-  {
-    category: 'infra',
-    package: 'ego_store',
-    bin_name: 'ego-store',
-    config: './configs/ego_store.json',
-    post_install_sequence: 100,
-    no_deploy: true,
-    no_build: true
-  },
+  // {
+  //   category: 'infra',
+  //   package: 'ego_cron',
+  //   bin_name: 'ego-cron',
+  //   config: './configs/ego_cron.json',
+  //   post_install_sequence: 100,
+  //   no_deploy: true,
+  //   no_build: true
+  // },
+  // {
+  //   category: 'infra',
+  //   package: 'ego_store',
+  //   bin_name: 'ego-store',
+  //   config: './configs/ego_store.json',
+  //   post_install_sequence: 100,
+  //   no_deploy: true,
+  //   no_build: true
+  // },
   {
     category: 'infra',
     package: 'ego_assets',

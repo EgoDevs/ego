@@ -45,7 +45,7 @@ pub fn set_up() {
 
   EGO_DEV.with(|ego_dev| {
     // add file canister
-    ego_dev.borrow_mut().files.insert(file_canister, File::new(file_canister));
+    ego_dev.borrow_mut().ego_files.push( File::new(file_canister));
 
     // registered developer
     let developer = Developer::new(developer_principal, "dev 1".to_string());
@@ -53,7 +53,7 @@ pub fn set_up() {
 
     // registered auditer
     let mut auditer = Developer::new(auditer_principal, "audit 1".to_string());
-    auditer.is_app_auditer = true;
+    auditer.is_app_auditor = true;
     ego_dev.borrow_mut().developers.insert(auditer_principal, auditer);
 
     // submitted app
@@ -76,6 +76,16 @@ pub fn set_up() {
   });
 }
 
+#[test]
+fn admin_file_add() {
+  let file_canister = Principal::from_text(FILE_CANISTER_ID.to_string()).unwrap();
+  let resp = EgoDevService::admin_file_add(file_canister);
+  assert!(resp.is_ok());
+
+  EGO_DEV.with(|ego_dev| {
+    assert_eq!(1, ego_dev.borrow().ego_files.len());
+  })
+}
 
 #[test]
 fn developer_main_register_success() {

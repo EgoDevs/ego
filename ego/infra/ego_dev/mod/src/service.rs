@@ -225,7 +225,7 @@ impl EgoDevService {
     EGO_DEV.with(
       |ego_dev| match ego_dev.borrow_mut().developer_get_mut(user_id) {
         Ok(user) => {
-          user.is_app_auditer = is_app_auditer;
+          user.is_app_auditor = is_app_auditer;
           user.is_manager = is_manager;
           Ok(true)
         }
@@ -251,16 +251,10 @@ impl EgoDevService {
   }
 
   pub fn admin_file_add(file_id: Principal) -> Result<bool, EgoError> {
-    let ret = EGO_DEV.with(|ego_dev| {
+    EGO_DEV.with(|ego_dev| {
       ego_dev.borrow_mut()
         .admin_file_add(file_id)
-    });
-
-    EGO_DEV.with(|ego_dev| {
-      ic_cdk::println!("after add {:?}", ego_dev.borrow().files)
-    });
-
-    ret
+    })
   }
 }
 

@@ -19,7 +19,7 @@ pub struct EgoDev {
   pub developers: BTreeMap<Principal, Developer>,
 
   /// ego_file canisters
-  pub files: Vec<File>
+  pub ego_files: Vec<File>
 }
 
 impl EgoDev {
@@ -27,7 +27,7 @@ impl EgoDev {
     EgoDev {
       apps: BTreeMap::new(),
       developers: BTreeMap::new(),
-      files: Vec::new(),
+      ego_files: Vec::new(),
     }
   }
 
@@ -109,23 +109,24 @@ impl EgoDev {
   }
 
   pub fn file_get(&mut self) -> Result<Principal, EgoError>{
-    ic_cdk::println!("in file_get {:?}", self);
+    ic_cdk::println!("in file_get {:?}", self.ego_files);
 
-    if self.files.len() == 0 {
+    if self.ego_files.is_empty() {
       Err(EgoDevErr::NoFile.into())
     } else {
-      let file = self.files.iter_mut().min().unwrap();
+      let file = self.ego_files.iter_mut().min().unwrap();
       file.wasm_count += 1;
       Ok(file.canister_id)
     }
   }
 
   pub fn admin_file_add(&mut self, file_id: Principal) -> Result<bool, EgoError> {
-    if !self.files.iter().any(|file| file.canister_id == file_id) {
-      self.files.push(File::new(file_id));
+    let file = File::new(file_id);
+    if !self.ego_files.contains(&file) {
+      self.ego_files.push(file);
     }
 
-    ic_cdk::println!("in admin_file_add {:?}", self);
+    ic_cdk::println!("in admin_file_add {:?}", self.ego_files);
 
     Ok(true)
   }
@@ -139,7 +140,7 @@ impl EgoDev {
 
   pub fn is_app_auditer(&self, caller: Principal) -> bool {
     match self.developers.get(&caller) {
-      Some(user) => user.is_app_auditer,
+      Some(user) => user.is_app_auditor,
       None => false
     }
   }

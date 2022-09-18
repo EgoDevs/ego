@@ -9,6 +9,8 @@ import {admins, developers, operators} from "@/fixtures/identities";
 import fs from "fs";
 import crypto, {BinaryLike} from "crypto";
 
+export const assets_storage_id = getCanisterId('assets_storage');
+
 export const operatorActor = getActor<_SERVICE>(
   identity,
   devIdl,
@@ -21,7 +23,7 @@ export const developerActor = getActor<_SERVICE>(
   getCanisterId('ego_dev')!,
 );
 
-export const auditerActor = getActor<_SERVICE>(
+export const auditorActor = getActor<_SERVICE>(
   Ed25519KeyIdentity.fromJSON(JSON.stringify(operators[0]?.identity)),
   devIdl,
   getCanisterId('ego_dev')!,
@@ -33,8 +35,6 @@ export const managerActor = getActor<_SERVICE>(
   getCanisterId('ego_dev')!,
 );
 
-
-export const assets_storage_id = getCanisterId('assets_storage');
 
 const ego_assets_wasm = fs.readFileSync(
   `${[process.cwd()]}` + '/artifacts/ego_assets/ego_assets_opt.wasm',
@@ -79,20 +79,20 @@ export const devPostInstall = async () => {
     ego_assets_wasm,
   );
 
-  // await create_app(
-  //   'app_1',
-  //   { Vault: null },
-  //   'app_1',
-  //   1,
-  //   version,
-  //   app_1_wasm,
-  //   Principal.fromText(assets_storage_id!),
-  // );
+  await create_app(
+    'app_1',
+    { Vault: null },
+    'app_1',
+    1,
+    version,
+    app_1_wasm,
+    Principal.fromText(assets_storage_id!),
+  );
 };
 
 const register_users = async () => {
   let developer = await developerActor;
-  let auditer = await auditerActor;
+  let auditor = await auditorActor;
   let manager = await managerActor;
 
   await developer_main_register(
@@ -103,8 +103,8 @@ const register_users = async () => {
     false,
   );
   await developer_main_register(
-    auditer,
-    'auditer',
+    auditor,
+    'auditor',
     operators[0]?.principal,
     true,
     false,
@@ -122,7 +122,7 @@ const developer_main_register = async (
   actor,
   name,
   principal,
-  is_app_auditer,
+  is_app_auditor,
   is_manager,
 ) => {
   const operator = await operatorActor;
@@ -137,7 +137,7 @@ const developer_main_register = async (
   console.log(`\t\t b.set role for ${name}\n`);
   let resp2 = await operator.user_role_set({
     user_id: Principal.fromText(principal),
-    is_app_auditer,
+    is_app_auditor,
     is_manager,
   });
   console.log(resp2);
@@ -175,7 +175,7 @@ const new_app_version = async (
   frontend_canister_id?: Principal,
 ) => {
   const developer = await developerActor;
-  const auditer = await auditerActor;
+  const auditor = await auditorActor;
 
   console.log(`\t\t b.new version for ${app_id}\n`);
   let resp_b = await developer.app_version_new({
@@ -220,7 +220,7 @@ const new_app_version = async (
   console.log(resp_d);
 
   console.log(`\t\t e.approve version for ${app_id}\n`);
-  let resp_e = await auditer.app_version_approve({
+  let resp_e = await auditor.app_version_approve({
     version,
     app_id,
   });
