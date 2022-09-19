@@ -15,7 +15,6 @@ fn canister_init() {
 
 /********************  ego-store methods  ********************/
 #[update(name = "wallet_main_add")]
-#[candid_method(update, rename = "wallet_main_add")]
 fn wallet_main_add(req: WalletMainAddRequest) -> Result<WalletMainAddResponse, EgoError> {
     ic_cdk::println!("ego_tenant: wallet_app_install");
 
@@ -27,12 +26,11 @@ fn wallet_main_add(req: WalletMainAddRequest) -> Result<WalletMainAddResponse, E
 
 
 #[update(name = "wallet_app_install")]
-#[candid_method(update, rename = "wallet_app_install")]
 async fn wallet_app_install(req: WalletAppInstallRequest) -> Result<WalletAppInstallResponse, EgoError> {
     ic_cdk::println!("ego_tenant: wallet_app_install");
     let management = IcManagement::new();
     let ego_file = EgoFile::new();
 
-    let canister_id = EgoTenantService::wallet_app_install(service, &req.app_id).await?;
-    Ok(WalletAppInstallResponse{canister_id})
+    let canisters = EgoTenantService::wallet_app_install(caller(), ego_file, management, req.app).await?;
+    Ok(WalletAppInstallResponse{canisters})
 }

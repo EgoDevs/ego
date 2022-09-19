@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use ic_cdk::export::candid::{CandidType, Deserialize};
 use serde::Serialize;
 use ic_types::Principal;
@@ -8,6 +9,8 @@ use ego_utils::types::EgoError;
 pub enum EgoTenantErr {
     WalletExists,
     WalletNotExists,
+    AppNotInstalled,
+    CanisterNotFounded,
     SystemError(String),
 }
 
@@ -16,6 +19,8 @@ impl From<EgoTenantErr> for EgoError {
         match e{
             EgoTenantErr::WalletExists => EgoError::new(4001, "ego-tenant: wallet exists"),
             EgoTenantErr::WalletNotExists=> EgoError::new(4002, "ego-tenant: wallet not exists"),
+            EgoTenantErr::AppNotInstalled=> EgoError::new(4003, "ego-tenant: you have not install this app"),
+            EgoTenantErr::CanisterNotFounded=> EgoError::new(4004, "ego-tenant: can not find canister to installed"),
             EgoTenantErr::SystemError(msg) => msg.into(),
         }
     }
@@ -44,5 +49,5 @@ pub struct WalletAppInstallRequest {
 
 #[derive(Clone, Debug, CandidType, Deserialize, Serialize)]
 pub struct WalletAppInstallResponse {
-    pub canister_id: Principal
+    pub canisters: HashMap<String, Principal>
 }

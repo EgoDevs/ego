@@ -11,7 +11,8 @@ pub struct App {
   pub logo: String,
   pub description: String,
   pub current_version: Version,
-  pub wasms: Vec<Wasm>,
+  pub frontend: Wasm,
+  pub backend: Wasm,
   pub price: f32
 }
 
@@ -24,7 +25,7 @@ impl App {
 }
 
 impl App {
-  pub fn new(app_id: AppId, name: String, category: Category, logo: String, description: String, current_version: Version, wasms: Vec<Wasm>, price: f32) -> Self {
+  pub fn new(app_id: AppId, name: String, category: Category, logo: String, description: String, current_version: Version, frontend: Wasm, backend: Wasm, price: f32) -> Self {
     App {
       app_id,
       name,
@@ -32,7 +33,8 @@ impl App {
       logo,
       description,
       current_version,
-      wasms,
+      frontend,
+      backend,
       price
     }
   }

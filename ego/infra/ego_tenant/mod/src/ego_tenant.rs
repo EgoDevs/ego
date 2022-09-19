@@ -1,8 +1,8 @@
-use std::collections::{BTreeMap, BTreeSet, HashMap};
+use std::collections::{BTreeMap, BTreeSet};
 use ic_cdk::export::candid::{CandidType, Deserialize};
 use ic_types::Principal;
 use serde::Serialize;
-use ego_utils::types::{AppId, EgoError};
+use ego_utils::types::{EgoError};
 use crate::task::Task;
 use crate::types::EgoTenantErr;
 use crate::wallet::Wallet;
@@ -62,15 +62,6 @@ impl EgoTenant {
       },
       None => {
         Err(EgoTenantErr::WalletNotExists.into())
-      }
-    }
-  }
-
-  pub fn wallet_app_install(&mut self, wallet_id: &Principal, app_id: AppId, canisters: HashMap<String, Principal>) -> Result<bool, EgoError> {
-    match self.wallets.get_mut(wallet_id) {
-      None => Err(EgoTenantErr::WalletNotExists.into()),
-      Some(wallet) => {
-        wallet.app_install(app_id, canisters)
       }
     }
   }
