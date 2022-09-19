@@ -22,15 +22,14 @@ export interface ProjectConfig {
 export type Configs = Array<ProjectConfig>;
 
 export const infraConfig: Configs = [
-  // {
-  //   category: 'infra',
-  //   package: 'ego_tenant',
-  //   bin_name: 'ego-tenant',
-  //   config: './configs/ego_tenant.json',
-  //   post_install_sequence: 100,
-  //   no_deploy: true,
-  //   no_build: true
-  // },
+  {
+    category: 'infra',
+    package: 'ego_tenant',
+    bin_name: 'ego-tenant',
+    config: './configs/ego_tenant.json',
+    post_install_sequence: 100,
+    no_deploy: true,
+  },
   {
     category: 'infra',
     package: 'ego_dev',

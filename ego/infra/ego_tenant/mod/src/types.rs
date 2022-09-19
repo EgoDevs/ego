@@ -1,9 +1,10 @@
-use std::collections::HashMap;
+use std::collections::{BTreeMap};
 use ic_cdk::export::candid::{CandidType, Deserialize};
 use serde::Serialize;
 use ic_types::Principal;
 use ego_store_mod::app::App;
 use ego_utils::types::EgoError;
+use crate::wallet::Wallet;
 
 #[derive(Clone, Debug, CandidType, Deserialize, Serialize)]
 pub enum EgoTenantErr {
@@ -43,11 +44,42 @@ pub struct WalletMainAddResponse {
 }
 
 #[derive(Clone, Debug, CandidType, Deserialize, Serialize)]
+pub struct WalletMainRemoveRequest {
+    pub wallet_id: Principal,
+}
+
+#[derive(Clone, Debug, CandidType, Deserialize, Serialize)]
+pub struct WalletMainRemoveResponse {
+    pub ret: bool
+}
+
+#[derive(Clone, Debug, CandidType, Deserialize, Serialize)]
+pub struct WalletMainGetRequest {
+    pub wallet_id: Principal,
+}
+
+#[derive(Clone, Debug, CandidType, Deserialize, Serialize)]
+pub struct WalletMainGetResponse {
+    pub wallet: Wallet
+}
+
+
+#[derive(Clone, Debug, CandidType, Deserialize, Serialize)]
 pub struct WalletAppInstallRequest {
     pub app: App,
 }
 
 #[derive(Clone, Debug, CandidType, Deserialize, Serialize)]
 pub struct WalletAppInstallResponse {
-    pub canisters: HashMap<String, Principal>
+    pub canisters: BTreeMap<String, Principal>
+}
+
+#[derive(Clone, Debug, CandidType, Deserialize, Serialize)]
+pub struct WalletAppUpgradeRequest {
+    pub app: App,
+}
+
+#[derive(Clone, Debug, CandidType, Deserialize, Serialize)]
+pub struct WalletAppUpgradeResponse {
+    pub ret: bool
 }

@@ -39,7 +39,6 @@ impl EgoTenant {
       },
       None => {
         Err(EgoTenantErr::WalletNotExists.into())
-
       }
     }
   }

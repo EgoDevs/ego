@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::collections::{BTreeMap};
 use ic_types::Principal;
 use ego_store_mod::app::App;
 use ego_utils::consts::CREATE_CANISTER_CYCLES_FEE;
@@ -26,10 +26,10 @@ impl EgoTenantService {
         EGO_TENANT.with(|ego_tenant| ego_tenant.borrow().wallet_main_get(&wallet_id))
     }
 
-    pub async fn wallet_app_install<F: TEgoFile, M: TIcManagement>(wallet_id: Principal, ego_file: F, management: M, app: App) -> Result<HashMap<String, Principal>, EgoError> {
+    pub async fn wallet_app_install<F: TEgoFile, M: TIcManagement>(wallet_id: Principal, ego_file: F, management: M, app: App) -> Result<BTreeMap<String, Principal>, EgoError> {
         let mut wallet = EGO_TENANT.with(|ego_tenant| ego_tenant.borrow_mut().wallet_main_get_mut(&wallet_id))?;
 
-        let mut canisters = HashMap::<String, Principal>::new();
+        let mut canisters = BTreeMap::<String, Principal>::new();
 
         if app.frontend.canister_id.is_some() {
             canisters.insert(app.frontend.id.clone(), app.frontend.canister_id.unwrap());

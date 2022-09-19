@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 use async_trait::async_trait;
 use ic_types::Principal;
 use mockall::mock;
@@ -34,7 +34,7 @@ pub fn set_up() {
     let mut wallet = Wallet::new(wallet_principal);
     let canister = Canister::new("app_test|BACKEND".to_string(), exists_canister_principal);
 
-    let mut canisters = HashMap::new();
+    let mut canisters = BTreeMap::new();
     canisters.insert("app_test|BACKEND".to_string(), canister);
 
     wallet.canisters.insert(EXISTS_APP_ID.to_string(), canisters.clone());
