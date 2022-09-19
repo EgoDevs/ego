@@ -1,8 +1,9 @@
 use ic_cdk::export::candid::{CandidType, Deserialize};
 use ic_types::Principal;
 use serde::Serialize;
-
-use ego_utils::types::{AppId, Category, EgoError, Version, WasmId};
+use ego_types::app::{AppId, Category, FileId};
+use ego_types::ego_error::EgoError;
+use ego_types::version::Version;
 
 use crate::app::*;
 use crate::developer::Developer;
@@ -183,7 +184,7 @@ pub struct AddBucketResponse {
 pub struct FileUploadSuccessRequest {
   pub app_id: AppId,
   pub version: Version,
-  pub fid: WasmId,
+  pub fid: FileId,
 }
 
 #[derive(Clone, Debug, CandidType, Deserialize, Serialize)]

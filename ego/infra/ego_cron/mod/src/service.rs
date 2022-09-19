@@ -1,6 +1,6 @@
 use ic_types::Principal;
+use ego_types::ego_error::EgoError;
 use crate::state::TASKSTORE;
-use ego_utils::types::EgoError;
 use crate::types::CronInterval;
 
 pub struct EgoCronService {}

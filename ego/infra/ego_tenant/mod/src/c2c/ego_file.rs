@@ -1,8 +1,9 @@
 use ic_cdk::api;
 use ic_types::Principal;
-use ego_utils::types::{EgoError, WasmId};
 use ego_file_mod::types::{FileMainReadRequest, FileMainReadResponse};
 use async_trait::async_trait;
+use ego_types::app::WasmId;
+use ego_types::ego_error::EgoError;
 
 #[async_trait]
 pub trait TEgoFile {

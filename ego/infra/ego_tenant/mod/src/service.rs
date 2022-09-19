@@ -1,12 +1,13 @@
 use std::collections::{BTreeMap};
 use ic_types::Principal;
-use ego_store_mod::app::App;
+use ego_types::app::App;
+use ego_types::ego_error::EgoError;
 use ego_utils::consts::CREATE_CANISTER_CYCLES_FEE;
-use ego_utils::types::{EgoError};
+
 use crate::c2c::ego_file::TEgoFile;
 use crate::c2c::ic_management::TIcManagement;
 use crate::state::EGO_TENANT;
-use crate::types::EgoTenantErr;
+use crate::types::{EgoTenantErr};
 use crate::wallet::Wallet;
 
 pub struct EgoTenantService {
@@ -32,26 +33,28 @@ impl EgoTenantService {
         let mut canisters = BTreeMap::<String, Principal>::new();
 
         if app.frontend.canister_id.is_some() {
-            canisters.insert(app.frontend.id.clone(), app.frontend.canister_id.unwrap());
+            canisters.insert(app.frontend.id(), app.frontend.canister_id.unwrap());
         }
 
-        ic_cdk::println!("1. create canisters");
-        let wasm = app.backend;
+        if app.backend.canister_id.is_some() {
+            ic_cdk::println!("1. create canisters");
+            let wasm = app.backend;
 
-        ic_cdk::println!("1.1 create canister");
-        let canister_id = management.canister_main_create(CREATE_CANISTER_CYCLES_FEE).await?;
-        canisters.insert(wasm.id.clone(), canister_id);
+            ic_cdk::println!("1.1 create canister");
+            let canister_id = management.canister_main_create(CREATE_CANISTER_CYCLES_FEE).await?;
+            canisters.insert(wasm.id(), canister_id);
 
-        ic_cdk::println!("1.2 load wasm data for {}", wasm.id);
-        let data = ego_file.file_main_read(wasm.file_id.unwrap(), wasm.fid.clone()).await?;
+            ic_cdk::println!("1.2 load wasm data for {}", wasm.id());
+            let data = ego_file.file_main_read(wasm.canister_id.unwrap(), wasm.fid()).await?;
 
-        ic_cdk::println!("1.3 install code");
-        management.canister_code_install(canister_id, data).await?;
+            ic_cdk::println!("1.3 install code");
+            management.canister_code_install(canister_id, data).await?;
 
-        ic_cdk::println!("1.4 change owner to wallet");
-        management.canister_controller_set(canister_id, vec![wallet_id]).await?;
+            ic_cdk::println!("1.4 change owner to wallet");
+            management.canister_controller_set(canister_id, vec![wallet_id]).await?;
 
-        wallet.app_install(app.app_id,canisters.clone())?;
+            wallet.app_install(app.app_id,canisters.clone())?;
+        }
 
         Ok(canisters)
     }
@@ -63,13 +66,13 @@ impl EgoTenantService {
         match wallet.canisters.get(&app.app_id){
             None => Err(EgoTenantErr::AppNotInstalled.into()),
             Some(canisters) => {
-                match canisters.get(&wasm.id) {
+                match canisters.get(&wasm.id()) {
                     None => Err(EgoTenantErr::CanisterNotFounded.into()),
                     Some(canister) => {
                         // TODO: checked whether user has add tenant as one of the canister's controller
 
-                        ic_cdk::println!("1.1 load wasm data for {}", wasm.id);
-                        let data = ego_file.file_main_read(wasm.file_id.unwrap(), wasm.fid.clone()).await?;
+                        ic_cdk::println!("1.1 load wasm data for {}", wasm.id());
+                        let data = ego_file.file_main_read(wasm.canister_id.unwrap(), wasm.fid()).await?;
 
                         ic_cdk::println!("1.2 install code");
                         management.canister_code_upgrade(canister.canister_id, data).await?;

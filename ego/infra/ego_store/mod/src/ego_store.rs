@@ -5,8 +5,9 @@ use ic_types::Principal;
 use serde::Serialize;
 
 use ic_ledger_types::{Memo};
-use ego_utils::types::{AppId, EgoError};
-use crate::app::App;
+use ego_types::app::{App, AppId};
+use ego_types::ego_error::EgoError;
+
 use crate::order::{Order, OrderStatus};
 use crate::tenant::Tenant;
 use crate::types::{EgoStoreErr, QueryParam};

@@ -1,13 +1,16 @@
 use ic_types::Principal;
-use ego_store_mod::ego_store::{App, Category};
+use ego_store_mod::app::App;
 use ego_store_mod::service::EgoStoreService;
 use ego_store_mod::state::APP_STORE;
 use ego_store_mod::tenant::Tenant;
 use ego_store_mod::types::QueryParam;
 use ego_store_mod::wallet::Wallet;
-use ego_utils::types::{Category, Version};
+use ego_utils::types::{Category, Version, Wasm};
+use ego_utils::types::CanisterType::{ASSET, BACKEND};
 
 static STORE_ID: &str = "22cl3-kqaaa-aaaaf-add7q-cai";
+
+static FILE_CANISTER_ID: &str = "amybd-zyaaa-aaaah-qc4hq-cai";
 
 static EXISTS_WALLET_ID: &str = "amybd-zyaaa-aaaah-qc4hq-cai";
 
@@ -24,6 +27,7 @@ static TEST_WALLET_ID: &str = "227wz-liaaa-aaaaa-qaara-cai";
 pub fn set_up() {
   let tenant_principal = Principal::from_text(EXISTS_TENANT_ID.to_string()).unwrap();
   let wallet_principal = Principal::from_text(EXISTS_WALLET_ID.to_string()).unwrap();
+  let file_canister = Principal::from_text(FILE_CANISTER_ID.to_string()).unwrap();
 
   let version = Version::new(1, 0, 1);
 
@@ -32,7 +36,9 @@ pub fn set_up() {
     app_store.borrow_mut().tenants.insert(tenant_principal, Tenant::new(tenant_principal));
 
     // add app
-    let app = App::new(EXISTS_APP_ID.to_string(), EXISTS_APP_NAME.to_string(), Category::Vault, EXISTS_APP_LOGO.to_string(), EXISTS_APP_DESCRIPTION.to_string(), version, vec![], 1.2f32);
+    let frontend = Wasm::new(EXISTS_APP_ID.to_string(), version, ASSET, None);
+    let backend = Wasm::new(EXISTS_APP_ID.to_string(), version, BACKEND, Some(file_canister));
+    let app = App::new(EXISTS_APP_ID.to_string(), EXISTS_APP_NAME.to_string(), Category::Vault, EXISTS_APP_LOGO.to_string(), EXISTS_APP_DESCRIPTION.to_string(), version, frontend, backend, 1.2f32);
     app_store.borrow_mut().apps.insert(EXISTS_APP_ID.to_string(), app);
 
     // add wallet

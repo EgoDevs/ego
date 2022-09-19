@@ -1,3 +1,2 @@
-pub mod management;
+pub mod ic_management;
 pub mod consts;
-pub mod types;

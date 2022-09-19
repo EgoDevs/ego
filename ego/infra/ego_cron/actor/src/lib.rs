@@ -6,7 +6,7 @@ use ic_cron::implement_cron;
 use ego_cron_mod::task::CronTask;
 use ego_cron_mod::service::{EgoCronService};
 use ego_cron_mod::types::{TaskMainCancelResponse, TaskMainAddRequest, TaskMainAddResponse, TaskMainCancelRequest};
-use ego_utils::types::EgoError;
+use ego_types::ego_error::EgoError;
 
 #[init]
 #[candid_method(init)]

@@ -2,7 +2,7 @@ use std::collections::{BTreeMap, BTreeSet};
 use ic_cdk::export::candid::{CandidType, Deserialize};
 use ic_types::Principal;
 use serde::Serialize;
-use ego_utils::types::{EgoError};
+use ego_types::ego_error::EgoError;
 use crate::task::Task;
 use crate::types::EgoTenantErr;
 use crate::wallet::Wallet;

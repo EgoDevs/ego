@@ -6,7 +6,8 @@ use ego_store_mod::ego_store::AppStore;
 use ego_store_mod::service::*;
 use ego_store_mod::state::{APP_STORE};
 use ego_store_mod::types::*;
-use ego_utils::types::EgoError;
+use ego_types::ego_error::EgoError;
+
 
 #[init]
 #[candid_method(init)]

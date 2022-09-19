@@ -1,7 +1,7 @@
 use ic_cdk::export::candid::{CandidType, Deserialize};
 use ic_types::Principal;
-use ego_utils::types::Cycles;
 use serde::Serialize;
+use ego_utils::ic_management::Cycles;
 
 
 #[derive(CandidType, Deserialize, Serialize, Clone, Debug)]

@@ -7,7 +7,7 @@ fn main() {}
 #[allow(dead_code)]
 #[cfg(not(any(target_arch = "wasm32", test)))]
 fn main() {
-    use ego_utils::types::EgoError;
+    use ego_types::ego_error::EgoError;
 
     use ego_file_mod::types::*;
 

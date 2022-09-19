@@ -1,6 +1,6 @@
 use ic_cdk::export::candid::{CandidType, Deserialize};
 use ic_cdk::export::Principal;
-use ego_utils::types::EgoError;
+use ego_types::ego_error::EgoError;
 
 
 #[derive(CandidType, Deserialize, Clone, Debug)]

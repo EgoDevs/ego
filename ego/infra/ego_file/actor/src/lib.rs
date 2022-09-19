@@ -6,9 +6,10 @@ use ic_cdk_macros::*;
 use ego_file_mod::service::{EgoFileService};
 use ego_file_mod::state::STORAGE;
 use ego_file_mod::types::{EgoFileError, FileMainReadRequest, FileMainReadResponse, FileMainWriteRequest, FileMainWriteResponse};
-use ego_utils::types::EgoError;
+
 use ic_cdk::api::stable::{stable64_grow, stable64_read, stable64_write};
 use ego_file_mod::storage::{DEFAULT_FILE_SIZE, Storage, HEADER_SIZE, WASM_PAGE_SIZE};
+use ego_types::ego_error::EgoError;
 use ego_users::inject_ego_users;
 
 

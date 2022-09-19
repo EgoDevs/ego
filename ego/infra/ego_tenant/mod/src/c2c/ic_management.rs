@@ -1,7 +1,8 @@
 use ic_types::Principal;
-use ego_utils::types::{Cycles, EgoError};
+
 use async_trait::async_trait;
-use ego_utils::management::{canister_code_install, canister_code_upgrade, canister_controller_set, canister_main_create};
+use ego_types::ego_error::EgoError;
+use ego_utils::ic_management::{canister_code_install, canister_code_upgrade, canister_controller_set, canister_main_create, Cycles};
 
 #[async_trait]
 pub trait TIcManagement {

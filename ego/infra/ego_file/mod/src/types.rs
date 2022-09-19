@@ -1,9 +1,10 @@
 use ic_cdk::export::candid::{CandidType, Deserialize};
-use ego_utils::types::{EgoError, WasmId};
+use ego_types::app::FileId;
+use ego_types::ego_error::EgoError;
 
 #[derive(CandidType, Deserialize, Clone, Debug)]
 pub struct FileMainWriteRequest {
-    pub fid: WasmId,
+    pub fid: FileId,
     pub hash: String,
     pub data: Vec<u8>,
 }
@@ -16,7 +17,7 @@ pub struct FileMainWriteResponse {
 
 #[derive(CandidType, Deserialize, Clone, Debug)]
 pub struct FileMainReadRequest {
-    pub fid: WasmId,
+    pub fid: FileId,
 }
 
 #[derive(CandidType, Deserialize, Clone, Debug)]

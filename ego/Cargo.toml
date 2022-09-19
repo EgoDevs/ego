@@ -14,6 +14,7 @@ members = [
     "infra/ego_dev/mod",
     "lib/ego_utils",
     "lib/ego_users",
+    "lib/ego_types",
 ]
 
 [profile.release]

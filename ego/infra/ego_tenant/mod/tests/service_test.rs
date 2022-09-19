@@ -2,7 +2,6 @@ use std::collections::BTreeMap;
 use async_trait::async_trait;
 use ic_types::Principal;
 use mockall::mock;
-use ego_store_mod::app::App;
 
 use ego_tenant_mod::service::EgoTenantService;
 use ego_utils::types::{Category, Cycles, EgoError, Version, Wasm, WasmId};
@@ -11,6 +10,7 @@ use ego_tenant_mod::wallet::Wallet;
 use ego_tenant_mod::c2c::ic_management::TIcManagement;
 use ego_tenant_mod::c2c::ego_file::TEgoFile;
 use ego_tenant_mod::canister::Canister;
+use ego_tenant_mod::types::App;
 use ego_utils::types::CanisterType::{ASSET, BACKEND};
 
 static FILE_CANISTER_ID: &str = "amybd-zyaaa-aaaah-qc4hq-cai";

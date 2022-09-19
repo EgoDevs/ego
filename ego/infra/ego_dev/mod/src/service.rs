@@ -1,7 +1,8 @@
 use ic_cdk::{api, trap};
 use ic_types::Principal;
-
-use ego_utils::types::{AppId, CanisterType, Category, EgoError, Version};
+use ego_types::app::{AppId, Category};
+use ego_types::ego_error::EgoError;
+use ego_types::version::Version;
 
 use crate::app::*;
 use crate::c2c::ego_file::TEgoFile;
@@ -82,7 +83,7 @@ impl EgoDevService {
               if app_version.status == AppVersionStatus::RELEASED {
                 Err(EgoDevErr::OperationNotPermitted.into())
               } else {
-                Ok(app_version.wasm_get(CanisterType::BACKEND).clone())
+                Ok(app_version.backend.clone())
               }
             },
             None => Err(EgoDevErr::VersionNotExists.into())
@@ -92,7 +93,7 @@ impl EgoDevService {
       }
     }) {
       Ok(wasm) => {
-        ego_file.file_main_write(wasm.file_id.unwrap(), wasm.fid.clone(), hash, data).await
+        ego_file.file_main_write(wasm.canister_id.unwrap(), wasm.fid(), hash, data).await
       },
       Err(e) => Err(e)
     }

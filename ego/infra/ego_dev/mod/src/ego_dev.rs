@@ -2,13 +2,15 @@
 use std::collections::{BTreeMap};
 use std::vec;
 use ic_types::Principal;
-use ego_utils::types::{AppId, Category, EgoError};
+
 use crate::app::{App};
 use crate::developer::Developer;
 use crate::file::File;
 use crate::types::{EgoDevErr};
 use serde::Serialize;
 use ic_cdk::export::candid::{CandidType, Deserialize};
+use ego_types::app::{AppId, Category};
+use ego_types::ego_error::EgoError;
 
 #[derive(CandidType, Deserialize, Serialize, Debug)]
 pub struct EgoDev {

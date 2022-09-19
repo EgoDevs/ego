@@ -2,9 +2,9 @@ use ic_cdk::export::candid::{CandidType, Deserialize};
 use ic_ledger_types::Memo;
 use ic_types::Principal;
 use serde::Serialize;
+use ego_types::app::{App, AppId, Category};
+use ego_types::ego_error::EgoError;
 
-use ego_utils::types::{AppId, Category, EgoError};
-use crate::app::App;
 use crate::order::Order;
 
 #[derive(Clone, Debug, CandidType, Deserialize, Serialize)]

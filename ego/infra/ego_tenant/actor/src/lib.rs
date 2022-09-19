@@ -5,7 +5,7 @@ use ego_tenant_mod::c2c::ego_file::EgoFile;
 use ego_tenant_mod::c2c::ic_management::IcManagement;
 use ego_tenant_mod::service::EgoTenantService;
 use ego_tenant_mod::types::{WalletAppInstallRequest, WalletAppInstallResponse, WalletAppUpgradeRequest, WalletAppUpgradeResponse, WalletMainAddRequest, WalletMainAddResponse, WalletMainGetRequest, WalletMainGetResponse, WalletMainRemoveRequest, WalletMainRemoveResponse};
-use ego_utils::types::EgoError;
+use ego_types::ego_error::EgoError;
 
 #[init]
 #[candid_method(init, rename = "init")]

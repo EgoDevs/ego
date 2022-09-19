@@ -1,9 +1,11 @@
 use ic_cdk::export::candid::{CandidType, Deserialize};
 use ic_types::Principal;
 use serde::Serialize;
+use ego_types::app::{AppId, CanisterType, Category, Wasm};
+use ego_types::app::CanisterType::{ASSET, BACKEND};
+use ego_types::ego_error::EgoError;
+use ego_types::version::Version;
 
-use ego_utils::types::{AppId, CanisterType, Category, EgoError, Version, Wasm};
-use crate::app::CanisterType::{ASSET, BACKEND};
 use crate::types::{EgoDevErr};
 
 

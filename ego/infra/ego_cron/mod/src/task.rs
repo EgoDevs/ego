@@ -2,12 +2,12 @@ use std::collections::{BTreeMap};
 
 use ic_cdk::export::candid::{CandidType, Deserialize};
 use ic_types::Principal;
-use ego_utils::types::EgoError;
 
 use crate::types::{cron_interval, CronInterval, EgoCronError};
 
 use ic_cron::implement_cron;
 use ic_cron::types::{Iterations, SchedulingOptions};
+use ego_types::ego_error::EgoError;
 implement_cron!();
 
 #[derive(CandidType, Deserialize, Clone, Debug)]

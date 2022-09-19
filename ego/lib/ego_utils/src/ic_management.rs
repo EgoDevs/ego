@@ -4,8 +4,9 @@ use ic_cdk::api::management_canister::main::{CanisterIdRecord, CanisterInstallMo
 use ic_types::Principal;
 use serde::Deserialize;
 use tracing::error;
+use ego_types::ego_error::EgoError;
 
-use crate::types::{Cycles, EgoError};
+pub type Cycles = u128;
 
 #[derive(CandidType, Deserialize)]
 struct CreateResult {

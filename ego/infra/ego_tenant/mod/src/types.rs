@@ -2,8 +2,8 @@ use std::collections::{BTreeMap};
 use ic_cdk::export::candid::{CandidType, Deserialize};
 use serde::Serialize;
 use ic_types::Principal;
-use ego_store_mod::app::App;
-use ego_utils::types::EgoError;
+use ego_types::app::App;
+use ego_types::ego_error::EgoError;
 use crate::wallet::Wallet;
 
 #[derive(Clone, Debug, CandidType, Deserialize, Serialize)]
