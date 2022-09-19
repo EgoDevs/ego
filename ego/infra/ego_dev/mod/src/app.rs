@@ -15,6 +15,8 @@ pub struct App {
   pub developer_id: Principal,
   pub category: Category,
   pub name: String,
+  pub logo: String,
+  pub description: String,
   pub release_version: Option<Version>,
   pub audit_version: Option<Version>,
   pub versions: Vec<AppVersion>,
@@ -35,6 +37,8 @@ impl App {
       app_id,
       developer_id: user_id,
       name,
+      logo: "".to_string(),
+      description: "".to_string(),
       category,
       release_version: None,
       audit_version: None,
@@ -123,20 +127,6 @@ impl App {
       None => Err(EgoDevErr::VersionNotExists.into()),
     }
   }
-
-  pub fn wasm_release_find(&self) -> Result<&Vec<Wasm>, EgoError> {
-    match self.release_version {
-      None => {Err(EgoDevErr::VersionNotExists.into())}
-      Some(version) => {
-        match self.version_get(version) {
-          Some(app_ver) => {
-            Ok(&app_ver.wasms)
-          }
-          None => Err(EgoDevErr::VersionNotExists.into()),
-        }
-      }
-    }
-  }
 }
 
 /********************  app version  ********************/
@@ -145,7 +135,8 @@ pub struct AppVersion {
   pub app_id: AppId,
   pub version: Version,
   pub status: AppVersionStatus,
-  pub wasms: Vec<Wasm>,
+  pub frontend: Wasm,
+  pub backend: Wasm,
   pub file_id: Principal,
 }
 
@@ -174,27 +165,25 @@ impl AppVersion {
       version,
       status: AppVersionStatus::NEW,
       file_id,
-      wasms: vec![Wasm::new(app_id.clone(), version, ASSET, None), Wasm::new(app_id.clone(), version, BACKEND, Some(file_id))],
+      frontend: Wasm::new(app_id.clone(), version, ASSET, None),
+      backend: Wasm::new(app_id.clone(), version, BACKEND, Some(file_id))
     }
   }
 
   pub fn set_frontend_address(&mut self, canister_id: Principal) {
-    self.wasms.iter_mut().for_each(|mut wasm| {
-      if wasm.canister_type == ASSET {
-        wasm.canister_id = Some(canister_id);
-      }
-    });
+    self.frontend.canister_id = Some(canister_id)
   }
 
   pub fn get_frontend_address(&self) -> Option<Principal> {
-    match self.wasms.iter().find(|wasm| wasm.canister_type == ASSET) {
-      Some(wasm) => wasm.canister_id,
-      None => None
-    }
+    self.frontend.canister_id
   }
 
   pub fn wasm_get(&self, canister_type: CanisterType) -> &Wasm{
-    self.wasms.iter().find(|wasm| wasm.canister_type == canister_type).unwrap()
+    if canister_type == CanisterType::ASSET {
+      &self.frontend
+    } else {
+      &self.backend
+    }
   }
 }
 

@@ -1,11 +1,11 @@
 use ic_types::Principal;
 
-use ego_dev_mod::app::{App, AppVersion, AppVersionStatus, Category};
+use ego_dev_mod::app::{App, AppVersion, AppVersionStatus};
 use ego_dev_mod::developer::Developer;
 use ego_dev_mod::file::File;
 use ego_dev_mod::service::EgoDevService;
 use ego_dev_mod::state::EGO_DEV;
-use ego_utils::types::Version;
+use ego_utils::types::{Category, Version};
 use ego_dev_mod::c2c::ego_file::TEgoFile;
 use ego_utils::types::EgoError;
 use async_trait::async_trait;
