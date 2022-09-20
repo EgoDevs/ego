@@ -3,11 +3,12 @@ use ic_types::Principal;
 
 use ego_file_mod::types::{FileMainWriteRequest, FileMainWriteResponse};
 use async_trait::async_trait;
+use ego_types::app::FileId;
 use ego_types::ego_error::EgoError;
 
 #[async_trait]
 pub trait TEgoFile {
-  async fn file_main_write(&self, canister_id: Principal, fid: String, hash: String, data: Vec<u8>) -> Result<bool, EgoError>;
+  async fn file_main_write(&self, canister_id: Principal, fid: FileId, hash: String, data: Vec<u8>) -> Result<bool, EgoError>;
 }
 
 pub struct EgoFile {
@@ -21,7 +22,7 @@ impl EgoFile{
 
 #[async_trait]
 impl TEgoFile for EgoFile {
-  async fn file_main_write(&self, canister_id: Principal, fid: String, hash: String, data: Vec<u8>) -> Result<bool, EgoError>{
+  async fn file_main_write(&self, canister_id: Principal, fid: FileId, hash: String, data: Vec<u8>) -> Result<bool, EgoError>{
     let req = FileMainWriteRequest {
       fid, hash, data
     };

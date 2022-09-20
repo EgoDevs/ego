@@ -6,8 +6,9 @@ use ego_types::version::Version;
 
 use crate::app::*;
 use crate::c2c::ego_file::TEgoFile;
+use crate::c2c::ego_store::TEgoStore;
 use crate::developer::Developer;
-use crate::state::EGO_DEV;
+use crate::state::{EGO_DEV, EGO_STORE_CANISTER_ID};
 use crate::types::*;
 
 pub struct EgoDevService {}
@@ -111,7 +112,7 @@ impl EgoDevService {
           Ok(app) => {
             match app.version_get_mut(version) {
               Some(app_version) => {
-                app_version.set_frontend_address(canister_id);
+                app_version.frontend.canister_id = Some(canister_id);
                 Ok(true)
               }
               None => Err(EgoError::from(EgoDevErr::VersionNotExists)),
@@ -178,15 +179,19 @@ impl EgoDevService {
     })
   }
 
-  pub fn app_version_release(
+  pub fn app_version_release<S: TEgoStore>(
     caller: Principal,
     app_id: AppId,
     version: Version,
+    ego_store: S
   ) -> Result<AppVersion, EgoError> {
+    let ego_store_canister_id = EGO_STORE_CANISTER_ID.with(|rc| rc.borrow().unwrap());
+
     EGO_DEV.with(
       |ego_dev| {
         match ego_dev.borrow_mut().developer_app_get_mut(&caller, &app_id){
           Ok(app) => {
+            ego_store.app_main_release(ego_store_canister_id, app.clone())?;
             app.version_release(version)
           }
           Err(e) => {Err(e)}

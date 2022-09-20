@@ -12,7 +12,7 @@ use ic_cdk::export::candid::{CandidType, Deserialize};
 use ego_types::app::{AppId, Category};
 use ego_types::ego_error::EgoError;
 
-#[derive(CandidType, Deserialize, Serialize, Debug)]
+#[derive(CandidType, Deserialize, Serialize, Debug, Clone)]
 pub struct EgoDev {
   /// created apps
   pub apps: BTreeMap<AppId, App>,
@@ -21,7 +21,7 @@ pub struct EgoDev {
   pub developers: BTreeMap<Principal, Developer>,
 
   /// ego_file canisters
-  pub ego_files: Vec<File>
+  pub ego_files: Vec<File>,
 }
 
 impl EgoDev {

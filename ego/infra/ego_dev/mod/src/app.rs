@@ -1,7 +1,7 @@
 use ic_cdk::export::candid::{CandidType, Deserialize};
 use ic_types::Principal;
 use serde::Serialize;
-use ego_types::app::{AppId, CanisterType, Category, Wasm};
+use ego_types::app::{AppId, Category, Wasm};
 use ego_types::app::CanisterType::{ASSET, BACKEND};
 use ego_types::ego_error::EgoError;
 use ego_types::version::Version;
@@ -129,6 +129,13 @@ impl App {
       None => Err(EgoDevErr::VersionNotExists.into()),
     }
   }
+
+  pub fn released_version(&self) -> Result<AppVersion, EgoError> {
+    match self.version_get(self.release_version.unwrap()) {
+      Some(app_version) => Ok(app_version.clone()),
+      None => Err(EgoDevErr::VersionNotExists.into())
+    }
+  }
 }
 
 /********************  app version  ********************/
@@ -169,22 +176,6 @@ impl AppVersion {
       file_id,
       frontend: Wasm::new(app_id.clone(), version, ASSET, None),
       backend: Wasm::new(app_id.clone(), version, BACKEND, Some(file_id))
-    }
-  }
-
-  pub fn set_frontend_address(&mut self, canister_id: Principal) {
-    self.frontend.canister_id = Some(canister_id)
-  }
-
-  pub fn get_frontend_address(&self) -> Option<Principal> {
-    self.frontend.canister_id
-  }
-
-  pub fn wasm_get(&self, canister_type: CanisterType) -> &Wasm{
-    if canister_type == CanisterType::ASSET {
-      &self.frontend
-    } else {
-      &self.backend
     }
   }
 }

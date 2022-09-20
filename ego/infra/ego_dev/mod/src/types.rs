@@ -247,10 +247,21 @@ pub struct UserMainListResponse {
 
 #[derive(Clone, Debug, CandidType, Deserialize, Serialize)]
 pub struct AdminFileAddRequest {
-  pub file_id: Principal
+  pub canister_id: Principal
 }
 
 #[derive(Clone, Debug, CandidType, Deserialize, Serialize)]
 pub struct AdminFileAddResponse {
   pub ret: bool,
 }
+
+#[derive(Clone, Debug, CandidType, Deserialize, Serialize)]
+pub struct AdminEgoStoreSetRequest {
+  pub canister_id: Principal
+}
+
+#[derive(Clone, Debug, CandidType, Deserialize, Serialize)]
+pub struct AdminEgoStoreSetResponse {
+  pub ret: bool,
+}
+
