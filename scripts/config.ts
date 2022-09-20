@@ -36,6 +36,7 @@ export const infraConfig: Configs = [
     bin_name: 'ego-dev',
     config: './configs/ego_dev.json',
     post_install_sequence: 100,
+    no_deploy: true,
   },
   {
     category: 'infra',
@@ -43,6 +44,7 @@ export const infraConfig: Configs = [
     bin_name: 'ego-file',
     config: './configs/ego_file.json',
     post_install_sequence: 100,
+    no_deploy: true,
   },
   {
     category: 'infra',
@@ -67,6 +69,13 @@ export const infraConfig: Configs = [
     config: './configs/ego_assets.json',
     post_install_sequence: 100,
     no_deploy: true
+  },
+  {
+    category: 'infra',
+    package: 'ego_ops',
+    bin_name: 'ego-ops',
+    config: './configs/ego_ops.json',
+    post_install_sequence: 100,
   },
 ];
 

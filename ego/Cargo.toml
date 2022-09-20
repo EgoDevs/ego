@@ -1,5 +1,7 @@
 [workspace]
 members = [
+    "infra/ego_ops/actor",
+    "infra/ego_ops/mod",
     "infra/ego_assets/actor",
     "infra/ego_assets/mod",
     "infra/ego_store/actor",
