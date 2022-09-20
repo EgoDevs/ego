@@ -87,7 +87,7 @@ impl Wasm {
 
   /// unique id of wasm file
   pub fn fid(&self) -> FileId {
-    get_md5(&format!("{}|{}|{}", self.app_id.clone(), self.version.to_string(), self.canister_type).into_bytes())
+    get_md5(&format!("{}|{}|{}", self.app_id.clone(), self.canister_type, self.version.to_string()).into_bytes())
   }
 }
 

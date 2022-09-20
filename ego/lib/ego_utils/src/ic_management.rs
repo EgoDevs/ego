@@ -1,9 +1,10 @@
 use candid::CandidType;
 use ic_cdk::api;
-use ic_cdk::api::management_canister::main::{CanisterIdRecord, CanisterInstallMode, CanisterSettings, CanisterStatusResponse, CreateCanisterArgument, InstallCodeArgument, UpdateSettingsArgument};
+use ic_cdk::api::management_canister::main::{CanisterIdRecord, CanisterSettings, CanisterStatusResponse, CreateCanisterArgument, UpdateSettingsArgument};
 use ic_types::Principal;
 use serde::Deserialize;
 use tracing::error;
+
 use ego_types::ego_error::EgoError;
 
 pub type Cycles = u128;
@@ -18,36 +19,53 @@ struct DepositCyclesArgs {
   pub canister_id: Principal,
 }
 
+#[derive(CandidType, Deserialize)]
+enum InstallMode {
+  #[serde(rename = "install")]
+  Install,
+  #[serde(rename = "reinstall")]
+  Reinstall,
+  #[serde(rename = "upgrade")]
+  Upgrade,
+}
 
-async fn code_install(canister_id: Principal, mode: CanisterInstallMode, wasm_module: Vec<u8>) -> Result<(), EgoError> {
-  let install_config = InstallCodeArgument {
+#[derive(CandidType, Deserialize)]
+struct CanisterInstall {
+  mode: InstallMode,
+  canister_id: Principal,
+  #[serde(with = "serde_bytes")]
+  wasm_module: Vec<u8>,
+  #[serde(with = "serde_bytes")]
+  arg: Vec<u8>,
+}
+
+async fn code_install(canister_id: Principal, mode: InstallMode, wasm_module: Vec<u8>) -> Result<(), EgoError> {
+  let install_config = CanisterInstall {
     mode,
     canister_id,
-    wasm_module: wasm_module.clone(),
+    wasm_module,
     arg: b" ".to_vec(),
   };
 
-  match api::call::call(
+  let (_, ): ((), ) = match api::call::call(
     Principal::management_canister(),
     "install_code",
     (install_config, ),
   )
     .await
   {
-    Ok(x) => {
-      ic_cdk::println!("code_install success");
-      x
-    }
+    Ok(x) => x,
     Err((code, msg)) => {
       let code = code as u16;
       error!(
           error_code = code,
           error_message = msg.as_str(),
-          "Error calling code_install"
-        );
+          "Error calling install_code"
+      );
       return Err(EgoError { code, msg });
     }
   };
+
   Ok(())
 }
 
@@ -118,11 +136,11 @@ pub async fn canister_main_create(cycles_to_use: Cycles) -> Result<Principal, Eg
 }
 
 pub async fn canister_code_install(canister_id: Principal, wasm_module: Vec<u8>) -> Result<(), EgoError> {
-  code_install(canister_id, CanisterInstallMode::Install, wasm_module).await
+  code_install(canister_id, InstallMode::Install, wasm_module).await
 }
 
 pub async fn canister_code_upgrade(canister_id: Principal, wasm_module: Vec<u8>) -> Result<(), EgoError> {
-  code_install(canister_id, CanisterInstallMode::Upgrade, wasm_module).await
+  code_install(canister_id, InstallMode::Upgrade, wasm_module).await
 }
 
 pub async fn canister_status_get(canister_id: Principal) -> Result<CanisterStatusResponse, EgoError> {
