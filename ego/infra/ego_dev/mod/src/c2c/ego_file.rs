@@ -1,10 +1,10 @@
 use ic_cdk::api;
 use ic_types::Principal;
 
-use ego_file_mod::types::{FileMainWriteRequest, FileMainWriteResponse};
 use async_trait::async_trait;
 use ego_types::app::FileId;
 use ego_types::ego_error::EgoError;
+use crate::c2c::c2c_types::{FileMainWriteRequest, FileMainWriteResponse};
 
 #[async_trait]
 pub trait TEgoFile {

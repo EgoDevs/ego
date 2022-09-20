@@ -5,8 +5,6 @@ use ego_ops_mod::types::{CanisterMainCreateRequest, CanisterMainCreateResponse, 
 
 use ego_types::ego_error::EgoError;
 use candid::{candid_method};
-use ego_ops_mod::c2c::ego_file::EgoFile;
-use ego_ops_mod::c2c::ic_management::IcManagement;
 use ego_ops_mod::ego_ops::EgoOps;
 use ego_ops_mod::state::EGO_OPS;
 
@@ -36,10 +34,10 @@ fn post_upgrade() {
 async fn canister_main_create(req: CanisterMainCreateRequest) -> Result<CanisterMainCreateResponse, EgoError> {
   ic_cdk::println!("ego-ops: canister_main_create");
 
-  let ic_management = IcManagement::new();
-  let ego_file = EgoFile::new();
-  match EgoOpsService::canister_main_create(ego_file, ic_management, req.app_id, req.version, req.data, req.hash).await {
-    Ok(ret) => Ok(CanisterMainCreateResponse{ret}),
+  match EgoOpsService::canister_main_create(req.app_id, req.version, req.data, req.hash).await {
+    Ok(ret) => {
+      Ok(CanisterMainCreateResponse{ret})
+    },
     Err(e) => Err(e)
   }
 }

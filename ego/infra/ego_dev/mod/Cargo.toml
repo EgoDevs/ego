@@ -23,7 +23,6 @@ md5 = "0.7.0"
 async-trait = "0.1.57"
 ego_types = { path = "../../../lib/ego_types"}
 ego_utils = { path = "../../../lib/ego_utils" }
-ego_file_mod = { path = "../../ego_file/mod"}
 
 
 [dev-dependencies]

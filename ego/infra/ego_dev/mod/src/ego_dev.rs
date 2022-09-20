@@ -128,8 +128,6 @@ impl EgoDev {
       self.ego_files.push(file);
     }
 
-    ic_cdk::println!("in admin_file_add {:?}", self.ego_files);
-
     Ok(true)
   }
 

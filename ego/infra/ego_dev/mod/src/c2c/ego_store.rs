@@ -8,7 +8,7 @@ use crate::c2c::c2c_types::{AppMainReleaseRequest};
 
 #[async_trait]
 pub trait TEgoStore {
-  fn app_main_release(&self, canister_id: Principal, app: App) -> Result<bool, EgoError>;
+  async fn app_main_release(&self, canister_id: Principal, app: App) -> Result<bool, EgoError>;
 }
 
 pub struct EgoStore {
@@ -23,7 +23,7 @@ impl EgoStore{
 
 #[async_trait]
 impl TEgoStore for EgoStore {
-  fn app_main_release(&self, canister_id: Principal, app: App) -> Result<bool, EgoError> {
+  async fn app_main_release(&self, canister_id: Principal, app: App) -> Result<bool, EgoError> {
     let released_version = app.released_version()?;
 
     let req = AppMainReleaseRequest{app: EgoStoreApp::new(app.app_id, app.name, app.category, app.logo, app.description, app.release_version.unwrap(), released_version.frontend, released_version.backend, app.price)};

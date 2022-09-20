@@ -179,7 +179,7 @@ impl EgoDevService {
     })
   }
 
-  pub fn app_version_release<S: TEgoStore>(
+  pub async fn app_version_release<S: TEgoStore>(
     caller: Principal,
     app_id: AppId,
     version: Version,
@@ -187,17 +187,22 @@ impl EgoDevService {
   ) -> Result<AppVersion, EgoError> {
     let ego_store_canister_id = EGO_STORE_CANISTER_ID.with(|rc| rc.borrow().unwrap());
 
-    EGO_DEV.with(
+    let result = EGO_DEV.with(
       |ego_dev| {
         match ego_dev.borrow_mut().developer_app_get_mut(&caller, &app_id){
           Ok(app) => {
-            ego_store.app_main_release(ego_store_canister_id, app.clone())?;
             app.version_release(version)
           }
           Err(e) => {Err(e)}
         }
       },
-    )
+    );
+
+    let app = EGO_DEV.with(|ego_dev| { ego_dev.borrow_mut().developer_app_get(&caller, &app_id).unwrap().clone()});
+
+    ego_store.app_main_release(ego_store_canister_id, app).await?;
+
+    result
   }
 
   pub fn app_version_wait_for_audit() -> Vec<App> {

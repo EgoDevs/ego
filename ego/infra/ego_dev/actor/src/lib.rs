@@ -178,7 +178,7 @@ pub async fn app_version_release(
 ) -> Result<AppVersionReleaseResponse, EgoError> {
   ic_cdk::println!("ego-dev: app_version_release");
   let ego_store = EgoStore::new();
-  let app_version = EgoDevService::app_version_release(ic_cdk::caller(), request.app_id, request.version, ego_store)?;
+  let app_version = EgoDevService::app_version_release(ic_cdk::caller(), request.app_id, request.version, ego_store).await?;
   Ok(AppVersionReleaseResponse { app_version })
 }
 

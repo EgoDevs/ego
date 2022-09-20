@@ -23,6 +23,10 @@ const ego_tenant_wasm = fs.readFileSync(
   `${[process.cwd()]}` + '/artifacts/ego_tenant/ego_tenant_opt.wasm',
 );
 
+const ego_dev_wasm = fs.readFileSync(
+  `${[process.cwd()]}` + '/artifacts/ego_dev/ego_dev_opt.wasm',
+);
+
 const version = {
   major: 1,
   minor: 0,
@@ -66,7 +70,23 @@ export const opsPostInstall = async () => {
 
   console.log(resp2);
 
-  let resp3 = await operator.canister_main_list();
+  console.log(`3. install ego_dev\n`);
+
+  const devMd5 = crypto
+    .createHash('md5')
+    .update(ego_dev_wasm as BinaryLike)
+    .digest('hex');
+
+  let resp3 = await operator.canister_main_create({
+    app_id: 'ego_dev',
+    version: version,
+    data: Array.from(ego_dev_wasm),
+    hash: devMd5,
+  });
 
   console.log(resp3);
+
+  let resp4 = await operator.canister_main_list();
+
+  console.log(resp4);
 };
