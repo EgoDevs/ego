@@ -44,6 +44,7 @@ impl EgoStoreService {
     }
 
     pub fn wallet_app_install(wallet_id: Principal, app_id: String) -> Result<Vec<Principal>, EgoError> {
+        // TODO: add actual implementation
         APP_STORE.with(|app_store| {
             app_store
               .borrow_mut().wallet_app_install(&wallet_id, &app_id)
@@ -51,6 +52,7 @@ impl EgoStoreService {
     }
 
     pub fn wallet_app_upgrade(wallet_id: Principal, app_id: String) -> Result<Vec<Principal>, EgoError> {
+        // TODO: add actual implementation
         APP_STORE.with(|app_store| {
             app_store
               .borrow_mut().wallet_app_upgrade(&wallet_id, &app_id)
@@ -90,32 +92,11 @@ impl EgoStoreService {
               .borrow_mut().admin_tenant_add(&tenant_id)
         })
     }
-}
 
-/********************  guard methods  ********************/
-// #[inline(always)]
-// pub fn manager_guard() -> Result<(), String> {
-//     if APP_STORE.with(|app_store| app_store.borrow().is_manager(api::caller())) {
-//         Ok(())
-//     } else {
-//         trap(&format!("{} unauthorized", api::caller()));
-//     }
-// }
-//
-// #[inline(always)]
-// pub fn auditer_guard() -> Result<(), String> {
-//     if APP_STORE.with(|app_store| app_store.borrow().is_app_auditer(api::caller())) {
-//         Ok(())
-//     } else {
-//         trap(&format!("{} unauthorized", api::caller()));
-//     }
-// }
-//
-// #[inline(always)]
-// pub fn developer_guard() -> Result<(), String> {
-//     if APP_STORE.with(|app_store| app_store.borrow().is_app_developer(api::caller())) {
-//         Ok(())
-//     } else {
-//         trap(&format!("{} unauthorized", api::caller()));
-//     }
-// }
+    pub fn app_main_release(app: App) -> Result<bool, EgoError> {
+        APP_STORE.with(|app_store| {
+            app_store
+              .borrow_mut().app_main_release(app)
+        })
+    }
+}

@@ -2,7 +2,7 @@ use candid::candid_method;
 use ic_cdk_macros::*;
 use ic_cdk::storage;
 
-use ego_store_mod::ego_store::AppStore;
+use ego_store_mod::ego_store::EgoStore;
 use ego_store_mod::service::*;
 use ego_store_mod::state::{APP_STORE};
 use ego_store_mod::types::*;
@@ -25,16 +25,15 @@ fn pre_upgrade() {
 #[post_upgrade]
 fn post_upgrade() {
   ic_cdk::println!("ego-store: post_upgrade");
-  let (old_app_store,): (AppStore,) = storage::stable_restore().unwrap();
+  let (old_app_store,): (EgoStore,) = storage::stable_restore().unwrap();
   APP_STORE.with(|app_store|
     *app_store.borrow_mut() = old_app_store
   );
 }
 
 /********************  methods for wallet   ********************/
-
 #[query(name = "app_main_list")]
-#[candid_method(query, rename = "app_main_list")]
+#[candid_method(query, rename = app_main_list)]
 pub fn app_main_list(request: AppMainListRequest) -> Result<AppMainListResponse, EgoError> {
   ic_cdk::println!("ego-store: app_main_list");
   match EgoStoreService::app_main_list(request.query_param) {
@@ -74,7 +73,7 @@ pub fn wallet_tenant_get() -> Result<WalletTenantGetResponse, EgoError> {
 }
 
 #[query(name = "wallet_app_list")]
-#[candid_method(update, rename = "wallet_app_list")]
+#[candid_method(query, rename = "wallet_app_list")]
 pub fn wallet_app_list() -> Result<WalletAppListResponse, EgoError> {
   ic_cdk::println!("ego_store: wallet_app_list");
   match EgoStoreService::wallet_app_list(ic_cdk::caller()) {
@@ -84,7 +83,7 @@ pub fn wallet_app_list() -> Result<WalletAppListResponse, EgoError> {
 }
 
 #[query(name = "wallet_app_install")]
-#[candid_method(update, rename = "wallet_app_install")]
+#[candid_method(query, rename = "wallet_app_install")]
 pub fn wallet_app_install(req: WalletAppInstallRequest) -> Result<WalletAppInstallResponse, EgoError> {
   ic_cdk::println!("ego_store: wallet_app_install");
   match EgoStoreService::wallet_app_install(ic_cdk::caller(), req.app_id) {
@@ -94,7 +93,7 @@ pub fn wallet_app_install(req: WalletAppInstallRequest) -> Result<WalletAppInsta
 }
 
 #[query(name = "wallet_app_upgrade")]
-#[candid_method(update, rename = "wallet_app_upgrade")]
+#[candid_method(query, rename = "wallet_app_upgrade")]
 pub fn wallet_app_upgrade(req: WalletAppUpgradeRequest) -> Result<WalletAppUpgradeResponse, EgoError> {
   ic_cdk::println!("ego_store: wallet_app_upgrade");
   match EgoStoreService::wallet_app_upgrade(ic_cdk::caller(), req.app_id) {
@@ -104,7 +103,7 @@ pub fn wallet_app_upgrade(req: WalletAppUpgradeRequest) -> Result<WalletAppUpgra
 }
 
 #[query(name = "wallet_app_remove")]
-#[candid_method(update, rename = "wallet_app_remove")]
+#[candid_method(query, rename = "wallet_app_remove")]
 pub fn wallet_app_remove(req: WalletAppRemoveRequest) -> Result<WalletAppRemoveResponse, EgoError> {
   ic_cdk::println!("ego_store: wallet_app_remove");
   match EgoStoreService::wallet_app_remove(ic_cdk::caller(), req.app_id) {
@@ -136,6 +135,24 @@ pub async fn wallet_order_new(request: WalletOrderNewRequest) -> Result<WalletOr
   }
 }
 
+// TODO: wallet_cycle_list
+
+
+/********************  for ego_tenant  ********************/
+// TODO: wallet_cycle_charge
+
+/********************  for ego_dev  ********************/
+#[update(name = "app_main_release")]
+#[candid_method(update, rename = "app_main_release")]
+pub async fn app_main_release(request: AppMainReleaseRequest) -> Result<AppMainReleaseResponse, EgoError> {
+  ic_cdk::println!("ego_store: wallet_order_new");
+
+  match EgoStoreService::app_main_release(request.app) {
+    Ok(ret) => Ok(AppMainReleaseResponse { ret }),
+    Err(e) => Err(e)
+  }
+}
+
 /********************  ego-ledger callback  ********************/
 // TODO: should add guard here, only ledger can call this method
 #[update(name = "wallet_order_notify")]
@@ -151,7 +168,7 @@ pub fn wallet_order_notify(request: WalletOrderNotifyRequest) -> Result<WalletOr
 
 /********************  owner methods  ********************/
 #[query(name = "admin_tenant_add")]
-#[candid_method(update, rename = "admin_tenant_add")]
+#[candid_method(query, rename = "admin_tenant_add")]
 pub fn admin_tenant_add(req: AdminTenantAddRequest) -> Result<AdminTenantAddResponse, EgoError> {
   ic_cdk::println!("ego_store: admin_tenant_add");
 

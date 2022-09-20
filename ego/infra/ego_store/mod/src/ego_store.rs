@@ -15,7 +15,7 @@ use crate::wallet::*;
 
 /********************  app store  ********************/
 #[derive(CandidType, Deserialize, Serialize)]
-pub struct AppStore {
+pub struct EgoStore {
   pub apps: BTreeMap<AppId, App>,
   pub orders: BTreeMap<Memo, Order>,
   pub wallets: BTreeMap<Principal, Wallet>,
@@ -23,9 +23,9 @@ pub struct AppStore {
   pub next_order_id: u64
 }
 
-impl AppStore {
+impl EgoStore {
   pub fn new() -> Self {
-    AppStore {
+    EgoStore {
       apps: BTreeMap::new(),
       orders: BTreeMap::new(),
       wallets: BTreeMap::new(),
@@ -172,6 +172,12 @@ impl AppStore {
         Ok(true)
       }
     }
+  }
+
+  pub fn app_main_release(&mut self, app: App) -> Result<bool, EgoError>{
+    self.apps.entry(app.app_id.clone()).and_modify(|exists_app| *exists_app = app.clone()).or_insert(app);
+
+    Ok(true)
   }
 
   fn tenant_get(&self) -> Result<Principal, EgoError>{

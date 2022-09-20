@@ -183,3 +183,13 @@ pub struct AdminTenantAddRequest {
 pub struct AdminTenantAddResponse {
     pub ret: bool,
 }
+
+#[derive(Clone, Debug, CandidType, Deserialize, Serialize)]
+pub struct AppMainReleaseRequest {
+    pub app: App
+}
+
+#[derive(Clone, Debug, CandidType, Deserialize, Serialize)]
+pub struct AppMainReleaseResponse {
+    pub ret: bool,
+}
