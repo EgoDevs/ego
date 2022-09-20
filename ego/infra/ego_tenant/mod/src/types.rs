@@ -1,10 +1,8 @@
-use std::collections::{BTreeMap};
 use ic_cdk::export::candid::{CandidType, Deserialize};
 use serde::Serialize;
 use ic_types::Principal;
-use ego_types::app::App;
+use ego_types::app::{Wasm};
 use ego_types::ego_error::EgoError;
-use crate::wallet::Wallet;
 
 #[derive(Clone, Debug, CandidType, Deserialize, Serialize)]
 pub enum EgoTenantErr {
@@ -34,52 +32,46 @@ impl From<std::string::String> for EgoTenantErr {
 }
 
 #[derive(Clone, Debug, CandidType, Deserialize, Serialize)]
-pub struct WalletMainAddRequest {
+pub struct AppMainInstallRequest {
     pub wallet_id: Principal,
+    pub wasm: Wasm,
 }
 
 #[derive(Clone, Debug, CandidType, Deserialize, Serialize)]
-pub struct WalletMainAddResponse {
+pub struct AppMainInstallResponse {
+    pub canister_id: Principal
+}
+
+#[derive(Clone, Debug, CandidType, Deserialize, Serialize)]
+pub struct AppMainUpgradeRequest {
+    pub wallet_id: Principal,
+    pub canister_id: Principal,
+    pub wasm: Wasm,
+}
+
+#[derive(Clone, Debug, CandidType, Deserialize, Serialize)]
+pub struct AppMainUpgradeResponse {
     pub ret: bool
 }
 
 #[derive(Clone, Debug, CandidType, Deserialize, Serialize)]
-pub struct WalletMainRemoveRequest {
+pub struct CanisterMainTrackRequest {
     pub wallet_id: Principal,
+    pub canister_id: Principal,
 }
 
 #[derive(Clone, Debug, CandidType, Deserialize, Serialize)]
-pub struct WalletMainRemoveResponse {
+pub struct CanisterMainTrackResponse {
     pub ret: bool
 }
 
 #[derive(Clone, Debug, CandidType, Deserialize, Serialize)]
-pub struct WalletMainGetRequest {
+pub struct CanisterMainUnTrackRequest {
     pub wallet_id: Principal,
+    pub canister_id: Principal,
 }
 
 #[derive(Clone, Debug, CandidType, Deserialize, Serialize)]
-pub struct WalletMainGetResponse {
-    pub wallet: Wallet
-}
-
-
-#[derive(Clone, Debug, CandidType, Deserialize, Serialize)]
-pub struct WalletAppInstallRequest {
-    pub app: App,
-}
-
-#[derive(Clone, Debug, CandidType, Deserialize, Serialize)]
-pub struct WalletAppInstallResponse {
-    pub canisters: BTreeMap<String, Principal>
-}
-
-#[derive(Clone, Debug, CandidType, Deserialize, Serialize)]
-pub struct WalletAppUpgradeRequest {
-    pub app: App,
-}
-
-#[derive(Clone, Debug, CandidType, Deserialize, Serialize)]
-pub struct WalletAppUpgradeResponse {
+pub struct CanisterMainUnTrackResponse {
     pub ret: bool
 }

@@ -2,6 +2,7 @@ use ic_cdk::api;
 use ic_types::Principal;
 use ego_file_mod::types::{FileMainReadRequest, FileMainReadResponse};
 use async_trait::async_trait;
+use ic_cdk::api::call::RejectionCode;
 use ego_types::app::WasmId;
 use ego_types::ego_error::EgoError;
 
@@ -32,14 +33,22 @@ impl TEgoFile for EgoFile {
       "file_main_read",
       (req,),
     )
-      .await as Result<(Result<FileMainReadResponse, EgoError>,), _>;
+      .await as Result<(Result<FileMainReadResponse, EgoError>,), (RejectionCode, String)>;
 
-    match call_result.unwrap().0 {
+    match call_result {
       Ok(resp) => {
-        Ok(resp.data)
+        match resp.0 {
+          Ok(resp) => {
+            Ok(resp.data)
+          },
+          Err(e) => {
+            Err(e)
+          }
+        }
       },
-      Err(e) => {
-        Err(e)
+      Err((code, msg)) => {
+        let code = code as u16;
+        Err(EgoError { code, msg })
       }
     }
   }

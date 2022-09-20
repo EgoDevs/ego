@@ -1,10 +1,10 @@
-use ic_cdk_macros::{init, update, query};
+use ic_cdk_macros::{init, update};
 use candid::candid_method;
 use ic_cdk::caller;
 use ego_tenant_mod::c2c::ego_file::EgoFile;
 use ego_tenant_mod::c2c::ic_management::IcManagement;
 use ego_tenant_mod::service::EgoTenantService;
-use ego_tenant_mod::types::{WalletAppInstallRequest, WalletAppInstallResponse, WalletAppUpgradeRequest, WalletAppUpgradeResponse, WalletMainAddRequest, WalletMainAddResponse, WalletMainGetRequest, WalletMainGetResponse, WalletMainRemoveRequest, WalletMainRemoveResponse};
+use ego_tenant_mod::types::{AppMainInstallRequest, AppMainInstallResponse, AppMainUpgradeRequest, AppMainUpgradeResponse};
 use ego_types::ego_error::EgoError;
 
 #[init]
@@ -13,54 +13,25 @@ fn canister_init() {
     ic_cdk::println!("ego_tenant: init, caller is {}", caller());
 }
 
-/********************  ego-store methods  ********************/
-#[update(name = "wallet_main_add")]
-fn wallet_main_add(req: WalletMainAddRequest) -> Result<WalletMainAddResponse, EgoError> {
-    ic_cdk::println!("ego_tenant: wallet_app_install");
 
-    match EgoTenantService::wallet_main_add(req.wallet_id) {
-        Ok(ret) => {Ok(WalletMainAddResponse{ret})},
-        Err(e) => {Err(e)}
-    }
-}
-
-#[update(name = "wallet_main_remove")]
-fn wallet_main_remove(req: WalletMainRemoveRequest) -> Result<WalletMainRemoveResponse, EgoError> {
-    ic_cdk::println!("ego_tenant: wallet_main_remove");
-
-    match EgoTenantService::wallet_main_remove(&req.wallet_id) {
-        Ok(ret) => {Ok(WalletMainRemoveResponse{ret})},
-        Err(e) => {Err(e)}
-    }
-}
-
-#[query(name = "wallet_main_get")]
-fn wallet_main_get(req: WalletMainGetRequest) -> Result<WalletMainGetResponse, EgoError> {
-    ic_cdk::println!("ego_tenant: wallet_main_get");
-
-    match EgoTenantService::wallet_main_get(&req.wallet_id) {
-        Ok(wallet) => {Ok(WalletMainGetResponse{wallet})},
-        Err(e) => {Err(e)}
-    }
-}
-
-
-#[update(name = "wallet_app_install")]
-async fn wallet_app_install(req: WalletAppInstallRequest) -> Result<WalletAppInstallResponse, EgoError> {
-    ic_cdk::println!("ego_tenant: wallet_app_install");
+#[update(name = "app_main_install")]
+#[candid_method(update, rename = "app_main_install")]
+async fn app_main_install(req: AppMainInstallRequest) -> Result<AppMainInstallResponse, EgoError> {
+    ic_cdk::println!("ego_tenant: app_main_install");
     let management = IcManagement::new();
     let ego_file = EgoFile::new();
 
-    let canisters = EgoTenantService::wallet_app_install(caller(), ego_file, management, req.app).await?;
-    Ok(WalletAppInstallResponse{canisters})
+    let canister_id = EgoTenantService::app_main_install(req.wallet_id, ego_file, management, req.wasm).await?;
+    Ok(AppMainInstallResponse{canister_id})
 }
 
-#[update(name = "wallet_app_upgrade")]
-async fn wallet_app_upgrade(req: WalletAppUpgradeRequest) -> Result<WalletAppUpgradeResponse, EgoError> {
-    ic_cdk::println!("ego_tenant: wallet_app_install");
+#[update(name = "app_main_upgrade")]
+#[candid_method(update, rename = "app_main_upgrade")]
+async fn app_main_upgrade(req: AppMainUpgradeRequest) -> Result<AppMainUpgradeResponse, EgoError> {
+    ic_cdk::println!("ego_tenant: app_main_upgrade");
     let management = IcManagement::new();
     let ego_file = EgoFile::new();
 
-    let ret = EgoTenantService::wallet_app_upgrade(caller(), ego_file, management, req.app).await?;
-    Ok(WalletAppUpgradeResponse{ret})
+    let ret = EgoTenantService::app_main_upgrade(req.wallet_id, req.canister_id, ego_file, management, req.wasm).await?;
+    Ok(AppMainUpgradeResponse{ret})
 }

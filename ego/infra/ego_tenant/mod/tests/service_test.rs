@@ -156,7 +156,7 @@ async fn wallet_app_install() {
   });
   mock_management.expect_canister_controller_set().returning(|_canister_id, _user_ids| Ok(()));
 
-  match EgoTenantService::wallet_app_install(wallet_principal, mock_ego_file, mock_management, app).await {
+  match EgoTenantService::app_main_install(wallet_principal, mock_ego_file, mock_management, app).await {
     Ok(principals) => {
       let key = "app_test|BACKEND";
       match principals.get(key) {
@@ -187,7 +187,7 @@ async fn wallet_app_install_failed_with_not_exists_wallet() {
   let backend = Wasm::new(EXISTS_APP_ID.to_string(), version, BACKEND, Some(file_canister));
   let app = App::new(EXISTS_APP_ID.to_string(), EXISTS_APP_NAME.to_string(), Category::Vault, EXISTS_APP_LOGO.to_string(), EXISTS_APP_DESCRIPTION.to_string(), version, frontend, backend, 1.2f32);
 
-  match EgoTenantService::wallet_app_install(wallet_principal, mock_ego_file, mock_management, app).await {
+  match EgoTenantService::app_main_install(wallet_principal, mock_ego_file, mock_management, app).await {
     Ok(_principal) => panic!("should not go here"),
     Err(e) => assert_eq!(4002, e.code),
   }
@@ -210,7 +210,7 @@ async fn wallet_app_install_failed() {
 
   mock_management.expect_canister_main_create().returning(move |_cycles_to_use| Err(EgoError::from("error".to_string())));
 
-  match EgoTenantService::wallet_app_install(wallet_principal, mock_ego_file, mock_management, app).await {
+  match EgoTenantService::app_main_install(wallet_principal, mock_ego_file, mock_management, app).await {
     Ok(_principal) => panic!("should not go here"),
     Err(e) => {
       println!("{:?}", e);
@@ -244,7 +244,7 @@ async fn wallet_app_upgrade() {
   });
   mock_management.expect_canister_controller_set().returning(|_canister_id, _user_ids| Ok(()));
 
-  match EgoTenantService::wallet_app_upgrade(wallet_principal, mock_ego_file, mock_management, app).await {
+  match EgoTenantService::app_main_upgrade(wallet_principal, mock_ego_file, mock_management, app).await {
     Ok(ret) => {
       assert!(ret);
     },

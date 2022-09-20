@@ -2,12 +2,16 @@ use std::cmp::Ordering;
 use ic_cdk::export::candid::{CandidType, Deserialize};
 use ic_types::Principal;
 use serde::Serialize;
+use ego_utils::ic_management::Cycles;
 
 #[derive(CandidType, Deserialize, Serialize, Clone, Debug)]
 pub struct Task {
   pub wallet_id: Principal,
   pub canister_id: Principal,
+  pub last_check_time: u64,
   pub next_check_time: u64,
+  pub last_cycle: Cycles,
+  pub current_cycle: Cycles
 }
 
 impl Eq for Task {}
@@ -35,7 +39,10 @@ impl Task {
     Task {
       wallet_id,
       canister_id,
-      next_check_time
+      last_check_time: 0,
+      next_check_time,
+      last_cycle: 0,
+      current_cycle: 0
     }
   }
 }

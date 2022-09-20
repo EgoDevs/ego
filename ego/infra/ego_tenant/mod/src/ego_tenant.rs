@@ -1,67 +1,36 @@
-use std::collections::{BTreeMap, BTreeSet};
+use std::collections::{BTreeSet};
 use ic_cdk::export::candid::{CandidType, Deserialize};
 use ic_types::Principal;
 use serde::Serialize;
 use ego_types::ego_error::EgoError;
 use crate::task::Task;
-use crate::types::EgoTenantErr;
-use crate::wallet::Wallet;
 
 #[derive(CandidType, Deserialize, Serialize)]
 pub struct EgoTenant {
-  pub wallets: BTreeMap<Principal, Wallet>,
   pub tasks: BTreeSet<Task>
 }
 
 impl EgoTenant {
   pub fn new() -> Self {
     EgoTenant {
-      wallets: Default::default(),
       tasks: Default::default()
     }
   }
 
-  pub fn wallet_main_add(&mut self, wallet_id: Principal) -> Result<bool, EgoError> {
-    match self.wallets.get(&wallet_id) {
-      Some(_) => Err(EgoTenantErr::WalletExists.into()),
+  pub fn canister_main_track(&mut self, wallet_id: Principal, canister_id: Principal) -> Result<bool, EgoError> {
+    match self.tasks.iter().find(|task| task.wallet_id == wallet_id && task.canister_id == canister_id) {
       None => {
-        self.wallets.insert(wallet_id.clone(), Wallet::new(wallet_id.clone()));
+        self.tasks.insert(Task::new(wallet_id, canister_id, 0));
         Ok(true)
       }
-    }
-  }
-
-  pub fn wallet_main_remove(&mut self, wallet_id: &Principal) -> Result<bool, EgoError> {
-    match self.wallets.get(&wallet_id) {
       Some(_) => {
-        self.wallets.retain(|wid, _| wid != wallet_id);
         Ok(true)
-      },
-      None => {
-        Err(EgoTenantErr::WalletNotExists.into())
       }
     }
   }
 
-  pub fn wallet_main_get(&self, wallet_id: &Principal) -> Result<Wallet, EgoError> {
-    match self.wallets.get(&wallet_id) {
-      Some(wallet) => {
-        Ok(wallet.clone())
-      },
-      None => {
-        Err(EgoTenantErr::WalletNotExists.into())
-      }
-    }
-  }
-
-  pub fn wallet_main_get_mut(&mut self, wallet_id: &Principal) -> Result<Wallet, EgoError> {
-    match self.wallets.get_mut(&wallet_id) {
-      Some(wallet) => {
-        Ok(wallet.clone())
-      },
-      None => {
-        Err(EgoTenantErr::WalletNotExists.into())
-      }
-    }
+  pub fn canister_main_untrack(&mut self, wallet_id: Principal, canister_id: Principal) -> Result<bool, EgoError> {
+    self.tasks.retain(|task| task.wallet_id != wallet_id && task.canister_id != canister_id);
+    Ok(true)
   }
 }
