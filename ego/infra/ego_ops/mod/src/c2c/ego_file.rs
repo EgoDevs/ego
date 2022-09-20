@@ -1,0 +1,46 @@
+use ic_cdk::api;
+use ic_types::Principal;
+
+use async_trait::async_trait;
+use ego_types::app::FileId;
+use ego_types::ego_error::EgoError;
+use crate::c2c::c2c_types::{FileMainWriteRequest, FileMainWriteResponse};
+
+#[async_trait]
+pub trait TEgoFile {
+  async fn file_main_write(&self, canister_id: Principal, fid: FileId, hash: String, data: Vec<u8>) -> Result<bool, EgoError>;
+}
+
+pub struct EgoFile {
+}
+
+impl EgoFile{
+  pub fn new() -> Self {
+    EgoFile{}
+  }
+}
+
+#[async_trait]
+impl TEgoFile for EgoFile {
+  async fn file_main_write(&self, canister_id: Principal, fid: FileId, hash: String, data: Vec<u8>) -> Result<bool, EgoError>{
+    let req = FileMainWriteRequest {
+      fid, hash, data
+    };
+
+    let call_result = api::call::call(
+      canister_id,
+      "file_main_write",
+      (req,),
+    )
+      .await as Result<(Result<FileMainWriteResponse, EgoError>,), _>;
+
+    match call_result.unwrap().0 {
+      Ok(resp) => {
+        Ok(resp.ret)
+      },
+      Err(e) => {
+        Err(e)
+      }
+    }
+  }
+}
