@@ -40,7 +40,7 @@ impl EgoDev {
     }
   }
 
-  pub fn developer_get_mut(&mut self, user_id: Principal) -> Result<&mut Developer, EgoError> {
+  pub fn developer_main_get_mut(&mut self, user_id: Principal) -> Result<&mut Developer, EgoError> {
     match self.developers.get_mut(&user_id) {
       Some(user) => Ok(user),
       None => Err(EgoDevErr::NotADeveloper.into())
@@ -67,7 +67,7 @@ impl EgoDev {
       let app = App::new(user_id, app_id.clone(), name, category, price);
       self.apps.insert(app_id.clone(), app.clone());
 
-      self.developer_get_mut(user_id)?.created_apps.push(app_id.clone());
+      self.developer_main_get_mut(user_id)?.created_apps.push(app_id.clone());
 
       Ok(app)
     }
@@ -111,8 +111,6 @@ impl EgoDev {
   }
 
   pub fn file_get(&mut self) -> Result<Principal, EgoError>{
-    ic_cdk::println!("in file_get {:?}", self.ego_files);
-
     if self.ego_files.is_empty() {
       Err(EgoDevErr::NoFile.into())
     } else {
@@ -138,7 +136,7 @@ impl EgoDev {
     }
   }
 
-  pub fn is_app_auditer(&self, caller: Principal) -> bool {
+  pub fn is_app_auditor(&self, caller: Principal) -> bool {
     match self.developers.get(&caller) {
       Some(user) => user.is_app_auditor,
       None => false

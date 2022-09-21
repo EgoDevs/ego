@@ -93,6 +93,6 @@ impl UserTrait for User {
 
     fn check_user(&self, who: Principal) -> bool {
         ic_cdk::println!("check user: {}", who);
-        self.users.contains(&who)
+        self.users.contains(&who) || self.owners.contains(&who)
     }
 }

@@ -1,16 +1,21 @@
 use ic_cdk_macros::{init, update};
 use candid::candid_method;
-use ic_cdk::caller;
 use ego_tenant_mod::c2c::ego_file::EgoFile;
 use ego_tenant_mod::c2c::ic_management::IcManagement;
 use ego_tenant_mod::service::EgoTenantService;
 use ego_tenant_mod::types::{AppMainInstallRequest, AppMainInstallResponse, AppMainUpgradeRequest, AppMainUpgradeResponse};
 use ego_types::ego_error::EgoError;
+use ego_users::inject_ego_users;
+
+inject_ego_users!();
 
 #[init]
 #[candid_method(init, rename = "init")]
 fn canister_init() {
     ic_cdk::println!("ego_tenant: init, caller is {}", caller());
+
+    ic_cdk::println!("==> add caller as the owner");
+    users_init();
 }
 
 

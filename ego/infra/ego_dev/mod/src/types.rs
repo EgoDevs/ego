@@ -1,6 +1,7 @@
 use ic_cdk::export::candid::{CandidType, Deserialize};
 use ic_types::Principal;
 use serde::Serialize;
+
 use ego_types::app::{AppId, Category, FileId};
 use ego_types::ego_error::EgoError;
 use ego_types::version::Version;
@@ -8,7 +9,8 @@ use ego_types::version::Version;
 use crate::app::*;
 use crate::developer::Developer;
 
-#[derive(Clone, Debug, CandidType, Deserialize, Serialize)]
+#[derive(
+CandidType, Deserialize, Serialize)]
 pub enum EgoDevErr {
   AppExists,
   AppNotExists,
@@ -49,12 +51,14 @@ impl From<EgoDevErr> for EgoError {
   }
 }
 
-#[derive(Clone, Debug, CandidType, Deserialize, Serialize)]
+#[derive(
+CandidType, Deserialize, Serialize)]
 pub struct AppMainGetRequest {
   pub app_id: AppId,
 }
 
-#[derive(Clone, Debug, CandidType, Deserialize, Serialize)]
+#[derive(
+CandidType, Deserialize, Serialize)]
 pub struct AppMainGetResponse {
   pub app: App,
 }
@@ -66,7 +70,8 @@ impl AppMainGetResponse {
 }
 
 
-#[derive(Clone, Debug, CandidType, Deserialize, Serialize)]
+#[derive(
+CandidType, Deserialize, Serialize)]
 pub struct AppMainNewRequest {
   pub app_id: AppId,
   pub name: String,
@@ -74,23 +79,26 @@ pub struct AppMainNewRequest {
   pub price: f32,
 }
 
-#[derive(Clone, Debug, CandidType, Deserialize, Serialize)]
+#[derive(
+CandidType, Deserialize, Serialize)]
 pub struct AppMainNewResponse {
   pub app: App,
 }
 
-#[derive(Clone, Debug, CandidType, Deserialize, Serialize)]
+#[derive(
+CandidType, Deserialize, Serialize)]
 pub struct AppVersionNewRequest {
   pub app_id: AppId,
   pub version: Version,
 }
 
-#[derive(Clone, Debug, CandidType, Deserialize, Serialize)]
+#[derive(
+CandidType, Deserialize, Serialize)]
 pub struct AppVersionNewResponse {
   pub app_version: AppVersion,
 }
 
-#[derive(CandidType, Deserialize, Clone, Debug)]
+#[derive(CandidType, Deserialize)]
 pub struct AppVersionUploadWasmRequest {
   pub app_id: String,
   pub version: Version,
@@ -98,170 +106,175 @@ pub struct AppVersionUploadWasmRequest {
   pub hash: String,
 }
 
-#[derive(CandidType, Deserialize, Clone, Debug)]
+#[derive(CandidType, Deserialize)]
 pub struct AppVersionUploadWasmResponse {
-  pub ret: bool
+  pub ret: bool,
 }
 
-#[derive(Clone, Debug, CandidType, Deserialize, Serialize)]
+#[derive(CandidType, Deserialize, Serialize)]
 pub struct AppVersionSetFrontendAddressRequest {
   pub app_id: AppId,
   pub version: Version,
   pub canister_id: Principal,
 }
 
-#[derive(Clone, Debug, CandidType, Deserialize, Serialize)]
+#[derive(CandidType, Deserialize, Serialize)]
 pub struct AppVersionSetFrontendAddressResponse {
   pub ret: bool,
 }
 
-#[derive(Clone, Debug, CandidType, Deserialize, Serialize)]
+#[derive(CandidType, Deserialize, Serialize)]
 pub struct AppVersionSubmitRequest {
   pub app_id: AppId,
   pub version: Version,
 }
 
-#[derive(Clone, Debug, CandidType, Deserialize, Serialize)]
+#[derive(CandidType, Deserialize, Serialize)]
 pub struct AppVersionSubmitResponse {
   pub app_version: AppVersion,
 }
 
-#[derive(Clone, Debug, CandidType, Deserialize, Serialize)]
+#[derive(CandidType, Deserialize, Serialize)]
 pub struct AppVersionRevokeRequest {
   pub app_id: AppId,
   pub version: Version,
 }
 
-#[derive(Clone, Debug, CandidType, Deserialize, Serialize)]
+#[derive(CandidType, Deserialize, Serialize)]
 pub struct AppVersionRevokeResponse {
   pub app_version: AppVersion,
 }
 
-#[derive(Clone, Debug, CandidType, Deserialize, Serialize)]
+#[derive(CandidType, Deserialize, Serialize)]
 pub struct AppVersionReleaseRequest {
   pub app_id: AppId,
   pub version: Version,
 }
 
-#[derive(Clone, Debug, CandidType, Deserialize, Serialize)]
+#[derive(CandidType, Deserialize, Serialize)]
 pub struct AppVersionReleaseResponse {
   pub app_version: AppVersion,
 }
 
-#[derive(Clone, Debug, CandidType, Deserialize, Serialize)]
+#[derive(CandidType, Deserialize, Serialize)]
 pub struct AppVersionApproveRequest {
   pub app_id: AppId,
   pub version: Version,
 }
 
-#[derive(Clone, Debug, CandidType, Deserialize, Serialize)]
+#[derive(CandidType, Deserialize, Serialize)]
 pub struct AppVersionApproveResponse {
   pub app_version: AppVersion,
 }
 
-#[derive(Clone, Debug, CandidType, Deserialize, Serialize)]
+#[derive(CandidType, Deserialize, Serialize)]
 pub struct AppVersionRejectRequest {
   pub app_id: AppId,
   pub version: Version,
 }
 
-#[derive(Clone, Debug, CandidType, Deserialize, Serialize)]
+#[derive(CandidType, Deserialize, Serialize)]
 pub struct AppVersionRejectResponse {
   pub app_version: AppVersion,
 }
 
-#[derive(Clone, Debug, CandidType, Deserialize, Serialize)]
-pub struct AddBucketRequest {
-  pub bucket_id: Principal,
-}
-
-#[derive(Clone, Debug, CandidType, Deserialize, Serialize)]
-pub struct AddBucketResponse {
-  pub ret: bool,
-}
 /*------------- For Development Used Only ------------------*/
-#[derive(Clone, Debug, CandidType, Deserialize, Serialize)]
+#[derive(CandidType, Deserialize, Serialize)]
 pub struct FileUploadSuccessRequest {
   pub app_id: AppId,
   pub version: Version,
   pub fid: FileId,
 }
 
-#[derive(Clone, Debug, CandidType, Deserialize, Serialize)]
+#[derive(CandidType, Deserialize, Serialize)]
 pub struct RegisterDeveloperRequest {
   pub name: String,
 }
 
-#[derive(Clone, Debug, CandidType, Deserialize, Serialize)]
+#[derive(CandidType, Deserialize, Serialize)]
 pub struct RegisterDeveloperResponse {
   pub user: Developer,
 }
 
-#[derive(Clone, Debug, CandidType, Deserialize, Serialize)]
+#[derive(CandidType, Deserialize, Serialize)]
 pub struct DeveloperMainRegisterRequest {
   pub name: String,
 }
 
-#[derive(Clone, Debug, CandidType, Deserialize, Serialize)]
+#[derive(CandidType, Deserialize, Serialize)]
 pub struct DeveloperMainRegisterResponse {
   pub developer: Developer,
 }
 
-#[derive(Clone, Debug, CandidType, Deserialize, Serialize)]
+#[derive(CandidType, Deserialize, Serialize)]
 pub struct DeveloperAppListResponse {
   pub apps: Vec<App>,
 }
 
-#[derive(Clone, Debug, CandidType, Deserialize, Serialize)]
+#[derive(CandidType, Deserialize, Serialize)]
 pub struct AppVersionWaitForAuditResponse {
   pub apps: Vec<App>,
 }
 
-#[derive(Clone, Debug, CandidType, Deserialize, Serialize)]
+#[derive(CandidType, Deserialize, Serialize)]
 pub struct DeveloperMainGetResponse {
   pub developer: Developer,
 }
 
-#[derive(Clone, Debug, CandidType, Deserialize, Serialize)]
+#[derive(CandidType, Deserialize, Serialize)]
 pub struct UserRoleSetRequest {
   pub user_id: Principal,
   pub is_app_auditor: bool,
   pub is_manager: bool,
 }
 
-#[derive(Clone, Debug, CandidType, Deserialize, Serialize)]
+#[derive(CandidType, Deserialize, Serialize)]
 pub struct UserRoleSetResponse {
   pub ret: bool,
 }
 
-#[derive(Clone, Debug, CandidType, Deserialize, Serialize)]
+#[derive(CandidType, Deserialize, Serialize)]
 pub struct UserMainListRequest {
   pub name: String,
 }
 
-#[derive(Clone, Debug, CandidType, Deserialize, Serialize)]
+#[derive(CandidType, Deserialize, Serialize)]
 pub struct UserMainListResponse {
   pub users: Vec<Developer>,
 }
 
-
-#[derive(Clone, Debug, CandidType, Deserialize, Serialize)]
-pub struct AdminFileAddRequest {
-  pub canister_id: Principal
+#[derive(CandidType, Deserialize, Serialize)]
+pub struct AdminEgoFileAddRequest {
+  pub canister_id: Principal,
 }
 
-#[derive(Clone, Debug, CandidType, Deserialize, Serialize)]
-pub struct AdminFileAddResponse {
+#[derive(CandidType, Deserialize, Serialize)]
+pub struct AdminEgoFileAddResponse {
   pub ret: bool,
 }
 
-#[derive(Clone, Debug, CandidType, Deserialize, Serialize)]
+#[derive(CandidType, Deserialize, Serialize)]
 pub struct AdminEgoStoreSetRequest {
-  pub canister_id: Principal
+  pub canister_id: Principal,
 }
 
-#[derive(Clone, Debug, CandidType, Deserialize, Serialize)]
+#[derive(CandidType, Deserialize, Serialize)]
 pub struct AdminEgoStoreSetResponse {
+  pub ret: bool,
+}
+
+#[derive(CandidType, Deserialize, Serialize)]
+pub struct AdminAppCreateRequest {
+  pub app_id: AppId,
+  pub name: String,
+  pub version: Version,
+  pub backend_data: Vec<u8>,
+  pub backend_data_hash: String,
+  pub frontend: Option<Principal>
+}
+
+#[derive(CandidType, Deserialize, Serialize)]
+pub struct AdminAppCreateResponse {
   pub ret: bool,
 }
 

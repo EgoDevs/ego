@@ -1,4 +1,3 @@
-use ic_cdk::{api, trap};
 use ic_types::Principal;
 use ego_types::app::{AppId, Category};
 use ego_types::ego_error::EgoError;
@@ -56,7 +55,7 @@ impl EgoDevService {
     category: Category,
     price: f32,
   ) -> Result<App, EgoError> {
-    EGO_DEV.with(|ego_file| ego_file.borrow_mut().developer_app_new(caller, app_id.clone(), name, category, price))
+    EGO_DEV.with(|ego_dev| ego_dev.borrow_mut().developer_app_new(caller, app_id.clone(), name, category, price))
   }
 
   pub fn app_version_new(
@@ -75,7 +74,7 @@ impl EgoDevService {
     })
   }
 
-  pub async fn app_version_upload_wasm<F: TEgoFile>(ego_file: F, caller: Principal, app_id: AppId, version: Version, data: Vec<u8>, hash: String) -> Result<bool, EgoError> {
+  pub async fn app_version_upload_wasm<F: TEgoFile>(ego_dev: F, caller: Principal, app_id: AppId, version: Version, data: Vec<u8>, hash: String) -> Result<bool, EgoError> {
     match EGO_DEV.with(|ego_dev| {
       match ego_dev.borrow().developer_app_get(&caller, &app_id){
         Ok(app) => {
@@ -94,7 +93,7 @@ impl EgoDevService {
       }
     }) {
       Ok(wasm) => {
-        ego_file.file_main_write(wasm.canister_id.unwrap(), wasm.fid(), hash, data).await
+        ego_dev.file_main_write(wasm.canister_id.unwrap(), wasm.fid(), hash, data).await
       },
       Err(e) => Err(e)
     }
@@ -234,7 +233,7 @@ impl EgoDevService {
     is_manager: bool,
   ) -> Result<bool, EgoError> {
     EGO_DEV.with(
-      |ego_dev| match ego_dev.borrow_mut().developer_get_mut(user_id) {
+      |ego_dev| match ego_dev.borrow_mut().developer_main_get_mut(user_id) {
         Ok(user) => {
           user.is_app_auditor = is_app_auditer;
           user.is_manager = is_manager;
@@ -261,39 +260,10 @@ impl EgoDevService {
     })
   }
 
-  pub fn admin_file_add(file_id: Principal) -> Result<bool, EgoError> {
+  pub fn admin_ego_file_add(file_id: Principal) -> Result<bool, EgoError> {
     EGO_DEV.with(|ego_dev| {
       ego_dev.borrow_mut()
         .admin_file_add(file_id)
     })
-  }
-}
-
-
-/********************  guard methods  ********************/
-#[inline(always)]
-pub fn manager_guard() -> Result<(), String> {
-  if EGO_DEV.with(|ego_dev| ego_dev.borrow().is_manager(api::caller())) {
-    Ok(())
-  } else {
-    trap(&format!("{} unauthorized", api::caller()));
-  }
-}
-
-#[inline(always)]
-pub fn auditer_guard() -> Result<(), String> {
-  if EGO_DEV.with(|ego_dev| ego_dev.borrow().is_app_auditer(api::caller())) {
-    Ok(())
-  } else {
-    trap(&format!("{} unauthorized", api::caller()));
-  }
-}
-
-#[inline(always)]
-pub fn developer_guard() -> Result<(), String> {
-  if EGO_DEV.with(|ego_dev| ego_dev.borrow().is_app_developer(api::caller())) {
-    Ok(())
-  } else {
-    trap(&format!("{} unauthorized", api::caller()));
   }
 }

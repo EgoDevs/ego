@@ -3,11 +3,11 @@ use ic_types::Principal;
 
 use async_trait::async_trait;
 use ego_types::ego_error::EgoError;
-use crate::c2c::c2c_types::{AdminFileAddRequest};
+use crate::c2c::c2c_types::{AdminEgoFileAddRequest};
 
 #[async_trait]
 pub trait TEgoDev {
-  async fn admin_file_add(&self, canister_id: Principal, ego_file_id: Principal) -> Result<bool, EgoError>;
+  async fn admin_ego_file_add(&self, canister_id: Principal, ego_file_id: Principal) -> Result<bool, EgoError>;
 }
 
 pub struct EgoDev {
@@ -21,14 +21,14 @@ impl EgoDev{
 
 #[async_trait]
 impl TEgoDev for EgoDev {
-  async fn admin_file_add(&self, canister_id: Principal, ego_file_id: Principal) -> Result<bool, EgoError>{
-    let req = AdminFileAddRequest {
+  async fn admin_ego_file_add(&self, canister_id: Principal, ego_file_id: Principal) -> Result<bool, EgoError>{
+    let req = AdminEgoFileAddRequest {
       canister_id: ego_file_id
     };
 
     let notify_result = api::call::notify(
       canister_id,
-      "admin_file_add",
+      "admin_ego_file_add",
       (req,),
     );
 

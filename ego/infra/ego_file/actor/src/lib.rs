@@ -1,6 +1,5 @@
 use candid::{candid_method, Encode, Decode};
 use ic_cdk::export::candid::{CandidType, Deserialize};
-use ic_cdk::{caller, trap};
 use ic_cdk_macros::*;
 
 use ego_file_mod::service::{EgoFileService};
@@ -26,10 +25,13 @@ fn init() {
     if result.is_err() {
         trap(&format!("failed to grow stable memory by {} pages", pages_to_grow))
     }
+
+    ic_cdk::println!("==> add caller as the owner");
+    users_init();
 }
 
 /********************  file method ********************/
-#[update(name = "file_main_write")]
+#[update(name = "file_main_write", guard = "user_guard")]
 #[candid_method(update, rename = "file_main_write")]
 fn file_main_write(req: FileMainWriteRequest) -> Result<FileMainWriteResponse, EgoError> {
     ic_cdk::println!("ego-file: file_main_write");
@@ -39,7 +41,7 @@ fn file_main_write(req: FileMainWriteRequest) -> Result<FileMainWriteResponse, E
 }
 
 
-#[query(name = "file_main_read")]
+#[query(name = "file_main_read", guard = "user_guard")]
 #[candid_method(query, rename = "file_main_read")]
 fn file_main_read(req: FileMainReadRequest) -> Result<FileMainReadResponse, EgoError> {
     ic_cdk::println!("ego-file: file_main_read");

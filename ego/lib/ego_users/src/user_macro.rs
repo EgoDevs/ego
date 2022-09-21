@@ -48,10 +48,16 @@ macro_rules! inject_ego_users {
         use std::cell::RefCell;
         use ego_users::users::OwnerTrait;
         use ego_users::users::UserTrait;
+        use ic_cdk::caller;
+        use ic_cdk::trap;
 
         #[inline(always)]
-        pub fn owner_guard() -> bool {
-            USER.with(|b| b.borrow().check_owner(caller()))
+        pub fn owner_guard() -> Result<(), String> {
+            if USER.with(|b| b.borrow().check_owner(caller())) {
+                Ok(())
+            } else {
+              trap(&format!("{} unauthorized", caller()));
+            }
         }
 
         pub fn role_owner_set(principals: Vec<Principal>) {
@@ -67,8 +73,12 @@ macro_rules! inject_ego_users {
         }
 
         #[inline(always)]
-        pub fn user_guard() -> bool {
-            USER.with(|b| b.borrow().check_user(caller()))
+        pub fn user_guard() -> Result<(), String> {
+            if USER.with(|b| b.borrow().check_user(caller())) {
+                Ok(())
+            } else {
+              trap(&format!("{} unauthorized", caller()));
+            }
         }
 
         pub fn role_user_set(principals: Vec<Principal>) {

@@ -8,12 +8,18 @@ use ego_store_mod::state::{APP_STORE};
 use ego_store_mod::types::*;
 use ego_types::ego_error::EgoError;
 
+use ego_users::inject_ego_users;
+
+inject_ego_users!();
 
 #[init]
 #[candid_method(init)]
 fn init() {
   let caller = ic_cdk::caller();
   ic_cdk::println!("ego-store: init, caller is {}", caller);
+
+  ic_cdk::println!("==> add caller as the owner");
+  users_init();
 }
 
 #[pre_upgrade]
@@ -33,7 +39,7 @@ fn post_upgrade() {
 
 /********************  methods for wallet   ********************/
 #[query(name = "app_main_list")]
-#[candid_method(query, rename = app_main_list)]
+#[candid_method(query, rename = "app_main_list")]
 pub fn app_main_list(request: AppMainListRequest) -> Result<AppMainListResponse, EgoError> {
   ic_cdk::println!("ego-store: app_main_list");
   match EgoStoreService::app_main_list(request.query_param) {

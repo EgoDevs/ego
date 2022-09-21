@@ -12,6 +12,6 @@ pub struct FileMainWriteRequest {
 
 // type for ego_dev
 #[derive(CandidType, Deserialize)]
-pub struct AdminFileAddRequest {
-  pub canister_id: Principal
+pub struct AdminEgoFileAddRequest {
+  pub canister_id: Principal,
 }

@@ -79,7 +79,7 @@ pub fn set_up() {
 #[test]
 fn admin_file_add() {
   let file_canister = Principal::from_text(FILE_CANISTER_ID.to_string()).unwrap();
-  let resp = EgoDevService::admin_file_add(file_canister);
+  let resp = EgoDevService::admin_ego_file_add(file_canister);
   assert!(resp.is_ok());
 
   EGO_DEV.with(|ego_dev| {

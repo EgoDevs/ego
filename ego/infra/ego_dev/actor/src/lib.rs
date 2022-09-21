@@ -1,18 +1,22 @@
 use candid::candid_method;
-use ic_cdk::storage;
+use ic_cdk::{api, storage};
 use ic_cdk_macros::*;
-use ic_types::Principal;
 use ego_dev_mod::c2c::ego_file::EgoFile;
 use ego_dev_mod::c2c::ego_store::EgoStore;
 
 use ego_dev_mod::ego_dev::EgoDev;
 use ego_dev_mod::service::*;
 use ego_dev_mod::state::{EGO_DEV, EGO_STORE_CANISTER_ID};
-use ego_dev_mod::types::{AdminEgoStoreSetRequest, AdminEgoStoreSetResponse, AdminFileAddRequest, AdminFileAddResponse, AppMainGetRequest, AppMainGetResponse, AppMainNewRequest, AppMainNewResponse, AppVersionApproveRequest, AppVersionApproveResponse, AppVersionNewRequest, AppVersionNewResponse, AppVersionRejectRequest, AppVersionRejectResponse, AppVersionReleaseRequest, AppVersionReleaseResponse, AppVersionRevokeRequest, AppVersionRevokeResponse, AppVersionSetFrontendAddressRequest, AppVersionSetFrontendAddressResponse, AppVersionSubmitRequest, AppVersionSubmitResponse, AppVersionUploadWasmRequest, AppVersionUploadWasmResponse, AppVersionWaitForAuditResponse, DeveloperAppListResponse, DeveloperMainGetResponse, DeveloperMainRegisterRequest, DeveloperMainRegisterResponse, UserMainListRequest, UserMainListResponse, UserRoleSetRequest, UserRoleSetResponse};
+use ego_dev_mod::types::{AdminAppCreateRequest, AdminAppCreateResponse, AdminEgoStoreSetRequest, AdminEgoStoreSetResponse, AdminEgoFileAddRequest, AdminEgoFileAddResponse, AppMainGetRequest, AppMainGetResponse, AppMainNewRequest, AppMainNewResponse, AppVersionApproveRequest, AppVersionApproveResponse, AppVersionNewRequest, AppVersionNewResponse, AppVersionRejectRequest, AppVersionRejectResponse, AppVersionReleaseRequest, AppVersionReleaseResponse, AppVersionRevokeRequest, AppVersionRevokeResponse, AppVersionSetFrontendAddressRequest, AppVersionSetFrontendAddressResponse, AppVersionSubmitRequest, AppVersionSubmitResponse, AppVersionUploadWasmRequest, AppVersionUploadWasmResponse, AppVersionWaitForAuditResponse, DeveloperAppListResponse, DeveloperMainGetResponse, DeveloperMainRegisterRequest, DeveloperMainRegisterResponse, UserMainListRequest, UserMainListResponse, UserRoleSetRequest, UserRoleSetResponse};
 use ego_types::ego_error::EgoError;
 
 use ic_cdk::export::candid::{CandidType, Deserialize};
 use serde::Serialize;
+use ego_types::app::Category;
+
+use ego_users::inject_ego_users;
+
+inject_ego_users!();
 
 #[init]
 #[candid_method(init)]
@@ -20,6 +24,10 @@ fn init() {
   let caller = ic_cdk::caller();
   ic_cdk::println!("ego-dev: init, caller is {}", caller);
 
+  ic_cdk::println!("==> add caller as the owner");
+  users_init();
+
+  ic_cdk::println!("==> caller register as an developer");
   EGO_DEV.with(|ego_dev| {
     ego_dev.borrow_mut().developer_main_register(caller, "admin".to_string());
   });
@@ -52,7 +60,7 @@ fn post_upgrade() {
 }
 
 
-/********************  for app user  ********************/
+/********************  anonymous  ********************/
 
 // 注册开发者账号
 #[update(name = "developer_main_register")]
@@ -63,7 +71,7 @@ pub async fn developer_main_register(request: DeveloperMainRegisterRequest) -> R
   Ok(DeveloperMainRegisterResponse { developer })
 }
 
-/********************  for app developer  ********************/
+/********************  developer  ********************/
 
 // 获取个人信息
 #[query(name = "developer_main_get")]
@@ -84,7 +92,7 @@ pub fn developer_app_list() -> Result<DeveloperAppListResponse, EgoError> {
 }
 
 // 获取应用详情
-#[query(name = "developer_app_get")]
+#[query(name = "developer_app_get", guard = "developer_guard")]
 #[candid_method(query, rename = "developer_app_get")]
 pub fn developer_app_get(request: AppMainGetRequest) -> Result<AppMainGetResponse, EgoError> {
   ic_cdk::println!("ego-dev: developer_app_get");
@@ -123,17 +131,14 @@ pub fn app_version_new(
   Ok(AppVersionNewResponse { app_version })
 }
 
-#[update(name = "app_version_upload_wasm")]
+#[update(name = "app_version_upload_wasm", guard = "developer_guard")]
 #[candid_method(update, rename = "app_version_upload_wasm")]
 async fn app_version_upload_wasm(req: AppVersionUploadWasmRequest) -> Result<AppVersionUploadWasmResponse, EgoError> {
   ic_cdk::println!("ego-dev: app_version_upload_wasm");
 
-  match EgoDevService::app_version_upload_wasm(EgoFile::new(), ic_cdk::caller(), req.app_id, req.version, req.data, req.hash).await {
-    Ok(ret) => Ok(AppVersionUploadWasmResponse{ret}),
-    Err(e) => Err(e.into())
-  }
+  let ret = EgoDevService::app_version_upload_wasm(EgoFile::new(), ic_cdk::caller(), req.app_id, req.version, req.data, req.hash).await?;
+  Ok(AppVersionUploadWasmResponse{ret})
 }
-
 
 #[update(name = "app_version_set_frontend_address", guard = "developer_guard")]
 #[candid_method(update, rename = "app_version_set_frontend_address")]
@@ -183,9 +188,9 @@ pub async fn app_version_release(
 }
 
 
-/********************  for app auditor  ********************/
+/********************  auditor  ********************/
 // 待审核应用列表
-#[query(name = "app_version_wait_for_audit", guard = "auditer_guard")]
+#[query(name = "app_version_wait_for_audit", guard = "auditor_guard")]
 #[candid_method(query, rename = "app_version_wait_for_audit")]
 pub fn app_version_wait_for_audit() -> Result<AppVersionWaitForAuditResponse, EgoError> {
   ic_cdk::println!("ego-dev: app_version_wait_for_audit");
@@ -195,7 +200,7 @@ pub fn app_version_wait_for_audit() -> Result<AppVersionWaitForAuditResponse, Eg
 }
 
 // 通过当前版本审核
-#[update(name = "app_version_approve", guard = "auditer_guard")]
+#[update(name = "app_version_approve", guard = "auditor_guard")]
 #[candid_method(update, rename = "app_version_approve")]
 pub fn app_version_approve(
   request: AppVersionApproveRequest,
@@ -206,7 +211,7 @@ pub fn app_version_approve(
 }
 
 // 驳回当前版本审核
-#[update(name = "app_version_reject", guard = "auditer_guard")]
+#[update(name = "app_version_reject", guard = "auditor_guard")]
 #[candid_method(update, rename = "app_version_reject")]
 pub fn app_version_reject(
   request: AppVersionRejectRequest,
@@ -216,8 +221,8 @@ pub fn app_version_reject(
   Ok(AppVersionRejectResponse { app_version })
 }
 
-/********************  for dev manager  ********************/
-#[query(name = "user_main_list")]
+/********************  manager  ********************/
+#[query(name = "user_main_list", guard = "manager_guard")]
 #[candid_method(query, rename = "user_main_list")]
 pub fn user_main_list(request: UserMainListRequest) -> Result<UserMainListResponse, EgoError> {
   ic_cdk::println!("ego-dev: app_version_wait_for_audit");
@@ -225,7 +230,7 @@ pub fn user_main_list(request: UserMainListRequest) -> Result<UserMainListRespon
   Ok(UserMainListResponse { users })
 }
 
-#[update(name = "user_role_set")]
+#[update(name = "user_role_set", guard = "manager_guard")]
 #[candid_method(update, rename = "user_role_set")]
 pub fn user_role_set(request: UserRoleSetRequest) -> Result<UserRoleSetResponse, EgoError> {
   ic_cdk::println!("ego-dev: user_role_set");
@@ -234,20 +239,20 @@ pub fn user_role_set(request: UserRoleSetRequest) -> Result<UserRoleSetResponse,
 }
 
 
-/********************  for ego_store  ********************/
+/********************  ego_store  ********************/
 // TODO: developer_cycle_recharge
 
-/********************  owner methods  ********************/
-#[update]
-#[candid_method(update, rename = "admin_file_add")]
-pub fn admin_file_add(req: AdminFileAddRequest) -> Result<AdminFileAddResponse, EgoError> {
+/********************  owner  ********************/
+#[update(name = "admin_ego_file_add", guard = "owner_guard")]
+#[candid_method(update, rename = "admin_ego_file_add")]
+pub fn admin_ego_file_add(req: AdminEgoFileAddRequest) -> Result<AdminEgoFileAddResponse, EgoError> {
   ic_cdk::println!("ego-dev: admin_file_add");
 
-  let ret = EgoDevService::admin_file_add(req.canister_id)?;
-  Ok(AdminFileAddResponse { ret })
+  let ret = EgoDevService::admin_ego_file_add(req.canister_id)?;
+  Ok(AdminEgoFileAddResponse { ret })
 }
 
-#[update]
+#[update(name = "admin_ego_store_set", guard = "owner_guard")]
 #[candid_method(update, rename = "admin_ego_store_set")]
 pub fn admin_ego_store_set(req: AdminEgoStoreSetRequest) -> Result<AdminEgoStoreSetResponse, EgoError> {
   ic_cdk::println!("ego-dev: admin_ego_store_set");
@@ -257,4 +262,52 @@ pub fn admin_ego_store_set(req: AdminEgoStoreSetRequest) -> Result<AdminEgoStore
   Ok(AdminEgoStoreSetResponse{ret: true})
 }
 
+#[update(name = "admin_app_create", guard = "owner_guard")]
+#[candid_method(update, rename = "admin_app_create")]
+pub async fn admin_app_create(req: AdminAppCreateRequest) -> Result<AdminAppCreateResponse, EgoError> {
+  ic_cdk::println!("ego-dev: admin_app_create");
+
+  EgoDevService::developer_app_new(caller(), req.app_id.clone(), req.name, Category::System, 0f32)?;
+
+  EgoDevService::app_version_new(caller(), req.app_id.clone(), req.version)?;
+
+  EgoDevService::app_version_upload_wasm(EgoFile::new(), ic_cdk::caller(), req.app_id.clone(), req.version, req.backend_data, req.backend_data_hash).await?;
+
+  if req.frontend.is_some() {
+    EgoDevService::app_version_set_frontend_address(caller(), req.app_id.clone(), req.version, req.frontend.unwrap())?;
+  }
+
+  let ego_store = EgoStore::new();
+  EgoDevService::app_version_release(ic_cdk::caller(), req.app_id.clone(), req.version, ego_store).await?;
+
+  Ok(AdminAppCreateResponse { ret: true })
+}
+
+/********************  guard  ********************/
+#[inline(always)]
+pub fn manager_guard() -> Result<(), String> {
+  if EGO_DEV.with(|ego_dev| ego_dev.borrow().is_manager(api::caller())) {
+    Ok(())
+  } else {
+    trap(&format!("{} unauthorized", api::caller()));
+  }
+}
+
+#[inline(always)]
+pub fn auditor_guard() -> Result<(), String> {
+  if EGO_DEV.with(|ego_dev| ego_dev.borrow().is_app_auditor(api::caller())) {
+    Ok(())
+  } else {
+    trap(&format!("{} unauthorized", api::caller()));
+  }
+}
+
+#[inline(always)]
+pub fn developer_guard() -> Result<(), String> {
+  if EGO_DEV.with(|ego_dev| ego_dev.borrow().is_app_developer(api::caller())) {
+    Ok(())
+  } else {
+    trap(&format!("{} unauthorized", api::caller()));
+  }
+}
 
