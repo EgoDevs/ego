@@ -173,45 +173,49 @@ async function runCreate() {
 
   for (const f of getEgos()) {
     const dfx_folder = process.cwd() + '/' + 'artifacts' + '/' + f.package;
-    const { canister_id } = await actor.provisional_create_canister_with_cycles(
-      {
-        settings: [
-          {
-            freezing_threshold: [],
-            controllers: [[identity.getPrincipal()]],
-            memory_allocation: [],
-            compute_allocation: [],
-          },
-        ],
-        amount: [],
-      },
-    );
 
-    const localCanisterId = canister_id.toText();
-    console.log(`Creating canister ${f.package}...`);
-    console.log(
-      `${f.package} canister created with canister id: ${localCanisterId}`,
-    );
-
-    let configJson = JSON.stringify({});
-    try {
-      configJson = file.readFileSync(f.config).toString('utf8');
-    } catch (error) {
-      file.writeFileSync(f.config, JSON.stringify({}));
+    if(!f.no_deploy){
+      const { canister_id } = await actor.provisional_create_canister_with_cycles(
+        {
+          settings: [
+            {
+              freezing_threshold: [],
+              controllers: [[identity.getPrincipal()]],
+              memory_allocation: [],
+              compute_allocation: [],
+            },
+          ],
+          amount: [],
+        },
+      );
+  
+      const localCanisterId = canister_id.toText();
+      console.log(`Creating canister ${f.package}...`);
+      console.log(
+        `${f.package} canister created with canister id: ${localCanisterId}`,
+      );
+  
+      let configJson = JSON.stringify({});
+      try {
+        configJson = file.readFileSync(f.config).toString('utf8');
+      } catch (error) {
+        file.writeFileSync(f.config, JSON.stringify({}));
+      }
+  
+      const configObject = {
+        ...JSON.parse(configJson),
+        LOCAL_CANISTERID: localCanisterId,
+      };
+  
+      if (f.url) {
+        Object.assign(configObject, {
+          LOCAL_URL: `http://${localCanisterId}.localhost:8000`,
+        });
+      }
+  
+      file.writeFileSync(f.config, JSON.stringify(configObject));
     }
-
-    const configObject = {
-      ...JSON.parse(configJson),
-      LOCAL_CANISTERID: localCanisterId,
-    };
-
-    if (f.url) {
-      Object.assign(configObject, {
-        LOCAL_URL: `http://${localCanisterId}.localhost:8000`,
-      });
-    }
-
-    file.writeFileSync(f.config, JSON.stringify(configObject));
+    
   }
 }
 

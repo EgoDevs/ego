@@ -95,7 +95,7 @@ function buildDID(ego: ProjectConfig) {
     did_file_exist = false;
   }
   console.log({ did_file_exist });
-  if (did_file_exist) {
+  if (did_file_exist && ego.custom_candid) {
     shell.exec(`
     EGO_DIR="${process.cwd()}/ego/${ego.category}/${ego.package}"
     cd $EGO_DIR/actor && cargo run ${ego.bin_name} > ${shouldSaveAutoName}
