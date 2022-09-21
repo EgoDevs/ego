@@ -52,10 +52,12 @@ impl EgoDevService {
     caller: Principal,
     app_id: AppId,
     name: String,
+    logo: String,
+    description: String,
     category: Category,
     price: f32,
   ) -> Result<App, EgoError> {
-    EGO_DEV.with(|ego_dev| ego_dev.borrow_mut().developer_app_new(caller, app_id.clone(), name, category, price))
+    EGO_DEV.with(|ego_dev| ego_dev.borrow_mut().developer_app_new(caller, app_id.clone(), name, logo, description, category, price))
   }
 
   pub fn app_version_new(

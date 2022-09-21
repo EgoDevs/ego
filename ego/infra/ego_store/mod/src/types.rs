@@ -46,63 +46,63 @@ impl From<std::string::String> for EgoStoreErr {
     }
 }
 
-#[derive(Clone, Debug, CandidType, Deserialize, Serialize)]
+#[derive(CandidType, Deserialize, Serialize)]
 pub struct WalletAppListResponse {
     pub apps: Vec<App>
 }
 
-#[derive(Clone, Debug, CandidType, Deserialize, Serialize)]
+#[derive(CandidType, Deserialize, Serialize)]
 pub struct WalletAppInstallRequest {
     pub app_id: AppId
 }
 
-#[derive(Clone, Debug, CandidType, Deserialize, Serialize)]
+#[derive(CandidType, Deserialize, Serialize)]
 pub struct WalletAppInstallResponse {
     pub canister_ids: Vec<Principal>
 }
 
-#[derive(Clone, Debug, CandidType, Deserialize, Serialize)]
+#[derive(CandidType, Deserialize, Serialize)]
 pub struct WalletAppUpgradeRequest {
     pub app_id: AppId
 }
 
-#[derive(Clone, Debug, CandidType, Deserialize, Serialize)]
+#[derive(CandidType, Deserialize, Serialize)]
 pub struct WalletAppUpgradeResponse {
     pub canister_ids: Vec<Principal>
 }
 
-#[derive(Clone, Debug, CandidType, Deserialize, Serialize)]
+#[derive(CandidType, Deserialize, Serialize)]
 pub struct WalletAppRemoveRequest {
     pub app_id: AppId
 }
 
-#[derive(Clone, Debug, CandidType, Deserialize, Serialize)]
+#[derive(CandidType, Deserialize, Serialize)]
 pub struct WalletAppRemoveResponse {
     pub canister_ids: Vec<Principal>
 }
 
 
-#[derive(Clone, Debug, CandidType, Deserialize, Serialize)]
+#[derive(CandidType, Deserialize, Serialize)]
 pub enum QueryParam {
     ByCategory { category: Category },
 }
 
-#[derive(Clone, Debug, CandidType, Deserialize, Serialize)]
+#[derive(CandidType, Deserialize, Serialize)]
 pub struct AppMainListRequest {
     pub query_param: QueryParam,
 }
 
-#[derive(Clone, Debug, CandidType, Deserialize, Serialize)]
+#[derive(CandidType, Deserialize, Serialize)]
 pub struct AppMainListResponse {
     pub apps: Vec<App>,
 }
 
-#[derive(Clone, Debug, CandidType, Deserialize, Serialize)]
+#[derive(CandidType, Deserialize, Serialize)]
 pub struct GetAppRequest {
     pub app_id: AppId,
 }
 
-#[derive(Clone, Debug, CandidType, Deserialize, Serialize)]
+#[derive(CandidType, Deserialize, Serialize)]
 pub struct GetAppResponse {
     pub app: App,
 }
@@ -113,83 +113,83 @@ impl GetAppResponse {
     }
 }
 
-#[derive(Clone, Debug, CandidType, Deserialize, Serialize)]
+#[derive(CandidType, Deserialize, Serialize)]
 pub struct AddBucketRequest {
     pub bucket_id: Principal,
 }
 
-#[derive(Clone, Debug, CandidType, Deserialize, Serialize)]
+#[derive(CandidType, Deserialize, Serialize)]
 pub struct AddBucketResponse {
     pub ret: bool,
 }
 
-#[derive(Clone, Debug, CandidType, Deserialize, Serialize)]
+#[derive(CandidType, Deserialize, Serialize)]
 pub struct WalletOrderNotifyRequest {
     pub memo: Memo
 }
 
-#[derive(Clone, Debug, CandidType, Deserialize, Serialize)]
+#[derive(CandidType, Deserialize, Serialize)]
 pub struct WalletOrderNotifyResponse {
     pub ret: bool,
 }
 
-#[derive(Clone, Debug, CandidType, Deserialize, Serialize)]
+#[derive(CandidType, Deserialize, Serialize)]
 pub struct CreateOrderRequest {
     pub app_id: AppId
 }
 
-#[derive(Clone, Debug, CandidType, Deserialize, Serialize)]
+#[derive(CandidType, Deserialize, Serialize)]
 pub struct CreateOrderResponse {
     pub order: Order,
 }
 
-#[derive(Clone, Debug, CandidType, Deserialize, Serialize)]
+#[derive(CandidType, Deserialize, Serialize)]
 pub struct WalletOrderNewRequest {
     pub amount: f32
 }
 
-#[derive(Clone, Debug, CandidType, Deserialize, Serialize)]
+#[derive(CandidType, Deserialize, Serialize)]
 pub struct WalletOrderNewResponse {
     pub order: Order,
 }
 
-#[derive(Clone, Debug, CandidType, Deserialize, Serialize)]
+#[derive(CandidType, Deserialize, Serialize)]
 pub struct WalletOrderListResponse {
     pub orders: Vec<Order>,
 }
 
-#[derive(Clone, Debug, CandidType, Deserialize, Serialize)]
+#[derive(CandidType, Deserialize, Serialize)]
 pub struct WalletTenantGetResponse {
     pub tenant_id: Principal
 }
 
 
-#[derive(Clone, Debug, CandidType, Deserialize, Serialize)]
+#[derive(CandidType, Deserialize, Serialize)]
 pub struct WalletMainNewRequest {
     pub name: String
 }
 
-#[derive(Clone, Debug, CandidType, Deserialize, Serialize)]
+#[derive(CandidType, Deserialize, Serialize)]
 pub struct WalletMainNewResponse {
     pub tenant_id: Principal,
 }
 
-#[derive(Clone, Debug, CandidType, Deserialize, Serialize)]
-pub struct AdminTenantAddRequest {
+#[derive(CandidType, Deserialize, Serialize)]
+pub struct AdminEgoTenantAddRequest {
     pub tenant_id: Principal
 }
 
-#[derive(Clone, Debug, CandidType, Deserialize, Serialize)]
-pub struct AdminTenantAddResponse {
+#[derive(CandidType, Deserialize, Serialize)]
+pub struct AdminEgoTenantAddResponse {
     pub ret: bool,
 }
 
-#[derive(Clone, Debug, CandidType, Deserialize, Serialize)]
+#[derive(CandidType, Deserialize, Serialize)]
 pub struct AppMainReleaseRequest {
     pub app: App
 }
 
-#[derive(Clone, Debug, CandidType, Deserialize, Serialize)]
+#[derive(CandidType, Deserialize, Serialize)]
 pub struct AppMainReleaseResponse {
     pub ret: bool,
 }

@@ -1,7 +1,7 @@
 use ic_cdk::{storage};
 use ic_cdk_macros::*;
 use ego_ops_mod::service::EgoOpsService;
-use ego_ops_mod::types::{CanisterMainCreateRequest, CanisterMainCreateResponse, CanisterMainListResponse};
+use ego_ops_mod::types::{CanisterMainCreateRequest, CanisterMainCreateResponse, CanisterMainListResponse, CanisterMainRegisterRequest, CanisterMainRegisterResponse};
 
 use ego_types::ego_error::EgoError;
 use candid::{candid_method};
@@ -77,9 +77,23 @@ async fn canister_main_list() -> Result<CanisterMainListResponse, EgoError> {
 async fn app_main_create(req: CanisterMainCreateRequest) -> Result<CanisterMainCreateResponse, EgoError> {
   ic_cdk::println!("ego-ops: app_main_create");
 
-  match EgoOpsService::canister_main_create(req.app_id, req.version, req.data, req.hash).await {
+  match EgoOpsService::app_main_create(req.app_id, req.version, req.data, req.hash).await {
     Ok(ret) => {
       Ok(CanisterMainCreateResponse{ret})
+    },
+    Err(e) => Err(e)
+  }
+}
+
+/// register the initial canister into the ego_ops
+#[update(name = "canister_main_register")]
+#[candid_method(update, rename = "canister_main_register")]
+async fn canister_main_register(req: CanisterMainRegisterRequest) -> Result<CanisterMainRegisterResponse, EgoError> {
+  ic_cdk::println!("ego-ops: canister_main_register");
+
+  match EgoOpsService::canister_main_register(req.ego_dev_id, req.ego_store_id, req.ego_file_id, req.ego_tenant_id).await {
+    Ok(ret) => {
+      Ok(CanisterMainRegisterResponse{ret})
     },
     Err(e) => Err(e)
   }

@@ -8,7 +8,7 @@ use crate::c2c::c2c_types::{FileMainWriteRequest};
 
 #[async_trait]
 pub trait TEgoFile {
-  async fn file_main_write(&self, canister_id: Principal, fid: FileId, hash: String, data: Vec<u8>) -> Result<bool, EgoError>;
+  async fn role_user_add(&self, canister_id: Principal, fid: FileId, hash: String, data: Vec<u8>) -> Result<bool, EgoError>;
 }
 
 pub struct EgoFile {

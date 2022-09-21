@@ -75,6 +75,8 @@ CandidType, Deserialize, Serialize)]
 pub struct AppMainNewRequest {
   pub app_id: AppId,
   pub name: String,
+  pub logo: String,
+  pub description: String,
   pub category: Category,
   pub price: f32,
 }
@@ -267,6 +269,8 @@ pub struct AdminEgoStoreSetResponse {
 pub struct AdminAppCreateRequest {
   pub app_id: AppId,
   pub name: String,
+  pub logo: String,
+  pub description: String,
   pub version: Version,
   pub backend_data: Vec<u8>,
   pub backend_data_hash: String,

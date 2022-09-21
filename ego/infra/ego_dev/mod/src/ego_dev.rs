@@ -52,7 +52,7 @@ impl EgoDev {
     developer.clone()
   }
 
-  pub fn developer_app_new(&mut self, user_id: Principal, app_id: AppId, name: String, category: Category, price: f32) -> Result<App, EgoError> {
+  pub fn developer_app_new(&mut self, user_id: Principal, app_id: AppId, name: String, logo: String, description: String, category: Category, price: f32) -> Result<App, EgoError> {
     if self.apps.contains_key(&app_id) {
       let app = self.apps.get(&app_id).unwrap();
 
@@ -64,7 +64,7 @@ impl EgoDev {
     } else {
       let _ = self.developer_main_get(user_id)?;
 
-      let app = App::new(user_id, app_id.clone(), name, category, price);
+      let app = App::new(user_id, app_id.clone(), name, logo, description, category, price);
       self.apps.insert(app_id.clone(), app.clone());
 
       self.developer_main_get_mut(user_id)?.created_apps.push(app_id.clone());

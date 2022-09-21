@@ -15,3 +15,15 @@ pub struct FileMainWriteRequest {
 pub struct AdminEgoFileAddRequest {
   pub canister_id: Principal,
 }
+
+#[derive(CandidType, Deserialize, Serialize)]
+pub struct AdminEgoStoreSetRequest {
+  pub canister_id: Principal,
+}
+
+// type for ego_store
+#[derive(CandidType, Deserialize, Serialize)]
+pub struct AdminEgoTenantAddRequest {
+  pub tenant_id: Principal
+}
+

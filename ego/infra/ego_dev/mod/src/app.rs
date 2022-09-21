@@ -34,13 +34,13 @@ impl App {
 }
 
 impl App {
-  pub fn new(user_id: Principal, app_id: AppId, name: String, category: Category, price: f32) -> Self {
+  pub fn new(user_id: Principal, app_id: AppId, name: String, logo: String, description: String, category: Category, price: f32) -> Self {
     App {
       app_id,
       developer_id: user_id,
       name,
-      logo: "".to_string(),
-      description: "".to_string(),
+      logo,
+      description,
       category,
       release_version: None,
       audit_version: None,

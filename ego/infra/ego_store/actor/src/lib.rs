@@ -191,11 +191,11 @@ pub fn wallet_order_notify(request: WalletOrderNotifyRequest) -> Result<WalletOr
 /********************  owner methods  ********************/
 #[query(name = "admin_tenant_add")]
 #[candid_method(query, rename = "admin_tenant_add")]
-pub fn admin_tenant_add(req: AdminTenantAddRequest) -> Result<AdminTenantAddResponse, EgoError> {
+pub fn admin_ego_tenant_add(req: AdminEgoTenantAddRequest) -> Result<AdminEgoTenantAddResponse, EgoError> {
   ic_cdk::println!("ego_store: admin_tenant_add");
 
-  match EgoStoreService::admin_tenant_add(req.tenant_id) {
-    Ok(ret) => Ok(AdminTenantAddResponse { ret }),
+  match EgoStoreService::admin_ego_tenant_add(req.tenant_id) {
+    Ok(ret) => Ok(AdminEgoTenantAddResponse { ret }),
     Err(e) => Err(e),
   }
 }

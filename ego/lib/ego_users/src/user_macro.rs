@@ -60,16 +60,25 @@ macro_rules! inject_ego_users {
             }
         }
 
-        pub fn role_owner_set(principals: Vec<Principal>) {
-            USER.with(|s| s.borrow_mut().role_owner_set(principals))
+        #[update(name = "role_owner_set", guard="owner_guard")]
+        #[candid_method(update, rename = "role_owner_set")]
+        pub fn role_owner_set(principals: Vec<Principal>) -> Result<(), String> {
+            USER.with(|s| s.borrow_mut().role_owner_set(principals));
+            Ok(())
         }
 
-        pub fn role_owner_add(principal: Principal) {
-            USER.with(|s| s.borrow_mut().role_owner_add(principal))
+        #[update(name = "role_owner_add", guard="owner_guard")]
+        #[candid_method(update, rename = "role_owner_add")]
+        pub fn role_owner_add(principal: Principal) -> Result<(), String>  {
+            USER.with(|s| s.borrow_mut().role_owner_add(principal));
+            Ok(())
         }
 
-        pub fn role_owner_remove(principal: Principal) {
-            USER.with(|s| s.borrow_mut().role_owner_remove(principal))
+        #[update(name = "role_owner_remove", guard="owner_guard")]
+        #[candid_method(update, rename = "role_owner_remove")]
+        pub fn role_owner_remove(principal: Principal) -> Result<(), String> {
+            USER.with(|s| s.borrow_mut().role_owner_remove(principal));
+            Ok(())
         }
 
         #[inline(always)]
@@ -81,16 +90,25 @@ macro_rules! inject_ego_users {
             }
         }
 
-        pub fn role_user_set(principals: Vec<Principal>) {
-            USER.with(|s| s.borrow_mut().role_user_set(principals))
+        #[update(name = "role_user_set", guard="owner_guard")]
+        #[candid_method(update, rename = "role_user_set")]
+        pub fn role_user_set(principals: Vec<Principal>) -> Result<(), String> {
+            USER.with(|s| s.borrow_mut().role_user_set(principals));
+            Ok(())
         }
 
-        pub fn role_user_add(principal: Principal) {
-            USER.with(|s| s.borrow_mut().role_user_add(principal))
+        #[update(name = "role_user_add", guard="owner_guard")]
+        #[candid_method(update, rename = "role_user_add")]
+        pub fn role_user_add(principal: Principal) -> Result<(), String> {
+            USER.with(|s| s.borrow_mut().role_user_add(principal));
+            Ok(())
         }
 
-        pub fn role_user_remove(principal: Principal) {
-            USER.with(|s| s.borrow_mut().role_user_remove(principal))
+        #[update(name = "role_user_remove", guard="owner_guard")]
+        #[candid_method(update, rename = "role_user_remove")]
+        pub fn role_user_remove(principal: Principal) -> Result<(), String> {
+            USER.with(|s| s.borrow_mut().role_user_remove(principal));
+            Ok(())
         }
 
         pub fn users_init() {

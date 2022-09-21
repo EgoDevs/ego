@@ -9,6 +9,7 @@ fn main() {}
 fn main() {
     use ego_tenant_mod::types::*;
     use ego_types::ego_error::EgoError;
+    use ic_types::Principal;
 
     candid::export_service!();
     std::print!("{}", __export_service());

@@ -5,6 +5,8 @@ use ego_types::version::Version;
 use ego_utils::consts::CREATE_CANISTER_CYCLES_FEE;
 use crate::c2c::ego_dev::{EgoDev, TEgoDev};
 use crate::c2c::ego_file::{EgoFile, TEgoFile};
+use crate::c2c::ego_store::{EgoStore, TEgoStore};
+use crate::c2c::ego_user::{EgoUser, TEgoUser};
 use crate::c2c::ic_management::{IcManagement, TIcManagement};
 use crate::state::EGO_OPS;
 
@@ -45,25 +47,38 @@ impl EgoOpsService {
     Ok(true)
   }
 
-  pub async fn canister_installed(app_id: AppId, canister_id: Principal) -> Result<bool, EgoError>{
-    // if app_id == "ego_file" {
-    //   // find the previous installed ego_dev
-    //   let ego_dev_ids = EGO_OPS.with(|ego_ops| ego_ops.borrow().canisters.get("ego_file").unwrap().clone());
-    //
-    //   if !ego_dev_ids.is_empty() {
-    //     let ego_dev_id = ego_dev_ids.get(0).unwrap();
-    //     ego_dev.admin_ego_file_add(ego_dev_id, canister_id).await?;
-    //   }
-    // } else if app_id == "ego_tenant" {
-    //
-    // } else if app_id == "ego_dev" {
-    //   // add all the previous installed ego_file to the ego_dev
-    //   let ego_dev = EgoDev::new();
-    //   let ego_file_ids = EGO_OPS.with(|ego_ops| ego_ops.borrow().canisters.get("ego_file").unwrap().clone());
-    //   for ego_file_id in ego_file_ids {
-    //     ego_dev.admin_ego_file_add(canister_id, ego_file_id.clone()).await?;
-    //   }
-    // }
+  pub async fn canister_main_register(ego_dev_id: Principal, ego_store_id: Principal, ego_file_id: Principal, ego_tenant_id: Principal) -> Result<bool, EgoError>{
+    let ego_user = EgoUser::new();
+    let ego_dev = EgoDev::new();
+    let ego_store = EgoStore::new();
+
+    // ego_dev
+    EGO_OPS.with(|ego_ops| {
+      ego_ops.borrow_mut().app_canister_register("ego_dev".to_string(), ego_dev_id)
+    });
+
+    ego_dev.admin_ego_file_add(ego_dev_id, ego_file_id).await?;
+    ego_dev.admin_ego_store_set(ego_dev_id, ego_store_id).await?;
+
+    // ego_file
+    EGO_OPS.with(|ego_ops| {
+      ego_ops.borrow_mut().app_canister_register("ego_file".to_string(), ego_file_id)
+    });
+
+    ego_user.role_user_add(ego_file_id, ego_dev_id).await?;
+    ego_user.role_user_add(ego_file_id, ego_tenant_id).await?;
+
+    // ego_store
+    EGO_OPS.with(|ego_ops| {
+      ego_ops.borrow_mut().app_canister_register("ego_store".to_string(), ego_store_id)
+    });
+    ego_store.admin_egp_tenant_add(ego_store_id, ego_tenant_id).await?;
+
+    // ego_tenant
+    EGO_OPS.with(|ego_ops| {
+      ego_ops.borrow_mut().app_canister_register("ego_tenant".to_string(), ego_tenant_id)
+    });
+    ego_user.role_user_add(ego_tenant_id, ego_store_id).await?;
 
     Ok(true)
   }

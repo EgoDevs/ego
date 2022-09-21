@@ -118,6 +118,8 @@ pub fn developer_app_new(request: AppMainNewRequest) -> Result<AppMainNewRespons
     ic_cdk::caller(),
     request.app_id,
     request.name,
+    request.logo,
+    request.description,
     request.category,
     request.price,
   )?;
@@ -272,7 +274,7 @@ pub fn admin_ego_store_set(req: AdminEgoStoreSetRequest) -> Result<AdminEgoStore
 pub async fn admin_app_create(req: AdminAppCreateRequest) -> Result<AdminAppCreateResponse, EgoError> {
   ic_cdk::println!("ego-dev: admin_app_create");
 
-  EgoDevService::developer_app_new(caller(), req.app_id.clone(), req.name, Category::System, 0f32)?;
+  EgoDevService::developer_app_new(caller(), req.app_id.clone(), req.name, req.logo, req.description,Category::System, 0f32)?;
 
   EgoDevService::app_version_new(caller(), req.app_id.clone(), req.version)?;
 
