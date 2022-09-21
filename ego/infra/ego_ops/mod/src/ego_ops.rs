@@ -4,7 +4,7 @@ use ic_types::Principal;
 use serde::Serialize;
 use ego_types::app::AppId;
 
-#[derive(CandidType, Deserialize, Serialize)]
+#[derive(CandidType, Deserialize, Serialize, Clone, Debug)]
 pub struct EgoOps {
   pub canisters: BTreeMap<AppId, Vec<Principal>>
 }

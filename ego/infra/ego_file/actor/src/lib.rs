@@ -28,7 +28,27 @@ fn init() {
 
     ic_cdk::println!("==> add caller as the owner");
     users_init();
+
 }
+
+#[pre_upgrade]
+fn pre_upgrade() {
+    ic_cdk::println!("ego-file: pre_upgrade");
+    match state_persist() {
+        Ok(_) => {}
+        Err(_) => {}
+    }
+}
+
+#[post_upgrade]
+fn post_upgrade() {
+    ic_cdk::println!("ego-file: post_upgrade");
+    match state_restore() {
+        Ok(_) => {}
+        Err(_) => {}
+    }
+}
+
 
 /********************  file method ********************/
 #[update(name = "file_main_write", guard = "user_guard")]
@@ -51,20 +71,11 @@ fn file_main_read(req: FileMainReadRequest) -> Result<FileMainReadResponse, EgoE
 }
 
 #[derive(CandidType, Deserialize)]
-struct StableState {
+struct PersistState {
     storage: Storage,
     user: User,
 }
 
-#[pre_upgrade]
-fn pre_upgrade() {
-    ic_cdk::println!("ego-file: pre_upgrade");
-}
-
-#[post_upgrade]
-fn post_upgrade() {
-    ic_cdk::println!("ego-file: post_upgrade");
-}
 
 /********************  persist method ********************/
 #[update(name = "state_persist")]
@@ -73,9 +84,9 @@ fn state_persist() -> Result<bool, EgoError> {
     ic_cdk::println!("ego-file: state_persist");
 
     let storage = STORAGE.with(|s| s.borrow().clone());
-    let user = USER.with(|u| u.borrow().clone());
+    let user = users_pre_upgrade();
 
-    let state = StableState {
+    let state = PersistState {
         storage, user
     };
 
@@ -107,10 +118,10 @@ fn state_restore() -> Result<bool, EgoError> {
     ic_cdk::println!("==> data length is: {}", len);
 
     let data = &buf[8..8 + len];
-    let state = Decode!(data, StableState).unwrap();
+    let state = Decode!(data, PersistState).unwrap();
 
     STORAGE.with(|s| *s.borrow_mut() = state.storage);
-    USER.with(|u| *u.borrow_mut() = state.user);
+    users_post_upgrade(state.user);
 
     Ok(true)
 }

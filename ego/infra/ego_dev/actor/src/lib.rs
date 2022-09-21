@@ -36,6 +36,7 @@ fn init() {
 #[derive(CandidType, Deserialize, Serialize)]
 struct PersistState{
   pub ego_dev: EgoDev,
+  pub user: User,
   pub ego_store: Option<Principal>
 }
 
@@ -43,9 +44,10 @@ struct PersistState{
 fn pre_upgrade() {
   ic_cdk::println!("ego-dev: pre_upgrade");
   let ego_dev = EGO_DEV.with(|ego_dev| ego_dev.borrow().clone());
+  let user = users_pre_upgrade();
   let ego_store = EGO_STORE_CANISTER_ID.with(|r_c| r_c.borrow().clone());
 
-  let state = PersistState{ego_dev, ego_store};
+  let state = PersistState{ego_dev, user, ego_store};
   storage::stable_save((state, )).unwrap();
 }
 
@@ -56,6 +58,9 @@ fn post_upgrade() {
   EGO_DEV.with(|ego_dev|
     *ego_dev.borrow_mut() = state.ego_dev
   );
+
+  users_post_upgrade(state.user);
+
   EGO_STORE_CANISTER_ID.with(|r_c| *r_c.borrow_mut() = state.ego_store);
 }
 

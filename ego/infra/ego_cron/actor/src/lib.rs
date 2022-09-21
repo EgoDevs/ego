@@ -1,17 +1,55 @@
 use candid::{candid_method};
-use ic_cdk::{call, caller, trap};
+use ic_cdk::{call, storage};
 use ic_cdk_macros::*;
 use ic_cron::implement_cron;
+use ic_cdk::export::candid::{CandidType, Deserialize};
+use serde::Serialize;
+use ego_cron_mod::ego_cron::EgoCron;
 
-use ego_cron_mod::task::CronTask;
+use ego_cron_mod::task::Task;
 use ego_cron_mod::service::{EgoCronService};
+use ego_cron_mod::state::EGO_CRON;
 use ego_cron_mod::types::{TaskMainCancelResponse, TaskMainAddRequest, TaskMainAddResponse, TaskMainCancelRequest};
 use ego_types::ego_error::EgoError;
+
+use ego_users::inject_ego_users;
+
+inject_ego_users!();
 
 #[init]
 #[candid_method(init)]
 fn init() {
     ic_cdk::println!("ego-cron: init, caller is {}", caller());
+
+    ic_cdk::println!("==> add caller as the owner");
+    users_init();
+}
+
+#[derive(CandidType, Deserialize, Serialize)]
+struct PersistState{
+    pub ego_cron: EgoCron,
+    pub user: User
+}
+
+#[pre_upgrade]
+fn pre_upgrade() {
+    ic_cdk::println!("ego-cron: pre_upgrade");
+    let ego_cron = EGO_CRON.with(|ego_cron| ego_cron.borrow().clone());
+    let user = users_pre_upgrade();
+
+    let state = PersistState{ego_cron, user};
+    storage::stable_save((state, )).unwrap();
+}
+
+#[post_upgrade]
+fn post_upgrade() {
+    ic_cdk::println!("ego-cron: post_upgrade");
+    let (state, ): (PersistState, ) = storage::stable_restore().unwrap();
+    EGO_CRON.with(|ego_cron|
+      *ego_cron.borrow_mut() = state.ego_cron
+    );
+
+    users_post_upgrade(state.user);
 }
 
 /********************   cron method   ********************/
@@ -46,7 +84,7 @@ async fn tick() {
     // ic_cdk::print("TICK");
     for tasks in cron_ready_tasks() {
         let task = tasks
-            .get_payload::<CronTask>()
+            .get_payload::<Task>()
             .expect("Unable to deserialize cron task kind");
 
         ic_cdk::print(format!("{:?}", task));
@@ -54,7 +92,7 @@ async fn tick() {
     }
 }
 
-pub async fn cron_call(task: CronTask) {
+pub async fn cron_call(task: Task) {
     ic_cdk::print("call canister");
     let cb = call(
         task.canister_id,

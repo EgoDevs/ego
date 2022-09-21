@@ -5,7 +5,7 @@ use serde::Serialize;
 use ego_types::ego_error::EgoError;
 use crate::task::Task;
 
-#[derive(CandidType, Deserialize, Serialize)]
+#[derive(CandidType, Deserialize, Serialize, Debug, Clone)]
 pub struct EgoTenant {
   pub tasks: BTreeSet<Task>
 }

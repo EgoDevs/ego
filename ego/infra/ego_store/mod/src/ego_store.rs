@@ -14,7 +14,7 @@ use crate::types::{EgoStoreErr, QueryParam};
 use crate::wallet::*;
 
 /********************  app store  ********************/
-#[derive(CandidType, Deserialize, Serialize)]
+#[derive(CandidType, Deserialize, Serialize, Debug, Clone)]
 pub struct EgoStore {
   pub apps: BTreeMap<AppId, App>,
   pub orders: BTreeMap<Memo, Order>,

@@ -4,9 +4,11 @@ use ic_cdk::storage;
 
 use ego_store_mod::ego_store::EgoStore;
 use ego_store_mod::service::*;
-use ego_store_mod::state::{APP_STORE};
+use ego_store_mod::state::{EGO_STORE};
 use ego_store_mod::types::*;
 use ego_types::ego_error::EgoError;
+use ic_cdk::export::candid::{CandidType, Deserialize};
+use serde::Serialize;
 
 use ego_users::inject_ego_users;
 
@@ -22,19 +24,33 @@ fn init() {
   users_init();
 }
 
+#[derive(CandidType, Deserialize, Serialize)]
+struct PersistState{
+  pub ego_store: EgoStore,
+  pub user: User
+}
+
 #[pre_upgrade]
 fn pre_upgrade() {
   ic_cdk::println!("ego-store: pre_upgrade");
-  APP_STORE.with(|app_store| storage::stable_save((app_store,)).unwrap());
+
+  let ego_store = EGO_STORE.with(|ego_store| ego_store.borrow().clone());
+  let user = users_pre_upgrade();
+
+  let state = PersistState{ego_store, user};
+  storage::stable_save((state, )).unwrap();
 }
 
 #[post_upgrade]
 fn post_upgrade() {
   ic_cdk::println!("ego-store: post_upgrade");
-  let (old_app_store,): (EgoStore,) = storage::stable_restore().unwrap();
-  APP_STORE.with(|app_store|
-    *app_store.borrow_mut() = old_app_store
+
+  let (state, ): (PersistState, ) = storage::stable_restore().unwrap();
+  EGO_STORE.with(|ego_store|
+    *ego_store.borrow_mut() = state.ego_store
   );
+
+  users_post_upgrade(state.user);
 }
 
 /********************  methods for wallet   ********************/

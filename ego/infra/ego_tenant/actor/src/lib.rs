@@ -1,9 +1,14 @@
-use ic_cdk_macros::{init, update};
+use ic_cdk_macros::*;
 use candid::candid_method;
+use ic_cdk::storage;
 use ego_tenant_mod::c2c::ego_file::EgoFile;
 use ego_tenant_mod::c2c::ic_management::IcManagement;
+use ego_tenant_mod::ego_tenant::EgoTenant;
 use ego_tenant_mod::service::EgoTenantService;
 use ego_tenant_mod::types::{AppMainInstallRequest, AppMainInstallResponse, AppMainUpgradeRequest, AppMainUpgradeResponse};
+use ic_cdk::export::candid::{CandidType, Deserialize};
+use serde::Serialize;
+use ego_tenant_mod::state::EGO_TENANT;
 use ego_types::ego_error::EgoError;
 use ego_users::inject_ego_users;
 
@@ -12,12 +17,38 @@ inject_ego_users!();
 #[init]
 #[candid_method(init, rename = "init")]
 fn canister_init() {
-    ic_cdk::println!("ego_tenant: init, caller is {}", caller());
+    ic_cdk::println!("ego-tenant: init, caller is {}", caller());
 
     ic_cdk::println!("==> add caller as the owner");
     users_init();
 }
 
+#[derive(CandidType, Deserialize, Serialize)]
+struct PersistState{
+    pub ego_tenant: EgoTenant,
+    pub user: User
+}
+
+#[pre_upgrade]
+fn pre_upgrade() {
+    ic_cdk::println!("ego-tenant: pre_upgrade");
+    let ego_tenant = EGO_TENANT.with(|ego_tenant| ego_tenant.borrow().clone());
+    let user = users_pre_upgrade();
+
+    let state = PersistState{ego_tenant, user};
+    storage::stable_save((state, )).unwrap();
+}
+
+#[post_upgrade]
+fn post_upgrade() {
+    ic_cdk::println!("ego-tenant: post_upgrade");
+    let (state, ): (PersistState, ) = storage::stable_restore().unwrap();
+    EGO_TENANT.with(|ego_tenant|
+      *ego_tenant.borrow_mut() = state.ego_tenant
+    );
+
+    users_post_upgrade(state.user);
+}
 
 #[update(name = "app_main_install")]
 #[candid_method(update, rename = "app_main_install")]
