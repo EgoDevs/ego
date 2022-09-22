@@ -1,7 +1,6 @@
 use ic_cdk::{storage};
 use ic_cdk_macros::*;
 use ego_ops_mod::service::EgoOpsService;
-use ego_ops_mod::types::{CanisterMainCreateRequest, CanisterMainCreateResponse, CanisterMainListResponse, CanisterMainRegisterRequest, CanisterMainRegisterResponse};
 
 use ego_types::ego_error::EgoError;
 use candid::{candid_method};
@@ -9,6 +8,7 @@ use ego_ops_mod::ego_ops::EgoOps;
 use ego_ops_mod::state::EGO_OPS;
 use ic_cdk::export::candid::{CandidType, Deserialize};
 use serde::Serialize;
+use ego_ops_mod::types::{AdminAppCreateRequest, AdminAppCreateResponse, AdminAppDeployRequest, AdminAppDeployResponse, CanisterMainListResponse, CanisterMainRegisterRequest, CanisterMainRegisterResponse};
 
 use ego_users::inject_ego_users;
 
@@ -49,14 +49,15 @@ fn post_upgrade() {
 }
 
 /********************   owner method   ********************/
-#[update(name = "canister_main_create")]
-#[candid_method(update, rename = "canister_main_create")]
-async fn canister_main_create(req: CanisterMainCreateRequest) -> Result<CanisterMainCreateResponse, EgoError> {
-  ic_cdk::println!("ego-ops: canister_main_create");
+/// register the initial canister into the ego_ops
+#[update(name = "canister_main_register")]
+#[candid_method(update, rename = "canister_main_register")]
+async fn canister_main_register(req: CanisterMainRegisterRequest) -> Result<CanisterMainRegisterResponse, EgoError> {
+  ic_cdk::println!("ego-ops: canister_main_register");
 
-  match EgoOpsService::canister_main_create(req.app_id, req.version, req.data, req.hash).await {
+  match EgoOpsService::canister_main_register(req.ego_dev_id, req.ego_store_id, req.ego_file_id, req.ego_tenant_id).await {
     Ok(ret) => {
-      Ok(CanisterMainCreateResponse{ret})
+      Ok(CanisterMainRegisterResponse{ret})
     },
     Err(e) => Err(e)
   }
@@ -72,28 +73,29 @@ async fn canister_main_list() -> Result<CanisterMainListResponse, EgoError> {
   })
 }
 
-#[update(name = "app_main_create")]
-#[candid_method(update, rename = "app_main_create")]
-async fn app_main_create(req: CanisterMainCreateRequest) -> Result<CanisterMainCreateResponse, EgoError> {
-  ic_cdk::println!("ego-ops: app_main_create");
+/// register ego infra app
+#[update(name = "admin_app_create")]
+#[candid_method(update, rename = "admin_app_create")]
+async fn admin_app_create(req: AdminAppCreateRequest) -> Result<AdminAppCreateResponse, EgoError> {
+  ic_cdk::println!("ego-ops: admin_app_create");
 
-  match EgoOpsService::app_main_create(req.app_id, req.version, req.data, req.hash).await {
+  match EgoOpsService::admin_app_create(req.app_id, req.name, req.version, req.backend_data, req.backend_hash, req.frontend).await {
     Ok(ret) => {
-      Ok(CanisterMainCreateResponse{ret})
+      Ok(AdminAppCreateResponse{ret})
     },
     Err(e) => Err(e)
   }
 }
 
-/// register the initial canister into the ego_ops
-#[update(name = "canister_main_register")]
-#[candid_method(update, rename = "canister_main_register")]
-async fn canister_main_register(req: CanisterMainRegisterRequest) -> Result<CanisterMainRegisterResponse, EgoError> {
-  ic_cdk::println!("ego-ops: canister_main_register");
+/// deploy ego infra canister
+#[update(name = "admin_app_deploy")]
+#[candid_method(update, rename = "admin_app_deploy")]
+async fn admin_app_deploy(req: AdminAppDeployRequest) -> Result<AdminAppDeployResponse, EgoError> {
+  ic_cdk::println!("ego-ops: admin_app_create");
 
-  match EgoOpsService::canister_main_register(req.ego_dev_id, req.ego_store_id, req.ego_file_id, req.ego_tenant_id).await {
+  match EgoOpsService::admin_app_deploy(req.app_id).await {
     Ok(ret) => {
-      Ok(CanisterMainRegisterResponse{ret})
+      Ok(AdminAppDeployResponse{ret})
     },
     Err(e) => Err(e)
   }

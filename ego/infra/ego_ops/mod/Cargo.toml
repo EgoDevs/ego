@@ -16,4 +16,3 @@ serde = "1.0.136"
 async-trait = "0.1.57"
 md5 = "0.7.0"
 ego_types = { path = "../../../lib/ego_types"}
-ego_utils = { path = "../../../lib/ego_utils" }

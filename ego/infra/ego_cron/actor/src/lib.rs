@@ -53,7 +53,7 @@ fn post_upgrade() {
 }
 
 /********************   cron method   ********************/
-#[update(name = "task_main_add")]
+#[update(name = "task_main_add", guard = "owner_guard")]
 #[candid_method(update, rename = "task_main_add")]
 fn task_main_add(req: TaskMainAddRequest) -> Result<TaskMainAddResponse, EgoError> {
     ic_cdk::println!("ego-cron: task_main_add");
@@ -64,7 +64,7 @@ fn task_main_add(req: TaskMainAddRequest) -> Result<TaskMainAddResponse, EgoErro
     }
 }
 
-#[update(name = "task_main_cancel")]
+#[update(name = "task_main_cancel", guard = "owner_guard")]
 #[candid_method(update, rename = "task_main_cancel")]
 fn task_main_cancel(req: TaskMainCancelRequest) -> Result<TaskMainCancelResponse, EgoError> {
     ic_cdk::print(format!("ego-cron: task_main_cancel {}", req.task_id));

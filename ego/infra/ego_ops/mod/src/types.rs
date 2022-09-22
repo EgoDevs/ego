@@ -5,35 +5,8 @@ use ego_types::app::AppId;
 use ego_types::version::Version;
 
 #[derive(CandidType, Deserialize)]
-pub struct CanisterMainCreateRequest {
-  pub app_id: AppId,
-  pub version: Version,
-  pub data: Vec<u8>,
-  pub hash: String,
-}
-
-#[derive(CandidType, Deserialize)]
-pub struct CanisterMainCreateResponse {
-  pub ret: bool
-}
-
-#[derive(CandidType, Deserialize)]
 pub struct CanisterMainListResponse {
   pub canisters: BTreeMap<AppId, Vec<Principal>>
-}
-
-#[derive(CandidType, Deserialize)]
-pub struct AppMainCreateRequest {
-  pub app_id: AppId,
-  pub name: String,
-  pub version: Version,
-  pub data: Vec<u8>,
-  pub hash: String,
-}
-
-#[derive(CandidType, Deserialize)]
-pub struct AppMainCreateResponse {
-  pub ret: bool
 }
 
 #[derive(CandidType, Deserialize)]
@@ -46,5 +19,32 @@ pub struct CanisterMainRegisterRequest {
 
 #[derive(CandidType, Deserialize)]
 pub struct CanisterMainRegisterResponse {
+  pub ret: bool
+}
+
+#[derive(CandidType, Deserialize)]
+pub struct AdminAppCreateRequest {
+  pub app_id: AppId,
+  pub name: String,
+  pub version: Version,
+  pub backend_data: Vec<u8>,
+  pub backend_hash: String,
+  pub frontend: Option<Principal>,
+}
+
+#[derive(CandidType, Deserialize)]
+pub struct AdminAppCreateResponse {
+  pub ret: bool
+}
+
+
+
+#[derive(CandidType, Deserialize)]
+pub struct AdminAppDeployRequest {
+  pub app_id: AppId
+}
+
+#[derive(CandidType, Deserialize)]
+pub struct AdminAppDeployResponse {
   pub ret: bool
 }

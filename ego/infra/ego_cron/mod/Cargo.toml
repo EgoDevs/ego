@@ -21,5 +21,4 @@ serde_bytes = "0.11.5"
 serde_cbor = "0.11.2"
 serde_with = "1.12.0"
 ego_types = { path = "../../../lib/ego_types"}
-ego_utils = { path = "../../../lib/ego_utils" }
 ic-cron = "0.7"
