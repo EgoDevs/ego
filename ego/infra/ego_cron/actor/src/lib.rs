@@ -9,7 +9,7 @@ use ego_cron_mod::ego_cron::EgoCron;
 use ego_cron_mod::task::Task;
 use ego_cron_mod::service::{EgoCronService};
 use ego_cron_mod::state::EGO_CRON;
-use ego_cron_mod::types::{TaskMainCancelResponse, TaskMainAddRequest, TaskMainAddResponse, TaskMainCancelRequest};
+use ego_cron_mod::types::{TaskMainAddRequest, TaskMainCancelRequest};
 use ego_types::ego_error::EgoError;
 
 use ego_users::inject_ego_users;
@@ -55,24 +55,18 @@ fn post_upgrade() {
 /********************   cron method   ********************/
 #[update(name = "task_main_add", guard = "owner_guard")]
 #[candid_method(update, rename = "task_main_add")]
-fn task_main_add(req: TaskMainAddRequest) -> Result<TaskMainAddResponse, EgoError> {
-    ic_cdk::println!("ego-cron: task_main_add");
+fn task_main_add(req: TaskMainAddRequest) -> Result<(), EgoError> {
+    ic_cdk::println!("ego-cron: task_main_add {} / {} / {:?}", req.canister_id, req.method, req.interval);
 
-    match EgoCronService::task_main_add(req.canister_id, req.method, req.interval){
-        Ok(task_id) => Ok(TaskMainAddResponse{task_id}),
-        Err(e) => Err(e)
-    }
+    EgoCronService::task_main_add(req.canister_id, req.method, req.interval)
 }
 
 #[update(name = "task_main_cancel", guard = "owner_guard")]
 #[candid_method(update, rename = "task_main_cancel")]
-fn task_main_cancel(req: TaskMainCancelRequest) -> Result<TaskMainCancelResponse, EgoError> {
-    ic_cdk::print(format!("ego-cron: task_main_cancel {}", req.task_id));
+fn task_main_cancel(req: TaskMainCancelRequest) -> Result<(), EgoError> {
+    ic_cdk::println!("ego-cron: task_main_cancel {} / {}", req.canister_id, req.method);
 
-    match EgoCronService::task_main_cancel(req.task_id){
-        Ok(ret) => Ok(TaskMainCancelResponse{ret}),
-        Err(e) => Err(e)
-    }
+    EgoCronService::task_main_cancel(req.canister_id, req.method)
 }
 
 
@@ -81,13 +75,17 @@ implement_cron!();
 
 #[heartbeat]
 async fn tick() {
-    // ic_cdk::print("TICK");
-    for tasks in cron_ready_tasks() {
+    let ready_tasks = cron_ready_tasks();
+    ic_cdk::println!("TICK {:?}", ready_tasks.len());
+
+    for tasks in ready_tasks {
+
         let task = tasks
             .get_payload::<Task>()
             .expect("Unable to deserialize cron task kind");
 
-        ic_cdk::print(format!("{:?}", task));
+        ic_cdk::println!("call task: {:?}", task);
+
         cron_call(task).await;
     }
 }

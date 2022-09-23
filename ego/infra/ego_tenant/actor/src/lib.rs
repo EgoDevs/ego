@@ -50,7 +50,7 @@ fn post_upgrade() {
     users_post_upgrade(state.user);
 }
 
-#[update(name = "app_main_install")]
+#[update(name = "app_main_install", guard = "user_guard")]
 #[candid_method(update, rename = "app_main_install")]
 async fn app_main_install(req: AppMainInstallRequest) -> Result<AppMainInstallResponse, EgoError> {
     ic_cdk::println!("ego_tenant: app_main_install");
@@ -61,7 +61,7 @@ async fn app_main_install(req: AppMainInstallRequest) -> Result<AppMainInstallRe
     Ok(AppMainInstallResponse{canister_id})
 }
 
-#[update(name = "app_main_upgrade")]
+#[update(name = "app_main_upgrade", guard = "user_guard")]
 #[candid_method(update, rename = "app_main_upgrade")]
 async fn app_main_upgrade(req: AppMainUpgradeRequest) -> Result<AppMainUpgradeResponse, EgoError> {
     ic_cdk::println!("ego_tenant: app_main_upgrade");
@@ -70,4 +70,13 @@ async fn app_main_upgrade(req: AppMainUpgradeRequest) -> Result<AppMainUpgradeRe
 
     let ret = EgoTenantService::app_main_upgrade(req.wallet_id, req.canister_id, ego_file, management, req.wasm).await?;
     Ok(AppMainUpgradeResponse{ret})
+}
+
+/********************  notify  ********************/
+#[update(name = "message_main_notify", guard = "user_guard")]
+#[candid_method(update, rename = "message_main_notify")]
+async fn message_main_notify() -> Result<(), EgoError> {
+    ic_cdk::println!("ego-tenant: message_main_notify");
+
+    Ok(())
 }

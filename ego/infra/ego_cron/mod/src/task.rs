@@ -1,30 +1,25 @@
 use ic_cdk::export::candid::{CandidType, Deserialize};
 use serde::Serialize;
 use ic_types::Principal;
-use crate::types::CronInterval;
 
 
-#[derive(CandidType, Deserialize, Serialize, Debug, Clone)]
+#[derive(CandidType, Deserialize, Serialize, Debug, Clone, Eq)]
 pub struct Task {
-    pub task_id: u64,
     pub canister_id: Principal,
-    pub method: String,
-    pub interval: CronInterval,
+    pub method: String
 }
 
 impl Task {
-    pub fn new(task_id: u64, canister_id: Principal, method: String, interval: CronInterval) -> Self {
+    pub fn new(canister_id: Principal, method: String) -> Self {
         Task {
-            task_id,
             canister_id,
-            method,
-            interval
+            method
         }
     }
 }
 
 impl PartialEq for Task {
     fn eq(&self, other: &Self) -> bool {
-        self.canister_id == other.canister_id && self.method == other.method && self.interval == other.interval
+        self.canister_id == other.canister_id && self.method == other.method
     }
 }

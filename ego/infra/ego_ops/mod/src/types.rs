@@ -11,15 +11,8 @@ pub struct CanisterMainListResponse {
 
 #[derive(CandidType, Deserialize)]
 pub struct CanisterMainRegisterRequest {
-  pub ego_dev_id: Principal,
-  pub ego_store_id: Principal,
-  pub ego_file_id: Principal,
-  pub ego_tenant_id: Principal
-}
-
-#[derive(CandidType, Deserialize)]
-pub struct CanisterMainRegisterResponse {
-  pub ret: bool
+  pub app_id: String,
+  pub canister_id: Principal
 }
 
 #[derive(CandidType, Deserialize)]

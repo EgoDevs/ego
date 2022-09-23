@@ -28,9 +28,12 @@ fn init() {
   users_init();
 
   ic_cdk::println!("==> caller register as an developer");
-  EGO_DEV.with(|ego_dev| {
-    ego_dev.borrow_mut().developer_main_register(caller, "admin".to_string());
-  });
+  match EgoDevService::developer_main_register(caller, "admin".to_string()){
+    _ => {}
+  }
+  match EgoDevService::user_role_set(caller, true, true){
+    _ => {}
+  }
 }
 
 #[derive(CandidType, Deserialize, Serialize)]

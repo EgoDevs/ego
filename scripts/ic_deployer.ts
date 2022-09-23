@@ -31,10 +31,10 @@ const thirdPartyList = [
     folder: 'nns-dapp',
     config: './configs/nns_config.json',
   },
-  {
-    folder: 'assets_storage',
-    config: './configs/assets_storage.json',
-  },
+  // {
+  //   folder: 'assets_storage',
+  //   config: './configs/assets_storage.json',
+  // },
 ];
 
 // run deploy

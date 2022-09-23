@@ -9,6 +9,8 @@ import { _SERVICE as EgoDevService} from '@/idls/ego_dev';
 import { _SERVICE as EgoStoreService} from '@/idls/ego_store';
 import { _SERVICE as EgoFileService} from '@/idls/ego_file';
 import { _SERVICE as EgoTenantService} from '@/idls/ego_tenant';
+import { _SERVICE as EgoCronService} from '@/idls/ego_cron';
+import { _SERVICE as EgoLedgerService} from '@/idls/ego_ledger';
 
 import { idlFactory } from '@/idls/ego_ops.idl';
 import { identity } from '@/settings/identity';
@@ -38,34 +40,31 @@ const version = {
 };
 
 export const ego_ops_id = Principal.fromText(getCanisterId('ego_ops')!);
-export const ego_dev_id = Principal.fromText(getCanisterId('ego_dev')!);
-export const ego_store_id = Principal.fromText(getCanisterId('ego_store')!);
-export const ego_file_id = Principal.fromText(getCanisterId('ego_file')!);
-export const ego_tenant_id = Principal.fromText(getCanisterId('ego_tenant')!);
-
 
 export const opsPostInstall = async () => {
   let opsOperator = await getOperator<EgoOpsService>('ego_ops');
 
   console.log(`=== post install script of ego_ops starts: ===\n`);
 
-  console.log(`1. set ego_ops as canister owner\n`);
-  // await role_owner_sets();
+  console.log(`1. canister_registers\n`);
+  await canister_registers()
 
-  console.log(`2. canister_main_register\n`);
-  let resp11 = await opsOperator.canister_main_register({
-    ego_dev_id, ego_store_id, ego_file_id, ego_tenant_id
-  });
-
-  console.log(`3. admin_app_create\n`);
-  await admin_app_creates();
-
-  console.log(resp11);
+  console.log(`2. canister_relation_update\n`);
+  await opsOperator.canister_relation_update()
 
   let resp12 = await opsOperator.canister_main_list();
-
   console.log(resp12.Ok);
 };
+
+const canister_registers = async () => {
+  await canister_register("ego_dev")
+  await canister_register("ego_file")
+  await canister_register("ego_store")
+  await canister_register("ego_tenant")
+  await canister_register("ego_cron")
+  await canister_register("ego_ledger")
+}
+
 
 async function getOperator<T>(
   canisterName: string
@@ -78,47 +77,32 @@ async function getOperator<T>(
   return operator;
 }
 
-const role_owner_sets = async () => {
-  let devOperator = await getOperator<EgoDevService>('ego_dev');
-  let storeOperator = await getOperator<EgoStoreService>('ego_store');
-  let fileOperator = await getOperator<EgoFileService>('ego_file');
-  let tenantOperator = await getOperator<EgoTenantService>('ego_tenant');
-  let cronOperator = await getOperator<EgoTenantService>('ego_cron');
+async function canister_register<T>(
+  canister_name: string,
+) {
+  let opsOperator = await getOperator<EgoOpsService>('ego_ops');
 
-  console.log(`==> a. set ego_ops as ego_dev owner\n`);
-  let resp1 = await devOperator.role_owner_set([ego_ops_id]);
+  let actor = await getActor<T>(
+    identity,
+    idlFactory,
+    getCanisterId(canister_name)!,
+  )
+  let canister_operator = await actor;
+
+  let canister_id = Principal.fromText(getCanisterId(canister_name)!);
+
+  console.log(`==> a. set ego_ops as ${canister_name} owner\n`);
+  let resp1 = await canister_operator.role_owner_set([ego_ops_id]);
   console.log(resp1)
 
-  console.log(`==> b. set ego_ops as ego_store owner\n`);
-  let resp2 = await storeOperator.role_owner_set([ego_ops_id]);
+  console.log(`==> a. register ${canister_name} to ego_ops\n`);
+  let resp2 = await opsOperator.canister_main_register({
+    app_id: canister_name,
+    canister_id: canister_id
+  });
   console.log(resp2)
-
-  console.log(`==> c. set ego_ops as ego_file owner\n`);
-  let resp3 = await fileOperator.role_owner_set([ego_ops_id]);
-  console.log(resp3)
-
-  console.log(`==> d. set ego_ops as ego_tenant owner\n`);
-  let resp4 = await tenantOperator.role_owner_set([ego_ops_id]);
-  console.log(resp4)
 }
 
-const admin_app_creates = async () => {
-  console.log(`==> a. admin_app_create ego_dev\n`);
-  let resp1 = await admin_app_create('ego_dev', 'ego_dev', version, ego_dev_wasm);
-  console.log(resp1)
-
-  console.log(`==> b. admin_app_create ego_store\n`);
-  let resp2 = await admin_app_create('ego_store', 'ego_store', version, ego_store_wasm);
-  console.log(resp2)
-
-  console.log(`==> c. admin_app_create ego_file\n`);
-  let resp3 = await admin_app_create('ego_file', 'ego_file', version, ego_file_wasm);
-  console.log(resp3)
-
-  console.log(`==> d. admin_app_create ego_tenant\n`);
-  let resp4 = await admin_app_create('ego_tenant', 'ego_tenant', version, ego_tenant_wasm);
-  console.log(resp4)
-}
 
 const admin_app_create = async (
   app_id: string,

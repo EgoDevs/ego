@@ -4,26 +4,18 @@ use ic_cdk::export::Principal;
 use ego_types::ego_error::EgoError;
 
 
-#[derive(CandidType, Deserialize, Serialize, Clone, Debug)]
+#[derive(CandidType, Deserialize, Serialize)]
 pub struct TaskMainAddRequest {
     pub canister_id: Principal,
     pub method: String,
     pub interval: CronInterval,
 }
 
-#[derive(CandidType, Deserialize, Serialize, Clone, Debug)]
-pub struct TaskMainAddResponse {
-    pub task_id: u64
-}
 
-#[derive(CandidType, Deserialize, Serialize, Clone, Debug)]
+#[derive(CandidType, Deserialize, Serialize)]
 pub struct TaskMainCancelRequest {
-    pub task_id: u64
-}
-
-#[derive(CandidType, Deserialize, Serialize, Clone, Debug)]
-pub struct TaskMainCancelResponse {
-    pub ret: bool
+    pub canister_id: Principal,
+    pub method: String
 }
 
 

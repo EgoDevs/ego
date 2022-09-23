@@ -36,3 +36,19 @@ pub struct AdminEgoTenantAddRequest {
 pub struct WalletAppInstallRequest {
   pub app_id: AppId
 }
+
+// type for ego_tenant
+#[derive(CandidType, Deserialize)]
+pub enum CronInterval {
+  PerSecond,
+  PerMinute,
+  PerHour,
+  PerDay,
+}
+
+#[derive(CandidType, Deserialize)]
+pub struct TaskMainAddRequest {
+  pub canister_id: Principal,
+  pub method: String,
+  pub interval: CronInterval,
+}
