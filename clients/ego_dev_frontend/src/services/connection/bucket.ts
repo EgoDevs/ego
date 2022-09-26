@@ -1,7 +1,7 @@
-import { AppCreateRequest, AppFilesRequest, AppInfoRequest, AppNewVersionRequest, AppOperatorsResponse, LoadFileRequest, Permission, Result_1, Result_11, Result_13, Result_2, Result_3, Result_4, Result_5, Result_6, Result_7, Result_8, Result_9, UploadFileRequest, _SERVICE } from "@/canisters/ego_bucket";
-import { idlFactory as bucketIdl } from "@/canisters/ego_bucket.idl";
+import { AppCreateRequest, AppFilesRequest, AppInfoRequest, AppNewVersionRequest, AppOperatorsResponse, LoadFileRequest, Permission, Result_1, Result_11, Result_13, Result_2, Result_3, Result_4, Result_5, Result_6, Result_7, Result_8, Result_9, UploadFileRequest, _SERVICE } from "@/../../idls/ego_bucket";
+import { idlFactory as bucketIdl } from "@/../../idls/ego_bucket.idl";
 import { BaseConnection } from "./base";
-import { ActorSubclass, HttpAgent, SignIdentity } from "@dfinity/agent";
+import { ActorSubclass, HttpAgent, Identity, SignIdentity } from "@dfinity/agent";
 import { getActor } from "./base";
 import { Principal } from "@dfinity/principal";
 
@@ -9,14 +9,14 @@ import { Principal } from "@dfinity/principal";
 
 export class BucketConnection extends BaseConnection<_SERVICE> {
   constructor(
-    public identity: SignIdentity,
+    public identity: Identity,
     public actor: ActorSubclass<_SERVICE>,
     public agent: HttpAgent,
   ) {
     super(identity, process.env.EGO_BUCKET_CANISTERID!, bucketIdl, actor, agent);
   }
-  static async create(identity: SignIdentity): Promise<BucketConnection> {
-    const { actor, agent } = await getActor(bucketIdl, process.env.EGO_BUCKET_CANISTERID!, identity);
+  static async create(identity: Identity): Promise<BucketConnection> {
+    const { actor, agent } = await getActor<_SERVICE>(bucketIdl, process.env.EGO_BUCKET_CANISTERID!, identity);
     return new BucketConnection(identity, actor, agent);
   }
 

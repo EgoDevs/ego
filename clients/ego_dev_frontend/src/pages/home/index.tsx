@@ -15,10 +15,8 @@ const HomePage: React.FC = () => {
   const [form] = Form.useForm();
   const handleSubmit = async (values: { name: string, role: 'developer' | 'user'}) => {
     console.log('values', values)
-    let result
-
-    result = await storeConnection?.register_developer({name: values.name})
-    dispatch.global.getUser({})
+    const result = await storeConnection?.register_developer({name: values.name})
+    await dispatch.global.getUser({})
     console.log(result)
     message.success('register successfully.')
     // console.log()

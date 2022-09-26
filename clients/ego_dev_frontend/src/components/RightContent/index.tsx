@@ -1,6 +1,8 @@
+import { RootState } from '@/store';
 import { Space } from 'antd';
 // import { QuestionCircleOutlined } from '@ant-design/icons';
 import React from 'react';
+import { useSelector } from 'react-redux';
 // import { useModel, SelectLang } from 'umi';
 import Avatar from './AvatarDropdown';
 import styles from './index.module.less';
@@ -8,12 +10,12 @@ import styles from './index.module.less';
 export type SiderTheme = 'light' | 'dark';
 
 const GlobalHeaderRight: React.FC = () => {
-  // const { initialState } = useModel('@@initialState');
+  const { initialState, user } = useSelector((state:RootState) => state.global);
   // const initialState =
   // console.log('rightContent')
-  // if (initialState === undefined) {
-  //   return null;
-  // }
+  if (initialState === undefined || user === null) {
+    return null;
+  }
  
   return (
     <Space className={styles.right}>

@@ -4,10 +4,10 @@ import {
   GetAppRequest,
   ListUserRequest,
   NewAppVersionRequest, RegisterAppRequest, Result, Result_10, Result_2, Result_3, Result_4, Result_5, Result_6, Result_7, Result_8, Result_9, SetFrontendAddressRequest, SetRoleRequest, Version, _SERVICE
-} from "@/canisters/ego_store";
-import { idlFactory as storeIdl } from "@/canisters/ego_store.idl";
+} from "@/../../idls/ego_store";
+import { idlFactory as storeIdl } from "@/../../idls/ego_store.idl";
 import { BaseConnection } from "./base";
-import { ActorSubclass, HttpAgent, SignIdentity } from "@dfinity/agent";
+import { ActorSubclass, HttpAgent, Identity, SignIdentity } from "@dfinity/agent";
 import { getActor } from "./base";
 
 
@@ -22,15 +22,15 @@ export const CategoryEnum = {
 
 export class StoreConnection extends BaseConnection<_SERVICE> {
   constructor(
-    public identity: SignIdentity,
+    public identity: Identity,
     public actor: ActorSubclass<_SERVICE>,
     public agent: HttpAgent,
   ) {
     super(identity, process.env.EGO_STORE_CANISTERID!, storeIdl, actor, agent);
 
   }
-  static async create(identity: SignIdentity): Promise<StoreConnection> {
-    const { actor, agent } = await getActor(storeIdl, process.env.EGO_STORE_CANISTERID!, identity);
+  static async create(identity: Identity): Promise<StoreConnection> {
+    const { actor, agent } = await getActor<_SERVICE>(storeIdl, process.env.EGO_STORE_CANISTERID!, identity);
     return new StoreConnection(identity, actor, agent);
   }
 

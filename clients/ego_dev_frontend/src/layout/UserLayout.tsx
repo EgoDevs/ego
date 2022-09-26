@@ -7,19 +7,20 @@ import RightContent from '@/components/RightContent';
 import Exception from '@/components/Exception';
 import { useDispatch } from 'react-redux';
 import { Link, useHistory, useLocation } from 'react-router-dom';
-import { MeResponse, _SERVICE as storeService } from '@/canisters/ego_store';
-import { _SERVICE as bucketService } from '@/canisters/ego_bucket';
-import { idlFactory as storeIdl } from '@/canisters/ego_store.idl';
-import { idlFactory as bucketIdl } from '@/canisters/ego_bucket.idl';
+import { MeResponse, _SERVICE as storeService } from '@/../../idls/ego_store';
+import { _SERVICE as bucketService } from '@/../../idls/ego_bucket';
+import { idlFactory as storeIdl } from '@/../../idls/ego_store.idl';
+import { idlFactory as bucketIdl } from '@/../../idls/ego_bucket.idl';
 // import { matchRoutes } from 'react-router';
 import routes from '@/routes/routes';
 import { ProLayout } from '@ant-design/pro-components';
-import defaultProps from './routes';
 import { BucketConnection } from '@/services/connection/bucket';
-import { IC } from '@astrox/connection';
 import { StoreConnection } from '@/services/connection/store';
-import { IcObject } from '@/utils';
 import { ActorSubclass } from '@dfinity/agent';
+import { useSelector } from 'react-redux';
+import { RootState } from '@/store';
+import { client } from '@/main';
+import { ClientConnecttion } from '@kasumisk/sdk';
 
 
 
@@ -28,7 +29,7 @@ const loginPath = '/user/login';
 
 export interface InitialStateType {
   loading?: boolean;
-  currentUser?: IC | undefined;
+  currentUser?: ClientConnecttion | undefined;
   isAuthenticated?: () => Promise<boolean | undefined>;
   bucketConnection?: BucketConnection | undefined;
   storeConnection?: StoreConnection | undefined;
@@ -85,7 +86,7 @@ export default (props: any) => {
   const dispatch = useDispatch();
   const access = useAccess();
   const [initEnd, setInitEnd] = useState(false)
-
+  const { user } = useSelector((state: RootState) => state.global)
   const clientRoutes = mapRoutes(routes)
   const [menuRoute] = useAccessMarkedRoutes([clientRoutes.find(route => route.path === '/') as IRoute]);
   const matchedRoute = useMemo(() => {
@@ -105,12 +106,12 @@ export default (props: any) => {
     console.log('getInitialState')
     const isAuthenticated = async () => {
       try {
-        const result = await IcObject.isAuthenticated()
+        const result = await client.isConnect()
         return result
       } catch (error) {
         history.push(loginPath);
       }
-      return undefined;
+      return false;
     };
 
     // 如果是登录页面，不执行
@@ -119,15 +120,15 @@ export default (props: any) => {
       if (result === false) {
         history.push(loginPath)
       }
-      const bucketConnection = await BucketConnection.create(window.ic.astrox.identity);
-      const storeConnection = await StoreConnection.create(window.ic.astrox.identity);
+      const bucketConnection = await BucketConnection.create(client.identity);
+      const storeConnection = await StoreConnection.create(client.identity);
       dispatch.global.getUser({ storeConnection })
       setInitEnd(true)
       return dispatch.global.save(
         {
           initialState: {
             isAuthenticated,
-            currentUser: (result === true) ? window.ic.astrox : undefined,
+            currentUser: (result === true) ? client : undefined,
             bucketConnection: (result === true) ? bucketConnection : undefined,
             storeConnection: (result === true) ? storeConnection : undefined,
           }
@@ -135,7 +136,6 @@ export default (props: any) => {
         }
       );
     }
-    setInitEnd(true)
     return dispatch.global.save({
       initialState: {
         isAuthenticated,
@@ -152,6 +152,7 @@ export default (props: any) => {
   if (!initEnd) {
     return null
   }
+  console.log('menuRoute', menuRoute)
   return (
     <ProLayout
       route={menuRoute}

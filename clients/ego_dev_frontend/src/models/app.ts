@@ -24,8 +24,10 @@ export const app = createModel<RootModel>()({
       let result: any;
       if(user?.is_app_auditer) {
         result = await (initialState.storeConnection as StoreConnection).list_wait_for_audit_app();
+        console.log('auditer', result)
       } else {
         result = await initialState.storeConnection?.created_apps();
+        console.log('developer', result)
       }
       dispatch.app.save({ applist: result['Ok']['apps'] });
     },

@@ -1,4 +1,4 @@
-import { ListUserResponse, MeResponse, User } from '@/canisters/ego_store';
+import { ListUserResponse, MeResponse, User } from '@/../../idls/ego_store';
 import { InitialStateType } from '@/layout/UserLayout';
 import { StoreConnection } from '@/services/connection/store';
 import { createModel } from '@rematch/core';

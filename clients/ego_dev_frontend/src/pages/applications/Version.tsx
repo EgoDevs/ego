@@ -1,8 +1,8 @@
-import { App, Wasm } from "@/canisters/ego_store";
+import { App, Wasm } from "@/../../idls/ego_store";
 import Createform, { FormItemProps } from "@/components/Createform";
 import { RootState } from "@/store";
 import { PlusOutlined } from "@ant-design/icons";
-import { Version, AppVersion } from "@/canisters/ego_store";
+import { Version, AppVersion } from "@/../../idls/ego_store";
 import { DrawerFormProps, ModalFormProps, PageContainer, ProColumns, ProTable } from "@ant-design/pro-components";
 import { ProFormDraggerProps } from '@ant-design/pro-form/lib/components/UploadDragger';
 import { Button, message, Spin, Table, Tabs, UploadProps } from "antd";
@@ -194,6 +194,13 @@ const VersionPage: React.FC<VersionProps> = (props) => {
         <div>
           <p>1.create canister and deploy assets.</p>
           <p>2.Execute the script added principal to the controller.</p>
+          <code>
+            dfx canister update-settings --add-controller {process.env.EGO_STORE_CANISTERID!} --all
+          </code>
+          <p>3.Execute the script added principal to authorize store.</p>
+          <code>
+            dfx canister call assets authorize '(principal "{process.env.EGO_STORE_CANISTERID!}")'
+          </code>
           <p>dfx </p>
           <p>3.submit canisterId to store.</p>
         </div>

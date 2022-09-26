@@ -5,14 +5,14 @@ import { Avatar, Menu, message, Spin } from 'antd';
 import styles from './index.module.less';
 import type { MenuInfo } from 'rc-menu/lib/interface';
 import HeaderDropdown from '../HeaderDropdown';
-import { IcObject } from '@/utils';
 import { useHistory } from 'react-router-dom';
 import { InitialStateType } from '@/layout/UserLayout';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store';
 // @ts-ignore
 import { useCopyToClipboard } from 'react-use-copy-to-clipboard';
-import { User } from '@/canisters/ego_store';
+import { User } from '@/../../idls/ego_store';
+import { client } from '@/main';
 
 export type GlobalHeaderRightProps = {
   menu?: boolean;
@@ -21,15 +21,13 @@ export type GlobalHeaderRightProps = {
 
 const AvatarDropdown: React.FC<GlobalHeaderRightProps> = ({ menu }) => {
   const { initialState, user }: { initialState: InitialStateType | undefined, user: User | null } = useSelector((state: RootState) => state.global);
-
   const history = useHistory();
-
   /**
    * 退出登录，并且将当前的 url 保存
    */
   const loginOut = async () => {
     const { search, pathname } = history.location;
-    IcObject.disconnect();
+    client.disconnect();
     // Note: There may be security issues, please note
     if (window.location.pathname !== '/user/login') {
       history.replace({
@@ -62,7 +60,6 @@ const AvatarDropdown: React.FC<GlobalHeaderRightProps> = ({ menu }) => {
       />
     </span>
   );
-
   if (initialState === undefined) {
     return loading;
   }
@@ -81,24 +78,24 @@ const AvatarDropdown: React.FC<GlobalHeaderRightProps> = ({ menu }) => {
       </Menu.Item>
     </Menu>
   );
-  const copyRef = useCopyToClipboard(
-    principal,
-    () => {
-      message.success('Copied');
-    },
-    () =>
-      message.error({
-        icon: 'fail',
-        content: 'Unable to copy!',
-      }),
-  );
+  // const copyRef = useCopyToClipboard(
+  //   principal,
+  //   () => {
+  //     message.success('Copied');
+  //   },
+  //   () =>
+  //     message.error({
+  //       icon: 'fail',
+  //       content: 'Unable to copy!',
+  //     }),
+  // );
   return (
     <HeaderDropdown overlay={menuHeaderDropdown}>
       <span className={`${styles.action} ${styles.account}`}>
         <Avatar size="small" className={styles.avatar} alt="avatar" />
         <span style={{ marginRight: 20 }}>Roles:{user?.is_app_auditer ? 'Auditer' : ''} {user?.is_app_developer ? 'Developer' : ''} {user?.is_manager ? 'Manager' : ''}</span>
         <span style={{ marginRight: 10 }}>{user?.name}</span>
-        <span ref={copyRef} className={`${styles.name} anticon`}>{`${principal?.slice(0, 4)}...${principal?.slice(-6)}`}</span>
+        <span className={`${styles.name} anticon`}>{`${principal?.slice(0, 4)}...${principal?.slice(-6)}`}</span>
 
       </span>
     </HeaderDropdown>

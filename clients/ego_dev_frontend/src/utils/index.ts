@@ -1,13 +1,4 @@
-import { IC } from '@astrox/connection';
 import BMF from 'browser-md5-file';
-
-
-export const IcObject = await IC.create({
-  onAuthenticated: (icInstance: IC) => {
-    console.log(icInstance)
-    console.log(window)
-  },
-});
 
 export function hasOwnProperty<X extends Record<string, unknown>, Y extends PropertyKey>(obj: X, prop: Y): obj is X & Record<Y, unknown> {
   return Object.prototype.hasOwnProperty.call(obj, prop);

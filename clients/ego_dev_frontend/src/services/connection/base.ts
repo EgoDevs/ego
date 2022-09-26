@@ -1,4 +1,4 @@
-import { Actor, ActorSubclass, HttpAgent, SignIdentity } from "@dfinity/agent";
+import { Actor, ActorSubclass, HttpAgent, Identity, SignIdentity } from "@dfinity/agent";
 import { InterfaceFactory } from "@dfinity/candid/lib/cjs/idl";
 
 export interface CreateActorResult<T> {
@@ -9,7 +9,7 @@ export interface CreateActorResult<T> {
 export async function _createActor<T>(
   interfaceFactory: InterfaceFactory,
   canisterId: string,
-  identity?: SignIdentity,
+  identity?: Identity,
   host?: string,
 ): Promise<CreateActorResult<T>> {
   const agent = new HttpAgent({ identity, host: process.env. NODE_ENV !== 'production' ? 'http://localhost:8000' : 'https://ic0.app' });
@@ -32,13 +32,13 @@ export async function _createActor<T>(
   return { actor, agent };
 }
 
-export async function getActor<T>(interfaceFactory: InterfaceFactory, canisterId: string, identity?: SignIdentity) {
+export async function getActor<T>(interfaceFactory: InterfaceFactory, canisterId: string, identity?: Identity) {
   return await _createActor<T>(interfaceFactory, canisterId, identity)
 }
 
 
 export interface AbstractConnection<T> {
-  identity: SignIdentity;
+  identity: Identity;
   actor?: ActorSubclass<T>;
   agent?: HttpAgent;
   canisterId?: string;
@@ -48,7 +48,7 @@ export class BaseConnection<T> implements AbstractConnection<T> {
   _actor: ActorSubclass<T>;
   _agent: HttpAgent;
   constructor(
-    public identity: SignIdentity,
+    public identity: Identity,
     public canisterId: string,
     public interfaceFactory: InterfaceFactory,
     public actor: ActorSubclass<T>,

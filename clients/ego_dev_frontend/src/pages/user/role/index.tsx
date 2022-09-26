@@ -1,4 +1,4 @@
-import { User } from '@/canisters/ego_store';
+import { User } from '@/../../idls/ego_store';
 import Createform, { FormItemProps } from '@/components/Createform';
 import Guide from '@/components/Guide';
 import { RootDispatch, RootState } from '@/store';

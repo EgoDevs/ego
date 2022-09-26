@@ -1,4 +1,4 @@
-import { App } from '@/canisters/ego_store';
+import { App } from '@/../../idls/ego_store';
 import Createform, { FormItemProps } from '@/components/Createform';
 import { CategoryEnum } from '@/services/connection/store';
 import { ProDescriptions } from '@ant-design/pro-components';
@@ -26,10 +26,7 @@ const Applications: React.FC = (props) => {
   console.log('loading', loading)
   console.log('user', user)
   const columns: ProColumns[] = [
-    {
-      title: 'Application',
-      dataIndex: 'name',
-    },
+    
     {
       title: 'PackageId',
       dataIndex: 'app_id',

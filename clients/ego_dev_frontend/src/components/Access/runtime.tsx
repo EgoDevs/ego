@@ -1,4 +1,4 @@
-import { User } from '@/canisters/ego_store';
+import { User } from '@/../../idls/ego_store';
 import { RootState } from '@/store';
 import React from 'react';
 import { useSelector } from 'react-redux';
