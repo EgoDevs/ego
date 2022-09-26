@@ -56,7 +56,6 @@ impl EgoOpsService {
     }
     ego_store.wallet_main_new(ego_store_id.clone()).await?;
 
-
     // ego_tenant
     for ego_tenant_id in ego_tenant_ids {
       ego_store.admin_egp_tenant_add(ego_tenant_id.clone(), ego_store_id.clone()).await?;
