@@ -1,5 +1,5 @@
 use candid::{candid_method};
-use ic_cdk::{call, storage};
+use ic_cdk::{notify, storage};
 use ic_cdk::api::time;
 use ic_cdk_macros::*;
 use ic_cron::implement_cron;
@@ -114,21 +114,25 @@ async fn tick() {
             .get_payload::<Task>()
             .expect("Unable to deserialize cron task kind");
 
-        ic_cdk::println!("call task: {:?}", task);
+
 
         cron_call(task).await;
     }
 }
 
 pub async fn cron_call(task: Task) {
-    ic_cdk::print("call canister");
-    let cb = call(
+    ic_cdk::println!("ego-cron: notify task: {:?}", task);
+    let notify_result = notify(
         task.canister_id,
         task.method.as_str(),
-        ()
-    ).await as Result<((),), _>;
-    match cb {
-        Ok(_) => {},
-        Err(e) => trap(format!("{:?}", e).as_str())
-    }
+        (),
+    );
+
+    match notify_result {
+        Err(code) => {
+            let code = code as u16;
+            Err(EgoError { code, msg: "cron_call failed".to_string() })
+        },
+        _ => Ok(true)
+    }.expect("notify success");
 }

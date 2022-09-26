@@ -47,7 +47,7 @@ export const opsPostInstall = async () => {
   console.log(`=== post install script of ego_ops starts: ===\n`);
 
   console.log(`1. canister_registers\n`);
-  // await canister_registers()
+  await canister_registers()
 
   console.log(`2. canister_relation_update\n`);
   await opsOperator.canister_relation_update()
