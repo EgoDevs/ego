@@ -24,7 +24,7 @@
       "format": "prettier --write {scripts,clients}/**/*.{js,ts,less,json}",
       "format:json": "prettier --write artifacts/**/*.json",
       "format:idl": "prettier --write clients/idls/**/*.ts",
-      "poc:setup": "pnpm run ego:pre && pnpm run ego:bootstrap && pnpm run ego:build --infra && pnpm ego:install --infra && pnpm run ego:build --project=ego_wallet && pnpm run ego:build --project=ego_assets && pnpm run ego:post_install:infra"
+      "poc:setup": "pnpm run ego:pre && pnpm run ego:bootstrap && pnpm run ego:build && pnpm ego:install && pnpm run ego:post_install:project ego_pos"
     },
     "author": "devs@astrox",
     "license": "ISC",
