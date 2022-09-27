@@ -1,11 +1,10 @@
-import { ListUserResponse, MeResponse, User } from '@/../../idls/ego_store';
-import { InitialStateType } from '@/layout/UserLayout';
-import { StoreConnection } from '@/services/connection/store';
+import { DevConnection } from '@/services/connection/dev';
 import { createModel } from '@rematch/core';
 import type { RootModel } from '../store/models';
+import {Developer, Result_8} from "../../../idls/ego_dev";
 
 type UserProps = {
-  userList: User []
+  userList: Developer []
 };
 
 export const user = createModel<RootModel>()({
@@ -22,11 +21,11 @@ export const user = createModel<RootModel>()({
   },
   effects: dispatch => ({
     async getUserList(payload, rootState) {
-      const storeConnection: StoreConnection = payload.storeConnection ?? rootState.global.initialState.storeConnection;
-      const result1 = await storeConnection?.list_user({name: payload.name});
+      const storeConnection: DevConnection = payload.storeConnection ?? rootState.global.initialState.storeConnection;
+      const result1 = await storeConnection?.user_main_list({name: payload.name});
       console.log('result', result1)
       dispatch.user.save({
-        userList: (result1 as { 'Ok': ListUserResponse })['Ok']['users'],
+        userList: (result1 as { 'Ok': Result_8 })['Ok']['users'],
       })
     },
 

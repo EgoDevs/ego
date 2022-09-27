@@ -7,22 +7,14 @@ import RightContent from '@/components/RightContent';
 import Exception from '@/components/Exception';
 import { useDispatch } from 'react-redux';
 import { Link, useHistory, useLocation } from 'react-router-dom';
-import { MeResponse, _SERVICE as storeService } from '@/../../idls/ego_store';
-import { _SERVICE as bucketService } from '@/../../idls/ego_bucket';
-import { idlFactory as storeIdl } from '@/../../idls/ego_store.idl';
-import { idlFactory as bucketIdl } from '@/../../idls/ego_bucket.idl';
-// import { matchRoutes } from 'react-router';
 import routes from '@/routes/routes';
 import { ProLayout } from '@ant-design/pro-components';
-import { BucketConnection } from '@/services/connection/bucket';
-import { StoreConnection } from '@/services/connection/store';
+import { DevConnection } from '@/services/connection/dev';
 import { ActorSubclass } from '@dfinity/agent';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store';
 import { client } from '@/main';
 import { ClientConnecttion } from '@kasumisk/sdk';
-
-
 
 
 const loginPath = '/user/login';
@@ -31,10 +23,7 @@ export interface InitialStateType {
   loading?: boolean;
   currentUser?: ClientConnecttion | undefined;
   isAuthenticated?: () => Promise<boolean | undefined>;
-  bucketConnection?: BucketConnection | undefined;
-  storeConnection?: StoreConnection | undefined;
-  // storeActor?: ActorSubclass<storeService> | undefined;
-  // bucketActor?: ActorSubclass<bucketService> | undefined;
+  storeConnection?: DevConnection | undefined;
 }
 
 // // 过滤出需要显示的路由, 这里的filterFn 指 不希望显示的层级
@@ -120,8 +109,8 @@ export default (props: any) => {
       if (result === false) {
         history.push(loginPath)
       }
-      const bucketConnection = await BucketConnection.create(client.identity);
-      const storeConnection = await StoreConnection.create(client.identity);
+
+      const storeConnection = await DevConnection.create(client.identity);
       dispatch.global.getUser({ storeConnection })
       setInitEnd(true)
       return dispatch.global.save(
@@ -129,7 +118,6 @@ export default (props: any) => {
           initialState: {
             isAuthenticated,
             currentUser: (result === true) ? client : undefined,
-            bucketConnection: (result === true) ? bucketConnection : undefined,
             storeConnection: (result === true) ? storeConnection : undefined,
           }
           // settings: defaultSettings,

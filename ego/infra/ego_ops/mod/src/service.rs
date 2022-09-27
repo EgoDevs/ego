@@ -61,12 +61,12 @@ impl EgoOpsService {
       ego_store.admin_egp_tenant_add(ego_tenant_id.clone(), ego_store_id.clone()).await?;
 
       ego_user.role_user_add(ego_tenant_id.clone(), ego_cron_id.clone()).await?;
-      ego_cron.task_main_add(ego_cron_id.clone(), ego_tenant_id.clone(), "message_main_notify".to_string(), CronInterval::PerSecond).await?;
+      ego_cron.task_main_add(ego_cron_id.clone(), ego_tenant_id.clone(), "message_main_notify".to_string(), CronInterval::PerMinute).await?;
     }
 
     // ego_ledger
     ego_user.role_user_add(ego_ledger_id.clone(), ego_cron_id.clone()).await?;
-    ego_cron.task_main_add(ego_cron_id.clone(), ego_ledger_id.clone(), "message_main_notify".to_string(), CronInterval::PerSecond).await?;
+    ego_cron.task_main_add(ego_cron_id.clone(), ego_ledger_id.clone(), "message_main_notify".to_string(), CronInterval::PerMinute).await?;
 
 
     Ok(true)

@@ -26,7 +26,7 @@ function App() {
           count is {count}
         </button>
         <button onClick={() => {
-          console.log(process.env.EGO_STORE_CANISTERID)
+          console.log(process.env.EGO_DEV_CANISTERID)
           IcObject.connect({
             // dev: true,
             useFrame: !(window.innerWidth < 768),
@@ -38,7 +38,7 @@ function App() {
               console.log('icInstance', icInstance)
               const storeActor = icInstance.createActor<storeService>(
                 storeIdl,
-                process.env.EGO_STORE_CANISTERID!,
+                process.env.EGO_DEV_CANISTERID!,
               );
               console.log('storeActor', storeActor)
               try {

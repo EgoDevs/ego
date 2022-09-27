@@ -5,12 +5,6 @@ import { getActor } from '@/settings/agent';
 import { getCanisterId } from '@/settings/utils';
 
 import { _SERVICE as EgoOpsService} from '@/idls/ego_ops';
-import { _SERVICE as EgoDevService} from '@/idls/ego_dev';
-import { _SERVICE as EgoStoreService} from '@/idls/ego_store';
-import { _SERVICE as EgoFileService} from '@/idls/ego_file';
-import { _SERVICE as EgoTenantService} from '@/idls/ego_tenant';
-import { _SERVICE as EgoCronService} from '@/idls/ego_cron';
-import { _SERVICE as EgoLedgerService} from '@/idls/ego_ledger';
 
 import { idlFactory } from '@/idls/ego_ops.idl';
 import { identity } from '@/settings/identity';

@@ -23,7 +23,7 @@ type VersionProps = {
 type TabKeyType = 'create' | 'audit' | 'release';
 
 const VersionPage: React.FC<VersionProps> = (props) => {
-  const { bucketConnection, storeConnection } = useSelector((state: RootState) => state.global.initialState)
+  const { storeConnection } = useSelector((state: RootState) => state.global.initialState)
   const { app, handleVersionSuccess } = props;
   const [createVisible, setCreateVisible] = useState(false)
   const [uploadVisible, setUploadVisible] = useState(false)
@@ -101,7 +101,7 @@ const VersionPage: React.FC<VersionProps> = (props) => {
             {
               tab === 'create' ? (
                 <>
-                  <Access accessible={access.canDeveloper}>
+                  <Access accessible={true}>
                     <Spin spinning={loading} wrapperClassName="spin-inline-block">
                       <a
                         onClick={() => {
@@ -138,34 +138,32 @@ const VersionPage: React.FC<VersionProps> = (props) => {
                         </a>
                       </Spin>
                     </Access>
-                    <Access accessible={access.canDeveloper}>
-                      <Spin spinning={loading} wrapperClassName="spin-inline-block">
-                        <a
-                          onClick={() => {
-                            handleRevoke(record.app_id, record.version)
-                          }}
-                          style={{ marginRight: '10px' }}
-                        >
-                          Revoke
-                        </a>
-                      </Spin>
-                    </Access>
+
+                    <Spin spinning={loading} wrapperClassName="spin-inline-block">
+                      <a
+                        onClick={() => {
+                          handleRevoke(record.app_id, record.version)
+                        }}
+                        style={{ marginRight: '10px' }}
+                      >
+                        Revoke
+                      </a>
+                    </Spin>
+
                   </>
                 ) : (
                 <>
                   {
                     hasOwnProperty(record.status, AppVersionStatusEnum.APPROVED) ? (
-                      <Access accessible={access.canDeveloper}>
-                        <Spin spinning={loading} wrapperClassName="spin-inline-block">
-                          <a
-                            onClick={() => {
-                              handleRelease(record.app_id, record.version)
-                            }}
-                          >
-                            Release
-                          </a>
-                        </Spin>
-                      </Access>
+                      <Spin spinning={loading} wrapperClassName="spin-inline-block">
+                        <a
+                          onClick={() => {
+                            handleRelease(record.app_id, record.version)
+                          }}
+                        >
+                          Release
+                        </a>
+                      </Spin>
                     ) : null
                   }
                 </>
@@ -195,11 +193,11 @@ const VersionPage: React.FC<VersionProps> = (props) => {
           <p>1.create canister and deploy assets.</p>
           <p>2.Execute the script added principal to the controller.</p>
           <code>
-            dfx canister update-settings --add-controller {process.env.EGO_STORE_CANISTERID!} --all
+            dfx canister update-settings --add-controller {process.env.EGO_DEV_CANISTERID!} --all
           </code>
           <p>3.Execute the script added principal to authorize store.</p>
           <code>
-            dfx canister call assets authorize '(principal "{process.env.EGO_STORE_CANISTERID!}")'
+            dfx canister call assets authorize '(principal "{process.env.EGO_DEV_CANISTERID!}")'
           </code>
           <p>dfx </p>
           <p>3.submit canisterId to store.</p>
@@ -259,7 +257,7 @@ const VersionPage: React.FC<VersionProps> = (props) => {
   const handleApply = async (app_id: string, version: Version) => {
     setLoading(true)
     try {
-      const result = await storeConnection?.submit_app_version({ version, app_id });
+      const result = await storeConnection?.app_version_submit({ version, app_id });
       console.log(result)
       handleRefresh()
     } catch (e) {
@@ -271,7 +269,7 @@ const VersionPage: React.FC<VersionProps> = (props) => {
   const handleReject = async (app_id: string, version: Version) => {
     setLoading(true)
     try {
-      const result = await storeConnection?.reject_app_version({ version, app_id });
+      const result = await storeConnection?.app_version_reject({ version, app_id });
       console.log(result)
       handleRefresh()
     } catch (e) {
@@ -283,7 +281,7 @@ const VersionPage: React.FC<VersionProps> = (props) => {
   const handleApprove = async (app_id: string, version: Version) => {
     setLoading(true)
     try {
-      const result = await storeConnection?.approve_app_version({ version, app_id });
+      const result = await storeConnection?.app_version_approve({ version, app_id });
       console.log(result)
       handleRefresh()
     } catch (e) {
@@ -294,7 +292,7 @@ const VersionPage: React.FC<VersionProps> = (props) => {
   const handleRelease = async (app_id: string, version: Version) => {
     setLoading(true)
     try {
-      const result = await storeConnection?.release_app_version({ version, app_id });
+      const result = await storeConnection?.app_version_release({ version, app_id });
       console.log(result)
       handleRefresh()
     } catch (e) {
@@ -306,7 +304,7 @@ const VersionPage: React.FC<VersionProps> = (props) => {
   const handleRevoke = async (app_id: string, version: Version) => {
     setLoading(true)
     try {
-      const result = await storeConnection?.revoke_app_version({ version, app_id });
+      const result = await storeConnection?.app_version_revoke({ version, app_id });
       console.log(result)
       handleRefresh()
     } catch (e) {
@@ -333,7 +331,7 @@ const VersionPage: React.FC<VersionProps> = (props) => {
         'minor': Number(values.version.split('.')[1]),
         'patch': Number(values.version.split('.')[2]),
       }
-      const result = await storeConnection?.new_app_version({ version, app_id: app.app_id });
+      const result = await storeConnection?.app_version_new({ version, app_id: app.app_id });
       console.log(result)
       handleVersionSuccess()
     }
@@ -343,16 +341,15 @@ const VersionPage: React.FC<VersionProps> = (props) => {
   }
 
   const onUpload = async () => {
-    if (!selectedWasms || !file) return;
-    const wasm: Wasm = selectedWasms[1]
+    if (!file) return;
     try {
       const fileBuffer = await file2Buffer(file);
       const md5 = await fileMd5(file);
       const data = Array.from(new Uint8Array(fileBuffer))
-      const result = await bucketConnection?.upload_file({
-        fid: wasm.file_id,
-        appid: app.app_id,
-        version: `${wasm.version.major}.${wasm.version.minor}.${wasm.version.patch}`,
+
+      const result = await storeConnection?.app_version_upload_wasm({
+        app_id: (selectRecord as AppVersion).app_id,
+        version: (selectRecord as AppVersion).version,
         hash: md5,
         data,
       })
@@ -365,7 +362,7 @@ const VersionPage: React.FC<VersionProps> = (props) => {
 
   const settingAssetsCanister = async (values: any) => {
     try {
-      const result = await storeConnection?.set_frontend_address({
+      const result = await storeConnection?.app_version_set_frontend_address({
         app_id: (selectRecord as AppVersion).app_id,
         version: (selectRecord as AppVersion).version,
         canister_id: Principal.fromText(values.canister_id),

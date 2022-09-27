@@ -1,6 +1,6 @@
 import { App } from '@/../../idls/ego_store';
 import Createform, { FormItemProps } from '@/components/Createform';
-import { CategoryEnum } from '@/services/connection/store';
+import { CategoryEnum } from '@/services/connection/dev';
 import { ProDescriptions } from '@ant-design/pro-components';
 import { RootDispatch, RootState } from '@/store';
 import { PlusOutlined } from '@ant-design/icons';
@@ -15,7 +15,7 @@ import Version from './Version';
 const Applications: React.FC = (props) => {
   console.log('Applications props', props)
   const [createVisible, setCreateVisible] = useState(false)
-  const { bucketConnection, storeConnection } = useSelector((state: RootState) => state.global.initialState)
+  const { storeConnection } = useSelector((state: RootState) => state.global.initialState)
   const { user } = useSelector((state: RootState) => state.global)
   const loading  = useSelector((state: RootState) => state.loading.models.app)
   const dispatch = useDispatch<RootDispatch>();
@@ -26,7 +26,6 @@ const Applications: React.FC = (props) => {
   console.log('loading', loading)
   console.log('user', user)
   const columns: ProColumns[] = [
-    
     {
       title: 'PackageId',
       dataIndex: 'app_id',
@@ -188,10 +187,12 @@ const Applications: React.FC = (props) => {
       price: values.priceType === 0 ? 0 : Number(values.price),
       app_id: values.app_id.toLowerCase(),
       name: values.name.toLowerCase(),
+      logo: 'this is logo',
+      description: "this is description"
     }
     console.log(params)
     try {
-      const result = await storeConnection?.register_app(params)
+      const result = await storeConnection?.developer_app_new(params)
       console.log('result', result)
       handleSearch()
       setCreateVisible(false)

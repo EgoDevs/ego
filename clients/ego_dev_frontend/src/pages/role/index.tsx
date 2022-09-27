@@ -49,7 +49,7 @@ type PageState1<T> = {
 
 // const ddd: State5 = []
 const RolePage = () => {
-  const { bucketConnection, storeConnection } = useSelector((state: RootState) => state.global.initialState)
+  const { storeConnection } = useSelector((state: RootState) => state.global.initialState)
   const dispatch = useDispatch<RootDispatch>()
   const { user } = useSelector((state: RootState) => state.global)
 

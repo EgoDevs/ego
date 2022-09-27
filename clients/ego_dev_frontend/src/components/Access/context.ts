@@ -6,6 +6,5 @@ import React from 'react';
 interface IAccessContext {
   canAdmin: boolean;
   canAudit: boolean;
-  canDeveloper: boolean;
 }
 export const AccessContext = React.createContext<IAccessContext>(null);

@@ -1,4 +1,3 @@
-import { User } from '@/../../idls/ego_store';
 import Createform, { FormItemProps } from '@/components/Createform';
 import Guide from '@/components/Guide';
 import { RootDispatch, RootState } from '@/store';
@@ -7,14 +6,15 @@ import { ActionType, ModalFormProps, PageContainer, ProColumns, ProTable } from 
 import { Button } from 'antd';
 import { useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import {Developer} from "../../../../../idls/ego_dev";
 
 const RolePage: React.FC = () => {
   console.log('RolePage')
   const userList = useSelector((state: RootState) => state.user.userList);
   const loading = useSelector((state: RootState) => state.loading.models.user);
-  const { bucketConnection, storeConnection } = useSelector((state: RootState) => state.global.initialState)
+  const { storeConnection } = useSelector((state: RootState) => state.global.initialState)
   const dispatch = useDispatch<RootDispatch>()
-  const [selectRow, setSelectRow] = useState<User>()
+  const [selectRow, setSelectRow] = useState<Developer>()
   const { user } = useSelector((state: RootState) => state.global)
   const [settingVisible, setSettingVisible] = useState(false)
   const tableRef = useRef<ActionType>();
@@ -25,22 +25,18 @@ const RolePage: React.FC = () => {
       dataIndex: 'name',
     },
     {
-      title: 'is_app_auditer',
-      dataIndex: 'is_app_auditer',
+      title: 'is_app_auditor',
+      dataIndex: 'is_app_auditor',
     },
     {
       title: 'is_manager',
       dataIndex: 'is_manager',
     },
     {
-      title: 'is_app_developer',
-      dataIndex: 'is_app_developer',
-    },
-    {
       title: 'Operation',
       dataIndex: 'option',
       search: false,
-      render: (_: any, record: User) => (
+      render: (_: any, record: Developer) => (
         <>
           <a
             onClick={() => {
@@ -65,9 +61,8 @@ const RolePage: React.FC = () => {
         label: 'Role',
         mode: 'multiple',
         options: [
-          { label: 'Auditer', value: 'Auditer' },
+          { label: 'Auditor', value: 'Auditor' },
           { label: 'Manager', value: 'Manager' },
-          { label: 'Developer', value: 'Developer' },
         ]
       }
     }
@@ -79,14 +74,13 @@ const RolePage: React.FC = () => {
     setName(values.name)
   }
 
-  const setRole = async (values: { role: 'Auditer' | 'Manager' | 'Developer' }) => {
+  const setRole = async (values: { role: 'Auditor' | 'Manager' }) => {
     console.log('values', values)
     try {
-      const result = await storeConnection?.set_role({
+      const result = await storeConnection?.user_role_set({
         user_id: selectRow?.user_id!,
-        is_app_auditer: values.role.includes('Auditer'),
-        is_manager: values.role.includes('Manager') ,
-        is_app_developer: values.role.includes('Developer'),
+        is_app_auditor: values.role.includes('Auditor'),
+        is_manager: values.role.includes('Manager')
       })
       console.log('result', result)
       dispatch.global.getUser({ storeConnection })
@@ -101,11 +95,8 @@ const RolePage: React.FC = () => {
   if(selectRow?.is_manager) {
     rolesValue.push('Manager')
   }
-  if(selectRow?.is_app_auditer) {
-    rolesValue.push('Auditer')
-  }
-  if(selectRow?.is_app_developer) {
-    rolesValue.push('Developer')
+  if(selectRow?.is_app_auditor) {
+    rolesValue.push('Auditor')
   }
 
   return (

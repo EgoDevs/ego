@@ -1,4 +1,4 @@
-import { StoreConnection } from '@/services/connection/store';
+import { DevConnection } from '@/services/connection/dev';
 import { createModel } from '@rematch/core';
 import type { RootModel } from '../store/models';
 
@@ -23,15 +23,14 @@ export const app = createModel<RootModel>()({
       const { initialState, user } = rootState.global;
       let result: any;
       if(user?.is_app_auditer) {
-        result = await (initialState.storeConnection as StoreConnection).list_wait_for_audit_app();
+        result = await (initialState.storeConnection as DevConnection).app_version_wait_for_audit();
         console.log('auditer', result)
       } else {
-        result = await initialState.storeConnection?.created_apps();
+        result = await initialState.storeConnection?.developer_app_list();
         console.log('developer', result)
       }
       dispatch.app.save({ applist: result['Ok']['apps'] });
     },
-   
   }),
 });
 

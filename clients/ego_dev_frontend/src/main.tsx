@@ -16,9 +16,7 @@ export const client = new ClientConnecttion({
     walletProviderUrl: 'http://localhost:8080/#transaction',
     signerProviderUrl: 'http://localhost:8080/#signer',
     delegationTargets: [
-      process.env.EGO_BUCKET_CANISTERID!,
-      process.env.EGO_STORE_CANISTERID!,
-      process.env.EGO_WALLET_CANISTERID!,
+      process.env.EGO_DEV_CANISTERID!,
     ],
   
   } 

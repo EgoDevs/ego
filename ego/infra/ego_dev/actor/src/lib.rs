@@ -235,7 +235,7 @@ pub fn app_version_reject(
 #[query(name = "user_main_list", guard = "manager_guard")]
 #[candid_method(query, rename = "user_main_list")]
 pub fn user_main_list(request: UserMainListRequest) -> Result<UserMainListResponse, EgoError> {
-  ic_cdk::println!("ego-dev: app_version_wait_for_audit");
+  ic_cdk::println!("ego-dev: user_main_list");
   let users = EgoDevService::user_main_list(request.name);
   Ok(UserMainListResponse { users })
 }

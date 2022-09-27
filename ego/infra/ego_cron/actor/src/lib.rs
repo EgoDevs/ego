@@ -1,6 +1,5 @@
 use candid::{candid_method};
 use ic_cdk::{notify, storage};
-use ic_cdk::api::time;
 use ic_cdk_macros::*;
 use ic_cron::implement_cron;
 use ic_cdk::export::candid::{CandidType, Deserialize};
@@ -106,15 +105,11 @@ implement_cron!();
 #[heartbeat]
 async fn tick() {
     let ready_tasks = cron_ready_tasks();
-    ic_cdk::println!("TICK {} / {:?}", time(), ready_tasks.len());
 
     for tasks in ready_tasks {
-
         let task = tasks
             .get_payload::<Task>()
             .expect("Unable to deserialize cron task kind");
-
-
 
         cron_call(task).await;
     }

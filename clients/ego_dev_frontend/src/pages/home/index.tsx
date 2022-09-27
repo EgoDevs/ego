@@ -13,13 +13,13 @@ const HomePage: React.FC = () => {
   const { storeConnection } = useSelector((state: RootState) => state.global.initialState)
   const dispatch = useDispatch<RootDispatch>()
   const [form] = Form.useForm();
-  const handleSubmit = async (values: { name: string, role: 'developer' | 'user'}) => {
+  const handleSubmit = async (values: { name: string}) => {
     console.log('values', values)
-    const result = await storeConnection?.register_developer({name: values.name})
+    const result = await storeConnection?.developer_main_register({name: values.name})
     await dispatch.global.getUser({})
     console.log(result)
     message.success('register successfully.')
-    // console.log()
+
     form.resetFields()
   }
   return (
@@ -31,16 +31,6 @@ const HomePage: React.FC = () => {
           required
         >
           <Input />
-        </Form.Item>
-        <Form.Item
-          label="Role"
-          name="role"
-          required
-        >
-          <Radio.Group value="developer">
-            <Radio.Button value="developer">developer</Radio.Button>
-            {/* <Radio.Button value="user">user</Radio.Button> */}
-          </Radio.Group>
         </Form.Item>
         <Button type="primary" htmlType="submit">Register</Button>
       </Form>

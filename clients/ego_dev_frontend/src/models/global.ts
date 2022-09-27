@@ -1,8 +1,9 @@
-import { MeResponse, User } from '@/../../idls/ego_store';
+import { User } from '@/../../idls/ego_store';
 import { InitialStateType } from '@/layout/UserLayout';
-import { StoreConnection } from '@/services/connection/store';
+import { DevConnection } from '@/services/connection/dev';
 import { createModel } from '@rematch/core';
 import type { RootModel } from '../store/models';
+import {Result_4} from "../../../idls/ego_dev";
 
 type GlobalProps = {
   initialState: InitialStateType,
@@ -26,11 +27,11 @@ export const global = createModel<RootModel>()({
   },
   effects: dispatch => ({
     async getUser(payload, rootState) {
-      const storeConnection: StoreConnection = payload.storeConnection ?? rootState.global.initialState.storeConnection;
-      const result1 = await storeConnection?.me();
+      const storeConnection: DevConnection = payload.storeConnection ?? rootState.global.initialState.storeConnection;
+      const result1 = await storeConnection?.developer_main_get();
       console.log('result', result1)
       dispatch.global.save({
-        user: (result1 as { 'Ok': MeResponse })['Ok']['user'],
+        user: (result1 as { 'Ok': Result_4 })['Ok']['developer'],
       })
     },
 
