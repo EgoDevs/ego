@@ -1,6 +1,6 @@
 use ic_ledger_types::Memo;
 use ic_cdk::export::Principal;
-use ego_types::app::{App, AppId};
+use ego_types::app::{App, AppId, Canister};
 use ego_types::ego_error::EgoError;
 
 use crate::order::Order;
@@ -43,7 +43,7 @@ impl EgoStoreService {
         })
     }
 
-    pub fn wallet_app_install(wallet_id: Principal, app_id: String) -> Result<Vec<Principal>, EgoError> {
+    pub fn wallet_app_install(wallet_id: Principal, app_id: String) -> Result<Vec<Canister>, EgoError> {
         // TODO: add actual implementation
         EGO_STORE.with(|ego_store| {
             ego_store
@@ -51,7 +51,7 @@ impl EgoStoreService {
         })
     }
 
-    pub fn wallet_app_upgrade(wallet_id: Principal, app_id: String) -> Result<Vec<Principal>, EgoError> {
+    pub fn wallet_app_upgrade(wallet_id: Principal, app_id: String) -> Result<Vec<Canister>, EgoError> {
         // TODO: add actual implementation
         EGO_STORE.with(|ego_store| {
             ego_store
@@ -59,7 +59,7 @@ impl EgoStoreService {
         })
     }
 
-    pub fn wallet_app_remove(wallet_id: Principal, app_id: String) -> Result<Vec<Principal>, EgoError> {
+    pub fn wallet_app_remove(wallet_id: Principal, app_id: String) -> Result<Vec<Canister>, EgoError> {
         EGO_STORE.with(|ego_store| {
             ego_store
               .borrow_mut().wallet_app_remove(&wallet_id, &app_id)

@@ -2,7 +2,7 @@ use ic_cdk::export::candid::{CandidType, Deserialize};
 use ic_ledger_types::Memo;
 use ic_cdk::export::Principal;
 use serde::Serialize;
-use ego_types::app::{App, AppId, Category};
+use ego_types::app::{App, AppId, Canister, Category};
 use ego_types::ego_error::EgoError;
 
 use crate::order::Order;
@@ -58,7 +58,7 @@ pub struct WalletAppInstallRequest {
 
 #[derive(CandidType, Deserialize, Serialize)]
 pub struct WalletAppInstallResponse {
-    pub canister_ids: Vec<Principal>
+    pub canisters: Vec<Canister>
 }
 
 #[derive(CandidType, Deserialize, Serialize)]
@@ -68,7 +68,7 @@ pub struct WalletAppUpgradeRequest {
 
 #[derive(CandidType, Deserialize, Serialize)]
 pub struct WalletAppUpgradeResponse {
-    pub canister_ids: Vec<Principal>
+    pub canisters: Vec<Canister>
 }
 
 #[derive(CandidType, Deserialize, Serialize)]
@@ -78,7 +78,7 @@ pub struct WalletAppRemoveRequest {
 
 #[derive(CandidType, Deserialize, Serialize)]
 pub struct WalletAppRemoveResponse {
-    pub canister_ids: Vec<Principal>
+    pub canisters: Vec<Canister>
 }
 
 
@@ -98,16 +98,16 @@ pub struct AppMainListResponse {
 }
 
 #[derive(CandidType, Deserialize, Serialize)]
-pub struct GetAppRequest {
+pub struct AppMainGetRequest {
     pub app_id: AppId,
 }
 
 #[derive(CandidType, Deserialize, Serialize)]
-pub struct GetAppResponse {
+pub struct AppMainGetResponse {
     pub app: App,
 }
 
-impl GetAppResponse {
+impl AppMainGetResponse {
   pub fn to_string(&self) -> String {
         self.app.to_string()
     }

@@ -95,3 +95,15 @@ fn get_md5(data: &Vec<u8>) -> String {
   let digest = md5::compute(data);
   return format!("{:?}", digest);
 }
+
+#[derive(CandidType, Serialize, Deserialize, Clone, Debug)]
+pub struct Canister {
+  pub canister_id: Principal,
+  pub canister_type: CanisterType
+}
+
+impl Canister {
+  pub fn new(canister_id: Principal, canister_type: CanisterType) -> Self {
+    Canister { canister_id, canister_type }
+  }
+}

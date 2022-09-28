@@ -5,7 +5,7 @@ use ic_cdk::export::Principal;
 use serde::Serialize;
 
 use ic_ledger_types::{Memo};
-use ego_types::app::{App, AppId};
+use ego_types::app::{App, AppId, Canister};
 use ego_types::ego_error::EgoError;
 
 use crate::order::{Order, OrderStatus};
@@ -84,7 +84,7 @@ impl EgoStore {
     }
   }
 
-  pub fn wallet_app_install(&mut self, wallet_id: &Principal, app_id: &str) -> Result<Vec<Principal>, EgoError> {
+  pub fn wallet_app_install(&mut self, wallet_id: &Principal, app_id: &str) -> Result<Vec<Canister>, EgoError> {
     match self.wallets.get_mut(wallet_id) {
       None => Err(EgoStoreErr::WalletNotExists.into()),
       Some(wallet) => {
@@ -100,7 +100,7 @@ impl EgoStore {
     }
   }
 
-  pub fn wallet_app_upgrade(&mut self, wallet_id: &Principal, app_id: &str) -> Result<Vec<Principal>, EgoError> {
+  pub fn wallet_app_upgrade(&mut self, wallet_id: &Principal, app_id: &str) -> Result<Vec<Canister>, EgoError> {
     match self.wallets.get_mut(wallet_id) {
       None => Err(EgoStoreErr::WalletNotExists.into()),
       Some(wallet) => {
@@ -116,7 +116,7 @@ impl EgoStore {
     }
   }
 
-  pub fn wallet_app_remove(&mut self, wallet_id: &Principal, app_id: &str) -> Result<Vec<Principal>, EgoError> {
+  pub fn wallet_app_remove(&mut self, wallet_id: &Principal, app_id: &str) -> Result<Vec<Canister>, EgoError> {
     match self.wallets.get_mut(wallet_id) {
       None => Err(EgoStoreErr::WalletNotExists.into()),
       Some(wallet) => {

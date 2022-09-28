@@ -66,10 +66,10 @@ pub fn app_main_list(request: AppMainListRequest) -> Result<AppMainListResponse,
 
 #[query(name = "app_main_get")]
 #[candid_method(query, rename = "app_main_get")]
-pub fn app_main_get(request: GetAppRequest) -> Result<GetAppResponse, EgoError> {
+pub fn app_main_get(request: AppMainGetRequest) -> Result<AppMainGetResponse, EgoError> {
   ic_cdk::println!("ego-store: app_main_get");
   match EgoStoreService::app_main_get(request.app_id) {
-    Ok(app) => Ok(GetAppResponse { app }),
+    Ok(app) => Ok(AppMainGetResponse { app }),
     Err(e) => Err(e),
   }
 }
@@ -109,7 +109,7 @@ pub fn wallet_app_list() -> Result<WalletAppListResponse, EgoError> {
 pub fn wallet_app_install(req: WalletAppInstallRequest) -> Result<WalletAppInstallResponse, EgoError> {
   ic_cdk::println!("ego_store: wallet_app_install");
   match EgoStoreService::wallet_app_install(ic_cdk::caller(), req.app_id) {
-    Ok(canister_ids) => Ok(WalletAppInstallResponse { canister_ids }),
+    Ok(canisters) => Ok(WalletAppInstallResponse { canisters }),
     Err(e) => Err(e),
   }
 }
@@ -119,7 +119,7 @@ pub fn wallet_app_install(req: WalletAppInstallRequest) -> Result<WalletAppInsta
 pub fn wallet_app_upgrade(req: WalletAppUpgradeRequest) -> Result<WalletAppUpgradeResponse, EgoError> {
   ic_cdk::println!("ego_store: wallet_app_upgrade");
   match EgoStoreService::wallet_app_upgrade(ic_cdk::caller(), req.app_id) {
-    Ok(canister_ids) => Ok(WalletAppUpgradeResponse { canister_ids }),
+    Ok(canisters) => Ok(WalletAppUpgradeResponse { canisters }),
     Err(e) => Err(e),
   }
 }
@@ -129,7 +129,7 @@ pub fn wallet_app_upgrade(req: WalletAppUpgradeRequest) -> Result<WalletAppUpgra
 pub fn wallet_app_remove(req: WalletAppRemoveRequest) -> Result<WalletAppRemoveResponse, EgoError> {
   ic_cdk::println!("ego_store: wallet_app_remove");
   match EgoStoreService::wallet_app_remove(ic_cdk::caller(), req.app_id) {
-    Ok(canister_ids) => Ok(WalletAppRemoveResponse { canister_ids }),
+    Ok(canisters) => Ok(WalletAppRemoveResponse { canisters }),
     Err(e) => Err(e),
   }
 }

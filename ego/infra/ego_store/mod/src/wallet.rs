@@ -2,7 +2,8 @@ use ic_ledger_types::Memo;
 use ic_cdk::export::Principal;
 use ic_cdk::export::candid::{CandidType, Deserialize};
 use serde::Serialize;
-use ego_types::app::{App, AppId};
+use ego_types::app::{App, AppId, Canister};
+use ego_types::app::CanisterType::BACKEND;
 use ego_types::ego_error::EgoError;
 use crate::order::Order;
 use crate::types::EgoStoreErr;
@@ -23,30 +24,30 @@ impl Wallet{
   }
 
   // TODO: add actual install logic
-  pub fn app_install(&mut self, app: &App) -> Result<Vec<Principal>, EgoError> {
+  pub fn app_install(&mut self, app: &App) -> Result<Vec<Canister>, EgoError> {
     if self.apps.contains(&app.app_id) {
       Err(EgoStoreErr::AppAlreadyInstall.into())
     } else {
       self.apps.push(app.app_id.clone());
-      Ok(vec![Principal::from_text("qaa6y-5yaaa-aaaaa-aaafa-cai".to_string()).unwrap()])
+
+      Ok(vec![ Canister::new(Principal::from_text("qaa6y-5yaaa-aaaaa-aaafa-cai".to_string()).unwrap(), BACKEND) ])
     }
   }
 
   // TODO: add actual upgrade logic
-  pub fn app_upgrade(&mut self, app: &App) -> Result<Vec<Principal>, EgoError> {
+  pub fn app_upgrade(&mut self, app: &App) -> Result<Vec<Canister>, EgoError> {
     if self.apps.contains(&app.app_id) {
-      Ok(vec![Principal::from_text("qaa6y-5yaaa-aaaaa-aaafa-cai".to_string()).unwrap()])
+      Ok(vec![ Canister::new(Principal::from_text("qaa6y-5yaaa-aaaaa-aaafa-cai".to_string()).unwrap(), BACKEND) ])
     } else {
       Err(EgoStoreErr::AppNotInstall.into())
     }
   }
 
   // TODO: add actual upgrade logic
-  pub fn app_remove(&mut self, app: &App) -> Result<Vec<Principal>, EgoError> {
+  pub fn app_remove(&mut self, app: &App) -> Result<Vec<Canister>, EgoError> {
     if self.apps.contains(&app.app_id) {
       self.apps.retain(|app_id| *app_id != app.app_id);
-
-      Ok(vec![Principal::from_text("qaa6y-5yaaa-aaaaa-aaafa-cai".to_string()).unwrap()])
+      Ok(vec![ Canister::new(Principal::from_text("qaa6y-5yaaa-aaaaa-aaafa-cai".to_string()).unwrap(), BACKEND) ])
     } else {
       Err(EgoStoreErr::AppNotInstall.into())
     }
