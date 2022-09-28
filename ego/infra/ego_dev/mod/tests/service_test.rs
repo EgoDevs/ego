@@ -5,11 +5,12 @@ use ego_dev_mod::developer::Developer;
 use ego_dev_mod::file::File;
 use ego_dev_mod::service::EgoDevService;
 use ego_dev_mod::state::EGO_DEV;
-use ego_utils::types::{Category, Version};
 use ego_dev_mod::c2c::ego_file::TEgoFile;
-use ego_utils::types::EgoError;
 use async_trait::async_trait;
 use mockall::mock;
+use ego_types::app::Category;
+use ego_types::version::Version;
+use ego_types::ego_error::EgoError;
 
 mock! {
   Dump {}
