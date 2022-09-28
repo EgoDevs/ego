@@ -1,4 +1,4 @@
-import { App } from '@/../../idls/ego_store';
+import { App } from '@/../../idls/ego_dev';
 import Createform, { FormItemProps } from '@/components/Createform';
 import { CategoryEnum } from '@/services/connection/dev';
 import { ProDescriptions } from '@ant-design/pro-components';
@@ -248,10 +248,9 @@ const Applications: React.FC = (props) => {
         <Tabs>
           <Tabs.TabPane tab="Version" key="version">
             <Version 
-              app={selectedApp!} 
+              appProps={selectedApp!} 
               handleVersionSuccess={() => {
                 handleSearch()
-                setVersionVisible(false)
               }}
             />
           </Tabs.TabPane>

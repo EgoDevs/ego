@@ -11,7 +11,7 @@ import { useSelector } from 'react-redux';
 import { RootState } from '@/store';
 // @ts-ignore
 import { useCopyToClipboard } from 'react-use-copy-to-clipboard';
-import { User } from '@/../../idls/ego_store';
+import { User } from '@/../../idls/ego_dev';
 import { client } from '@/main';
 
 export type GlobalHeaderRightProps = {

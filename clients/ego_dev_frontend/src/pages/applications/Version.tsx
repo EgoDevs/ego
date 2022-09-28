@@ -1,8 +1,7 @@
-import { App, Wasm } from "@/../../idls/ego_store";
 import Createform, { FormItemProps } from "@/components/Createform";
 import { RootState } from "@/store";
 import { PlusOutlined } from "@ant-design/icons";
-import { Version, AppVersion } from "@/../../idls/ego_store";
+import { Version, AppVersion, App, Wasm  } from "@/../../idls/ego_dev";
 import { DrawerFormProps, ModalFormProps, PageContainer, ProColumns, ProTable } from "@ant-design/pro-components";
 import { ProFormDraggerProps } from '@ant-design/pro-form/lib/components/UploadDragger';
 import { Button, message, Spin, Table, Tabs, UploadProps } from "antd";
@@ -16,7 +15,7 @@ import { Access, useAccess } from "@/components/Access";
 import { Principal } from "@dfinity/principal";
 
 type VersionProps = {
-  app: App;
+  appProps: App;
   handleVersionSuccess: () => void;
 }
 
@@ -24,16 +23,21 @@ type TabKeyType = 'create' | 'audit' | 'release';
 
 const VersionPage: React.FC<VersionProps> = (props) => {
   const { storeConnection } = useSelector((state: RootState) => state.global.initialState)
-  const { app, handleVersionSuccess } = props;
+  const { appProps, handleVersionSuccess } = props;
+  const applist = useSelector((state: RootState) => state.app.applist);
+  const app = applist.find((app:App) => app.app_id === appProps.app_id);
   const [createVisible, setCreateVisible] = useState(false)
   const [uploadVisible, setUploadVisible] = useState(false)
   const [settingAssetVisible, setSettingAssetVisible] = useState(false)
   const [file, setFile] = useState<File>();
   const [curTab, setCurTab] = useState<TabKeyType>('create');
-  const [selectedWasms, setSelectedWasms] = useState<Wasm[]>();
+  const [selectedWasms, setSelectedWasms] = useState<Wasm>();
   const [selectRecord, setSelectRecord] = useState<AppVersion>()
   const [loading, setLoading] = useState(false);
   const access = useAccess();
+  console.log('app', app)
+  console.log('applist', applist)
+  if(!app) return null
   const getColumns = (tab: TabKeyType): ProColumns[] => {
     return [
       {
@@ -56,7 +60,7 @@ const VersionPage: React.FC<VersionProps> = (props) => {
             <a
               onClick={() => {
                 console.log(_, record)
-                setSelectedWasms(record.wasms)
+                setSelectedWasms(record.backend)
                 setUploadVisible(true)
               }}
             >
@@ -321,8 +325,6 @@ const VersionPage: React.FC<VersionProps> = (props) => {
   }
 
 
-
-
   const onCreate = async (values: any) => {
     try {
       console.log(values)
@@ -332,8 +334,9 @@ const VersionPage: React.FC<VersionProps> = (props) => {
         'patch': Number(values.version.split('.')[2]),
       }
       const result = await storeConnection?.app_version_new({ version, app_id: app.app_id });
-      console.log(result)
+      console.log('create result====', result)
       handleVersionSuccess()
+      setCreateVisible(false)
     }
     catch (e) {
       console.log(e)

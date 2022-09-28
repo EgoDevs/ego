@@ -1,4 +1,4 @@
-import { AppVersionStatus } from "@/../../idls/ego_store";
+import { AppVersionStatus } from "@/../../idls/ego_dev";
 import { AppVersionStatusEnum } from "./types";
 
 export const getStatusByAppStatus  = (status: AppVersionStatus) => {

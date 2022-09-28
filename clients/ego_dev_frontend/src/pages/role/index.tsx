@@ -1,4 +1,4 @@
-import { MeResponse } from "@/../../idls/ego_store";
+import { MeResponse } from "@/../../idls/ego_dev";
 import { RootDispatch, RootState } from "@/store";
 import { PageContainer } from "@ant-design/pro-components"
 import { Button, Form, Select } from "antd";

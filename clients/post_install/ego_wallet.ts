@@ -2,8 +2,8 @@
 // import { getCanisterId } from '@/settings/utils';
 // import { ActorSubclass } from '@dfinity/agent';
 // import { idlFactory } from '@/idls/ego_wallet.idl';
-// import { idlFactory as storeIDL } from '@/idls/ego_store.idl';
-// import { _SERVICE as StoreService } from '@/idls/ego_store';
+// import { idlFactory as storeIDL } from '@/idls/ego_dev.idl';
+// import { _SERVICE as StoreService } from '@/idls/ego_dev';
 //
 // import { BalanceResult, UserAppResponse, _SERVICE } from '@/idls/ego_wallet';
 //

@@ -1,4 +1,4 @@
-import { User } from '@/../../idls/ego_store';
+import { Developer } from '@/../../idls/ego_dev';
 import { InitialStateType } from '@/layout/UserLayout';
 import { DevConnection } from '@/services/connection/dev';
 import { createModel } from '@rematch/core';
@@ -7,7 +7,7 @@ import {Result_4} from "../../../idls/ego_dev";
 
 type GlobalProps = {
   initialState: InitialStateType,
-  user: User | null
+  user: Developer | null
 };
 
 export const global = createModel<RootModel>()({
@@ -31,7 +31,7 @@ export const global = createModel<RootModel>()({
       const result1 = await storeConnection?.developer_main_get();
       console.log('result', result1)
       dispatch.global.save({
-        user: (result1 as { 'Ok': Result_4 })['Ok']['developer'],
+        user: result1.developer,
       })
     },
 
