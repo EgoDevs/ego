@@ -1,4 +1,4 @@
-use ic_types::Principal;
+use ic_cdk::export::Principal;
 
 use ego_dev_mod::app::{App, AppVersion, AppVersionStatus};
 use ego_dev_mod::developer::Developer;

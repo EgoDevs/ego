@@ -1,5 +1,5 @@
 use ic_cdk::api;
-use ic_types::Principal;
+use ic_cdk::export::Principal;
 use ego_file_mod::types::{FileMainReadRequest, FileMainReadResponse};
 use async_trait::async_trait;
 use ic_cdk::api::call::RejectionCode;

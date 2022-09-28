@@ -1,4 +1,4 @@
-use ic_types::Principal;
+use ic_cdk::export::Principal;
 use ego_types::app::Wasm;
 use ego_types::ego_error::EgoError;
 use ego_utils::consts::CREATE_CANISTER_CYCLES_FEE;

@@ -1,6 +1,6 @@
 use ic_cdk::api;
 use ic_ledger_types::Memo;
-use ic_types::Principal;
+use ic_cdk::export::Principal;
 use async_trait::async_trait;
 use ego_types::ego_error::EgoError;
 use crate::c2c::c2c_types::WalletOrderNotifyRequest;

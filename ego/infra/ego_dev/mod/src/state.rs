@@ -1,5 +1,5 @@
 use std::cell::RefCell;
-use ic_types::Principal;
+use ic_cdk::export::Principal;
 use crate::ego_dev::EgoDev;
 
 thread_local! {

@@ -1,7 +1,7 @@
 use ic_cdk::export::candid::{CandidType, Deserialize};
 use ic_ledger_types::{AccountIdentifier, Memo, Subaccount};
 use serde::Serialize;
-use ic_types::Principal;
+use ic_cdk::export::Principal;
 
 #[derive(CandidType, Serialize, Deserialize, Clone, Debug)]
 pub enum OrderStatus {

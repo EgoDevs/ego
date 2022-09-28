@@ -1,7 +1,7 @@
 use std::cmp::Ordering;
 use ic_cdk::export::candid::{CandidType, Deserialize};
 use serde::Serialize;
-use ic_types::Principal;
+use ic_cdk::export::Principal;
 
 #[derive(CandidType, Serialize, Deserialize, Clone, Debug)]
 pub struct Tenant{

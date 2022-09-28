@@ -1,7 +1,7 @@
 /********************  ego_dev  ********************/
 use std::collections::{BTreeMap};
 use std::vec;
-use ic_types::Principal;
+use ic_cdk::export::Principal;
 
 use crate::app::{App};
 use crate::developer::Developer;

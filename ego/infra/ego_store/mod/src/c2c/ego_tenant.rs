@@ -1,5 +1,5 @@
 use ic_cdk::api;
-use ic_types::Principal;
+use ic_cdk::export::Principal;
 use async_trait::async_trait;
 use ego_tenant_mod::types::{AppMainInstallRequest, AppMainInstallResponse, AppMainUpgradeRequest, AppMainUpgradeResponse, CanisterMainTrackRequest, CanisterMainTrackResponse, CanisterMainUnTrackRequest, CanisterMainUnTrackResponse};
 use ego_types::app::Wasm;

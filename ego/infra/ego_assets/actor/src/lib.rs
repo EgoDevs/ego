@@ -11,7 +11,7 @@ use ego_assets_mod::types::{
 use ic_cdk::api::{data_certificate, set_certified_data, time};
 use ic_cdk::{caller, trap};
 use ic_cdk_macros::*;
-use ic_types::Principal;
+use ic_cdk::export::Principal;
 
 #[init]
 #[candid_method(init)]

@@ -1,4 +1,4 @@
-use ic_types::Principal;
+use ic_cdk::export::Principal;
 
 use async_trait::async_trait;
 use ego_types::ego_error::EgoError;

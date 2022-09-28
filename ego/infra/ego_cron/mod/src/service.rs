@@ -1,5 +1,5 @@
 use ic_cron::types::TaskId;
-use ic_types::Principal;
+use ic_cdk::export::Principal;
 use crate::state::EGO_CRON;
 use crate::task::Task;
 

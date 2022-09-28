@@ -1,6 +1,6 @@
 use ic_cdk::export::candid::{CandidType, Deserialize};
 use serde::Serialize;
-use ic_types::Principal;
+use ic_cdk::export::Principal;
 use std::cmp::Ordering;
 
 

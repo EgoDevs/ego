@@ -1,7 +1,7 @@
 use candid::CandidType;
 use ic_cdk::api;
 use ic_cdk::api::management_canister::main::{CanisterIdRecord, CanisterSettings, CanisterStatusResponse, CreateCanisterArgument, UpdateSettingsArgument};
-use ic_types::Principal;
+use ic_cdk::export::Principal;
 use serde::Deserialize;
 use tracing::error;
 

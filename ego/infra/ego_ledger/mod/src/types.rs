@@ -1,7 +1,7 @@
 use ic_cdk::export::candid::{CandidType, Deserialize};
 use serde::Serialize;
 use ic_ledger_types::{AccountIdentifier, BlockIndex, Memo, Tokens};
-use ic_types::Principal;
+use ic_cdk::export::Principal;
 use ego_types::ego_error::EgoError;
 
 

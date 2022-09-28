@@ -1,5 +1,5 @@
 use ic_cdk::export::candid::{CandidType, Deserialize};
-use ic_types::Principal;
+use ic_cdk::export::Principal;
 use serde::Serialize;
 use ego_types::app::{AppId, Category, Wasm};
 use ego_types::app::CanisterType::{ASSET, BACKEND};

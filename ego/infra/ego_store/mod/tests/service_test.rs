@@ -1,4 +1,4 @@
-use ic_types::Principal;
+use ic_cdk::export::Principal;
 use ego_store_mod::app::App;
 use ego_store_mod::service::EgoStoreService;
 use ego_store_mod::state::APP_STORE;

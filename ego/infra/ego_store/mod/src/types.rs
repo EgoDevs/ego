@@ -1,6 +1,6 @@
 use ic_cdk::export::candid::{CandidType, Deserialize};
 use ic_ledger_types::Memo;
-use ic_types::Principal;
+use ic_cdk::export::Principal;
 use serde::Serialize;
 use ego_types::app::{App, AppId, Category};
 use ego_types::ego_error::EgoError;

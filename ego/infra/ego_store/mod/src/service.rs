@@ -1,5 +1,5 @@
 use ic_ledger_types::Memo;
-use ic_types::Principal;
+use ic_cdk::export::Principal;
 use ego_types::app::{App, AppId};
 use ego_types::ego_error::EgoError;
 

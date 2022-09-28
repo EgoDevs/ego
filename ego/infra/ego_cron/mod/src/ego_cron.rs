@@ -1,7 +1,7 @@
 use std::collections::BTreeMap;
 use serde::Serialize;
 use ic_cdk::export::candid::{CandidType, Deserialize};
-use ic_types::Principal;
+use ic_cdk::export::Principal;
 use crate::task::Task;
 
 #[derive(CandidType, Deserialize, Serialize, Debug, Clone)]

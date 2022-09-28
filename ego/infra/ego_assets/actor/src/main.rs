@@ -10,7 +10,7 @@ fn main() {
     use ego_assets_mod::rc_bytes::*;
     use ego_assets_mod::state_machine::*;
     use ego_assets_mod::types::*;
-    use ic_types::Principal;
+    use ic_cdk::export::Principal;
     candid::export_service!();
     std::print!("{}", __export_service());
 }

@@ -43,7 +43,7 @@ macro_rules! inject_ego_users {
           pub static USER: RefCell<User> = RefCell::new(User::default());
         }
 
-        use ic_types::Principal;
+        use ic_cdk::export::Principal;
         use ego_users::users::User;
         use std::cell::RefCell;
         use ego_users::users::OwnerTrait;

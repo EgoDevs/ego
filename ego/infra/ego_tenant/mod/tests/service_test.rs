@@ -1,6 +1,6 @@
 use std::collections::BTreeMap;
 use async_trait::async_trait;
-use ic_types::Principal;
+use ic_cdk::export::Principal;
 use mockall::mock;
 
 use ego_tenant_mod::service::EgoTenantService;

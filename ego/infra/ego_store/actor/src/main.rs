@@ -8,7 +8,7 @@ fn main() {}
 #[cfg(not(any(target_arch = "wasm32", test)))]
 fn main() {
     use ego_types::ego_error::EgoError;
-    use ic_types::Principal;
+    use ic_cdk::export::Principal;
     use ego_store_mod::types::*;
 
     candid::export_service!();
