@@ -150,7 +150,7 @@ pub struct WalletOrderNewRequest {
 
 #[derive(CandidType, Deserialize, Serialize)]
 pub struct WalletOrderNewResponse {
-    pub order: Order,
+    pub memo: Memo,
 }
 
 #[derive(CandidType, Deserialize, Serialize)]

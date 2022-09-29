@@ -11,6 +11,7 @@ use ego_tenant_mod::c2c::ic_management::TIcManagement;
 use ego_tenant_mod::c2c::ego_file::TEgoFile;
 use ego_tenant_mod::canister::Canister;
 use ego_tenant_mod::types::App;
+use ego_types::app::Canister;
 use ego_utils::types::CanisterType::{ASSET, BACKEND};
 
 static FILE_CANISTER_ID: &str = "amybd-zyaaa-aaaah-qc4hq-cai";

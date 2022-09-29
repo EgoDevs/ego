@@ -1,3 +1,4 @@
+use std::borrow::BorrowMut;
 use ic_cdk::export::Principal;
 use ego_store_mod::app::App;
 use ego_store_mod::service::EgoStoreService;
@@ -5,6 +6,9 @@ use ego_store_mod::state::APP_STORE;
 use ego_store_mod::tenant::Tenant;
 use ego_store_mod::types::QueryParam;
 use ego_store_mod::wallet::Wallet;
+use ego_types::app::CanisterType::{ASSET, BACKEND};
+use ego_types::app::{App, Category, Wasm};
+use ego_types::version::Version;
 use ego_utils::types::{Category, Version, Wasm};
 use ego_utils::types::CanisterType::{ASSET, BACKEND};
 
