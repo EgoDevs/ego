@@ -2,7 +2,7 @@ import fs from 'fs';
 import crypto, { BinaryLike } from 'crypto';
 
 import { getActor } from '@/settings/agent';
-import { getCanisterId } from '@/settings/utils';
+import { getCanisterId, hasOwnProperty } from '@/settings/utils';
 
 import { _SERVICE as EgoOpsService } from '@/idls/ego_ops';
 
@@ -47,7 +47,11 @@ export const opsPostInstall = async () => {
   await opsOperator.canister_relation_update();
 
   let resp12 = await opsOperator.canister_main_list();
-  console.log(resp12.Ok);
+  if (hasOwnProperty(resp12, 'Ok')) {
+    console.log(resp12.Ok);
+  } else {
+    throw new Error(JSON.stringify(resp12.Err));
+  }
 };
 
 const canister_registers = async () => {
@@ -68,10 +72,10 @@ async function getOperator<T>(canisterName: string): Promise<ActorSubclass<T>> {
   return operator;
 }
 
-async function canister_register<T>(canister_name: string) {
+async function canister_register(canister_name: string) {
   let opsOperator = await getOperator<EgoOpsService>('ego_ops');
 
-  let actor = await getActor<T>(
+  let actor = await getActor<EgoOpsService>(
     identity,
     idlFactory,
     getCanisterId(canister_name)!,
