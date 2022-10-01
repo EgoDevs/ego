@@ -13,33 +13,44 @@ import {
 } from './manager';
 import { Actor, getManagementCanister } from '@dfinity/agent';
 import { Principal } from '@dfinity/principal';
-const BIP32Factory = require('bip32');
-const bip39 = require('bip39');
-const ecc = require('tiny-secp256k1');
+import { isProduction } from './env';
+// import curve from 'starkbank-ecdsa';
+import { identity } from './settings/identity';
 
-function getIdentityFromPhrase(phrase: string) {
-  const seed = bip39.mnemonicToSeedSync(phrase);
+// const BIP32Factory = require('bip32');
+// const bip39 = require('bip39');
+// const ecc = require('tiny-secp256k1');
 
-  const ICP_PATH = "m/44'/223'/0'";
-  const path = `${ICP_PATH}/0/0`;
+// function getIdentityFromPhrase(phrase: string) {
+//   const seed = bip39.mnemonicToSeedSync(phrase);
 
-  const bip32 = BIP32Factory.default(ecc);
+//   const ICP_PATH = "m/44'/223'/0'";
+//   const path = `${ICP_PATH}/0/0`;
 
-  let node = bip32.fromSeed(seed);
+//   const bip32 = BIP32Factory.default(ecc);
 
-  let child = node.derivePath(path);
+//   let node = bip32.fromSeed(seed);
 
-  return Secp256k1KeyIdentity.fromSecretKey(child.privateKey);
-  // return seed;
-}
+//   let child = node.derivePath(path);
 
-const seedPhrase = fs
-  .readFileSync(path.join(process.cwd(), '/credentials', '/internal.txt'), {
-    encoding: 'utf8',
-  })
-  .toString();
+//   return Secp256k1KeyIdentity.fromSecretKey(child.privateKey);
+//   // return seed;
+// }
 
-export const identity = getIdentityFromPhrase(seedPhrase);
+// const seedPhrase = fs
+//   .readFileSync(
+//     path.join(
+//       process.cwd(),
+//       '/credentials',
+//       !isProduction ? '/internal.txt' : '/production.txt',
+//     ),
+//     {
+//       encoding: 'utf8',
+//     },
+//   )
+//   .toString();
+
+// export const identity = getIdentityFromPhrase(seedPhrase);
 
 interface ThisArgv {
   [x: string]: unknown;
@@ -174,9 +185,9 @@ async function runCreate() {
   for (const f of getEgos()) {
     const dfx_folder = process.cwd() + '/' + 'artifacts' + '/' + f.package;
 
-    if(!f.no_deploy){
-      const { canister_id } = await actor.provisional_create_canister_with_cycles(
-        {
+    if (!f.no_deploy) {
+      const { canister_id } =
+        await actor.provisional_create_canister_with_cycles({
           settings: [
             {
               freezing_threshold: [],
@@ -186,36 +197,61 @@ async function runCreate() {
             },
           ],
           amount: [],
-        },
-      );
-  
-      const localCanisterId = canister_id.toText();
-      console.log(`Creating canister ${f.package}...`);
-      console.log(
-        `${f.package} canister created with canister id: ${localCanisterId}`,
-      );
-  
-      let configJson = JSON.stringify({});
-      try {
-        configJson = file.readFileSync(f.config).toString('utf8');
-      } catch (error) {
-        file.writeFileSync(f.config, JSON.stringify({}));
-      }
-  
-      const configObject = {
-        ...JSON.parse(configJson),
-        LOCAL_CANISTERID: localCanisterId,
-      };
-  
-      if (f.url) {
-        Object.assign(configObject, {
-          LOCAL_URL: `http://${localCanisterId}.localhost:8000`,
         });
+      if (!isProduction) {
+        const localCanisterId = canister_id.toText();
+        console.log(`Creating canister ${f.package}...`);
+        console.log(
+          `${f.package} canister created with canister id: ${localCanisterId}`,
+        );
+
+        let configJson = JSON.stringify({});
+        try {
+          configJson = file.readFileSync(f.config).toString('utf8');
+        } catch (error) {
+          file.writeFileSync(f.config, JSON.stringify({}));
+        }
+
+        const configObject = {
+          ...JSON.parse(configJson),
+          LOCAL_CANISTERID: localCanisterId,
+        };
+
+        if (f.url) {
+          Object.assign(configObject, {
+            LOCAL_URL: `http://${localCanisterId}.localhost:8000`,
+          });
+        }
+
+        file.writeFileSync(f.config, JSON.stringify(configObject));
+      } else {
+        const productionId = canister_id.toText();
+        console.log(`Creating canister ${f.package}...`);
+        console.log(
+          `${f.package} canister created with canister id: ${productionId}`,
+        );
+
+        let configJson = JSON.stringify({});
+        try {
+          configJson = file.readFileSync(f.config).toString('utf8');
+        } catch (error) {
+          file.writeFileSync(f.config, JSON.stringify({}));
+        }
+
+        const configObject = {
+          ...JSON.parse(configJson),
+          PRODUCTION_CANISTERID: productionId,
+        };
+
+        if (f.url) {
+          Object.assign(configObject, {
+            PRODUCTION_URL: `https://${productionId}.ic0.app`,
+          });
+        }
+
+        file.writeFileSync(f.config, JSON.stringify(configObject));
       }
-  
-      file.writeFileSync(f.config, JSON.stringify(configObject));
     }
-    
   }
 }
 
@@ -237,17 +273,37 @@ async function runInstall() {
         const config = readConfig(
           process.cwd() + '/configs/' + f.package + '.json',
         );
-        try {
-          console.log(`installing ${f.package} to ${config.LOCAL_CANISTERID!}`);
-          await actor.install_code({
-            arg: [],
-            wasm_module: wasm,
-            mode: { install: null },
-            canister_id: Principal.fromText(config.LOCAL_CANISTERID!),
-          });
-          console.log(`Success with wasm bytes length: ${wasm.length}`);
-        } catch (error) {
-          console.log((error as Error).message);
+
+        if (!isProduction) {
+          try {
+            console.log(
+              `installing ${f.package} to ${config.LOCAL_CANISTERID!}`,
+            );
+            await actor.install_code({
+              arg: [],
+              wasm_module: wasm,
+              mode: { install: null },
+              canister_id: Principal.fromText(config.LOCAL_CANISTERID!),
+            });
+            console.log(`Success with wasm bytes length: ${wasm.length}`);
+          } catch (error) {
+            console.log((error as Error).message);
+          }
+        } else {
+          try {
+            console.log(
+              `installing ${f.package} to ${config.PRODUCTION_CANISTERID!}`,
+            );
+            await actor.install_code({
+              arg: [],
+              wasm_module: wasm,
+              mode: { install: null },
+              canister_id: Principal.fromText(config.PRODUCTION_CANISTERID!),
+            });
+            console.log(`Success with wasm bytes length: ${wasm.length}`);
+          } catch (error) {
+            console.log((error as Error).message);
+          }
         }
       }
     }
@@ -272,19 +328,37 @@ async function runReInstall() {
         const config = readConfig(
           process.cwd() + '/configs/' + f.package + '.json',
         );
-        try {
-          console.log(
-            `reinstalling ${f.package} to ${config.LOCAL_CANISTERID!}`,
-          );
-          await actor.install_code({
-            arg: [],
-            wasm_module: wasm,
-            mode: { reinstall: null },
-            canister_id: Principal.fromText(config.LOCAL_CANISTERID!),
-          });
-          console.log(`Success with wasm bytes length: ${wasm.length}`);
-        } catch (error) {
-          console.log((error as Error).message);
+
+        if (!isProduction) {
+          try {
+            console.log(
+              `reinstalling ${f.package} to ${config.LOCAL_CANISTERID!}`,
+            );
+            await actor.install_code({
+              arg: [],
+              wasm_module: wasm,
+              mode: { reinstall: null },
+              canister_id: Principal.fromText(config.LOCAL_CANISTERID!),
+            });
+            console.log(`Success with wasm bytes length: ${wasm.length}`);
+          } catch (error) {
+            console.log((error as Error).message);
+          }
+        } else {
+          try {
+            console.log(
+              `reinstalling ${f.package} to ${config.PRODUCTION_CANISTERID!}`,
+            );
+            await actor.install_code({
+              arg: [],
+              wasm_module: wasm,
+              mode: { reinstall: null },
+              canister_id: Principal.fromText(config.PRODUCTION_CANISTERID!),
+            });
+            console.log(`Success with wasm bytes length: ${wasm.length}`);
+          } catch (error) {
+            console.log((error as Error).message);
+          }
         }
       }
     }
@@ -309,17 +383,36 @@ async function runUpgrade() {
         const config = readConfig(
           process.cwd() + '/configs/' + f.package + '.json',
         );
-        try {
-          console.log(`upgrading ${f.package} to ${config.LOCAL_CANISTERID!}`);
-          await actor.install_code({
-            arg: [],
-            wasm_module: wasm,
-            mode: { upgrade: null },
-            canister_id: Principal.fromText(config.LOCAL_CANISTERID!),
-          });
-          console.log(`Success with wasm bytes length: ${wasm.length}`);
-        } catch (error) {
-          console.log((error as Error).message);
+        if (!isProduction) {
+          try {
+            console.log(
+              `upgrading ${f.package} to ${config.LOCAL_CANISTERID!}`,
+            );
+            await actor.install_code({
+              arg: [],
+              wasm_module: wasm,
+              mode: { upgrade: null },
+              canister_id: Principal.fromText(config.LOCAL_CANISTERID!),
+            });
+            console.log(`Success with wasm bytes length: ${wasm.length}`);
+          } catch (error) {
+            console.log((error as Error).message);
+          }
+        } else {
+          try {
+            console.log(
+              `upgrading ${f.package} to ${config.PRODUCTION_CANISTERID!}`,
+            );
+            await actor.install_code({
+              arg: [],
+              wasm_module: wasm,
+              mode: { upgrade: null },
+              canister_id: Principal.fromText(config.PRODUCTION_CANISTERID!),
+            });
+            console.log(`Success with wasm bytes length: ${wasm.length}`);
+          } catch (error) {
+            console.log((error as Error).message);
+          }
         }
       }
     }

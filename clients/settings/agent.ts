@@ -3,6 +3,7 @@ import { Actor, ActorSubclass, HttpAgent, SignIdentity } from '@dfinity/agent';
 import { InterfaceFactory } from '@dfinity/candid/lib/cjs/idl';
 import { Principal } from '@dfinity/principal';
 import { fetch } from 'cross-fetch';
+import { isProduction } from './env';
 
 if (!globalThis.fetch) {
   (globalThis as any).fetch = fetch;
@@ -25,13 +26,10 @@ export async function _createActor<T>(
 ): Promise<CreateActorResult<T>> {
   const agent = new HttpAgent({
     identity,
-    host:
-      host ?? process.env.NODE_ENV !== 'production'
-        ? 'http://localhost:8000'
-        : 'https://ic0.app',
+    host: host ?? !isProduction ? 'http://localhost:8000' : 'https://ic0.app',
   });
   // Only fetch the root key when we're not in prod
-  if (process.env.NODE_ENV !== 'production') {
+  if (!isProduction) {
     await agent.fetchRootKey();
   }
 

@@ -4,6 +4,7 @@ import { fetch } from 'cross-fetch';
 import { Principal } from '@dfinity/principal';
 import { sha224 } from 'js-sha256';
 import crc from 'crc';
+import { isProduction } from './env';
 
 const toHexString = (bytes: Uint8Array) =>
   bytes.reduce((str, byte) => str + byte.toString(16).padStart(2, '0'), '');
@@ -25,7 +26,7 @@ export function hasOwnProperty<
 }
 
 export function getCanisterId(configName: string): string | undefined {
-  const isProd = process.env.NODE_ENV === 'production';
+  const isProd = isProduction;
   let canisterId: string | undefined;
   if (isProd) {
     const localFile = fs.readFileSync(

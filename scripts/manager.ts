@@ -1,4 +1,3 @@
-import { identity } from './deployer';
 import { CreateActorResult, getActor, getActor2 } from './settings/agent';
 import {
   canister_settings,
@@ -8,6 +7,7 @@ import { idlFactory as managementIdl } from './idls/management.idl';
 import { ActorSubclass } from '@dfinity/agent';
 import fs from 'fs';
 import { Principal } from '@dfinity/principal';
+import { identity } from './settings/identity';
 const managementCanisterId = '';
 
 export async function managementActor(): Promise<
