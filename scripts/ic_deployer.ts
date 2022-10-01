@@ -1,7 +1,7 @@
 import file from 'fs';
 import shell from 'shelljs';
 import yargs from 'yargs';
-import { identity } from './deployer';
+import { identity } from './settings/identity';
 
 const argv = yargs
   .option('clean', {

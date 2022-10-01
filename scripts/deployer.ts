@@ -6,6 +6,8 @@ import path from 'path';
 import { Secp256k1KeyIdentity } from '@dfinity/identity';
 import { appsConfig, infraConfig, dfxConfigTemplate, Configs } from './config';
 import {
+  cycleWalletActor,
+  cycleWalletCanisterId,
   managementActor,
   readConfig,
   readEgoDfxJson,
@@ -16,6 +18,8 @@ import { Principal } from '@dfinity/principal';
 import { isProduction } from './env';
 // import curve from 'starkbank-ecdsa';
 import { identity } from './settings/identity';
+import { hasOwnProperty } from './settings/utils';
+import { IDL } from '@dfinity/candid';
 
 // const BIP32Factory = require('bip32');
 // const bip39 = require('bip39');
@@ -181,23 +185,53 @@ function generateDFXJson() {
 
 async function runCreate() {
   const { actor } = await managementActor();
+  const walletActor = (await cycleWalletActor()).actor;
 
   for (const f of getEgos()) {
     const dfx_folder = process.cwd() + '/' + 'artifacts' + '/' + f.package;
 
     if (!f.no_deploy) {
-      const { canister_id } =
-        await actor.provisional_create_canister_with_cycles({
-          settings: [
-            {
-              freezing_threshold: [],
-              controllers: [[identity.getPrincipal()]],
-              memory_allocation: [],
-              compute_allocation: [],
-            },
-          ],
-          amount: [],
+      let canister_id;
+      if (!isProduction) {
+        canister_id = (
+          await actor.provisional_create_canister_with_cycles({
+            settings: [
+              {
+                freezing_threshold: [],
+                controllers: [[identity.getPrincipal()]],
+                memory_allocation: [],
+                compute_allocation: [],
+              },
+            ],
+            amount: [],
+          })
+        ).canister_id;
+      } else {
+        const walletCreateResult = await walletActor.wallet_create_canister({
+          cycles: BigInt(200_000_000_000),
+          settings: {
+            freezing_threshold: [],
+            controller: [],
+            controllers: [
+              [
+                identity.getPrincipal(),
+                Principal.fromText(cycleWalletCanisterId),
+              ],
+            ],
+            memory_allocation: [],
+            compute_allocation: [],
+          },
         });
+        if (hasOwnProperty(walletCreateResult, 'Ok')) {
+          canister_id = walletCreateResult.Ok.canister_id;
+        } else {
+          throw new Error(
+            `canister id create failed : ${walletCreateResult.Err}`,
+          );
+        }
+        // canister_id =
+      }
+
       if (!isProduction) {
         const localCanisterId = canister_id.toText();
         console.log(`Creating canister ${f.package}...`);
@@ -257,6 +291,7 @@ async function runCreate() {
 
 async function runInstall() {
   const { actor } = await managementActor();
+  const walletActor = (await cycleWalletActor()).actor;
   for (const f of getEgos()) {
     const dfx_folder = process.cwd() + '/' + 'artifacts' + '/' + f.package;
     // const dfx_sh = dfx_folder + '/dfx.sh';
@@ -294,12 +329,57 @@ async function runInstall() {
             console.log(
               `installing ${f.package} to ${config.PRODUCTION_CANISTERID!}`,
             );
-            await actor.install_code({
-              arg: [],
-              wasm_module: wasm,
-              mode: { install: null },
-              canister_id: Principal.fromText(config.PRODUCTION_CANISTERID!),
+
+            const wasm_module = IDL.Vec(IDL.Nat8);
+            const idl = IDL.Record({
+              arg: IDL.Vec(IDL.Nat8),
+              wasm_module: wasm_module,
+              mode: IDL.Variant({
+                reinstall: IDL.Null,
+                upgrade: IDL.Null,
+                install: IDL.Null,
+              }),
+              canister_id: IDL.Principal,
             });
+
+            // IDL.Tuple()
+            const initArgs = Array.from(
+              new Uint8Array(
+                IDL.encode(
+                  [IDL.Opt(IDL.Principal)],
+                  [[identity.getPrincipal()]],
+                ),
+              ),
+            );
+
+            const buf = IDL.encode(
+              [idl],
+              [
+                {
+                  arg: initArgs,
+                  wasm_module: wasm,
+                  mode: { install: null },
+                  canister_id: Principal.fromText(
+                    config.PRODUCTION_CANISTERID!,
+                  ),
+                },
+              ],
+            );
+            const args = Array.from(new Uint8Array(buf));
+
+            const result = await walletActor.wallet_call({
+              canister: Principal.fromHex(''),
+              cycles: BigInt(100_000_000_000),
+              method_name: 'install_code',
+              args,
+            });
+
+            if (hasOwnProperty(result, 'Ok')) {
+              console.log(result.Ok.return);
+            } else {
+              throw new Error(result.Err);
+            }
+
             console.log(`Success with wasm bytes length: ${wasm.length}`);
           } catch (error) {
             console.log((error as Error).message);
@@ -312,6 +392,7 @@ async function runInstall() {
 
 async function runReInstall() {
   const { actor } = await managementActor();
+  const walletActor = (await cycleWalletActor()).actor;
   for (const f of getEgos()) {
     const dfx_folder = process.cwd() + '/' + 'artifacts' + '/' + f.package;
     // const dfx_sh = dfx_folder + '/dfx.sh';
@@ -340,6 +421,7 @@ async function runReInstall() {
               mode: { reinstall: null },
               canister_id: Principal.fromText(config.LOCAL_CANISTERID!),
             });
+
             console.log(`Success with wasm bytes length: ${wasm.length}`);
           } catch (error) {
             console.log((error as Error).message);
@@ -349,12 +431,56 @@ async function runReInstall() {
             console.log(
               `reinstalling ${f.package} to ${config.PRODUCTION_CANISTERID!}`,
             );
-            await actor.install_code({
-              arg: [],
-              wasm_module: wasm,
-              mode: { reinstall: null },
-              canister_id: Principal.fromText(config.PRODUCTION_CANISTERID!),
+            const wasm_module = IDL.Vec(IDL.Nat8);
+            const idl = IDL.Record({
+              arg: IDL.Vec(IDL.Nat8),
+              wasm_module: wasm_module,
+              mode: IDL.Variant({
+                reinstall: IDL.Null,
+                upgrade: IDL.Null,
+                install: IDL.Null,
+              }),
+              canister_id: IDL.Principal,
             });
+
+            // IDL.Tuple()
+
+            const initArgs = Array.from(
+              new Uint8Array(
+                IDL.encode(
+                  [IDL.Opt(IDL.Principal)],
+                  [[identity.getPrincipal()]],
+                ),
+              ),
+            );
+
+            const buf = IDL.encode(
+              [idl],
+              [
+                {
+                  arg: initArgs,
+                  wasm_module: wasm,
+                  mode: { reinstall: null },
+                  canister_id: Principal.fromText(
+                    config.PRODUCTION_CANISTERID!,
+                  ),
+                },
+              ],
+            );
+            const args = Array.from(new Uint8Array(buf));
+
+            const result = await walletActor.wallet_call({
+              canister: Principal.fromHex(''),
+              cycles: BigInt(100_000_000_000),
+              method_name: 'install_code',
+              args,
+            });
+
+            if (hasOwnProperty(result, 'Ok')) {
+              console.log(result.Ok.return);
+            } else {
+              throw new Error(result.Err);
+            }
             console.log(`Success with wasm bytes length: ${wasm.length}`);
           } catch (error) {
             console.log((error as Error).message);
@@ -367,6 +493,7 @@ async function runReInstall() {
 
 async function runUpgrade() {
   const { actor } = await managementActor();
+  const walletActor = (await cycleWalletActor()).actor;
   for (const f of getEgos()) {
     const dfx_folder = process.cwd() + '/' + 'artifacts' + '/' + f.package;
     // const dfx_sh = dfx_folder + '/dfx.sh';
@@ -403,12 +530,55 @@ async function runUpgrade() {
             console.log(
               `upgrading ${f.package} to ${config.PRODUCTION_CANISTERID!}`,
             );
-            await actor.install_code({
-              arg: [],
-              wasm_module: wasm,
-              mode: { upgrade: null },
-              canister_id: Principal.fromText(config.PRODUCTION_CANISTERID!),
+            const wasm_module = IDL.Vec(IDL.Nat8);
+            const idl = IDL.Record({
+              arg: IDL.Vec(IDL.Nat8),
+              wasm_module: wasm_module,
+              mode: IDL.Variant({
+                reinstall: IDL.Null,
+                upgrade: IDL.Null,
+                install: IDL.Null,
+              }),
+              canister_id: IDL.Principal,
             });
+
+            // IDL.Tuple()
+            const initArgs = Array.from(
+              new Uint8Array(
+                IDL.encode(
+                  [IDL.Opt(IDL.Principal)],
+                  [[identity.getPrincipal()]],
+                ),
+              ),
+            );
+
+            const buf = IDL.encode(
+              [idl],
+              [
+                {
+                  arg: initArgs,
+                  wasm_module: wasm,
+                  mode: { upgrade: null },
+                  canister_id: Principal.fromText(
+                    config.PRODUCTION_CANISTERID!,
+                  ),
+                },
+              ],
+            );
+            const args = Array.from(new Uint8Array(buf));
+
+            const result = await walletActor.wallet_call({
+              canister: Principal.fromHex(''),
+              cycles: BigInt(100_000_000_000),
+              method_name: 'install_code',
+              args,
+            });
+
+            if (hasOwnProperty(result, 'Ok')) {
+              console.log(result.Ok.return);
+            } else {
+              throw new Error(result.Err);
+            }
             console.log(`Success with wasm bytes length: ${wasm.length}`);
           } catch (error) {
             console.log((error as Error).message);
