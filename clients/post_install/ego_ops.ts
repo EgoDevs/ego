@@ -114,7 +114,7 @@ const admin_app_create = async (
     app_id,
     name,
     version,
-    backend_data: Array.from(backend_data),
+    backend_data: new Uint8Array(backend_data),
     backend_hash,
     frontend: frontend_canister_id ? [frontend_canister_id] : [],
   });
