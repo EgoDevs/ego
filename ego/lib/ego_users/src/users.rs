@@ -1,5 +1,6 @@
-use ic_cdk::export::candid::{CandidType, Deserialize};
-use ic_cdk::export::Principal;
+use ic_cdk::export::candid::{ Deserialize};
+use candid::{CandidType, Principal};
+
 use serde::Serialize;
 
 /// OwnerTrait, keep it simple

@@ -60,7 +60,7 @@ ego/.pnpm-debug.log
 
 
 # configs
-configs/ego*.json
+# configs/ego*.json
 !configs/constant.json
 
 

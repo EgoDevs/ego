@@ -14,10 +14,16 @@ use ego_users::inject_ego_users;
 
 inject_ego_users!();
 
+
+#[derive(Clone, Debug, CandidType, Deserialize)]
+pub struct InitArg {
+    init_caller: Option<Principal>,
+}
+
 #[init]
 #[candid_method(init)]
-fn init() {
-    ic_cdk::println!("ego-file: init, caller is {}", caller());
+pub fn init(arg: InitArg) {
+    let caller = arg.init_caller.unwrap_or(caller());
 
     ic_cdk::println!("==> create stable page for state");
     let pages_to_grow = HEADER_SIZE / WASM_PAGE_SIZE;
@@ -27,7 +33,7 @@ fn init() {
     }
 
     ic_cdk::println!("==> add caller as the owner");
-    users_init();
+    users_init(caller.clone());
 
 }
 

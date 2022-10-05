@@ -1,7 +1,10 @@
-use candid::CandidType;
+
 use ic_cdk::api;
 use ic_cdk::api::management_canister::main::{CanisterIdRecord, CanisterSettings, CanisterStatusResponse, CreateCanisterArgument, UpdateSettingsArgument};
-use ic_cdk::export::Principal;
+use ic_cdk::export::{Principal};
+use ic_cdk::export::candid::CandidType;
+
+
 use serde::Deserialize;
 use tracing::error;
 
@@ -39,7 +42,7 @@ struct CanisterInstall {
   arg: Vec<u8>,
 }
 
-async fn code_install(canister_id: Principal, mode: InstallMode, wasm_module: Vec<u8>) -> Result<(), EgoError> {
+async fn code_install(canister_id: Principal, mode: InstallMode, wasm_module: Vec<u8>,) -> Result<(), EgoError> {
   let install_config = CanisterInstall {
     mode,
     canister_id,

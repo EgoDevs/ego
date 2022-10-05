@@ -100,28 +100,6 @@ function buildDID(ego: ProjectConfig) {
     EGO_DIR="${process.cwd()}/ego/${ego.category}/${ego.package}"
     cd $EGO_DIR/actor && cargo run ${ego.bin_name} > ${shouldSaveAutoName}
     `);
-
-    const theFile = file.readFileSync(shouldSaveAutoName, { encoding: 'utf8' });
-    file.writeFileSync(
-      shouldSaveAutoName,
-      theFile.replace(
-        'service : () -> {\n',
-        'type InitArg = record {\n' +
-          '  init_caller: opt principal;\n' +
-          '};' +
-          'service : (InitArg) -> {\n',
-      ),
-    );
-    file.writeFileSync(
-      shouldSaveAutoName,
-      theFile.replace(
-        'service : {\n',
-        'type InitArg = record {\n' +
-          '  init_caller: opt principal;\n' +
-          '};' +
-          'service : (InitArg) -> {\n',
-      ),
-    );
   } else {
     shell.exec(`
     EGO_DIR="${process.cwd()}/ego/${ego.category}/${ego.package}"
@@ -129,43 +107,6 @@ function buildDID(ego: ProjectConfig) {
       ego.bin_name
     } > ${shouldSaveAutoName} && cargo run ${ego.bin_name} > ${shouldSaveName}
     `);
-
-    const theFile = file.readFileSync(shouldSaveAutoName, { encoding: 'utf8' });
-
-    const newFile = theFile.replace(
-      'service : () -> {\n',
-      'type InitArg = record {\n' +
-        '  init_caller: opt principal;\n' +
-        '};\n' +
-        'service : (InitArg) -> {\n',
-    );
-    const newFile_to = newFile.replace(
-      'service : {\n',
-      'type InitArg = record {\n' +
-        '  init_caller: opt principal;\n' +
-        '};\n' +
-        'service : (InitArg) -> {\n',
-    );
-
-    file.writeFileSync(shouldSaveAutoName, newFile_to);
-
-    const theFile2 = file.readFileSync(shouldSaveName, { encoding: 'utf8' });
-    const newFile2 = theFile2.replace(
-      'service : () -> {\n',
-      'type InitArg = record {\n' +
-        '  init_caller: opt principal;\n' +
-        '};\n' +
-        'service : (InitArg) -> {\n',
-    );
-    const newFile2_to = newFile2.replace(
-      'service : {\n',
-      'type InitArg = record {\n' +
-        '  init_caller: opt principal;\n' +
-        '};\n' +
-        'service : (InitArg) -> {\n',
-    );
-
-    file.writeFileSync(shouldSaveName, newFile2_to);
   }
 }
 

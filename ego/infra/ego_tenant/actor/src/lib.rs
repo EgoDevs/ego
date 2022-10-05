@@ -14,13 +14,20 @@ use ego_users::inject_ego_users;
 
 inject_ego_users!();
 
+
+#[derive(Clone, Debug, CandidType, Deserialize)]
+pub struct InitArg {
+    init_caller: Option<Principal>,
+}
+
 #[init]
-#[candid_method(init, rename = "init")]
-fn canister_init() {
-    ic_cdk::println!("ego-tenant: init, caller is {}", caller());
+#[candid_method(init)]
+pub fn init(arg: InitArg) {
+    let caller = arg.init_caller.unwrap_or(caller());
+    ic_cdk::println!("ego-tenant: init, caller is {}", caller.clone());
 
     ic_cdk::println!("==> add caller as the owner");
-    users_init();
+    users_init(caller.clone());
 }
 
 #[derive(CandidType, Deserialize, Serialize)]
