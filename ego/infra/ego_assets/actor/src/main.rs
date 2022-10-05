@@ -11,6 +11,7 @@ fn main() {
     use ego_assets_mod::state_machine::*;
     use ego_assets_mod::types::*;
     use ic_cdk::export::Principal;
+    use crate::lib::InitArg;
     candid::export_service!();
     std::print!("{}", __export_service());
 }

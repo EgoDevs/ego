@@ -10,6 +10,7 @@ fn main() {
   use ego_types::ego_error::EgoError;
   use ic_cdk::export::Principal;
   use ego_dev_mod::types::*;
+  use crate::lib::InitArg;
 
   candid::export_service!();
   std::print!("{}", __export_service());

@@ -1,4 +1,4 @@
-import file from 'fs';
+import file, { fstat } from 'fs';
 import shell from 'shelljs';
 import yargs from 'yargs';
 

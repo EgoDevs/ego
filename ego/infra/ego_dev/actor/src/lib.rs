@@ -18,20 +18,25 @@ use ego_users::inject_ego_users;
 
 inject_ego_users!();
 
+#[derive(Clone, Debug, CandidType, Deserialize)]
+pub struct InitArg {
+  init_caller: Option<Principal>,
+}
+
 #[init]
 #[candid_method(init)]
-fn init() {
-  let caller = ic_cdk::caller();
-  ic_cdk::println!("ego-dev: init, caller is {}", caller);
+pub fn init(arg: InitArg) {
+  let caller = arg.init_caller.unwrap_or(caller());
+  ic_cdk::println!("ego-dev: init, caller is {}", caller.clone());
 
   ic_cdk::println!("==> add caller as the owner");
-  users_init();
+  users_init(caller.clone());
 
   ic_cdk::println!("==> caller register as an developer");
-  match EgoDevService::developer_main_register(caller, "admin".to_string()){
+  match EgoDevService::developer_main_register(caller.clone(), "admin".to_string()){
     _ => {}
   }
-  match EgoDevService::user_role_set(caller, true, true){
+  match EgoDevService::user_role_set(caller.clone(), true, true){
     _ => {}
   }
 }

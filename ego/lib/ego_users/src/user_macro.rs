@@ -111,10 +111,10 @@ macro_rules! inject_ego_users {
             Ok(())
         }
 
-        pub fn users_init() {
+        pub fn users_init(caller:Principal) {
             USER.with(|s| {
                 let mut s = s.borrow_mut();
-                s.role_owner_add(caller())
+                s.role_owner_add(caller)
             });
         }
 

@@ -48,6 +48,7 @@ clients/**/lib
 snapshots/
 
 credentials/*.txt
+credentials/*.pem
 clients/idls/**/ego*.ts
 clients/idls/**/ego*.js
 
@@ -59,7 +60,7 @@ ego/.pnpm-debug.log
 
 
 # configs
-configs/ego*.json
+# configs/ego*.json
 !configs/constant.json
 
 

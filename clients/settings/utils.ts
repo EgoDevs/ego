@@ -4,6 +4,7 @@ import { fetch } from 'cross-fetch';
 import { Principal } from '@dfinity/principal';
 import { sha224 } from 'js-sha256';
 import crc from 'crc';
+import { isProduction } from './env';
 
 const toHexString = (bytes: Uint8Array) =>
   bytes.reduce((str, byte) => str + byte.toString(16).padStart(2, '0'), '');
@@ -20,12 +21,12 @@ if (!global.fetch) {
 export function hasOwnProperty<
   X extends Record<string, unknown>,
   Y extends PropertyKey,
->(obj: X, prop: Y): obj is X & Record<Y, unknown> {
+>(obj: Record<string, unknown>, prop: Y): obj is X & Record<Y, unknown> {
   return Object.prototype.hasOwnProperty.call(obj, prop);
 }
 
 export function getCanisterId(configName: string): string | undefined {
-  const isProd = process.env.NODE_ENV === 'production';
+  const isProd = isProduction;
   let canisterId: string | undefined;
   if (isProd) {
     const localFile = fs.readFileSync(

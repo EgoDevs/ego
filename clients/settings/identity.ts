@@ -6,6 +6,8 @@ import BIP32Factory from 'bip32';
 import { BIP32Interface } from 'bip32';
 import ecc from 'tiny-secp256k1';
 import { SignIdentity } from '@dfinity/agent';
+import curve from 'starkbank-ecdsa';
+import { isProduction } from './env';
 
 export function fromHexString(hexString: string): ArrayBuffer {
   return new Uint8Array(
@@ -28,6 +30,21 @@ export const toHexString = (bytes: Uint8Array) =>
 // const identity = Secp256k1KeyIdentity.fromSecretKey(
 //   fromHexString(BigInt(secretKey.secret.toString()).toString(16)),
 // );
+
+export function getIdentityFromPem(): SignIdentity {
+  const PrivateKey = curve.PrivateKey;
+  const secretKey = PrivateKey.fromPem(
+    fs
+      .readFileSync(
+        path.join(process.cwd(), '/credentials', '/production.pem'),
+        { encoding: 'utf-8' },
+      )
+      .toString(),
+  );
+  return Secp256k1KeyIdentity.fromSecretKey(
+    fromHexString(BigInt(secretKey.secret.toString()).toString(16)),
+  );
+}
 
 export function getIdentityFromPhrase(phrase: string): SignIdentity {
   const seed = bip39.mnemonicToSeedSync(phrase);
@@ -73,6 +90,8 @@ const seedPhrase = fs
   })
   .toString();
 
-const identity = getIdentityFromPhrase(seedPhrase);
+const identity = !isProduction
+  ? getIdentityFromPhrase(seedPhrase)
+  : getIdentityFromPem();
 
 export { identity };

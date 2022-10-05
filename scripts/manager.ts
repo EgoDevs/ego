@@ -1,14 +1,26 @@
-import { identity } from './deployer';
 import { CreateActorResult, getActor, getActor2 } from './settings/agent';
 import {
   canister_settings,
   _SERVICE as ManagementService,
 } from './idls/management';
+import path from 'path';
+
+import { _SERVICE as CycleWalletService } from './idls/cycle_wallet';
 import { idlFactory as managementIdl } from './idls/management.idl';
+import { idlFactory as cycleWalletIdl } from './idls/cycle_wallet.idl';
 import { ActorSubclass } from '@dfinity/agent';
 import fs from 'fs';
 import { Principal } from '@dfinity/principal';
+import { identity } from './settings/identity';
 const managementCanisterId = '';
+export const cycleWalletCanisterId = fs
+  .readFileSync(
+    path.join(process.cwd(), '/credentials', '/production_cycle_wallet.txt'),
+    {
+      encoding: 'utf8',
+    },
+  )
+  .toString();
 
 export async function managementActor(): Promise<
   CreateActorResult<ManagementService>
@@ -17,6 +29,16 @@ export async function managementActor(): Promise<
     identity,
     managementIdl,
     managementCanisterId,
+  );
+}
+
+export async function cycleWalletActor(): Promise<
+  CreateActorResult<CycleWalletService>
+> {
+  return await getActor2<CycleWalletService>(
+    identity,
+    cycleWalletIdl,
+    cycleWalletCanisterId,
   );
 }
 

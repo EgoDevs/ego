@@ -12,14 +12,22 @@ use ic_cdk::api::{data_certificate, set_certified_data, time};
 use ic_cdk::{caller, trap};
 use ic_cdk_macros::*;
 use ic_cdk::export::Principal;
+use ic_cdk::export::candid::{Deserialize};
+use candid::CandidType;
+
+#[derive(Clone, Debug, CandidType, Deserialize)]
+pub struct InitArg {
+    init_caller: Option<Principal>,
+}
 
 #[init]
 #[candid_method(init)]
-pub fn init() {
+pub fn init(arg: InitArg) {
+    let caller = arg.init_caller.unwrap_or(caller());
     STATE.with(|s| {
         let mut s = s.borrow_mut();
         s.clear();
-        s.authorize_unconditionally(caller());
+        s.authorize_unconditionally(caller);
     });
 }
 
