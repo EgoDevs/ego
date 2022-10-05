@@ -322,8 +322,20 @@ async function runInstall() {
             console.log(
               `installing ${f.package} to ${config.LOCAL_CANISTERID!}`,
             );
+            const initArgs = Array.from(
+              new Uint8Array(
+                IDL.encode(
+                  [IDL.Record({ init_caller: IDL.Opt(IDL.Principal) })],
+                  [
+                    {
+                      init_caller: [identity.getPrincipal()],
+                    },
+                  ],
+                ),
+              ),
+            );
             await actor.install_code({
-              arg: [],
+              arg: initArgs,
               wasm_module: wasm,
               mode: { install: null },
               canister_id: Principal.fromText(config.LOCAL_CANISTERID!),
@@ -354,8 +366,12 @@ async function runInstall() {
             const initArgs = Array.from(
               new Uint8Array(
                 IDL.encode(
-                  [IDL.Opt(IDL.Principal)],
-                  [[identity.getPrincipal()]],
+                  [IDL.Record({ init_caller: IDL.Opt(IDL.Principal) })],
+                  [
+                    {
+                      init_caller: [identity.getPrincipal()],
+                    },
+                  ],
                 ),
               ),
             );
@@ -456,8 +472,12 @@ async function runReInstall() {
             const initArgs = Array.from(
               new Uint8Array(
                 IDL.encode(
-                  [IDL.Opt(IDL.Principal)],
-                  [[identity.getPrincipal()]],
+                  [IDL.Record({ init_caller: IDL.Opt(IDL.Principal) })],
+                  [
+                    {
+                      init_caller: [identity.getPrincipal()],
+                    },
+                  ],
                 ),
               ),
             );
@@ -554,8 +574,12 @@ async function runUpgrade() {
             const initArgs = Array.from(
               new Uint8Array(
                 IDL.encode(
-                  [IDL.Opt(IDL.Principal)],
-                  [[identity.getPrincipal()]],
+                  [IDL.Record({ init_caller: IDL.Opt(IDL.Principal) })],
+                  [
+                    {
+                      init_caller: [identity.getPrincipal()],
+                    },
+                  ],
                 ),
               ),
             );
