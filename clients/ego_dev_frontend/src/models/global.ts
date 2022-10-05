@@ -30,9 +30,12 @@ export const global = createModel<RootModel>()({
       const storeConnection: DevConnection = payload.storeConnection ?? rootState.global.initialState.storeConnection;
       const result1 = await storeConnection?.developer_main_get();
       console.log('result', result1)
-      dispatch.global.save({
-        user: result1.developer,
-      })
+      if(result1.developer) {
+        dispatch.global.save({
+          user: result1.developer,
+        })
+      }
+      return result1
     },
 
   }),

@@ -7,6 +7,7 @@ import UserLayout from "@/layout/UserLayout";
 import Applications from "@/pages/applications";
 import RolePage from "@/pages/role";
 import UserRolePage from '@/pages/user/role';
+import Register from "@/pages/user/Login/Register";
 
 const routes: IRoute[] = [
   {
@@ -19,6 +20,11 @@ const routes: IRoute[] = [
             name: 'login',
             path: '/user/login',
             component: Login,
+          },
+          {
+            name: 'login',
+            path: '/user/register',
+            component: Register,
           },
         ],
       },

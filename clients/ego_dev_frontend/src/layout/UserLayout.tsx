@@ -98,6 +98,7 @@ export default (props: any) => {
         const result = await client.isConnect()
         return result
       } catch (error) {
+        console.log('init back login')
         history.push(loginPath);
       }
       return false;
@@ -107,11 +108,17 @@ export default (props: any) => {
     if (history.location.pathname !== loginPath) {
       const result = await isAuthenticated();
       if (result === false) {
+        console.log('init back login')
         history.push(loginPath)
       }
 
       const storeConnection = await DevConnection.create(client.identity);
-      dispatch.global.getUser({ storeConnection })
+      const result1 = await dispatch.global.getUser({ storeConnection })
+      console.log('register user', result)
+      if(!result1.name) {
+        console.log('init back register')
+        history.replace('/user/register')
+      }
       setInitEnd(true)
       return dispatch.global.save(
         {

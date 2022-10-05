@@ -1,14 +1,11 @@
 import { Button, message } from 'antd';
 import React, { useEffect, useState } from 'react';
 import Footer from '@/components/Footer';
-import { IC } from '@astrox/connection';
 import styles from './index.module.less';
-import { IcObject } from '@/utils';
 import { DevConnection } from '@/services/connection/dev';
 import { useHistory } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { RootDispatch } from '@/store';
-import { Principal } from '@dfinity/principal';
 import { client } from '@/main';
 
 
@@ -34,9 +31,13 @@ const Login: React.FC = () => {
            isAuthenticated: true,
          }
        })
-       dispatch.global.getUser({ storeConnection })
-       history.push('/home');
+       const result = await dispatch.global.getUser({ storeConnection })
        console.log('register user', result)
+       if(result.developer) {
+          history.push('/home');
+       } else {
+          history.push('/user/register')
+       }
       }
      } catch (error) {
        message.error('登录失败，请重试');
@@ -49,7 +50,7 @@ const Login: React.FC = () => {
         {/* {SelectLang !== undefined && <SelectLang />} */}
       </div>
       <div className={styles.content}>
-        <h1>AstroX Developer Center</h1>
+        <h1>Ego developer center</h1>
         <p>Get all developer resources of AstroX right away.</p>
         <Button type="primary" onClick={handleSubmit}>Log in</Button>
       </div>

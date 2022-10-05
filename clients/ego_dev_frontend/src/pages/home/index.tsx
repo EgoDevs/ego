@@ -24,16 +24,7 @@ const HomePage: React.FC = () => {
   }
   return (
     <PageContainer ghost>
-      <Form form={form}  onFinish={handleSubmit}>
-        <Form.Item
-          label="Name"
-          name="name"
-          required
-        >
-          <Input />
-        </Form.Item>
-        <Button type="primary" htmlType="submit">Register</Button>
-      </Form>
+      <Guide name={'Welcome to Ego center'}></Guide>
     </PageContainer>
   );
 };

@@ -19,13 +19,14 @@ export const user = createModel<RootModel>()({
       };
     },
   },
+  
   effects: dispatch => ({
     async getUserList(payload, rootState) {
       const storeConnection: DevConnection = payload.storeConnection ?? rootState.global.initialState.storeConnection;
       const result1 = await storeConnection?.user_main_list({name: payload.name});
       console.log('result', result1)
       dispatch.user.save({
-        userList: (result1 as { 'Ok': Result_8 })['Ok']['users'],
+        userList: result1.users,
       })
     },
 

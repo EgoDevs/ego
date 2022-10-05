@@ -30,19 +30,23 @@ export const CategoryEnum = {
   }
 }
 
-export function handleResponse<T> (res: {Ok:T} | {Err: EgoError}): T | undefined {
+export function handleResponse<T> (res: {Ok:T} | {Err: EgoError}, noThrow: undefined | boolean): T | EgoError {
   if(hasOwnProperty(res, 'Ok')) {
     return res['Ok'] as T
   } else {
-    message.error(res['Err']['msg'])
+    if(!noThrow) {
+      message.error(res['Err']['msg'])
+    }
+    return res['Err']
   }
+  
 }
 
 
-export async function handleResponseCatch<T, A> (fn: () => Promise<A>): Promise<T | void> {
+export async function handleResponseCatch<T, A> (fn: () => Promise<A>, noThrow?: boolean): Promise<T | EgoError | void> {
   try {
     const response = await fn()
-    return handleResponse<T>(response as any);
+    return handleResponse<T>(response as any, noThrow);
   } catch (err) {
     console.log(err)
   }
@@ -57,6 +61,7 @@ export class DevConnection extends BaseConnection<_SERVICE> {
     super(identity, process.env.EGO_DEV_CANISTERID!, devIdl, actor, agent);
 
   }
+
   static async create(identity: Identity): Promise<DevConnection> {
     const { actor, agent } = await getActor<_SERVICE>(devIdl, process.env.EGO_DEV_CANISTERID!, identity);
     return new DevConnection(identity, actor, agent);
@@ -71,7 +76,7 @@ export class DevConnection extends BaseConnection<_SERVICE> {
 
   /********************  developer  ********************/
   async developer_main_get(): Promise<DeveloperMainGetResponse> {
-    const result = await handleResponseCatch<DeveloperMainGetResponse, Result_6>(() => this._actor.developer_main_get()) as DeveloperMainGetResponse;
+    const result = await handleResponseCatch<DeveloperMainGetResponse, Result_6>(() => this._actor.developer_main_get(), true) as DeveloperMainGetResponse;
     console.log('developer_main_get', result)
     return result;
   }
