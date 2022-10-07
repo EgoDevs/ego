@@ -42,7 +42,7 @@ struct CanisterInstall {
   arg: Vec<u8>,
 }
 
-async fn code_install(canister_id: Principal, mode: InstallMode, wasm_module: Vec<u8>,) -> Result<(), EgoError> {
+async fn code_install(canister_id: Principal, mode: InstallMode, wasm_module: Vec<u8>) -> Result<(), EgoError> {
   let install_config = CanisterInstall {
     mode,
     canister_id,

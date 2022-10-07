@@ -1,47 +1,25 @@
-use std::collections::BTreeMap;
 use async_trait::async_trait;
 use ic_cdk::export::Principal;
 use mockall::mock;
 
-use ego_tenant_mod::service::EgoTenantService;
-use ego_utils::types::{Category, Cycles, EgoError, Version, Wasm, WasmId};
-use ego_tenant_mod::state::EGO_TENANT;
-use ego_tenant_mod::wallet::Wallet;
-use ego_tenant_mod::c2c::ic_management::TIcManagement;
 use ego_tenant_mod::c2c::ego_file::TEgoFile;
-use ego_tenant_mod::canister::Canister;
-use ego_tenant_mod::types::App;
-use ego_types::app::Canister;
-use ego_utils::types::CanisterType::{ASSET, BACKEND};
+use ego_tenant_mod::c2c::ic_management::TIcManagement;
+use ego_tenant_mod::service::EgoTenantService;
+use ego_types::app::{Wasm, WasmId};
+use ego_types::app::CanisterType::{BACKEND};
+use ego_types::ego_error::EgoError;
+use ego_types::version::Version;
+use ego_utils::ic_management::Cycles;
 
 static FILE_CANISTER_ID: &str = "amybd-zyaaa-aaaah-qc4hq-cai";
 
 static EXISTS_WALLET_ID: &str = "22fyd-yaaaa-aaaaf-aml4q-cai";
 static EXISTS_CANISTER_ID: &str = "223xb-saaaa-aaaaf-arlqa-cai";
 
-static TEST_WALLET_ID: &str = "227wz-liaaa-aaaaa-qaara-cai";
-
 static EXISTS_APP_ID: &str = "app_test";
-static EXISTS_APP_NAME: &str = "test app";
-static EXISTS_APP_LOGO: &str = "logo";
-static EXISTS_APP_DESCRIPTION: &str = "test is app description";
+
 
 pub fn set_up() {
-  let wallet_principal = Principal::from_text(EXISTS_WALLET_ID.to_string()).unwrap();
-  let exists_canister_principal = Principal::from_text(EXISTS_CANISTER_ID.to_string()).unwrap();
-
-  EGO_TENANT.with(|ego_tenant| {
-    // add wallet
-    let mut wallet = Wallet::new(wallet_principal);
-    let canister = Canister::new("app_test|BACKEND".to_string(), exists_canister_principal);
-
-    let mut canisters = BTreeMap::new();
-    canisters.insert("app_test|BACKEND".to_string(), canister);
-
-    wallet.canisters.insert(EXISTS_APP_ID.to_string(), canisters.clone());
-
-    ego_tenant.borrow_mut().wallets.insert(wallet_principal, wallet);
-  });
 }
 
 mock! {
@@ -67,71 +45,8 @@ mock! {
   }
 }
 
-#[test]
-fn wallet_main_add(){
-  set_up();
-
-  let wallet_id = Principal::from_text(TEST_WALLET_ID).unwrap();
-  let result = EgoTenantService::wallet_main_add(wallet_id);
-  assert!(result.is_ok());
-}
-
-#[test]
-fn wallet_main_add_multi_time(){
-  set_up();
-
-  let wallet_id = Principal::from_text(EXISTS_WALLET_ID).unwrap();
-  let result = EgoTenantService::wallet_main_add(wallet_id);
-  assert!(result.is_err());
-  assert_eq!(4001, result.unwrap_err().code);
-}
-
-#[test]
-fn wallet_main_remove(){
-  set_up();
-
-  let wallet_id = Principal::from_text(EXISTS_WALLET_ID).unwrap();
-  let result = EgoTenantService::wallet_main_remove(&wallet_id);
-  assert!(result.is_ok());
-
-  // after remove, it can be added again
-  let result = EgoTenantService::wallet_main_add(wallet_id);
-  assert!(result.is_ok());
-}
-
-#[test]
-fn wallet_main_remove_not_exists(){
-  set_up();
-
-  let wallet_id = Principal::from_text(TEST_WALLET_ID).unwrap();
-  let result = EgoTenantService::wallet_main_remove(&wallet_id);
-  assert!(result.is_err());
-  assert_eq!(4002, result.unwrap_err().code);
-}
-
-#[test]
-fn wallet_main_get_not_exists(){
-  set_up();
-
-  let wallet_id = Principal::from_text(TEST_WALLET_ID).unwrap();
-  let result = EgoTenantService::wallet_main_get(&wallet_id);
-  assert!(result.is_err());
-  assert_eq!(4002, result.unwrap_err().code);
-}
-
-#[test]
-fn wallet_main_get(){
-  set_up();
-
-  let wallet_id = Principal::from_text(EXISTS_WALLET_ID).unwrap();
-  let result = EgoTenantService::wallet_main_get(&wallet_id);
-  assert!(result.is_ok());
-  assert_eq!(EXISTS_WALLET_ID, result.unwrap().wallet_id.to_string());
-}
-
-
 #[tokio::test]
-async fn wallet_app_install() {
+async fn app_main_install() {
   set_up();
 
   let wallet_principal = Principal::from_text(EXISTS_WALLET_ID.to_string()).unwrap();
@@ -140,13 +55,15 @@ async fn wallet_app_install() {
   let mut mock_management = MockManagement::new();
   let mut mock_ego_file = MockEgoFile::new();
 
-  let version = Version::new(1, 0, 1);
-  let frontend = Wasm::new(EXISTS_APP_ID.to_string(), version, ASSET, None);
+  let version = Version{
+    major: 1,
+    minor: 0,
+    patch: 0
+  };
   let backend = Wasm::new(EXISTS_APP_ID.to_string(), version, BACKEND, Some(file_canister));
-  let app = App::new(EXISTS_APP_ID.to_string(), EXISTS_APP_NAME.to_string(), Category::Vault, EXISTS_APP_LOGO.to_string(), EXISTS_APP_DESCRIPTION.to_string(), version, frontend, backend, 1.2f32);
 
   let created_canister_id = Principal::from_text(EXISTS_CANISTER_ID.to_string()).unwrap();
-  let fake_wasm_module = vec![1,0,1,0,0,1,0,1];
+  let fake_wasm_module = vec![1, 0, 1, 0, 0, 1, 0, 1];
 
   mock_management.expect_canister_main_create().returning(move |_cycles_to_use| Ok(created_canister_id.clone()));
   mock_ego_file.expect_file_main_read().returning(move |_canister_id, _fid| Ok(fake_wasm_module.clone()));
@@ -157,16 +74,10 @@ async fn wallet_app_install() {
   });
   mock_management.expect_canister_controller_set().returning(|_canister_id, _user_ids| Ok(()));
 
-  match EgoTenantService::app_main_install(wallet_principal, mock_ego_file, mock_management, app).await {
-    Ok(principals) => {
-      let key = "app_test|BACKEND";
-      match principals.get(key) {
-        None => panic!("should not go here"),
-        Some(principal) => {
-          assert_eq!(*principal, created_canister_id);
-        }
-      }
-    },
+  match EgoTenantService::app_main_install(wallet_principal, mock_ego_file, mock_management, backend).await {
+    Ok(principal) => {
+      assert_eq!(principal, created_canister_id);
+    }
     Err(_e) => {
       panic!("should not go here");
     }
@@ -174,28 +85,7 @@ async fn wallet_app_install() {
 }
 
 #[tokio::test]
-async fn wallet_app_install_failed_with_not_exists_wallet() {
-  set_up();
-
-  let wallet_principal = Principal::from_text(TEST_WALLET_ID.to_string()).unwrap();
-  let file_canister = Principal::from_text(FILE_CANISTER_ID.to_string()).unwrap();
-
-  let mock_management = MockManagement::new();
-  let mock_ego_file = MockEgoFile::new();
-
-  let version = Version::new(1, 0, 1);
-  let frontend = Wasm::new(EXISTS_APP_ID.to_string(), version, ASSET, None);
-  let backend = Wasm::new(EXISTS_APP_ID.to_string(), version, BACKEND, Some(file_canister));
-  let app = App::new(EXISTS_APP_ID.to_string(), EXISTS_APP_NAME.to_string(), Category::Vault, EXISTS_APP_LOGO.to_string(), EXISTS_APP_DESCRIPTION.to_string(), version, frontend, backend, 1.2f32);
-
-  match EgoTenantService::app_main_install(wallet_principal, mock_ego_file, mock_management, app).await {
-    Ok(_principal) => panic!("should not go here"),
-    Err(e) => assert_eq!(4002, e.code),
-  }
-}
-
-#[tokio::test]
-async fn wallet_app_install_failed() {
+async fn app_main_install_failed() {
   set_up();
 
   let wallet_principal = Principal::from_text(EXISTS_WALLET_ID.to_string()).unwrap();
@@ -204,23 +94,25 @@ async fn wallet_app_install_failed() {
   let mut mock_management = MockManagement::new();
   let mock_ego_file = MockEgoFile::new();
 
-  let version = Version::new(1, 0, 1);
-  let frontend = Wasm::new(EXISTS_APP_ID.to_string(), version, ASSET, None);
+  let version = Version{
+    major: 1,
+    minor: 0,
+    patch: 0
+  };
   let backend = Wasm::new(EXISTS_APP_ID.to_string(), version, BACKEND, Some(file_canister));
-  let app = App::new(EXISTS_APP_ID.to_string(), EXISTS_APP_NAME.to_string(), Category::Vault, EXISTS_APP_LOGO.to_string(), EXISTS_APP_DESCRIPTION.to_string(), version, frontend, backend, 1.2f32);
 
   mock_management.expect_canister_main_create().returning(move |_cycles_to_use| Err(EgoError::from("error".to_string())));
 
-  match EgoTenantService::app_main_install(wallet_principal, mock_ego_file, mock_management, app).await {
+  match EgoTenantService::app_main_install(wallet_principal, mock_ego_file, mock_management, backend).await {
     Ok(_principal) => panic!("should not go here"),
     Err(e) => {
-      println!("{:?}", e);
-      assert_eq!(255, e.code)},
+      assert_eq!(255, e.code)
+    }
   }
 }
 
 #[tokio::test]
-async fn wallet_app_upgrade() {
+async fn app_main_upgrade() {
   set_up();
 
   let wallet_principal = Principal::from_text(EXISTS_WALLET_ID.to_string()).unwrap();
@@ -229,13 +121,16 @@ async fn wallet_app_upgrade() {
   let mut mock_management = MockManagement::new();
   let mut mock_ego_file = MockEgoFile::new();
 
-  let version = Version::new(1, 0, 1);
-  let frontend = Wasm::new(EXISTS_APP_ID.to_string(), version, ASSET, None);
+
+  let version = Version{
+    major: 1,
+    minor: 0,
+    patch: 0
+  };
   let backend = Wasm::new(EXISTS_APP_ID.to_string(), version, BACKEND, Some(file_canister));
-  let app = App::new(EXISTS_APP_ID.to_string(), EXISTS_APP_NAME.to_string(), Category::Vault, EXISTS_APP_LOGO.to_string(), EXISTS_APP_DESCRIPTION.to_string(), version, frontend, backend, 1.2f32);
 
   let exists_canister_id = Principal::from_text(EXISTS_CANISTER_ID.to_string()).unwrap();
-  let fake_wasm_module = vec![1,0,1,0,0,1,0,1];
+  let fake_wasm_module = vec![1, 0, 1, 0, 0, 1, 0, 1];
 
   mock_ego_file.expect_file_main_read().returning(move |_canister_id, _fid| Ok(fake_wasm_module.clone()));
 
@@ -245,10 +140,10 @@ async fn wallet_app_upgrade() {
   });
   mock_management.expect_canister_controller_set().returning(|_canister_id, _user_ids| Ok(()));
 
-  match EgoTenantService::app_main_upgrade(wallet_principal, mock_ego_file, mock_management, app).await {
+  match EgoTenantService::app_main_upgrade(wallet_principal, exists_canister_id, mock_ego_file, mock_management, backend).await {
     Ok(ret) => {
       assert!(ret);
-    },
+    }
     Err(e) => {
       println!("{:?}", e);
       panic!("should not go here");
