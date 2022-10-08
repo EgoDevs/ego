@@ -308,29 +308,6 @@ fn wallet_app_remove_success() {
 }
 
 #[test]
-fn wallet_order() {
-  set_up();
-
-  let exist_wallet_id = Principal::from_text(EXISTS_WALLET_ID).unwrap();
-  let store_id = Principal::from_text(STORE_ID).unwrap();
-
-  // get order list before make order
-  let result = EgoStoreService::wallet_order_list(exist_wallet_id);
-  assert!(result.is_ok());
-  assert_eq!(0, result.unwrap().len());
-
-  // create order
-  let result = EgoStoreService::wallet_order_new(exist_wallet_id, store_id, 1.2f32);
-  assert!(result.is_ok());
-  assert_eq!(1, result.unwrap().memo.0);
-
-  // get order list after make order
-  let result = EgoStoreService::wallet_order_list(exist_wallet_id);
-  assert!(result.is_ok());
-  assert_eq!(1, result.unwrap().len());
-}
-
-#[test]
 fn wallet_tenant_get() {
   set_up();
 

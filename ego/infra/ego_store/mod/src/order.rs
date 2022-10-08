@@ -3,7 +3,9 @@ use ic_ledger_types::{AccountIdentifier, Memo, Subaccount};
 use serde::Serialize;
 use ic_cdk::export::Principal;
 
-#[derive(CandidType, Serialize, Deserialize, Clone, Debug)]
+#[derive(
+CandidType, Serialize, Deserialize, Clone, Copy, Debug, Ord, PartialOrd, Eq, PartialEq,
+)]
 pub enum OrderStatus {
   NEW,
   SUCCESS

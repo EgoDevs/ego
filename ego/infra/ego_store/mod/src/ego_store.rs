@@ -158,6 +158,12 @@ impl EgoStore {
     match self.orders.get_mut(&memo) {
       Some(order) => {
         order.status = OrderStatus::SUCCESS;
+
+        self.wallets.entry(order.wallet_id).and_modify(|wallet| {
+          // TODO: Add Real Recharge Logic
+          wallet.cycles += (order.amount * 1000000f32) as u64;
+        });
+
         Ok(true)
       },
       None => Err(EgoStoreErr::OrderNotExists.into())
