@@ -1,5 +1,5 @@
 use ic_cdk::export::Principal;
-
+use rand::Rng;
 use ego_dev_mod::app::{App, AppVersion, AppVersionStatus};
 use ego_dev_mod::developer::Developer;
 use ego_dev_mod::file::File;
@@ -46,6 +46,7 @@ static RELEASED_APP_ID: &str = "app_2";
 static RELEASED_APP_NAME: &str = "app 2";
 
 static TEST_PRINCIPAL_ID: &str = "d2qpe-l63sh-47jxj-2764e-pa6i7-qocm4-icuie-nt2lb-yiwwk-bmq7z-pqe";
+static TEST_PRINCIPAL_EID: &str = "22w4s-syaaa-aaaai-acjkq-cai";
 static TEST_APP_ID: &str = "test_app";
 static TEST_APP_NAME: &str = "test app";
 
@@ -100,6 +101,7 @@ fn admin_file_add() {
   let file_canister = Principal::from_text(FILE_CANISTER_ID.to_string()).unwrap();
   let resp = EgoDevService::admin_ego_file_add(file_canister);
   assert!(resp.is_ok());
+  println!("resp message is: {:?}",resp);
 
   EGO_DEV.with(|ego_dev| {
     assert_eq!(1, ego_dev.borrow().ego_files.len());
@@ -120,6 +122,25 @@ fn developer_main_register_success() {
   let developer = EgoDevService::developer_main_register(caller, "user_2".to_string()).unwrap();
   assert_eq!(caller, developer.user_id);
   assert_eq!("user_1", developer.name);
+}
+
+#[test]
+fn developer_main_register_fail_name_existed(){
+  let caller = Principal::from_text(TEST_PRINCIPAL_EID.to_string()).unwrap();
+  let num = rand::thread_rng().gen_range(1..=10001).to_string();
+  let name = "user";
+  let users = format!("{}_{}", name, num);
+  println!("names is {}", users);
+  let developer = EgoDevService::developer_main_register(caller, users.to_string()).unwrap();
+  println!("register name is: {}, user id is: {}", developer.name, developer.user_id);
+  assert_eq!(caller, developer.user_id);
+  assert_eq!(users, developer.name);
+  println!("created_apps is {:?}", developer);
+  // The user name and principal have been existed 
+  let developer = EgoDevService::developer_main_register(caller, users.to_string()).unwrap();
+  // assert!(false);
+  let result = format!("{:?}",developer);
+  assert_eq!("the user name and principal are already exists", result);
 }
 
 #[test]
@@ -146,6 +167,7 @@ fn developer_main_get_success() {
 
   let result = EgoDevService::developer_main_get(caller);
   let developer = result.unwrap();
+  println!("{:?}",developer);
   assert_eq!(caller, developer.user_id);
 }
 
