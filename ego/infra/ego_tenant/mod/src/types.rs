@@ -34,6 +34,7 @@ impl From<std::string::String> for EgoTenantErr {
 #[derive(Clone, Debug, CandidType, Deserialize, Serialize)]
 pub struct AppMainInstallRequest {
     pub wallet_id: Principal,
+    pub user_id: Principal,
     pub wasm: Wasm,
 }
 
@@ -44,7 +45,6 @@ pub struct AppMainInstallResponse {
 
 #[derive(Clone, Debug, CandidType, Deserialize, Serialize)]
 pub struct AppMainUpgradeRequest {
-    pub wallet_id: Principal,
     pub canister_id: Principal,
     pub wasm: Wasm,
 }

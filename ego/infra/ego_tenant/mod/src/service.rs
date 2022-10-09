@@ -20,7 +20,9 @@ impl EgoTenantService {
         EGO_TENANT.with(|ego_tenant| ego_tenant.borrow_mut().canister_main_untrack(wallet_id, canister_id))
     }
 
-    pub async fn app_main_install<F: TEgoFile, M: TIcManagement>(wallet_id: Principal, ego_file: F, management: M, wasm: Wasm) -> Result<Principal, EgoError> {
+    pub async fn app_main_install<F: TEgoFile, M: TIcManagement>(ego_file: F, management: M, wallet_id: Principal, user_id: Principal, wasm: Wasm) -> Result<Principal, EgoError> {
+        // TODO: checked whether user has add tenant as one of the canister's controller
+
         ic_cdk::println!("1 create canister");
         let canister_id = management.canister_main_create(CREATE_CANISTER_CYCLES_FEE).await?;
 
@@ -30,13 +32,16 @@ impl EgoTenantService {
         ic_cdk::println!("3 install code");
         management.canister_code_install(canister_id, data).await?;
 
-        ic_cdk::println!("4 change owner to wallet");
+        ic_cdk::println!("4 change canister controller to wallet");
         management.canister_controller_set(canister_id, vec![wallet_id]).await?;
+
+        ic_cdk::println!("4 change canister owner to user");
+        management.canister_owner_set(canister_id, user_id).await?;
 
         Ok(canister_id)
     }
 
-    pub async fn app_main_upgrade<F: TEgoFile, M: TIcManagement>(_wallet_id: Principal, canister_id: Principal, ego_file: F, management: M, wasm: Wasm) -> Result<bool, EgoError> {
+    pub async fn app_main_upgrade<F: TEgoFile, M: TIcManagement>(ego_file: F, management: M, canister_id: Principal, wasm: Wasm) -> Result<bool, EgoError> {
         // TODO: checked whether user has add tenant as one of the canister's controller
 
         ic_cdk::println!("1 load wasm data for {}", wasm.id());

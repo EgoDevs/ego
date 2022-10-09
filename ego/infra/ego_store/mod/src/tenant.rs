@@ -1,12 +1,13 @@
 use std::cmp::Ordering;
+
 use ic_cdk::export::candid::{CandidType, Deserialize};
-use serde::Serialize;
 use ic_cdk::export::Principal;
+use serde::Serialize;
 
 #[derive(CandidType, Serialize, Deserialize, Clone, Debug)]
-pub struct Tenant{
+pub struct Tenant {
   pub wallet_count: u16,
-  pub canister_id: Principal
+  pub canister_id: Principal,
 }
 
 impl Eq for Tenant {}
@@ -30,7 +31,7 @@ impl Ord for Tenant {
 }
 
 impl Tenant {
-  pub fn new(tenant_id: Principal) -> Self{
-    Tenant{ canister_id: tenant_id, wallet_count: 0}
+  pub fn new(tenant_id: Principal) -> Self {
+    Tenant { canister_id: tenant_id, wallet_count: 0 }
   }
 }

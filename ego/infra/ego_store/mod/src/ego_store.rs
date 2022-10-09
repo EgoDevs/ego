@@ -1,16 +1,18 @@
-use std::collections::{BTreeMap};
+use std::collections::BTreeMap;
 
 use ic_cdk::export::candid::{CandidType, Deserialize};
 use ic_cdk::export::Principal;
+use ic_ledger_types::Memo;
 use serde::Serialize;
 
-use ic_ledger_types::{Memo};
-use ego_types::app::{App, AppId, Canister};
+use ego_types::app::{App, AppId};
 use ego_types::ego_error::EgoError;
+use ego_types::version::Version;
 
 use crate::order::{Order, OrderStatus};
 use crate::tenant::Tenant;
 use crate::types::{EgoStoreErr, QueryParam};
+use crate::user_app::{AppInstalled, UserApp};
 use crate::wallet::*;
 
 /********************  app store  ********************/
@@ -20,7 +22,7 @@ pub struct EgoStore {
   pub orders: BTreeMap<Memo, Order>,
   pub wallets: BTreeMap<Principal, Wallet>,
   pub tenants: BTreeMap<Principal, Tenant>,
-  pub next_order_id: u64
+  pub next_order_id: u64,
 }
 
 impl EgoStore {
@@ -30,7 +32,7 @@ impl EgoStore {
       orders: BTreeMap::new(),
       wallets: BTreeMap::new(),
       tenants: BTreeMap::new(),
-      next_order_id: 1
+      next_order_id: 1,
     }
   }
 
@@ -55,13 +57,19 @@ impl EgoStore {
     }
   }
 
+  pub fn wallet_main_get(&self, wallet_id: Principal) -> Result<Wallet, EgoError> {
+    match self.wallets.get(&wallet_id) {
+      Some(wallet) => Ok(wallet.clone()),
+      None => Err(EgoStoreErr::WalletNotExists.into())
+    }
+  }
 
-  pub fn wallet_main_new(&mut self, wallet_id: Principal) -> Result<Principal, EgoError> {
+  pub fn wallet_main_new(&mut self, wallet_id: Principal, user_id: Principal) -> Result<Principal, EgoError> {
     match self.wallets.get(&wallet_id) {
       Some(_) => Err(EgoStoreErr::WalletExists.into()),
       None => {
         let tenant_id = self.tenant_get()?;
-        let wallet = self.wallets.entry(wallet_id).or_insert(Wallet::new(tenant_id, wallet_id));
+        let wallet = self.wallets.entry(wallet_id).or_insert(Wallet::new(tenant_id, wallet_id, user_id));
 
         Ok(wallet.tenant_id)
       }
@@ -75,16 +83,27 @@ impl EgoStore {
     }
   }
 
-  pub fn wallet_app_list(&self, wallet_id: &Principal) -> Result<Vec<App>, EgoError>{
+  pub fn wallet_app_list(&self, wallet_id: &Principal) -> Result<Vec<AppInstalled>, EgoError> {
     match self.wallets.get(wallet_id) {
       None => Err(EgoStoreErr::WalletNotExists.into()),
       Some(wallet) => {
-        Ok(wallet.apps.iter().map(|app_id| self.apps.get(app_id).unwrap().clone()).collect())
+        Ok(wallet.apps.iter().map(|(app_id, user_app)| {
+          let app= self.apps.get(app_id).unwrap();
+          AppInstalled::new(user_app, app)
+        }).collect())
       }
     }
   }
 
-  pub fn wallet_app_install(&mut self, wallet_id: &Principal, app_id: &str) -> Result<Vec<Canister>, EgoError> {
+  pub fn wallet_app_install(&mut self, wallet_id: &Principal, app_id: &AppId, user_app: &UserApp) {
+    self.wallets.get_mut(wallet_id).unwrap().app_install(app_id, user_app);
+  }
+
+  pub fn wallet_app_upgrade(&mut self, wallet_id: &Principal, app_id: &AppId, version: &Version) {
+    self.wallets.get_mut(wallet_id).unwrap().app_upgrade(app_id, version);
+  }
+
+  pub fn wallet_app_remove(&mut self, wallet_id: &Principal, app_id: &AppId) -> Result<(), EgoError> {
     match self.wallets.get_mut(wallet_id) {
       None => Err(EgoStoreErr::WalletNotExists.into()),
       Some(wallet) => {
@@ -92,47 +111,16 @@ impl EgoStore {
           None => {
             Err(EgoStoreErr::AppNotExists.into())
           }
-          Some(app) => {
-            Ok(wallet.app_install(app)?)
+          Some(_app) => {
+            wallet.app_remove(&app_id);
+            Ok(())
           }
         }
       }
     }
   }
 
-  pub fn wallet_app_upgrade(&mut self, wallet_id: &Principal, app_id: &str) -> Result<Vec<Canister>, EgoError> {
-    match self.wallets.get_mut(wallet_id) {
-      None => Err(EgoStoreErr::WalletNotExists.into()),
-      Some(wallet) => {
-        match self.apps.get(app_id) {
-          None => {
-            Err(EgoStoreErr::AppNotExists.into())
-          }
-          Some(app) => {
-            Ok(wallet.app_upgrade(app)?)
-          }
-        }
-      }
-    }
-  }
-
-  pub fn wallet_app_remove(&mut self, wallet_id: &Principal, app_id: &str) -> Result<Vec<Canister>, EgoError> {
-    match self.wallets.get_mut(wallet_id) {
-      None => Err(EgoStoreErr::WalletNotExists.into()),
-      Some(wallet) => {
-        match self.apps.get(app_id) {
-          None => {
-            Err(EgoStoreErr::AppNotExists.into())
-          }
-          Some(app) => {
-            Ok(wallet.app_remove(app)?)
-          }
-        }
-      }
-    }
-  }
-
-  pub fn wallet_order_list(&self, wallet_id: &Principal) -> Result<Vec<Order>, EgoError>{
+  pub fn wallet_order_list(&self, wallet_id: &Principal) -> Result<Vec<Order>, EgoError> {
     match self.wallets.get(wallet_id) {
       None => Err(EgoStoreErr::WalletNotExists.into()),
       Some(wallet) => {
@@ -141,7 +129,7 @@ impl EgoStore {
     }
   }
 
-  pub fn wallet_order_new(&mut self, wallet_id: &Principal, store_id: &Principal, amount: f32) -> Result<Order, EgoError>{
+  pub fn wallet_order_new(&mut self, wallet_id: &Principal, store_id: &Principal, amount: f32) -> Result<Order, EgoError> {
     match self.wallets.get_mut(wallet_id) {
       None => Err(EgoStoreErr::WalletNotExists.into()),
       Some(wallet) => {
@@ -165,7 +153,7 @@ impl EgoStore {
         });
 
         Ok(true)
-      },
+      }
       None => Err(EgoStoreErr::OrderNotExists.into())
     }
   }
@@ -180,13 +168,27 @@ impl EgoStore {
     }
   }
 
-  pub fn app_main_release(&mut self, app: App) -> Result<bool, EgoError>{
+  pub fn app_main_release(&mut self, app: App) -> Result<bool, EgoError> {
     self.apps.entry(app.app_id.clone()).and_modify(|exists_app| *exists_app = app.clone()).or_insert(app);
 
     Ok(true)
   }
 
-  fn tenant_get(&self) -> Result<Principal, EgoError>{
+  pub fn user_app_get(&self, wallet_id: &Principal, app_id: &AppId) -> Result<UserApp, EgoError> {
+    match self.wallets.get(wallet_id) {
+      None => Err(EgoStoreErr::WalletNotExists.into()),
+      Some(wallet) => {
+        match wallet.apps.get(app_id) {
+          None => Err(EgoStoreErr::AppNotInstall.into()),
+          Some(user_app) => {
+            Ok(user_app.clone())
+          }
+        }
+      }
+    }
+  }
+
+  fn tenant_get(&self) -> Result<Principal, EgoError> {
     if self.tenants.len() == 0 {
       Err(EgoStoreErr::NoTenant.into())
     } else {

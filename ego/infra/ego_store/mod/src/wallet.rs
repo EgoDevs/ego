@@ -1,59 +1,44 @@
-use ic_ledger_types::Memo;
-use ic_cdk::export::Principal;
-use ic_cdk::export::candid::{CandidType, Deserialize};
-use serde::Serialize;
-use ego_types::app::{App, AppId, Canister};
-use ego_types::app::CanisterType::BACKEND;
-use ego_types::ego_error::EgoError;
-use crate::order::Order;
-use crate::types::EgoStoreErr;
+use std::collections::BTreeMap;
 
+use ic_cdk::export::candid::{CandidType, Deserialize};
+use ic_cdk::export::Principal;
+use ic_ledger_types::Memo;
+use serde::Serialize;
+
+use ego_types::app::AppId;
+use ego_types::version::Version;
+
+use crate::order::Order;
+use crate::user_app::UserApp;
 
 #[derive(CandidType, Serialize, Deserialize, Clone, Debug)]
 pub struct Wallet {
   pub tenant_id: Principal,
   pub orders: Vec<Memo>,
-  pub apps: Vec<AppId>,
+  pub apps: BTreeMap<AppId, UserApp>,
   pub cycles: u64,
   pub wallet_id: Principal,
+  pub user_id: Principal
 }
 
-impl Wallet{
-  pub fn new(tenant_id: Principal, wallet_id: Principal) -> Self{
-    Wallet{tenant_id, orders: vec![], apps: vec![], cycles: 0, wallet_id}
+impl Wallet {
+  pub fn new(tenant_id: Principal, wallet_id: Principal, user_id: Principal) -> Self {
+    Wallet { tenant_id, orders: vec![], apps: BTreeMap::new(), cycles: 0, wallet_id, user_id }
   }
 
-  // TODO: add actual install logic
-  pub fn app_install(&mut self, app: &App) -> Result<Vec<Canister>, EgoError> {
-    if self.apps.contains(&app.app_id) {
-      Err(EgoStoreErr::AppAlreadyInstall.into())
-    } else {
-      self.apps.push(app.app_id.clone());
-
-      Ok(vec![ Canister::new(Principal::from_text("qaa6y-5yaaa-aaaaa-aaafa-cai".to_string()).unwrap(), BACKEND) ])
-    }
+  pub fn app_install(&mut self, app_id: &AppId, user_app: &UserApp) {
+    self.apps.insert(app_id.clone(), user_app.clone());
   }
 
-  // TODO: add actual upgrade logic
-  pub fn app_upgrade(&mut self, app: &App) -> Result<Vec<Canister>, EgoError> {
-    if self.apps.contains(&app.app_id) {
-      Ok(vec![ Canister::new(Principal::from_text("qaa6y-5yaaa-aaaaa-aaafa-cai".to_string()).unwrap(), BACKEND) ])
-    } else {
-      Err(EgoStoreErr::AppNotInstall.into())
-    }
+  pub fn app_upgrade(&mut self, app_id: &AppId, version: &Version) {
+    self.apps.entry(app_id.clone()).and_modify(|user_app| user_app.current_version = version.clone());
   }
 
-  // TODO: add actual upgrade logic
-  pub fn app_remove(&mut self, app: &App) -> Result<Vec<Canister>, EgoError> {
-    if self.apps.contains(&app.app_id) {
-      self.apps.retain(|app_id| *app_id != app.app_id);
-      Ok(vec![ Canister::new(Principal::from_text("qaa6y-5yaaa-aaaaa-aaafa-cai".to_string()).unwrap(), BACKEND) ])
-    } else {
-      Err(EgoStoreErr::AppNotInstall.into())
-    }
+  pub fn app_remove(&mut self, app_id: &AppId) {
+    self.apps.remove(app_id);
   }
 
-  pub fn order_new(&mut self, store_id: &Principal, amount: f32, memo: u64) -> Order{
+  pub fn order_new(&mut self, store_id: &Principal, amount: f32, memo: u64) -> Order {
     let order = Order::new(self.wallet_id, store_id, amount, memo);
     self.orders.push(order.memo);
 

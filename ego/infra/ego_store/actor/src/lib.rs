@@ -1,15 +1,15 @@
 use candid::candid_method;
-use ic_cdk_macros::*;
-use ic_cdk::storage;
-
-use ego_store_mod::ego_store::EgoStore;
-use ego_store_mod::service::*;
-use ego_store_mod::state::{EGO_STORE};
-use ego_store_mod::types::*;
-use ego_types::ego_error::EgoError;
 use ic_cdk::export::candid::{CandidType, Deserialize};
+use ic_cdk::storage;
+use ic_cdk_macros::*;
 use serde::Serialize;
 
+use ego_store_mod::c2c::ego_tenant::EgoTenant;
+use ego_store_mod::ego_store::EgoStore;
+use ego_store_mod::service::*;
+use ego_store_mod::state::EGO_STORE;
+use ego_store_mod::types::*;
+use ego_types::ego_error::EgoError;
 use ego_users::inject_ego_users;
 
 inject_ego_users!();
@@ -31,9 +31,9 @@ pub fn init(arg: InitArg) {
 }
 
 #[derive(CandidType, Deserialize, Serialize)]
-struct PersistState{
+struct PersistState {
   pub ego_store: EgoStore,
-  pub user: User
+  pub user: User,
 }
 
 #[pre_upgrade]
@@ -43,7 +43,7 @@ fn pre_upgrade() {
   let ego_store = EGO_STORE.with(|ego_store| ego_store.borrow().clone());
   let user = users_pre_upgrade();
 
-  let state = PersistState{ego_store, user};
+  let state = PersistState { ego_store, user };
   storage::stable_save((state, )).unwrap();
 }
 
@@ -82,9 +82,9 @@ pub fn app_main_get(request: AppMainGetRequest) -> Result<AppMainGetResponse, Eg
 
 #[update(name = "wallet_main_new")]
 #[candid_method(update, rename = "wallet_main_new")]
-pub fn wallet_main_new() -> Result<WalletMainNewResponse, EgoError> {
+pub fn wallet_main_new(req: WalletMainNewRequest) -> Result<WalletMainNewResponse, EgoError> {
   ic_cdk::println!("ego-store: wallet_main_new");
-  match EgoStoreService::wallet_main_new(ic_cdk::caller()) {
+  match EgoStoreService::wallet_main_new(ic_cdk::caller(), req.user_id) {
     Ok(tenant_id) => Ok(WalletMainNewResponse { tenant_id }),
     Err(e) => Err(e),
   }
@@ -112,22 +112,20 @@ pub fn wallet_app_list() -> Result<WalletAppListResponse, EgoError> {
 
 #[query(name = "wallet_app_install")]
 #[candid_method(query, rename = "wallet_app_install")]
-pub fn wallet_app_install(req: WalletAppInstallRequest) -> Result<WalletAppInstallResponse, EgoError> {
+pub async fn wallet_app_install(req: WalletAppInstallRequest) -> Result<WalletAppInstallResponse, EgoError> {
   ic_cdk::println!("ego_store: wallet_app_install");
-  match EgoStoreService::wallet_app_install(ic_cdk::caller(), req.app_id) {
-    Ok(canisters) => Ok(WalletAppInstallResponse { canisters }),
-    Err(e) => Err(e),
-  }
+  let ego_tenant = EgoTenant::new();
+  let user_app = EgoStoreService::wallet_app_install(ego_tenant, ic_cdk::caller(), req.app_id).await?;
+  Ok(WalletAppInstallResponse { user_app })
 }
 
 #[query(name = "wallet_app_upgrade")]
 #[candid_method(query, rename = "wallet_app_upgrade")]
-pub fn wallet_app_upgrade(req: WalletAppUpgradeRequest) -> Result<WalletAppUpgradeResponse, EgoError> {
+pub async fn wallet_app_upgrade(req: WalletAppUpgradeRequest) -> Result<WalletAppUpgradeResponse, EgoError> {
   ic_cdk::println!("ego_store: wallet_app_upgrade");
-  match EgoStoreService::wallet_app_upgrade(ic_cdk::caller(), req.app_id) {
-    Ok(canisters) => Ok(WalletAppUpgradeResponse { canisters }),
-    Err(e) => Err(e),
-  }
+  let ego_tenant = EgoTenant::new();
+  let user_app = EgoStoreService::wallet_app_upgrade(ego_tenant,ic_cdk::caller(), req.app_id).await?;
+  Ok(WalletAppUpgradeResponse { user_app })
 }
 
 #[query(name = "wallet_app_remove")]
@@ -135,7 +133,7 @@ pub fn wallet_app_upgrade(req: WalletAppUpgradeRequest) -> Result<WalletAppUpgra
 pub fn wallet_app_remove(req: WalletAppRemoveRequest) -> Result<WalletAppRemoveResponse, EgoError> {
   ic_cdk::println!("ego_store: wallet_app_remove");
   match EgoStoreService::wallet_app_remove(ic_cdk::caller(), req.app_id) {
-    Ok(canisters) => Ok(WalletAppRemoveResponse { canisters }),
+    Ok(_) => Ok(WalletAppRemoveResponse { }),
     Err(e) => Err(e),
   }
 }

@@ -64,7 +64,7 @@ async fn app_main_install(req: AppMainInstallRequest) -> Result<AppMainInstallRe
     let management = IcManagement::new();
     let ego_file = EgoFile::new();
 
-    let canister_id = EgoTenantService::app_main_install(req.wallet_id, ego_file, management, req.wasm).await?;
+    let canister_id = EgoTenantService::app_main_install(ego_file, management, req.wallet_id, req.user_id, req.wasm).await?;
     Ok(AppMainInstallResponse{canister_id})
 }
 
@@ -75,7 +75,7 @@ async fn app_main_upgrade(req: AppMainUpgradeRequest) -> Result<AppMainUpgradeRe
     let management = IcManagement::new();
     let ego_file = EgoFile::new();
 
-    let ret = EgoTenantService::app_main_upgrade(req.wallet_id, req.canister_id, ego_file, management, req.wasm).await?;
+    let ret = EgoTenantService::app_main_upgrade(ego_file, management, req.canister_id, req.wasm).await?;
     Ok(AppMainUpgradeResponse{ret})
 }
 

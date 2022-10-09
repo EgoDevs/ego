@@ -229,3 +229,24 @@ pub async fn canister_cycle_top_up(canister_id: Principal, cycles_to_use: Cycles
 
   Ok(())
 }
+
+pub async fn canister_owner_set(canister_id: Principal, user_id: Principal) -> Result<(), EgoError> {
+  match api::call::call(
+    canister_id,
+    "set_owner",
+    (user_id, ),
+  ).await {
+    Ok(x) => x,
+    Err((code, msg)) => {
+      let code = code as u16;
+      error!(
+          error_code = code,
+          error_message = msg.as_str(),
+          "Error calling canister_owner_set"
+        );
+      return Err(EgoError { code, msg });
+    }
+  };
+
+  Ok(())
+}

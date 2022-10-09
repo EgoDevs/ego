@@ -14,6 +14,7 @@ use ego_utils::ic_management::Cycles;
 static FILE_CANISTER_ID: &str = "amybd-zyaaa-aaaah-qc4hq-cai";
 
 static EXISTS_WALLET_ID: &str = "22fyd-yaaaa-aaaaf-aml4q-cai";
+static EXISTS_USER_ID: &str = "225da-yaaaa-aaaah-qahrq-cai";
 static EXISTS_CANISTER_ID: &str = "223xb-saaaa-aaaaf-arlqa-cai";
 
 static EXISTS_APP_ID: &str = "app_test";
@@ -32,8 +33,9 @@ mock! {
     async fn canister_code_upgrade(&self, canister_id: Principal, wasm_module: Vec<u8>) -> Result<(), EgoError>;
 
     async fn canister_controller_set(&self, canister_id: Principal, user_ids: Vec<Principal>) -> Result<(), EgoError>;
-  }
 
+    async fn canister_owner_set(&self, canister_id: Principal, user_id: Principal) -> Result<(), EgoError>;
+  }
 }
 
 mock! {
@@ -50,6 +52,7 @@ async fn app_main_install() {
   set_up();
 
   let wallet_principal = Principal::from_text(EXISTS_WALLET_ID.to_string()).unwrap();
+  let user_principal = Principal::from_text(EXISTS_USER_ID.to_string()).unwrap();
   let file_canister = Principal::from_text(FILE_CANISTER_ID.to_string()).unwrap();
 
   let mut mock_management = MockManagement::new();
@@ -72,9 +75,17 @@ async fn app_main_install() {
     assert_eq!(&canister_id, &created_canister_id);
     Ok(())
   });
-  mock_management.expect_canister_controller_set().returning(|_canister_id, _user_ids| Ok(()));
+  mock_management.expect_canister_controller_set().returning(move |canister_id, user_ids| {
+    assert_eq!(created_canister_id, canister_id);
+    assert_eq!(wallet_principal, *user_ids.get(0).unwrap());
+    Ok(())});
+  mock_management.expect_canister_owner_set().returning(move |canister_id, user_id| {
+    assert_eq!(created_canister_id, canister_id);
+    assert_eq!(user_principal, user_id);
+    Ok(())
+  });
 
-  match EgoTenantService::app_main_install(wallet_principal, mock_ego_file, mock_management, backend).await {
+  match EgoTenantService::app_main_install(mock_ego_file, mock_management, wallet_principal,  user_principal, backend).await {
     Ok(principal) => {
       assert_eq!(principal, created_canister_id);
     }
@@ -89,6 +100,7 @@ async fn app_main_install_failed() {
   set_up();
 
   let wallet_principal = Principal::from_text(EXISTS_WALLET_ID.to_string()).unwrap();
+  let user_principal = Principal::from_text(EXISTS_USER_ID.to_string()).unwrap();
   let file_canister = Principal::from_text(FILE_CANISTER_ID.to_string()).unwrap();
 
   let mut mock_management = MockManagement::new();
@@ -103,7 +115,7 @@ async fn app_main_install_failed() {
 
   mock_management.expect_canister_main_create().returning(move |_cycles_to_use| Err(EgoError::from("error".to_string())));
 
-  match EgoTenantService::app_main_install(wallet_principal, mock_ego_file, mock_management, backend).await {
+  match EgoTenantService::app_main_install( mock_ego_file, mock_management, wallet_principal,user_principal, backend).await {
     Ok(_principal) => panic!("should not go here"),
     Err(e) => {
       assert_eq!(255, e.code)
@@ -115,7 +127,6 @@ async fn app_main_install_failed() {
 async fn app_main_upgrade() {
   set_up();
 
-  let wallet_principal = Principal::from_text(EXISTS_WALLET_ID.to_string()).unwrap();
   let file_canister = Principal::from_text(FILE_CANISTER_ID.to_string()).unwrap();
 
   let mut mock_management = MockManagement::new();
@@ -140,7 +151,7 @@ async fn app_main_upgrade() {
   });
   mock_management.expect_canister_controller_set().returning(|_canister_id, _user_ids| Ok(()));
 
-  match EgoTenantService::app_main_upgrade(wallet_principal, exists_canister_id, mock_ego_file, mock_management, backend).await {
+  match EgoTenantService::app_main_upgrade(  mock_ego_file, mock_management, exists_canister_id, backend).await {
     Ok(ret) => {
       assert!(ret);
     }

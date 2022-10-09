@@ -1,5 +1,6 @@
 use ic_cdk::export::Principal;
 use ic_ledger_types::Memo;
+
 use ego_store_mod::order::{Order, OrderStatus};
 use ego_store_mod::service::EgoStoreService;
 use ego_store_mod::state::EGO_STORE;
@@ -7,17 +8,19 @@ use ego_store_mod::wallet::Wallet;
 
 static STORE_ID: &str = "22cl3-kqaaa-aaaaf-add7q-cai";
 static EXISTS_WALLET_ID: &str = "amybd-zyaaa-aaaah-qc4hq-cai";
+static EXISTS_USER_ID: &str = "225da-yaaaa-aaaah-qahrq-cai";
 static EXISTS_TENANT_ID: &str = "22ayq-aiaaa-aaaai-qgmma-cai";
 
 
 pub fn set_up() {
   let tenant_principal = Principal::from_text(EXISTS_TENANT_ID.to_string()).unwrap();
   let wallet_principal = Principal::from_text(EXISTS_WALLET_ID.to_string()).unwrap();
+  let user_principal = Principal::from_text(EXISTS_USER_ID.to_string()).unwrap();
   let store_principal = Principal::from_text(STORE_ID.to_string()).unwrap();
 
   EGO_STORE.with(|ego_store| {
     // add wallet
-    let mut wallet = Wallet::new(tenant_principal, wallet_principal);
+    let mut wallet = Wallet::new(tenant_principal, wallet_principal, user_principal);
 
     // add order
     let order = Order::new(wallet_principal, &store_principal, 1.2f32, 10);
