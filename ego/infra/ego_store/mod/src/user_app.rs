@@ -8,12 +8,12 @@ use ego_types::version::Version;
 pub struct UserApp {
   pub app_id: AppId,
   pub current_version: Version,
-  pub frontend: Canister,
-  pub backend: Canister,
+  pub frontend: Option<Canister>,
+  pub backend: Option<Canister>,
 }
 
 impl UserApp {
-  pub fn new(app_id: &AppId, current_version: &Version, frontend: Canister, backend: Canister) -> Self {
+  pub fn new(app_id: &AppId, current_version: &Version, frontend: Option<Canister>, backend: Option<Canister>) -> Self {
     UserApp {
       app_id: app_id.clone(),
       current_version: current_version.clone(),
@@ -31,8 +31,8 @@ pub struct AppInstalled {
   pub logo: String,
   pub description: String,
   pub current_version: Version,
-  pub frontend: Canister,
-  pub backend: Canister
+  pub frontend: Option<Canister>,
+  pub backend: Option<Canister>
 }
 
 impl AppInstalled {

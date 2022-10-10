@@ -68,7 +68,7 @@ pub fn set_up() {
     let app = App::new(EXISTS_APP_ID.to_string(), APP_NAME.to_string(), Category::Vault, APP_LOGO.to_string(), APP_DESCRIPTION.to_string(), version, frontend, backend, 1.2f32);
     ego_store.borrow_mut().apps.insert(EXISTS_APP_ID.to_string(), app);
 
-    let frontend = Wasm::new(TEST_APP_ID.to_string(), version, ASSET, None);
+    let frontend = Wasm::new(TEST_APP_ID.to_string(), version, ASSET, Some(file_canister));
     let backend = Wasm::new(TEST_APP_ID.to_string(), version, BACKEND, Some(file_canister));
     let app = App::new(TEST_APP_ID.to_string(), APP_NAME.to_string(), Category::Vault, APP_LOGO.to_string(), APP_DESCRIPTION.to_string(), version, frontend, backend, 1.2f32);
     ego_store.borrow_mut().apps.insert(TEST_APP_ID.to_string(), app);
@@ -78,7 +78,7 @@ pub fn set_up() {
 
     let frontend_principal = Principal::from_text(EXISTS_USER_APP_FRONTEND.to_string()).unwrap();
     let backend_principal = Principal::from_text(EXISTS_USER_APP_BACKEND.to_string()).unwrap();
-    wallet.apps.insert(EXISTS_APP_ID.to_string(), UserApp::new(&EXISTS_APP_ID.to_string(), &version, Canister::new(frontend_principal, CanisterType::ASSET), Canister::new(backend_principal, CanisterType::BACKEND)));
+    wallet.apps.insert(EXISTS_APP_ID.to_string(), UserApp::new(&EXISTS_APP_ID.to_string(), &version, Some(Canister::new(frontend_principal, CanisterType::ASSET)), Some(Canister::new(backend_principal, CanisterType::BACKEND))));
     ego_store.borrow_mut().wallets.insert(wallet_principal, wallet);
   });
 }
@@ -230,8 +230,8 @@ async fn wallet_app_install_success() {
   match result {
     Ok(app_installeds) => {
       let app_installed = app_installeds.get(0).unwrap();
-      assert_eq!(frontend_principal, app_installed.frontend.canister_id);
-      assert_eq!(backend_principal, app_installed.backend.canister_id);
+      assert_eq!(frontend_principal, app_installed.frontend.as_ref().unwrap().canister_id);
+      assert_eq!(backend_principal, app_installed.backend.as_ref().unwrap().canister_id);
     }
     Err(_) => {
       panic!("should not go here")
