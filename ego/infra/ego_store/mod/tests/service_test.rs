@@ -121,7 +121,7 @@ fn wallet_main_new() {
 
   let wallet_principal = Principal::from_text(TEST_WALLET_ID).unwrap();
   let user_principal = Principal::from_text(TEST_USER_ID).unwrap();
-  let result = EgoStoreService::wallet_main_new(wallet_principal, user_principal);
+  let result = EgoStoreService::wallet_main_register(wallet_principal, user_principal);
   assert!(result.is_ok());
 
   let tenant_id = result.unwrap();
@@ -165,7 +165,7 @@ async fn wallet_app_install_not_exists_app() {
   let user_principal = Principal::from_text(TEST_USER_ID).unwrap();
 
   // register wallet
-  let result = EgoStoreService::wallet_main_new(wallet_principal, user_principal);
+  let result = EgoStoreService::wallet_main_register(wallet_principal, user_principal);
   assert!(result.is_ok());
 
   // install app
@@ -202,7 +202,7 @@ async fn wallet_app_install_success() {
   let backend_principal = Principal::from_text(TEST_USER_APP_BACKEND).unwrap();
 
   // register wallet
-  let result = EgoStoreService::wallet_main_new(wallet_principal, user_principal);
+  let result = EgoStoreService::wallet_main_register(wallet_principal, user_principal);
   assert!(result.is_ok());
 
   // get app list before app install
@@ -261,7 +261,7 @@ async fn wallet_app_upgrade_not_exists_app() {
   let user_principal = Principal::from_text(TEST_USER_ID).unwrap();
 
   // register wallet
-  let result = EgoStoreService::wallet_main_new(wallet_principal, user_principal);
+  let result = EgoStoreService::wallet_main_register(wallet_principal, user_principal);
   assert!(result.is_ok());
 
   // install app
@@ -280,7 +280,7 @@ async fn wallet_app_upgrade_not_installed_app() {
   let user_principal = Principal::from_text(TEST_USER_ID).unwrap();
 
   // register wallet
-  let result = EgoStoreService::wallet_main_new(wallet_principal, user_principal);
+  let result = EgoStoreService::wallet_main_register(wallet_principal, user_principal);
   assert!(result.is_ok());
 
   // upgrade not installed app
@@ -348,7 +348,7 @@ fn wallet_app_remove_not_installed_app() {
   let user_principal = Principal::from_text(TEST_USER_ID).unwrap();
 
   // register wallet
-  let result = EgoStoreService::wallet_main_new(wallet_principal, user_principal);
+  let result = EgoStoreService::wallet_main_register(wallet_principal, user_principal);
   assert!(result.is_ok());
 
   // remove not exists wallet

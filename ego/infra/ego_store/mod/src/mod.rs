@@ -7,3 +7,4 @@ pub mod order;
 pub mod tenant;
 pub mod c2c;
 pub mod user_app;
+pub mod wallet_provider;

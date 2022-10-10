@@ -14,6 +14,7 @@ use crate::tenant::Tenant;
 use crate::types::{EgoStoreErr, QueryParam};
 use crate::user_app::{AppInstalled, UserApp};
 use crate::wallet::*;
+use crate::wallet_provider::WalletProvider;
 
 /********************  app store  ********************/
 #[derive(CandidType, Deserialize, Serialize, Debug, Clone)]
@@ -23,6 +24,7 @@ pub struct EgoStore {
   pub wallets: BTreeMap<Principal, Wallet>,
   pub tenants: BTreeMap<Principal, Tenant>,
   pub next_order_id: u64,
+  pub wallet_providers: BTreeMap<Principal, WalletProvider>
 }
 
 impl EgoStore {
@@ -33,6 +35,7 @@ impl EgoStore {
       wallets: BTreeMap::new(),
       tenants: BTreeMap::new(),
       next_order_id: 1,
+      wallet_providers: BTreeMap::new()
     }
   }
 
@@ -163,6 +166,16 @@ impl EgoStore {
       Some(_) => Err(EgoStoreErr::TenantExists.into()),
       None => {
         self.tenants.insert(tenant_id.clone(), Tenant::new(tenant_id.clone()));
+        Ok(true)
+      }
+    }
+  }
+
+  pub fn admin_wallet_provider_add(&mut self, wallet_provider: &Principal, wallet_id: &AppId) -> Result<bool, EgoError> {
+    match self.wallet_providers.get(wallet_provider) {
+      Some(_) => Err(EgoStoreErr::WalletProviderExists.into()),
+      None => {
+        self.wallet_providers.insert(wallet_provider.clone(), WalletProvider::new(wallet_provider, wallet_id));
         Ok(true)
       }
     }

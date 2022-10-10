@@ -82,10 +82,37 @@ pub fn app_main_get(request: AppMainGetRequest) -> Result<AppMainGetResponse, Eg
 
 #[update(name = "wallet_main_new")]
 #[candid_method(update, rename = "wallet_main_new")]
-pub fn wallet_main_new(req: WalletMainNewRequest) -> Result<WalletMainNewResponse, EgoError> {
+pub async fn wallet_main_new(req: WalletMainNewRequest) -> Result<WalletMainNewResponse, EgoError> {
   ic_cdk::println!("ego-store: wallet_main_new");
-  match EgoStoreService::wallet_main_new(ic_cdk::caller(), req.user_id) {
-    Ok(tenant_id) => Ok(WalletMainNewResponse { tenant_id }),
+
+  let wallet_provider = caller();
+
+  let app_id = EGO_STORE.with(|ego_store| {
+    match ego_store
+      .borrow().wallet_providers.get(&wallet_provider){
+      None => Err(EgoError::from(EgoStoreErr::WalletProviderNotExists)),
+      Some(walelet_provider) => {
+        Ok(walelet_provider.app_id.clone())
+      }
+    }
+  })?;
+
+  let ego_tenant = EgoTenant::new();
+  let user_app = EgoStoreService::wallet_app_install(ego_tenant, ic_cdk::caller(), app_id).await?;
+
+  match EgoStoreService::wallet_main_register(user_app.backend.as_ref().unwrap().canister_id, req.user_id) {
+    Ok(_) => Ok(WalletMainNewResponse{user_app}),
+    Err(e) => Err(e),
+  }
+}
+
+
+#[update(name = "wallet_main_register")]
+#[candid_method(update, rename = "wallet_main_register")]
+pub fn wallet_main_register(req: WalletMainRegisterRequest) -> Result<WalletMainRegisterResponse, EgoError> {
+  ic_cdk::println!("ego-store: wallet_main_register");
+  match EgoStoreService::wallet_main_register(ic_cdk::caller(), req.user_id) {
+    Ok(tenant_id) => Ok(WalletMainRegisterResponse { tenant_id }),
     Err(e) => Err(e),
   }
 }
@@ -193,13 +220,24 @@ pub fn wallet_order_notify(request: WalletOrderNotifyRequest) -> Result<WalletOr
 }
 
 /********************  owner methods  ********************/
-#[query(name = "admin_tenant_add")]
-#[candid_method(query, rename = "admin_tenant_add")]
+#[update(name = "admin_tenant_add")]
+#[candid_method(update, rename = "admin_tenant_add")]
 pub fn admin_ego_tenant_add(req: AdminEgoTenantAddRequest) -> Result<AdminEgoTenantAddResponse, EgoError> {
   ic_cdk::println!("ego_store: admin_tenant_add");
 
   match EgoStoreService::admin_ego_tenant_add(req.tenant_id) {
     Ok(ret) => Ok(AdminEgoTenantAddResponse { ret }),
+    Err(e) => Err(e),
+  }
+}
+
+#[update(name = "admin_wallet_provider_add")]
+#[candid_method(update, rename = "admin_wallet_provider_add")]
+pub fn admin_wallet_provider_add(req: AdminWalletProviderAddRequest) -> Result<AdminWalletProviderAddResponse, EgoError> {
+  ic_cdk::println!("ego_store: admin_wallet_provider_add");
+
+  match EgoStoreService::admin_wallet_provider_add(&req.wallet_provider, &req.wallet_id) {
+    Ok(ret) => Ok(AdminWalletProviderAddResponse { ret }),
     Err(e) => Err(e),
   }
 }

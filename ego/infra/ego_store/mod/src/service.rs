@@ -23,7 +23,7 @@ impl EgoStoreService {
     )
   }
 
-  pub fn wallet_main_new(
+  pub fn wallet_main_register(
     wallet_id: Principal,
     user_id: Principal
   ) -> Result<Principal, EgoError> {
@@ -205,6 +205,13 @@ impl EgoStoreService {
     EGO_STORE.with(|ego_store| {
       ego_store
         .borrow_mut().admin_tenant_add(&tenant_id)
+    })
+  }
+
+  pub fn admin_wallet_provider_add(wallet_provider: &Principal, wallet_id: &AppId) -> Result<bool, EgoError> {
+    EGO_STORE.with(|ego_store| {
+      ego_store
+        .borrow_mut().admin_wallet_provider_add(wallet_provider, wallet_id)
     })
   }
 
