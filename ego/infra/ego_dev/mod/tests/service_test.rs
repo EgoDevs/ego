@@ -200,11 +200,22 @@ fn developer_app_new_success(){
   let result = EgoDevService::developer_main_register(caller, "user_1".to_string());
   assert!(result.is_ok());
 
+  let get_app_list = EgoDevService::developer_app_list(caller);
+  // println!("app list is {:?}", get_app_list);
+  let list_result = format!("{:?}", get_app_list);
+ 
+  assert_eq!("Ok([])", list_result);
+  // app new success with developer
   let result = EgoDevService::developer_app_new(caller, TEST_APP_ID.to_string(), TEST_APP_NAME.to_string(), APP_LOGO.to_string(), APP_DESCRIPTION.to_string(), Category::Vault, 0f32);
 
   assert!(result.is_ok());
 
   let app = result.unwrap();
+  assert_eq!(TEST_APP_ID, app.app_id);
+  // test_app has been added successfully by developer
+  let get_new_app_list = EgoDevService::developer_app_list(caller);
+  let list_result = get_new_app_list.unwrap();
+  let app = &list_result[0];
   assert_eq!(TEST_APP_ID, app.app_id);
 }
 
