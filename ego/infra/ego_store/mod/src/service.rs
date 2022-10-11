@@ -113,34 +113,22 @@ impl EgoStoreService {
   }
 
   pub async fn wallet_app_upgrade<T: TEgoTenant>(ego_tenant: T, wallet_id: Principal, app_id: AppId) -> Result<UserApp, EgoError> {
-    EGO_STORE.with(|ego_store| {
-      match ego_store.borrow().wallets.get(&wallet_id) {
-        None => Err(EgoError::from(EgoStoreErr::WalletNotExists)),
-        Some(wallet) => {
-          match wallet.apps.get(&app_id) {
-            None => Err(EgoError::from(EgoStoreErr::AppNotInstall)),
-            Some(_user_app) => Ok(())
-          }
-        }
-      }
+    ic_cdk::println!("1 get previous installed user app");
+    let user_app = EGO_STORE.with(|ego_store| {
+      ego_store
+        .borrow().user_app_get(&wallet_id, &app_id)
     })?;
 
-    ic_cdk::println!("1 get ego tenant id relative to wallet");
+    ic_cdk::println!("2 get ego tenant id relative to wallet");
     let ego_tenant_id = EGO_STORE.with(|ego_store| {
       ego_store
         .borrow().wallet_tenant_get(&wallet_id).clone()
     })?;
 
-    ic_cdk::println!("2 get app to be upgrade");
+    ic_cdk::println!("3 get app to be upgrade");
     let app = EGO_STORE.with(|ego_store| {
       ego_store
         .borrow().app_main_get(&app_id).clone()
-    })?;
-
-    ic_cdk::println!("3 get previous installed user app");
-    let user_app = EGO_STORE.with(|ego_store| {
-      ego_store
-        .borrow().user_app_get(&wallet_id, &app_id)
     })?;
 
     // TODO: 假设不同版本里面的app wasm一致，例如：不存在原来有前端后来没有了的情况
