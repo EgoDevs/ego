@@ -116,7 +116,7 @@ fn app_main_get_failed_with_not_exists_wallet() {
 }
 
 #[test]
-fn wallet_main_new() {
+fn wallet_main_register() {
   set_up();
 
   let wallet_principal = Principal::from_text(TEST_WALLET_ID).unwrap();

@@ -206,7 +206,7 @@ pub struct AppMainReleaseResponse {
 #[derive(CandidType, Deserialize, Serialize)]
 pub struct AdminWalletProviderAddRequest {
   pub wallet_provider: Principal,
-  pub wallet_id: AppId
+  pub wallet_app_id: AppId
 }
 
 #[derive(CandidType, Deserialize, Serialize)]

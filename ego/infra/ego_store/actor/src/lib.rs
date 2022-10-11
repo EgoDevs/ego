@@ -236,7 +236,7 @@ pub fn admin_ego_tenant_add(req: AdminEgoTenantAddRequest) -> Result<AdminEgoTen
 pub fn admin_wallet_provider_add(req: AdminWalletProviderAddRequest) -> Result<AdminWalletProviderAddResponse, EgoError> {
   ic_cdk::println!("ego_store: admin_wallet_provider_add");
 
-  match EgoStoreService::admin_wallet_provider_add(&req.wallet_provider, &req.wallet_id) {
+  match EgoStoreService::admin_wallet_provider_add(&req.wallet_provider, &req.wallet_app_id) {
     Ok(ret) => Ok(AdminWalletProviderAddResponse { ret }),
     Err(e) => Err(e),
   }
