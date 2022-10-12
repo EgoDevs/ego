@@ -37,6 +37,7 @@ static STORE_CANISTER_ID: &str = "2265i-mqaaa-aaaad-qbsga-cai";
 static AUDITER_PRINCIPAL_ID: &str = "22ayq-aiaaa-aaaai-qgmma-cai";
 
 static DEVELOPER_PRINCIPAL_ID: &str = "5oynr-yl472-mav57-c2oxo-g7woc-yytib-mp5bo-kzg3b-622pu-uatef-uqe";
+static NORMAL_PRINCIPAL_ID: &str = "qdvhd-os4o2-zzrdw-xrcv4-gljou-eztdp-bj326-e6jgr-tkhuc-ql6v2-yqe"; 
 static EXIST_APP_ID: &str = "app_1";
 static EXIST_APP_NAME: &str = "app 1";
 static APP_LOGO: &str = "logo";
@@ -444,6 +445,46 @@ async fn app_version_upload_wasm_released_app() {
     },
     Err(e) => {
       assert_eq!(1013, e.code)
+    },
+  }
+}
+
+#[test]
+fn user_main_list_success(){
+  let caller = Principal::from_text(NORMAL_PRINCIPAL_ID.to_string()).unwrap();
+  let developer = EgoDevService::developer_main_register(caller, "user_1".to_string()).unwrap();
+  let user_list = EgoDevService::user_main_list("user_1".to_string());
+  assert_eq!("user_1", user_list[0].name);
+  assert_eq!("user_1", developer.name);
+}
+
+#[test]
+fn user_main_list_not_exist(){
+  let user_list = EgoDevService::user_main_list("user_1".to_string());
+  assert_eq!(user_list.is_empty(),true);
+}
+
+#[test]
+fn user_role_set_success(){
+  set_up();
+  let caller = Principal::from_text(DEVELOPER_PRINCIPAL_ID.to_string()).unwrap();
+  let user_role = EgoDevService::user_role_set(caller, true, true).unwrap();
+  assert_eq!(user_role, true);
+  let developer_get = EgoDevService::developer_main_get(caller).unwrap();
+  assert_eq!(developer_get.is_app_auditor, true);
+  assert_eq!(developer_get.is_manager, true);
+}
+
+#[test]
+fn user_role_set_fail_with_not_developer(){
+  set_up();
+  let caller = Principal::from_text(NORMAL_PRINCIPAL_ID.to_string()).unwrap();
+  match EgoDevService::user_role_set(caller, true, true){
+    Ok(_) => {
+      panic!("should not go here")
+    },
+    Err(e) => {
+      assert_eq!(1011, e.code)
     },
   }
 }
