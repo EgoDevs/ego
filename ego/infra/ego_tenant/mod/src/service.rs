@@ -16,7 +16,7 @@ impl EgoTenantService {
         EGO_TENANT.with(|ego_tenant| ego_tenant.borrow_mut().canister_main_track(wallet_id, canister_id))
     }
 
-    pub fn canister_main_imtrack(wallet_id: Principal, canister_id: Principal) -> Result<bool, EgoError> {
+    pub fn canister_main_untrack(wallet_id: Principal, canister_id: Principal) -> Result<bool, EgoError> {
         EGO_TENANT.with(|ego_tenant| ego_tenant.borrow_mut().canister_main_untrack(wallet_id, canister_id))
     }
 

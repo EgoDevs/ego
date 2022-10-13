@@ -5,7 +5,7 @@ use ego_tenant_mod::c2c::ego_file::EgoFile;
 use ego_tenant_mod::c2c::ic_management::IcManagement;
 use ego_tenant_mod::ego_tenant::EgoTenant;
 use ego_tenant_mod::service::EgoTenantService;
-use ego_tenant_mod::types::{AppMainInstallRequest, AppMainInstallResponse, AppMainUpgradeRequest, AppMainUpgradeResponse};
+use ego_tenant_mod::types::{AppMainInstallRequest, AppMainInstallResponse, AppMainUpgradeRequest, AppMainUpgradeResponse, CanisterMainTrackRequest, CanisterMainUnTrackRequest, CanisterMainUnTrackResponse};
 use ic_cdk::export::candid::{CandidType, Deserialize};
 use serde::Serialize;
 use ego_tenant_mod::state::EGO_TENANT;
@@ -77,6 +77,24 @@ async fn app_main_upgrade(req: AppMainUpgradeRequest) -> Result<AppMainUpgradeRe
 
     let ret = EgoTenantService::app_main_upgrade(ego_file, management, req.canister_id, req.wasm).await?;
     Ok(AppMainUpgradeResponse{ret})
+}
+
+#[update(name = "canister_main_track", guard = "user_guard")]
+#[candid_method(update, rename = "canister_main_track")]
+fn canister_main_track(req: CanisterMainTrackRequest) -> Result<CanisterMainUnTrackResponse, EgoError> {
+    ic_cdk::println!("ego_tenant: canister_main_track");
+
+    let ret = EgoTenantService::canister_main_track(req.wallet_id, req.canister_id)?;
+    Ok(CanisterMainUnTrackResponse{ret})
+}
+
+#[update(name = "canister_main_untrack", guard = "user_guard")]
+#[candid_method(update, rename = "canister_main_untrack")]
+fn canister_main_untrack(req: CanisterMainUnTrackRequest) -> Result<CanisterMainUnTrackResponse, EgoError> {
+    ic_cdk::println!("ego_tenant: canister_main_untrack");
+
+    let ret = EgoTenantService::canister_main_untrack(req.wallet_id, req.canister_id)?;
+    Ok(CanisterMainUnTrackResponse{ret})
 }
 
 /********************  notify  ********************/
