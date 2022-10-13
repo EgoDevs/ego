@@ -46,7 +46,7 @@ static RELEASED_APP_ID: &str = "app_2";
 static RELEASED_APP_NAME: &str = "app 2";
 
 static TEST_PRINCIPAL_ID: &str = "d2qpe-l63sh-47jxj-2764e-pa6i7-qocm4-icuie-nt2lb-yiwwk-bmq7z-pqe";
-static TEST_PRINCIPAL_EID: &str = "22w4s-syaaa-aaaai-acjkq-cai";
+static TEST_CANISTER_ID: &str = "22w4s-syaaa-aaaai-acjkq-cai";
 static TEST_APP_ID: &str = "test_app";
 static TEST_APP_NAME: &str = "test app";
 
@@ -126,7 +126,7 @@ fn developer_main_register_success() {
 
 #[test]
 fn developer_main_register_fail_name_existed(){
-  let caller = Principal::from_text(TEST_PRINCIPAL_EID.to_string()).unwrap();
+  let caller = Principal::from_text(TEST_PRINCIPAL_ID.to_string()).unwrap();
   let num = rand::thread_rng().gen_range(1..=10001).to_string();
   let name = "user";
   let users = format!("{}_{}", name, num);
@@ -548,4 +548,76 @@ fn app_version_new_fail_with_version_exists(){
   let new_version = new_version.unwrap_err();
   assert_eq!("ego-dev: version exists", new_version.msg);
   assert_eq!(1003, new_version.code);
+}
+
+#[test]
+fn app_version_set_frontend_address_fail(){
+  set_up();
+  let version = Version::new(1, 0, 1);
+  let caller = Principal::from_text(TEST_PRINCIPAL_ID.to_string()).unwrap();
+  let canister_id = Principal::from_text(TEST_CANISTER_ID.to_string()).unwrap();
+  // app not exists
+  let set_frontend = EgoDevService::app_version_set_frontend_address(caller, "test_app_id".to_string(), version, canister_id);
+  assert!(set_frontend.is_err());
+  let set_frontend = set_frontend.unwrap_err();
+  assert_eq!(1002, set_frontend.code);
+  assert_eq!("ego-dev: app not exists", set_frontend.msg);
+
+  // unauthorized
+  let frontend_unauthorized = EgoDevService::app_version_set_frontend_address(caller,EXIST_APP_ID.to_string(), version, canister_id);
+  assert!(frontend_unauthorized.is_err());
+  let frontend_unauthorized = frontend_unauthorized.unwrap_err();
+  assert_eq!(1007, frontend_unauthorized.code);
+  assert_eq!("ego-dev: unauthorized", frontend_unauthorized.msg);
+
+  // version not exists
+  let new_version = Version::new(1, 0, 0);
+  let caller_dev = Principal::from_text(DEVELOPER_PRINCIPAL_ID.to_string()).unwrap();
+  let version_not_exists = EgoDevService::app_version_set_frontend_address(caller_dev,EXIST_APP_ID.to_string(), new_version, canister_id);
+  assert!(version_not_exists.is_err());
+  let version_not_exists = version_not_exists.unwrap_err();
+  assert_eq!(1004, version_not_exists.code);
+  assert_eq!("ego-dev: version not exists", version_not_exists.msg);
+}
+
+#[test]
+fn app_version_set_frontend_address_success(){
+  set_up();
+  let version = Version::new(1, 0, 1);
+  let caller = Principal::from_text(DEVELOPER_PRINCIPAL_ID.to_string()).unwrap();
+  let canister_id = Principal::from_text(TEST_CANISTER_ID.to_string()).unwrap();
+  let set_frontend = EgoDevService::app_version_set_frontend_address(caller,EXIST_APP_ID.to_string(), version, canister_id);
+  assert!(set_frontend.is_ok());
+  // println!("{:?}", set_frontend);
+}
+
+#[test]
+fn app_version_submit_fail(){
+  set_up();
+  let version = Version::new(1, 0, 1);
+  let new_version = Version::new(1, 0,0);
+  let caller = Principal::from_text(TEST_PRINCIPAL_ID.to_string()).unwrap();
+  let caller_dev = Principal::from_text(DEVELOPER_PRINCIPAL_ID.to_string()).unwrap();
+  // app not exists
+  let not_exists = EgoDevService::app_version_submit(caller, "app_id".to_string(), version);
+  assert!(not_exists.is_err());
+  // println!("{:?}", not_exists);
+  let not_exists = not_exists.unwrap_err();
+  assert_eq!("ego-dev: app not exists", not_exists.msg);
+  assert_eq!(1002, not_exists.code);
+
+  // unauthorized
+  let submit_unauthorized = EgoDevService::app_version_submit(caller, EXIST_APP_ID.to_string(), version);
+  assert!(submit_unauthorized.is_err());
+  let submit_unauthorized = submit_unauthorized.unwrap_err();
+  assert_eq!("ego-dev: unauthorized", submit_unauthorized.msg);
+  assert_eq!(1007, submit_unauthorized.code);
+
+  // version not exists
+  let version_not_exists = EgoDevService::app_version_submit(caller_dev, EXIST_APP_ID.to_string(), new_version);
+  assert!(version_not_exists.is_err());
+  let version_not_exists = version_not_exists.unwrap_err();
+  assert_eq!(1004, version_not_exists.code);
+  assert_eq!("ego-dev: version not exists", version_not_exists.msg);
+  // println!("{:?}", version_not_exists);
 }
