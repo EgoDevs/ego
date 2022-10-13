@@ -1,18 +1,28 @@
 import { getActor } from '@/settings/agent';
-import { _SERVICE } from '@/idls/ego_dev';
+import { _SERVICE as EgoDevService } from '@/idls/ego_dev';
+import { _SERVICE as EgoStoreService } from '@/idls/ego_store';
 import { identity } from '@/settings/identity';
-import { idlFactory } from '@/idls/ego_dev.idl';
+import { idlFactory as EgoDevIdlFactory} from '@/idls/ego_dev.idl';
+import { idlFactory as EgoStoreIdlFactory } from '@/idls/ego_store.idl';
 import { getCanisterId } from '@/settings/utils';
+import {Principal} from "@dfinity/principal";
+import path from "path";
 
-export const deployerActor = getActor<_SERVICE>(
+export const egoDevDeployerActor = getActor<EgoDevService>(
   identity,
-  idlFactory,
+  EgoDevIdlFactory,
   getCanisterId('ego_dev')!,
+);
+
+export const egoStoreDeployerActor = getActor<EgoStoreService>(
+  identity,
+  EgoStoreIdlFactory,
+  getCanisterId('ego_store')!,
 );
 
 describe('scripts', () => {
   test('set_auditor', async () => {
-    const deployer = await deployerActor;
+    const deployer = await egoDevDeployerActor;
 
     let user_names = ['aaa', 'neeboo'];
 
@@ -37,4 +47,16 @@ describe('scripts', () => {
   //   let resp = await deployer.notify_payment({ memo: BigInt(memo) });
   //   console.log(resp);
   // });
+
+  test('set_wallet_provider', async () => {
+    const deployer = await egoStoreDeployerActor;
+
+    let me_v1_canister_id = Principal.fromText("q3fc5-haaaa-aaaaa-aaahq-cai");
+
+    console.log(me_v1_canister_id);
+
+    console.log(`\t\t set me_v1 wallet provider\n`);
+    let resp1 = await deployer.admin_wallet_provider_add({ wallet_provider: me_v1_canister_id, wallet_app_id: 'astrox_wallet' });
+    console.log(resp1);
+  });
 });

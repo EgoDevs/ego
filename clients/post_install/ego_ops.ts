@@ -27,6 +27,10 @@ const ego_store_wasm = fs.readFileSync(
   `${[process.cwd()]}` + '/artifacts/ego_store/ego_store_opt.wasm',
 );
 
+const astrox_wasm = fs.readFileSync(
+  `${[process.cwd()]}` + '../astrox_wallet/artifacts/ego_store/ego_store_opt.wasm',
+);
+
 const version = {
   major: 1,
   minor: 0,
