@@ -35,7 +35,7 @@ export async function _createActor<T>(
 
   const actor = Actor.createActor<T>(interfaceFactory, {
     agent,
-    canisterId: canisterId === '' ? Principal.fromHex('') : canisterId,
+    canisterId: canisterId === '' ? Principal.fromText('aaaaa-aa') : canisterId,
   });
   return { actor, agent };
 }
