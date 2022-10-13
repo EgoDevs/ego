@@ -5,7 +5,7 @@
   "private": true,
   "scripts": {
     "script:fixtures": "swc ./clients/fixtures -d dist",
-    "script:bootstrap": "swc ./scripts -d dist",
+    " ": "swc ./scripts -d dist",
     "ego:pre": "pnpm run script:bootstrap && node ./dist/ic_deployer.js --clean",
     "ego:bootstrap": "pnpm run ego:clean && pnpm run ego:create",
     "ego:build": "node ./dist/builder.js",

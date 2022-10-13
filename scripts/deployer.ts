@@ -299,7 +299,7 @@ async function runCreate() {
 
 async function runInstall() {
   const { actor } = await managementActor();
-  const walletActor = (await cycleWalletActor()).actor;
+
   for (const f of getEgos()) {
     const dfx_folder = process.cwd() + '/' + 'artifacts' + '/' + f.package;
     // const dfx_sh = dfx_folder + '/dfx.sh';
@@ -349,7 +349,7 @@ async function runInstall() {
             console.log(
               `installing ${f.package} to ${config.PRODUCTION_CANISTERID!}`,
             );
-
+            const walletActor = (await cycleWalletActor()).actor;
             const wasm_module = IDL.Vec(IDL.Nat8);
             const idl = IDL.Record({
               arg: IDL.Vec(IDL.Nat8),
@@ -416,7 +416,7 @@ async function runInstall() {
 
 async function runReInstall() {
   const { actor } = await managementActor();
-  const walletActor = (await cycleWalletActor()).actor;
+
   for (const f of getEgos()) {
     const dfx_folder = process.cwd() + '/' + 'artifacts' + '/' + f.package;
     // const dfx_sh = dfx_folder + '/dfx.sh';
@@ -455,6 +455,7 @@ async function runReInstall() {
             console.log(
               `reinstalling ${f.package} to ${config.PRODUCTION_CANISTERID!}`,
             );
+            const walletActor = (await cycleWalletActor()).actor;
             const wasm_module = IDL.Vec(IDL.Nat8);
             const idl = IDL.Record({
               arg: IDL.Vec(IDL.Nat8),
@@ -521,7 +522,7 @@ async function runReInstall() {
 
 async function runUpgrade() {
   const { actor } = await managementActor();
-  const walletActor = (await cycleWalletActor()).actor;
+
   for (const f of getEgos()) {
     const dfx_folder = process.cwd() + '/' + 'artifacts' + '/' + f.package;
     // const dfx_sh = dfx_folder + '/dfx.sh';
@@ -558,6 +559,7 @@ async function runUpgrade() {
             console.log(
               `upgrading ${f.package} to ${config.PRODUCTION_CANISTERID!}`,
             );
+            const walletActor = (await cycleWalletActor()).actor;
             const wasm_module = IDL.Vec(IDL.Nat8);
             const idl = IDL.Record({
               arg: IDL.Vec(IDL.Nat8),
