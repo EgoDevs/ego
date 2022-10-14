@@ -51,7 +51,7 @@ describe('scripts', () => {
   test('set_wallet_provider', async () => {
     const deployer = await egoStoreDeployerActor;
 
-    let me_v1_canister_id = Principal.fromText("q3fc5-haaaa-aaaaa-aaahq-cai");
+    let me_v1_canister_id = Principal.fromText("sbzkb-zqaaa-aaaaa-aaaiq-cai");
 
     console.log(me_v1_canister_id);
 

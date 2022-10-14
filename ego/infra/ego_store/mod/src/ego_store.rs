@@ -67,7 +67,7 @@ impl EgoStore {
     }
   }
 
-  pub fn wallet_main_new(&mut self, wallet_id: Principal, user_id: Principal) -> Result<Principal, EgoError> {
+  pub fn wallet_main_register(&mut self, wallet_id: Principal, user_id: Principal) -> Result<Principal, EgoError> {
     match self.wallets.get(&wallet_id) {
       Some(_) => Err(EgoStoreErr::WalletExists.into()),
       None => {
@@ -201,7 +201,7 @@ impl EgoStore {
     }
   }
 
-  fn tenant_get(&self) -> Result<Principal, EgoError> {
+  pub fn tenant_get(&self) -> Result<Principal, EgoError> {
     if self.tenants.len() == 0 {
       Err(EgoStoreErr::NoTenant.into())
     } else {

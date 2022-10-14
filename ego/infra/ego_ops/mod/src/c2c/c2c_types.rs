@@ -26,6 +26,12 @@ pub struct AdminAppCreateRequest {
   pub frontend: Option<Principal>
 }
 
+#[derive(CandidType, Deserialize)]
+pub struct AdminAppCreateResponse {
+  pub ret: bool,
+}
+
+
 // type for ego_store
 #[derive(CandidType, Deserialize)]
 pub struct AdminEgoTenantAddRequest {

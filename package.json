@@ -28,7 +28,7 @@
     "ego:create:live": "cross-env NODE_ENV=production node ./dist/deployer.js --create",
     "ego:install:live": "cross-env NODE_ENV=production node ./dist/deployer.js --install",
     "ego:post_install:project:live": "cross-env NODE_ENV=production NODE_OPTIONS=--experimental-vm-modules jest --verbose -t",
-    "ego:deploy": "pnpm run ego:pre && pnpm run ego:bootstrap && pnpm run ego:build && pnpm ego:install && pnpm run ego:post_install:project ego_ops"
+    "ego:deploy": "pnpm run ego:pre && pnpm run ego:bootstrap && pnpm run ego:build && pnpm ego:install && pnpm ego:post_install:project ego_ops"
   },
   "author": "devs@astrox",
   "license": "ISC",

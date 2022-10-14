@@ -83,5 +83,22 @@ impl TEgoDev for EgoDev {
       },
       _ => Ok(true)
     }
+
+    // let call_result = api::call::call(
+    //   canister_id,
+    //   "admin_app_create",
+    //   (req,),
+    // )
+    //   .await as Result<(Result<AdminAppCreateResponse, EgoError>,), _>;
+    //
+    // match call_result.unwrap().0 {
+    //   Ok(resp) => {
+    //     Ok(resp.ret)
+    //   },
+    //   Err(e) => {
+    //     println!("ego error: {:?}", e);
+    //     Err(e)
+    //   }
+    // }
   }
 }

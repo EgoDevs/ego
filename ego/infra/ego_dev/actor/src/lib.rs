@@ -261,7 +261,7 @@ pub fn user_role_set(request: UserRoleSetRequest) -> Result<UserRoleSetResponse,
 #[update(name = "admin_ego_file_add", guard = "owner_guard")]
 #[candid_method(update, rename = "admin_ego_file_add")]
 pub fn admin_ego_file_add(req: AdminEgoFileAddRequest) -> Result<AdminEgoFileAddResponse, EgoError> {
-  ic_cdk::println!("ego-dev: admin_file_add");
+  ic_cdk::println!("ego-dev: admin_ego_file_add");
 
   let ret = EgoDevService::admin_ego_file_add(req.canister_id)?;
   Ok(AdminEgoFileAddResponse { ret })
@@ -282,18 +282,28 @@ pub fn admin_ego_store_set(req: AdminEgoStoreSetRequest) -> Result<AdminEgoStore
 pub async fn admin_app_create(req: AdminAppCreateRequest) -> Result<AdminAppCreateResponse, EgoError> {
   ic_cdk::println!("ego-dev: admin_app_create");
 
-  EgoDevService::developer_app_new(caller(), req.app_id.clone(), req.name, req.logo, req.description,Category::System, 0f32)?;
+  let caller = ic_cdk::caller();
 
-  EgoDevService::app_version_new(caller(), req.app_id.clone(), req.version)?;
+  ic_cdk::println!("1. developer_main_register");
+  EgoDevService::developer_main_register(caller, "astrox".to_string())?;
 
+  ic_cdk::println!("2. developer_app_new");
+  EgoDevService::developer_app_new(caller, req.app_id.clone(), req.name, req.logo, req.description,Category::System, 0f32)?;
+
+  ic_cdk::println!("3. app_version_new");
+  EgoDevService::app_version_new(caller, req.app_id.clone(), req.version)?;
+
+  ic_cdk::println!("4. app_version_upload_wasm");
   EgoDevService::app_version_upload_wasm(EgoFile::new(), ic_cdk::caller(), req.app_id.clone(), req.version, req.backend_data, req.backend_data_hash).await?;
 
   if req.frontend.is_some() {
-    EgoDevService::app_version_set_frontend_address(caller(), req.app_id.clone(), req.version, req.frontend.unwrap())?;
+    ic_cdk::println!("5. app_version_set_frontend_address");
+    EgoDevService::app_version_set_frontend_address(caller, req.app_id.clone(), req.version, req.frontend.unwrap())?;
   }
 
   let ego_store = EgoStore::new();
-  EgoDevService::app_version_release(ic_cdk::caller(), req.app_id.clone(), req.version, ego_store).await?;
+  ic_cdk::println!("6. app_version_release");
+  EgoDevService::app_version_release(caller, req.app_id.clone(), req.version, ego_store).await?;
 
   Ok(AdminAppCreateResponse { ret: true })
 }

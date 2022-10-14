@@ -16,3 +16,7 @@ serde = "1.0.136"
 async-trait = "0.1.57"
 md5 = "0.7.0"
 ego_types = { path = "../../../lib/ego_types"}
+
+[dev-dependencies]
+mockall = "0.11.2"
+tokio = {version="1.21.0", features=["full"]}

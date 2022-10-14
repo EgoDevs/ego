@@ -4,9 +4,9 @@ use ego_types::ego_error::EgoError;
 use ego_types::version::Version;
 use crate::c2c::c2c_types::CronInterval;
 use crate::c2c::ego_dev::{EgoDev, TEgoDev};
-use crate::c2c::ego_store::{EgoStore, TEgoStore};
-use crate::c2c::ego_cron::{EgoCron, TEgoCron};
-use crate::c2c::ego_user::{EgoUser, TEgoUser};
+use crate::c2c::ego_store::{TEgoStore};
+use crate::c2c::ego_cron::{TEgoCron};
+use crate::c2c::ego_user::{TEgoUser};
 use crate::state::EGO_OPS;
 
 pub struct EgoOpsService {}
@@ -18,20 +18,17 @@ impl EgoOpsService {
     });
   }
 
-  pub async fn canister_relation_update()  -> Result<bool, EgoError>{
-    let ego_user = EgoUser::new();
-    let ego_dev = EgoDev::new();
-    let ego_store = EgoStore::new();
-    let ego_cron = EgoCron::new();
-
+  pub async fn canister_relation_update<U: TEgoUser, D: TEgoDev, S: TEgoStore, C: TEgoCron>(ego_user: U, ego_dev: D, ego_store: S, ego_cron: C)  -> Result<bool, EgoError>{
     let canisters = EGO_OPS.with(|ego_ops| {
       ego_ops.borrow().canisters.clone()
     });
 
     let ego_dev_id = canisters.get("ego_dev").unwrap().get(0).unwrap();
-    let ego_store_id = canisters.get("ego_store").unwrap().get(0).unwrap();
     let ego_file_ids = canisters.get("ego_file").unwrap();
+
+    let ego_store_id = canisters.get("ego_store").unwrap().get(0).unwrap();
     let ego_tenant_ids = canisters.get("ego_tenant").unwrap();
+
     let ego_cron_id = canisters.get("ego_cron").unwrap().get(0).unwrap();
     let ego_ledger_id = canisters.get("ego_ledger").unwrap().get(0).unwrap();
 
@@ -52,14 +49,12 @@ impl EgoOpsService {
 
     // ego_store
     for ego_tenant_id in ego_tenant_ids {
-      ego_store.admin_egp_tenant_add(ego_store_id.clone(), ego_tenant_id.clone()).await?;
+      ego_user.role_user_add(ego_tenant_id.clone(), ego_store_id.clone()).await?;
+      ego_store.admin_ego_tenant_add(ego_store_id.clone(), ego_tenant_id.clone()).await?;
     }
-    ego_store.wallet_main_new(ego_store_id.clone()).await?;
 
     // ego_tenant
     for ego_tenant_id in ego_tenant_ids {
-      ego_store.admin_egp_tenant_add(ego_tenant_id.clone(), ego_store_id.clone()).await?;
-
       ego_user.role_user_add(ego_tenant_id.clone(), ego_cron_id.clone()).await?;
       ego_cron.task_main_add(ego_cron_id.clone(), ego_tenant_id.clone(), "message_main_notify".to_string(), CronInterval::PerMinute).await?;
     }
@@ -83,20 +78,6 @@ impl EgoOpsService {
     }else{
       Ok(false)
     }
-  }
-
-  pub async fn admin_app_deploy(app_id: AppId) -> Result<bool, EgoError> {
-    let ego_store = EgoStore::new();
-
-    let ego_store_id = EGO_OPS.with(|ego_ops| ego_ops.borrow().canisters.get("ego_store").unwrap().get(0).unwrap().clone());
-
-    ego_store.wallet_app_install(ego_store_id, app_id.clone()).await?;
-
-    if "ego_cron" == app_id {
-
-    }
-
-    Ok(true)
   }
 }
 

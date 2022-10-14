@@ -28,7 +28,7 @@ const ego_store_wasm = fs.readFileSync(
 );
 
 const astrox_wasm = fs.readFileSync(
-  `${[process.cwd()]}` + '../astrox_wallet/artifacts/ego_store/ego_store_opt.wasm',
+  `${[process.cwd()]}` + '/../astrox_wallet/artifacts/astrox_wallet/astrox_wallet_opt.wasm',
 );
 
 const version = {
@@ -50,12 +50,8 @@ export const opsPostInstall = async () => {
   console.log(`2. canister_relation_update\n`);
   await opsOperator.canister_relation_update();
 
-  let resp12 = await opsOperator.canister_main_list();
-  if (hasOwnProperty(resp12, 'Ok')) {
-    console.log(resp12.Ok);
-  } else {
-    throw new Error(JSON.stringify(resp12.Err));
-  }
+  console.log(`3. release astrox_wallet canister\n`);
+  await admin_app_create('astrox_wallet', 'astrox_wallet', version, astrox_wasm);
 };
 
 const canister_registers = async () => {

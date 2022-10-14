@@ -29,7 +29,7 @@ impl EgoStoreService {
   ) -> Result<Principal, EgoError> {
     EGO_STORE.with(|ego_store| {
       ego_store
-        .borrow_mut().wallet_main_new(wallet_id, user_id)
+        .borrow_mut().wallet_main_register(wallet_id, user_id)
     })
   }
 
@@ -208,5 +208,44 @@ impl EgoStoreService {
       ego_store
         .borrow_mut().app_main_release(app)
     })
+  }
+
+  pub async fn wallet_controller_install<T: TEgoTenant>(ego_tenant: T, user_id: Principal, app_id: AppId) -> Result<UserApp, EgoError> {
+    ic_cdk::println!("1 get ego tenant id");
+    let ego_tenant_id = EGO_STORE.with(|ego_store| {
+      ego_store.borrow_mut().tenant_get()
+    })?;
+
+    ic_cdk::println!("2 get app to be install");
+    let app = EGO_STORE.with(|ego_store| {
+      ego_store
+        .borrow().app_main_get(&app_id).clone()
+    })?;
+
+    ic_cdk::println!("3 call ego tenant to install frontend");
+    let frontend_canister = match app.frontend.canister_id.is_some() {
+      false => {
+        None
+      }
+      true => {
+        let frontend_canister_id = ego_tenant.app_main_install(ego_tenant_id, user_id, user_id, app.frontend).await?;
+        Some(Canister::new(frontend_canister_id, CanisterType::ASSET))
+      }
+    };
+
+    ic_cdk::println!("4 call ego tenant to install backend");
+    let backend_canister = match app.backend.canister_id.is_some() {
+      false => {
+        None
+      }
+      true => {
+        let backend_canister_id = ego_tenant.app_main_install(ego_tenant_id, user_id, user_id, app.backend).await?;
+        Some(Canister::new(backend_canister_id, CanisterType::BACKEND))
+      }
+    };
+
+    let user_app = UserApp::new(&app.app_id, &app.current_version, frontend_canister, backend_canister);
+
+    Ok(user_app)
   }
 }
