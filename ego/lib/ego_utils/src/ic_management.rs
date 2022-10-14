@@ -230,11 +230,11 @@ pub async fn canister_cycle_top_up(canister_id: Principal, cycles_to_use: Cycles
   Ok(())
 }
 
-pub async fn canister_owner_set(canister_id: Principal, user_id: Principal) -> Result<(), EgoError> {
+pub async fn canister_owner_set(canister_id: Principal, user_ids: Vec<Principal>) -> Result<(), EgoError> {
   match api::call::call(
     canister_id,
-    "set_owner",
-    (user_id, ),
+    "role_owner_set",
+    (user_ids, ),
   ).await {
     Ok(x) => x,
     Err((code, msg)) => {

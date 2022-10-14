@@ -171,7 +171,7 @@ pub async fn wallet_order_new(request: WalletOrderNewRequest) -> Result<WalletOr
 #[update(name = "app_main_release")]
 #[candid_method(update, rename = "app_main_release")]
 pub async fn app_main_release(request: AppMainReleaseRequest) -> Result<AppMainReleaseResponse, EgoError> {
-  ic_cdk::println!("ego_store: wallet_order_new");
+  ic_cdk::println!("ego_store: app_main_release");
 
   match EgoStoreService::app_main_release(request.app) {
     Ok(ret) => Ok(AppMainReleaseResponse { ret }),

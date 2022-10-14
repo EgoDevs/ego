@@ -41,6 +41,6 @@ impl TIcManagement for IcManagement {
   }
 
   async fn canister_owner_set(&self, canister_id: Principal, user_id: Principal) -> Result<(), EgoError>{
-    canister_owner_set(canister_id, user_id).await
+    canister_owner_set(canister_id, vec![user_id]).await
   }
 }
