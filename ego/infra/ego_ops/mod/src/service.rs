@@ -1,5 +1,5 @@
 use ic_cdk::export::Principal;
-use ego_types::app::{AppId};
+use ego_types::app::{AppId, Category};
 use ego_types::ego_error::EgoError;
 use ego_types::version::Version;
 use crate::c2c::c2c_types::CronInterval;
@@ -67,12 +67,12 @@ impl EgoOpsService {
     Ok(true)
   }
 
-  pub async fn admin_app_create(app_id: AppId, name: String, version: Version, backend_data: Vec<u8>, backend_hash: String, frontend: Option<Principal>) -> Result<bool, EgoError> {
+  pub async fn admin_app_create(app_id: AppId, name: String, version: Version, category: Category, logo: String, description: String, backend_data: Vec<u8>, backend_hash: String, frontend: Option<Principal>) -> Result<bool, EgoError> {
     if get_md5(&backend_data) == backend_hash {
       let ego_dev_id = EGO_OPS.with(|ego_ops| ego_ops.borrow().canisters.get("ego_dev").unwrap().get(0).unwrap().clone());
 
       let ego_dev = EgoDev::new();
-      ego_dev.admin_app_create(ego_dev_id, app_id.clone(), name, version, backend_data, backend_hash, frontend).await?;
+      ego_dev.admin_app_create(ego_dev_id, app_id.clone(), name, version, category, logo, description, backend_data, backend_hash, frontend).await?;
 
       Ok(true)
     }else{

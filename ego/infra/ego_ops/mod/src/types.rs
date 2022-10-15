@@ -1,7 +1,7 @@
 use std::collections::BTreeMap;
 use ic_cdk::export::candid::{CandidType, Deserialize};
 use ic_cdk::export::Principal;
-use ego_types::app::AppId;
+use ego_types::app::{AppId, Category};
 use ego_types::version::Version;
 
 #[derive(CandidType, Deserialize)]
@@ -19,6 +19,9 @@ pub struct CanisterMainRegisterRequest {
 pub struct AdminAppCreateRequest {
   pub app_id: AppId,
   pub name: String,
+  pub category: Category,
+  pub logo: String,
+  pub description: String,
   pub version: Version,
   pub backend_data: Vec<u8>,
   pub backend_hash: String,

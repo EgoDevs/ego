@@ -288,7 +288,7 @@ pub async fn admin_app_create(req: AdminAppCreateRequest) -> Result<AdminAppCrea
   EgoDevService::developer_main_register(caller, "astrox".to_string())?;
 
   ic_cdk::println!("2. developer_app_new");
-  EgoDevService::developer_app_new(caller, req.app_id.clone(), req.name, req.logo, req.description,Category::System, 0f32)?;
+  EgoDevService::developer_app_new(caller, req.app_id.clone(), req.name, req.logo, req.description, req.category, 0f32)?;
 
   ic_cdk::println!("3. app_version_new");
   EgoDevService::app_version_new(caller, req.app_id.clone(), req.version)?;

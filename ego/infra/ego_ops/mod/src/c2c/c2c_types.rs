@@ -1,6 +1,6 @@
 use ic_cdk::export::candid::{CandidType, Deserialize};
 use ic_cdk::export::Principal;
-use ego_types::app::{AppId};
+use ego_types::app::{AppId, Category};
 use ego_types::version::Version;
 
 // type for ego_dev
@@ -18,6 +18,7 @@ pub struct AdminEgoStoreSetRequest {
 pub struct AdminAppCreateRequest {
   pub app_id: AppId,
   pub name: String,
+  pub category: Category,
   pub logo: String,
   pub description: String,
   pub version: Version,

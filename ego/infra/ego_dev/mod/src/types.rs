@@ -269,6 +269,7 @@ pub struct AdminEgoStoreSetResponse {
 pub struct AdminAppCreateRequest {
   pub app_id: AppId,
   pub name: String,
+  pub category: Category,
   pub logo: String,
   pub description: String,
   pub version: Version,

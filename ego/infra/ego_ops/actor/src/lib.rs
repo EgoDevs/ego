@@ -106,7 +106,7 @@ async fn canister_main_list() -> Result<CanisterMainListResponse, EgoError> {
 async fn admin_app_create(req: AdminAppCreateRequest) -> Result<AdminAppCreateResponse, EgoError> {
   ic_cdk::println!("ego-ops: admin_app_create");
 
-  match EgoOpsService::admin_app_create(req.app_id, req.name, req.version, req.backend_data, req.backend_hash, req.frontend).await {
+  match EgoOpsService::admin_app_create(req.app_id, req.name, req.version, req.category, req.logo, req.description, req.backend_data, req.backend_hash, req.frontend).await {
     Ok(ret) => {
       Ok(AdminAppCreateResponse{ret})
     },

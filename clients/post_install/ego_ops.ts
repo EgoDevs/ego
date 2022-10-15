@@ -5,7 +5,7 @@ import path from 'path';
 import { getActor } from '@/settings/agent';
 import { getCanisterId, hasOwnProperty } from '@/settings/utils';
 
-import { _SERVICE as EgoOpsService } from '@/idls/ego_ops';
+import {_SERVICE as EgoOpsService, Category} from '@/idls/ego_ops';
 
 import { idlFactory } from '@/idls/ego_ops.idl';
 import { identity } from '@/settings/identity';
@@ -31,7 +31,7 @@ const ego_store_wasm = fs.readFileSync(
 const astrox_wasm = fs.readFileSync(
   path.resolve(
     `${[process.cwd()]}` +
-      '/../../astrox_wallet_2/artifacts/astrox_wallet/astrox_wallet_opt.wasm',
+      '/../astrox_wallet/artifacts/astrox_wallet/astrox_wallet_opt.wasm',
   ),
 );
 
@@ -66,11 +66,12 @@ export const opsPostInstall = async () => {
     'astrox_controller',
     'astrox_controller',
     version,
+    { 'System' : null },
     astrox_wasm,
   );
 
   console.log(`4. release omni_wallet canister\n`);
-  await admin_app_create('omni_wallet', 'omni_wallet', version, omni_wallet);
+  await admin_app_create('omni_wallet', 'omni_wallet', version, {'Vault': null}, omni_wallet);
 };
 
 const canister_registers = async () => {
@@ -119,6 +120,7 @@ const admin_app_create = async (
   app_id: string,
   name: string,
   version: any,
+  category: Category,
   backend_data: ArrayLike<number>,
   frontend_canister_id?: Principal,
 ) => {
@@ -133,6 +135,9 @@ const admin_app_create = async (
     app_id,
     name,
     version,
+    logo: "",
+    description: "",
+    category,
     backend_data: Array.from(new Uint8Array(backend_data)),
     backend_hash,
     frontend: frontend_canister_id ? [frontend_canister_id] : [],
