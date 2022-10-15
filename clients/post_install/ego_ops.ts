@@ -1,5 +1,6 @@
 import fs from 'fs';
 import crypto, { BinaryLike } from 'crypto';
+import path from 'path';
 
 import { getActor } from '@/settings/agent';
 import { getCanisterId, hasOwnProperty } from '@/settings/utils';
@@ -28,7 +29,17 @@ const ego_store_wasm = fs.readFileSync(
 );
 
 const astrox_wasm = fs.readFileSync(
-  `${[process.cwd()]}` + '/../astrox_wallet/artifacts/astrox_wallet/astrox_wallet_opt.wasm',
+  path.resolve(
+    `${[process.cwd()]}` +
+      '/../../astrox_wallet_2/artifacts/astrox_wallet/astrox_wallet_opt.wasm',
+  ),
+);
+
+const omni_wallet = fs.readFileSync(
+  path.resolve(
+    `${[process.cwd()]}` +
+      '/../app_omni_wallet/artifacts/omni_wallet/omni_wallet_opt.wasm',
+  ),
 );
 
 const version = {
@@ -50,8 +61,16 @@ export const opsPostInstall = async () => {
   console.log(`2. canister_relation_update\n`);
   await opsOperator.canister_relation_update();
 
-  console.log(`3. release astrox_wallet canister\n`);
-  await admin_app_create('astrox_wallet', 'astrox_wallet', version, astrox_wasm);
+  console.log(`3. release astrox_controller canister\n`);
+  await admin_app_create(
+    'astrox_controller',
+    'astrox_controller',
+    version,
+    astrox_wasm,
+  );
+
+  console.log(`4. release omni_wallet canister\n`);
+  await admin_app_create('omni_wallet', 'omni_wallet', version, omni_wallet);
 };
 
 const canister_registers = async () => {
@@ -114,7 +133,7 @@ const admin_app_create = async (
     app_id,
     name,
     version,
-    backend_data: new Uint8Array(backend_data),
+    backend_data: Array.from(new Uint8Array(backend_data)),
     backend_hash,
     frontend: frontend_canister_id ? [frontend_canister_id] : [],
   });

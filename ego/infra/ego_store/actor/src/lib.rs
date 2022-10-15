@@ -110,8 +110,8 @@ pub fn wallet_app_list() -> Result<WalletAppListResponse, EgoError> {
   }
 }
 
-#[query(name = "wallet_app_install")]
-#[candid_method(query, rename = "wallet_app_install")]
+#[update(name = "wallet_app_install")]
+#[candid_method(update, rename = "wallet_app_install")]
 pub async fn wallet_app_install(req: WalletAppInstallRequest) -> Result<WalletAppInstallResponse, EgoError> {
   ic_cdk::println!("ego_store: wallet_app_install");
   let ego_tenant = EgoTenant::new();
@@ -119,8 +119,8 @@ pub async fn wallet_app_install(req: WalletAppInstallRequest) -> Result<WalletAp
   Ok(WalletAppInstallResponse { user_app })
 }
 
-#[query(name = "wallet_app_upgrade")]
-#[candid_method(query, rename = "wallet_app_upgrade")]
+#[update(name = "wallet_app_upgrade")]
+#[candid_method(update, rename = "wallet_app_upgrade")]
 pub async fn wallet_app_upgrade(req: WalletAppUpgradeRequest) -> Result<WalletAppUpgradeResponse, EgoError> {
   ic_cdk::println!("ego_store: wallet_app_upgrade");
   let ego_tenant = EgoTenant::new();
@@ -128,8 +128,8 @@ pub async fn wallet_app_upgrade(req: WalletAppUpgradeRequest) -> Result<WalletAp
   Ok(WalletAppUpgradeResponse { user_app })
 }
 
-#[query(name = "wallet_app_remove")]
-#[candid_method(query, rename = "wallet_app_remove")]
+#[update(name = "wallet_app_remove")]
+#[candid_method(update, rename = "wallet_app_remove")]
 pub fn wallet_app_remove(req: WalletAppRemoveRequest) -> Result<WalletAppRemoveResponse, EgoError> {
   ic_cdk::println!("ego_store: wallet_app_remove");
   match EgoStoreService::wallet_app_remove(ic_cdk::caller(), req.app_id) {
@@ -236,8 +236,9 @@ pub async fn wallet_main_new(req: WalletMainNewRequest) -> Result<WalletMainNewR
   let ego_tenant = EgoTenant::new();
   let user_app = EgoStoreService::wallet_controller_install(ego_tenant, req.user_id, app_id).await?;
 
-  match EgoStoreService::wallet_main_register(user_app.backend.as_ref().unwrap().canister_id, req.user_id) {
-    Ok(_) => Ok(WalletMainNewResponse{user_app}),
-    Err(e) => Err(e),
-  }
+  // match EgoStoreService::wallet_main_register(user_app.backend.as_ref().unwrap().canister_id, req.user_id) {
+  //   Ok(_) => Ok(WalletMainNewResponse{user_app}),
+  //   Err(e) => Err(e),
+  // }
+  Ok(WalletMainNewResponse{user_app})
 }

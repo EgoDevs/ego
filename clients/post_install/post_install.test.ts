@@ -1,9 +1,9 @@
-
 // import { walletPostInstall } from './ego_wallet';
 // import { ledgerPostInstall } from './ego_ledger';
 
 import { assetsStorageInstall } from './assets_storage';
 import { opsPostInstall } from './ego_ops';
+import { storePostInstall } from './ego_store';
 
 /// use `post_` prefix in each describe to allow jest to specify each tests
 /// for single project post install , please add below and use templates like `post_bucket`
@@ -38,3 +38,9 @@ describe('post_ops', () => {
 //     await ledgerPostInstall();
 //   });
 // });
+
+describe('silo', () => {
+  test('silo post install', async () => {
+    await storePostInstall();
+  });
+});
