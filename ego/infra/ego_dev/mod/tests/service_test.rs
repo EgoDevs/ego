@@ -692,3 +692,52 @@ async fn app_version_release_fail (){
   let caller_unauthorized = EgoDevService::app_version_release(caller_test, EXIST_APP_ID.to_string(), version, ego_store).await; 
   println!("caller unauthorized: {:?}", caller_unauthorized);
 }
+
+#[test]
+fn app_version_approve_fail(){
+  set_up();
+  let version = Version::new(1, 0, 1);
+  let new_version = Version::new(1, 0, 0);
+
+  let caller = Principal::from_text(DEVELOPER_PRINCIPAL_ID.to_string()).unwrap();
+  let get_app = EgoDevService::developer_app_get(caller, EXIST_APP_ID.to_string());
+  assert!(get_app.is_ok());
+
+  // version not exists
+  let version_not_exists = EgoDevService::app_version_approve(EXIST_APP_ID.to_string(), new_version);
+  assert!(version_not_exists.is_err());
+  let version_not_exists = version_not_exists.unwrap_err();
+  assert_eq!(1004, version_not_exists.code);
+  assert_eq!("ego-dev: version not exists", version_not_exists.msg);
+
+  // app not exists
+  let appid_not_exists = EgoDevService::app_version_approve("EXIST_APP_ID".to_string(), version);
+  let appid_not_exists = appid_not_exists.unwrap_err();
+  assert_eq!("ego-dev: app not exists", appid_not_exists.msg);
+
+  // approve success
+  let approve_success = EgoDevService::app_version_approve(EXIST_APP_ID.to_string(), version);
+  assert!(approve_success.is_ok());
+  // println!("{:?}", approve_success);
+  let approve_success = approve_success.unwrap();
+  assert_eq!(AppVersionStatus::APPROVED, approve_success.status);
+}
+
+#[test]
+fn app_version_reject_fail(){
+  set_up();
+  let version = Version::new(1, 0, 1);
+  let new_version = Version::new(1, 0, 0); 
+
+  // version not exists
+  let version_not_exists = EgoDevService::app_version_reject(EXIST_APP_ID.to_string(), new_version);
+  assert!(version_not_exists.is_err());
+  let version_not_exists = version_not_exists.unwrap_err();
+  assert_eq!("ego-dev: version not exists", version_not_exists.msg);
+
+  // app not exists
+  let app_not_exists = EgoDevService::app_version_reject("EXIST_APP_ID".to_string(), version);
+  assert!(app_not_exists.is_err());
+  let app_not_exists = app_not_exists.unwrap_err();
+  assert_eq!("ego-dev: app not exists", app_not_exists.msg);
+}
