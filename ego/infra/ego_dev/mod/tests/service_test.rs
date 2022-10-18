@@ -668,19 +668,27 @@ async fn app_version_release_fail (){
   // let caller_dev = Principal::from_text(DEVELOPER_PRINCIPAL_ID.to_string()).unwrap();
   let version = Version::new(1, 0, 1);
   // let new_version = Version::new(1, 0, 0);
-  let mut ego_store = MockStore::new();
-  ego_store.expect_app_main_release().returning(|_, _| {
-    Ok(true)
-  });
 
   // approve version
   let result = EgoDevService::app_version_approve(EXIST_APP_ID.to_string(), version);
   assert!(result.is_ok());
 
-  // app version release
+  // app not exists
+  let mut ego_store = MockStore::new();
+  ego_store.expect_app_main_release().returning(|_, _| {
+    Ok(true)
+  });
   let version_release = EgoDevService::app_version_release(caller_test, TEST_APP_ID.to_string(), version, ego_store).await;
   assert!(version_release.is_err());
   let version_release = version_release.unwrap_err();
   assert_eq!(version_release.code, 1002);
   // println!("{:#?}", version_release);
+
+  // test caller unauthorized
+  let mut ego_store = MockStore::new();
+  ego_store.expect_app_main_release().returning(|_, _| {
+    Ok(true)
+  });
+  let caller_unauthorized = EgoDevService::app_version_release(caller_test, EXIST_APP_ID.to_string(), version, ego_store).await; 
+  println!("caller unauthorized: {:?}", caller_unauthorized);
 }
