@@ -2,10 +2,10 @@ use ic_cdk::api;
 use ic_cdk::export::Principal;
 
 use async_trait::async_trait;
+use ego_dev_mod::types::{AdminAppCreateRequest, AdminEgoFileAddRequest, AdminEgoStoreSetRequest};
 use ego_types::app::{AppId, Category};
 use ego_types::ego_error::EgoError;
 use ego_types::version::Version;
-use crate::c2c::c2c_types::{AdminAppCreateRequest, AdminEgoFileAddRequest, AdminEgoStoreSetRequest};
 
 #[async_trait]
 pub trait TEgoDev {

@@ -12,7 +12,6 @@ use ego_types::ego_error::EgoError;
 
 use ic_cdk::export::candid::{CandidType, Deserialize};
 use serde::Serialize;
-use ego_types::app::Category;
 
 use ego_users::inject_ego_users;
 

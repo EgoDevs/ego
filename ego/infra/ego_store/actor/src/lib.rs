@@ -236,9 +236,5 @@ pub async fn wallet_main_new(req: WalletMainNewRequest) -> Result<WalletMainNewR
   let ego_tenant = EgoTenant::new();
   let user_app = EgoStoreService::wallet_controller_install(ego_tenant, req.user_id, app_id).await?;
 
-  // match EgoStoreService::wallet_main_register(user_app.backend.as_ref().unwrap().canister_id, req.user_id) {
-  //   Ok(_) => Ok(WalletMainNewResponse{user_app}),
-  //   Err(e) => Err(e),
-  // }
   Ok(WalletMainNewResponse{user_app})
 }

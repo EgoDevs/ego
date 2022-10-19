@@ -2,8 +2,8 @@ use ic_cdk::export::Principal;
 
 use async_trait::async_trait;
 use ic_cdk::api;
+use ego_store_mod::types::AdminEgoTenantAddRequest;
 use ego_types::ego_error::EgoError;
-use crate::c2c::c2c_types::{AdminEgoTenantAddRequest};
 
 #[async_trait]
 pub trait TEgoStore {
