@@ -3,6 +3,7 @@ use ic_ledger_types::Memo;
 
 use ego_types::app::{App, AppId, Canister, CanisterType};
 use ego_types::ego_error::EgoError;
+use crate::app::EgoStoreApp;
 
 use crate::c2c::ego_tenant::TEgoTenant;
 use crate::order::Order;
@@ -17,7 +18,7 @@ impl EgoStoreService {
     EGO_STORE.with(|ego_store| ego_store.borrow().app_main_list(&query_param))
   }
 
-  pub fn app_main_get(app_id: AppId) -> Result<App, EgoError> {
+  pub fn app_main_get(app_id: AppId) -> Result<EgoStoreApp, EgoError> {
     EGO_STORE.with(
       |ego_store| ego_store.borrow().app_main_get(&app_id)
     )
@@ -81,23 +82,23 @@ impl EgoStoreService {
     })?;
 
     ic_cdk::println!("4 call ego tenant to install frontend");
-    let frontend_canister = match app.frontend.canister_id.is_some() {
+    let frontend_canister = match app.frontend.is_some() {
       false => {
         None
       }
       true => {
-        let frontend_canister_id = ego_tenant.app_main_install(ego_tenant_id, wallet_id, wallet.user_id, app.frontend).await?;
+        let frontend_canister_id = ego_tenant.app_main_install(ego_tenant_id, wallet_id, wallet.user_id, app.frontend.unwrap()).await?;
         Some(Canister::new(frontend_canister_id, CanisterType::ASSET))
       }
     };
 
     ic_cdk::println!("5 call ego tenant to install backend");
-    let backend_canister = match app.backend.canister_id.is_some() {
+    let backend_canister = match app.backend.is_some() {
       false => {
         None
       }
       true => {
-        let backend_canister_id = ego_tenant.app_main_install(ego_tenant_id, wallet_id, wallet.user_id, app.backend).await?;
+        let backend_canister_id = ego_tenant.app_main_install(ego_tenant_id, wallet_id, wallet.user_id, app.backend.unwrap()).await?;
         Some(Canister::new(backend_canister_id, CanisterType::BACKEND))
       }
     };
@@ -133,13 +134,13 @@ impl EgoStoreService {
 
     // TODO: 假设不同版本里面的app wasm一致，例如：不存在原来有前端后来没有了的情况
     ic_cdk::println!("4 call ego tenant to upgrade frontend");
-    if app.frontend.canister_id.is_some() {
-      ego_tenant.app_main_upgrade(ego_tenant_id, user_app.frontend.as_ref().unwrap().canister_id, app.frontend).await?;
+    if app.frontend.is_some() {
+      ego_tenant.app_main_upgrade(ego_tenant_id, user_app.frontend.as_ref().unwrap().canister_id, app.frontend.unwrap()).await?;
     }
 
     ic_cdk::println!("5 call ego tenant to upgrade backend");
-    if app.backend.canister_id.is_some() {
-      ego_tenant.app_main_upgrade(ego_tenant_id, user_app.backend.as_ref().unwrap().canister_id, app.backend).await?;
+    if app.backend.is_some() {
+      ego_tenant.app_main_upgrade(ego_tenant_id, user_app.backend.as_ref().unwrap().canister_id, app.backend.unwrap()).await?;
     }
 
     EGO_STORE.with(|ego_store| {
@@ -203,7 +204,7 @@ impl EgoStoreService {
     })
   }
 
-  pub fn app_main_release(app: App) -> Result<bool, EgoError> {
+  pub fn app_main_release(app: EgoStoreApp) -> Result<bool, EgoError> {
     EGO_STORE.with(|ego_store| {
       ego_store
         .borrow_mut().app_main_release(app)
@@ -223,23 +224,23 @@ impl EgoStoreService {
     })?;
 
     ic_cdk::println!("3 call ego tenant to install frontend");
-    let frontend_canister = match app.frontend.canister_id.is_some() {
+    let frontend_canister = match app.frontend.is_some() {
       false => {
         None
       }
       true => {
-        let frontend_canister_id = ego_tenant.app_main_install(ego_tenant_id, user_id, user_id, app.frontend).await?;
+        let frontend_canister_id = ego_tenant.app_main_install(ego_tenant_id, user_id, user_id, app.frontend.unwrap()).await?;
         Some(Canister::new(frontend_canister_id, CanisterType::ASSET))
       }
     };
 
     ic_cdk::println!("4 call ego tenant to install backend");
-    let backend_canister = match app.backend.canister_id.is_some() {
+    let backend_canister = match app.backend.is_some() {
       false => {
         None
       }
       true => {
-        let backend_canister_id = ego_tenant.app_main_install(ego_tenant_id, user_id, user_id, app.backend).await?;
+        let backend_canister_id = ego_tenant.app_main_install(ego_tenant_id, user_id, user_id, app.backend.unwrap()).await?;
         Some(Canister::new(backend_canister_id, CanisterType::BACKEND))
       }
     };

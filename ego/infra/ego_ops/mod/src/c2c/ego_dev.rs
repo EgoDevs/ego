@@ -3,7 +3,7 @@ use ic_cdk::export::Principal;
 
 use async_trait::async_trait;
 use ego_dev_mod::types::{AdminAppCreateRequest, AdminEgoFileAddRequest, AdminEgoStoreSetRequest};
-use ego_types::app::{AppId, Category};
+use ego_types::app::{AppId, Category, DeployMode};
 use ego_types::ego_error::EgoError;
 use ego_types::version::Version;
 
@@ -11,7 +11,7 @@ use ego_types::version::Version;
 pub trait TEgoDev {
   async fn admin_ego_file_add(&self, canister_id: Principal, ego_file_id: Principal) -> Result<bool, EgoError>;
   async fn admin_ego_store_set(&self, canister_id: Principal, ego_store_id: Principal) -> Result<bool, EgoError>;
-  async fn admin_app_create(&self, canister_id: Principal, app_id: AppId, name: String, version: Version, category: Category, logo: String, description: String, backend_data: Vec<u8>, backend_data_hash: String, frontend: Option<Principal>) -> Result<bool, EgoError>;
+  async fn admin_app_create(&self, canister_id: Principal, app_id: AppId, name: String, version: Version, category: Category, logo: String, description: String, backend_data: Vec<u8>, backend_data_hash: String, frontend: Option<Principal>, deploy_mode: DeployMode) -> Result<bool, EgoError>;
 }
 
 pub struct EgoDev {
@@ -65,9 +65,9 @@ impl TEgoDev for EgoDev {
     }
   }
 
-  async fn admin_app_create(&self, canister_id: Principal, app_id: AppId, name: String, version: Version, category: Category, logo: String, description: String, backend_data: Vec<u8>, backend_data_hash: String, frontend: Option<Principal>) -> Result<bool, EgoError>{
+  async fn admin_app_create(&self, canister_id: Principal, app_id: AppId, name: String, version: Version, category: Category, logo: String, description: String, backend_data: Vec<u8>, backend_data_hash: String, frontend: Option<Principal>, deploy_mode: DeployMode) -> Result<bool, EgoError>{
     let req = AdminAppCreateRequest {
-      app_id, name, version, category, logo, description, backend_data, backend_data_hash, frontend
+      app_id, name, version, category, logo, description, backend_data, backend_data_hash, frontend, deploy_mode
     };
 
     let notify_result = api::call::notify(

@@ -12,6 +12,7 @@ use ego_types::ego_error::EgoError;
 
 use ic_cdk::export::candid::{CandidType, Deserialize};
 use serde::Serialize;
+use ego_types::app::DeployMode;
 
 use ego_users::inject_ego_users;
 
@@ -129,6 +130,7 @@ pub fn developer_app_new(request: AppMainNewRequest) -> Result<AppMainNewRespons
     request.description,
     request.category,
     request.price,
+    DeployMode::DEDICATED
   )?;
   Ok(AppMainNewResponse { app })
 }
@@ -287,7 +289,7 @@ pub async fn admin_app_create(req: AdminAppCreateRequest) -> Result<AdminAppCrea
   EgoDevService::developer_main_register(caller, "astrox".to_string())?;
 
   ic_cdk::println!("2. developer_app_new");
-  EgoDevService::developer_app_new(caller, req.app_id.clone(), req.name, req.logo, req.description, req.category, 0f32)?;
+  EgoDevService::developer_app_new(caller, req.app_id.clone(), req.name, req.logo, req.description, req.category, 0f32, req.deploy_mode)?;
 
   ic_cdk::println!("3. app_version_new");
   EgoDevService::app_version_new(caller, req.app_id.clone(), req.version)?;

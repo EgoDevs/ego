@@ -2,7 +2,7 @@ use ic_cdk::export::candid::{CandidType, Deserialize};
 use ic_cdk::export::Principal;
 use serde::Serialize;
 
-use ego_types::app::{AppId, Category, FileId};
+use ego_types::app::{AppId, Category, DeployMode, FileId};
 use ego_types::ego_error::EgoError;
 use ego_types::version::Version;
 
@@ -16,12 +16,10 @@ pub enum EgoDevErr {
   AppNotExists,
   VersionExists,
   VersionNotExists,
-  BucketExists,
   NoFile,
   UnAuthorized,
   WasmExists,
-  OrderNotExists,
-  EgoWalletNotExists,
+  UserExists,
   NotADeveloper,
   UserNotExists,
   OperationNotPermitted,
@@ -36,12 +34,10 @@ impl From<EgoDevErr> for EgoError {
       EgoDevErr::AppNotExists => EgoError::new(1002, "ego-dev: app not exists"),
       EgoDevErr::VersionExists => EgoError::new(1003, "ego-dev: version exists"),
       EgoDevErr::VersionNotExists => EgoError::new(1004, "ego-dev: version not exists"),
-      EgoDevErr::BucketExists => EgoError::new(1005, "ego-dev: bucket exists"),
       EgoDevErr::NoFile => EgoError::new(1006, "ego-dev: no ego_file canister configured"),
       EgoDevErr::UnAuthorized => EgoError::new(1007, "ego-dev: unauthorized"),
       EgoDevErr::WasmExists => EgoError::new(1008, "ego-dev: wasm exists"),
-      EgoDevErr::OrderNotExists => EgoError::new(1009, "ego-dev: order not exists"),
-      EgoDevErr::EgoWalletNotExists => EgoError::new(1010, "ego-dev: ego wallet not exists"),
+      EgoDevErr::UserExists => EgoError::new(1010, "ego-dev: user exists"),
       EgoDevErr::NotADeveloper => EgoError::new(1011, "ego-dev: user is not a developer"),
       EgoDevErr::UserNotExists => EgoError::new(1012, "ego-dev: user not exists"),
       EgoDevErr::OperationNotPermitted => EgoError::new(1013, "ego-dev: operation not permitted"),
@@ -60,7 +56,7 @@ pub struct AppMainGetRequest {
 #[derive(
 CandidType, Deserialize, Serialize)]
 pub struct AppMainGetResponse {
-  pub app: App,
+  pub app: EgoDevApp,
 }
 
 impl AppMainGetResponse {
@@ -84,7 +80,7 @@ pub struct AppMainNewRequest {
 #[derive(
 CandidType, Deserialize, Serialize)]
 pub struct AppMainNewResponse {
-  pub app: App,
+  pub app: EgoDevApp,
 }
 
 #[derive(
@@ -210,12 +206,12 @@ pub struct DeveloperMainRegisterResponse {
 
 #[derive(CandidType, Deserialize, Serialize)]
 pub struct DeveloperAppListResponse {
-  pub apps: Vec<App>,
+  pub apps: Vec<EgoDevApp>,
 }
 
 #[derive(CandidType, Deserialize, Serialize)]
 pub struct AppVersionWaitForAuditResponse {
-  pub apps: Vec<App>,
+  pub apps: Vec<EgoDevApp>,
 }
 
 #[derive(CandidType, Deserialize, Serialize)]
@@ -275,7 +271,8 @@ pub struct AdminAppCreateRequest {
   pub version: Version,
   pub backend_data: Vec<u8>,
   pub backend_data_hash: String,
-  pub frontend: Option<Principal>
+  pub frontend: Option<Principal>,
+  pub deploy_mode: DeployMode
 }
 
 #[derive(CandidType, Deserialize, Serialize)]

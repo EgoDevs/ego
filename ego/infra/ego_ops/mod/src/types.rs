@@ -1,7 +1,7 @@
 use std::collections::BTreeMap;
 use ic_cdk::export::candid::{CandidType, Deserialize};
 use ic_cdk::export::Principal;
-use ego_types::app::{AppId, Category};
+use ego_types::app::{AppId, Category, DeployMode};
 use ego_types::version::Version;
 
 #[derive(CandidType, Deserialize)]
@@ -26,6 +26,7 @@ pub struct AdminAppCreateRequest {
   pub backend_data: Vec<u8>,
   pub backend_hash: String,
   pub frontend: Option<Principal>,
+  pub deploy_mode: DeployMode
 }
 
 #[derive(CandidType, Deserialize)]

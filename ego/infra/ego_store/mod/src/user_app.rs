@@ -1,8 +1,9 @@
 use ic_cdk::export::candid::{CandidType, Deserialize};
 use serde::Serialize;
 
-use ego_types::app::{App, AppId, Canister, Category};
+use ego_types::app::{AppId, Canister, Category};
 use ego_types::version::Version;
+use crate::app::EgoStoreApp;
 
 #[derive(CandidType, Serialize, Deserialize, Clone, Debug)]
 pub struct UserApp {
@@ -36,7 +37,7 @@ pub struct AppInstalled {
 }
 
 impl AppInstalled {
-  pub fn new(user_app: &UserApp, app: &App) -> Self {
+  pub fn new(user_app: &UserApp, app: &EgoStoreApp) -> Self {
     AppInstalled {
       app_id: user_app.app_id.clone(),
       name: app.name.clone(),

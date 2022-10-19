@@ -5,6 +5,7 @@ use serde::Serialize;
 
 use ego_types::app::{App, AppId, Category};
 use ego_types::ego_error::EgoError;
+use crate::app::EgoStoreApp;
 
 use crate::order::Order;
 use crate::user_app::{AppInstalled, UserApp};
@@ -195,7 +196,7 @@ pub struct AdminEgoTenantAddResponse {
 
 #[derive(CandidType, Deserialize, Serialize)]
 pub struct AppMainReleaseRequest {
-  pub app: App,
+  pub app: EgoStoreApp,
 }
 
 #[derive(CandidType, Deserialize, Serialize)]

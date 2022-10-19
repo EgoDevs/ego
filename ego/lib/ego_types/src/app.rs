@@ -22,8 +22,6 @@ pub struct App {
   pub logo: String,
   pub description: String,
   pub current_version: Version,
-  pub frontend: Wasm,
-  pub backend: Wasm,
   pub price: f32
 }
 
@@ -36,7 +34,7 @@ impl App {
 }
 
 impl App {
-  pub fn new(app_id: AppId, name: String, category: Category, logo: String, description: String, current_version: Version, frontend: Wasm, backend: Wasm, price: f32) -> Self {
+  pub fn new(app_id: AppId, name: String, category: Category, logo: String, description: String, current_version: Version, price: f32) -> Self {
     App {
       app_id,
       name,
@@ -44,8 +42,6 @@ impl App {
       logo,
       description,
       current_version,
-      frontend,
-      backend,
       price
     }
   }
@@ -58,8 +54,7 @@ pub struct Wasm {
   pub canister_type: CanisterType,
   /// when canister_type is ASSET, this will be the shared frontend canister id
   /// when canister_type is BACKEND, this will be the ego_file canister id used to store the wasm datas
-  pub canister_id: Option<Principal>,
-
+  pub canister_id: Principal,
 }
 
 #[derive(CandidType, Serialize, Deserialize, Clone, Debug, Eq, PartialEq)]
@@ -76,7 +71,7 @@ impl fmt::Display for CanisterType {
 
 
 impl Wasm {
-  pub fn new(app_id: AppId, version: Version, canister_type: CanisterType, canister_id: Option<Principal>) -> Self {
+  pub fn new(app_id: AppId, version: Version, canister_type: CanisterType, canister_id: Principal) -> Self {
     Wasm { app_id, version, canister_type, canister_id }
   }
 
@@ -106,4 +101,12 @@ impl Canister {
   pub fn new(canister_id: Principal, canister_type: CanisterType) -> Self {
     Canister { canister_id, canister_type }
   }
+}
+
+#[derive(
+CandidType, Serialize, Deserialize, Clone, Copy, Debug, Ord, PartialOrd, Eq, PartialEq,
+)]
+pub enum DeployMode {
+  SHARED,
+  DEDICATED,
 }

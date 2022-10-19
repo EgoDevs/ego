@@ -9,6 +9,7 @@ use ego_store_mod::ego_store::EgoStore;
 use ego_store_mod::service::*;
 use ego_store_mod::state::EGO_STORE;
 use ego_store_mod::types::*;
+use ego_types::app::App;
 use ego_types::ego_error::EgoError;
 use ego_users::inject_ego_users;
 
@@ -75,7 +76,7 @@ pub fn app_main_list(request: AppMainListRequest) -> Result<AppMainListResponse,
 pub fn app_main_get(request: AppMainGetRequest) -> Result<AppMainGetResponse, EgoError> {
   ic_cdk::println!("ego-store: app_main_get");
   match EgoStoreService::app_main_get(request.app_id) {
-    Ok(app) => Ok(AppMainGetResponse { app }),
+    Ok(app) => Ok(AppMainGetResponse { app: App::from(app) }),
     Err(e) => Err(e),
   }
 }

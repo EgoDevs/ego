@@ -8,6 +8,7 @@ use serde::Serialize;
 use ego_types::app::{App, AppId};
 use ego_types::ego_error::EgoError;
 use ego_types::version::Version;
+use crate::app::EgoStoreApp;
 
 use crate::order::{Order, OrderStatus};
 use crate::tenant::Tenant;
@@ -19,7 +20,7 @@ use crate::wallet_provider::WalletProvider;
 /********************  app store  ********************/
 #[derive(CandidType, Deserialize, Serialize, Debug, Clone)]
 pub struct EgoStore {
-  pub apps: BTreeMap<AppId, App>,
+  pub apps: BTreeMap<AppId, EgoStoreApp>,
   pub orders: BTreeMap<Memo, Order>,
   pub wallets: BTreeMap<Principal, Wallet>,
   pub tenants: BTreeMap<Principal, Tenant>,
@@ -44,7 +45,7 @@ impl EgoStore {
       QueryParam::ByCategory { category } => {
         Ok(self.apps.iter().filter_map(|(_app_id, app)| {
           if app.category == *category {
-            Some(app.clone())
+            Some(App::from(app.clone()))
           } else {
             None
           }
@@ -53,7 +54,7 @@ impl EgoStore {
     }
   }
 
-  pub fn app_main_get(&self, app_id: &AppId) -> Result<App, EgoError> {
+  pub fn app_main_get(&self, app_id: &AppId) -> Result<EgoStoreApp, EgoError> {
     match self.apps.get(app_id) {
       Some(app) => Ok(app.clone()),
       None => Err(EgoStoreErr::AppNotExists.into())
@@ -181,7 +182,7 @@ impl EgoStore {
     }
   }
 
-  pub fn app_main_release(&mut self, app: App) -> Result<bool, EgoError> {
+  pub fn app_main_release(&mut self, app: EgoStoreApp) -> Result<bool, EgoError> {
     self.apps.entry(app.app_id.clone()).and_modify(|exists_app| *exists_app = app.clone()).or_insert(app);
 
     Ok(true)

@@ -3,19 +3,19 @@ use std::collections::{BTreeMap};
 use std::vec;
 use ic_cdk::export::Principal;
 
-use crate::app::{App};
+use crate::app::{EgoDevApp};
 use crate::developer::Developer;
 use crate::file::File;
 use crate::types::{EgoDevErr};
 use serde::Serialize;
 use ic_cdk::export::candid::{CandidType, Deserialize};
-use ego_types::app::{AppId, Category};
+use ego_types::app::{AppId, Category, DeployMode};
 use ego_types::ego_error::EgoError;
 
 #[derive(CandidType, Deserialize, Serialize, Debug, Clone)]
 pub struct EgoDev {
   /// created apps
-  pub apps: BTreeMap<AppId, App>,
+  pub apps: BTreeMap<AppId, EgoDevApp>,
 
   /// registered ego developers
   pub developers: BTreeMap<Principal, Developer>,
@@ -47,12 +47,24 @@ impl EgoDev {
     }
   }
 
-  pub fn developer_main_register(&mut self, user_id: Principal, name: String) -> Developer {
-    let developer = self.developers.entry(user_id).or_insert(Developer::new(user_id, name));
-    developer.clone()
+  pub fn developer_main_register(&mut self, user_id: Principal, name: String) -> Result<Developer, EgoError> {
+    match self.developers.get(&user_id) {
+      None => {
+        if self.developers.values().any(|developer| developer.name == name) {
+          Err(EgoDevErr::UserExists.into())
+        } else {
+          let developer = Developer::new(user_id, name);
+          self.developers.insert(user_id, developer.clone());
+          Ok(developer)
+        }
+      }
+      Some(developer) => {
+        Ok(developer.clone())
+      }
+    }
   }
 
-  pub fn developer_app_new(&mut self, user_id: Principal, app_id: AppId, name: String, logo: String, description: String, category: Category, price: f32) -> Result<App, EgoError> {
+  pub fn developer_app_new(&mut self, user_id: Principal, app_id: AppId, name: String, logo: String, description: String, category: Category, price: f32, deploy_mode: DeployMode) -> Result<EgoDevApp, EgoError> {
     if self.apps.contains_key(&app_id) {
       let app = self.apps.get(&app_id).unwrap();
 
@@ -64,7 +76,7 @@ impl EgoDev {
     } else {
       let _ = self.developer_main_get(user_id)?;
 
-      let app = App::new(user_id, app_id.clone(), name, logo, description, category, price);
+      let app = EgoDevApp::new(user_id, app_id.clone(), name, logo, description, category, price, deploy_mode);
       self.apps.insert(app_id.clone(), app.clone());
 
       self.developer_main_get_mut(user_id)?.created_apps.push(app_id.clone());
@@ -73,7 +85,7 @@ impl EgoDev {
     }
   }
 
-  pub fn developer_app_get(&self, user_id: &Principal, app_id: &AppId) -> Result<&App, EgoError> {
+  pub fn developer_app_get(&self, user_id: &Principal, app_id: &AppId) -> Result<&EgoDevApp, EgoError> {
     match self.apps.get(app_id) {
       None => {Err(EgoDevErr::AppNotExists.into())}
       Some(app) => {
@@ -86,7 +98,7 @@ impl EgoDev {
     }
   }
 
-  pub fn developer_app_get_mut(&mut self, user_id: &Principal, app_id: &AppId) -> Result<&mut App, EgoError> {
+  pub fn developer_app_get_mut(&mut self, user_id: &Principal, app_id: &AppId) -> Result<&mut EgoDevApp, EgoError> {
     match self.apps.get_mut(app_id) {
       None => {Err(EgoDevErr::AppNotExists.into())}
       Some(app) => {
@@ -99,14 +111,14 @@ impl EgoDev {
     }
   }
 
-  pub fn developer_app_list(&self, user_id: Principal) -> Result<Vec<App>, EgoError> {
+  pub fn developer_app_list(&self, user_id: Principal) -> Result<Vec<EgoDevApp>, EgoError> {
     let developer = self.developer_main_get(user_id)?;
 
     let created_apps = developer.created_apps.iter().map(|app_id| self.apps.get(app_id).unwrap().clone()).collect();
     Ok(created_apps)
   }
 
-  pub fn version_wait_for_audit(&self) -> Vec<App> {
+  pub fn version_wait_for_audit(&self) -> Vec<EgoDevApp> {
     self.apps.iter().filter(|(_app_id, app)| app.audit_version.is_some()).map(|(_app_id, app)| app.clone()).collect()
   }
 

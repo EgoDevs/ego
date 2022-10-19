@@ -22,12 +22,13 @@ impl EgoTenantService {
 
     pub async fn app_main_install<F: TEgoFile, M: TIcManagement>(ego_file: F, management: M, wallet_id: Principal, user_id: Principal, wasm: Wasm) -> Result<Principal, EgoError> {
         // TODO: checked whether user has add tenant as one of the canister's controller
+        // TODO: handle frontend wasm
 
         ic_cdk::println!("1 create canister");
         let canister_id = management.canister_main_create(CREATE_CANISTER_CYCLES_FEE).await?;
 
         ic_cdk::println!("2 load wasm data for {}", wasm.id());
-        let data = ego_file.file_main_read(wasm.canister_id.unwrap(), wasm.fid()).await?;
+        let data = ego_file.file_main_read(wasm.canister_id, wasm.fid()).await?;
 
         ic_cdk::println!("3 install code");
         management.canister_code_install(canister_id, data).await?;
@@ -45,7 +46,7 @@ impl EgoTenantService {
         // TODO: checked whether user has add tenant as one of the canister's controller
 
         ic_cdk::println!("1 load wasm data for {}", wasm.id());
-        let data = ego_file.file_main_read(wasm.canister_id.unwrap(), wasm.fid()).await?;
+        let data = ego_file.file_main_read(wasm.canister_id, wasm.fid()).await?;
 
         ic_cdk::println!("2 install code");
         management.canister_code_upgrade(canister_id, data).await?;
