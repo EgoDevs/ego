@@ -17,6 +17,7 @@ serde_json = "1.0"
 serde_bytes = "0.11"
 tracing = "0.1.29"
 async-trait = "0.1.57"
+num-traits = "0.2.15"
 ego_types = { path = "../../../lib/ego_types"}
 ego_utils = { path = "../../../lib/ego_utils"}
 ego_file_mod = { path = "../../ego_file/mod"}

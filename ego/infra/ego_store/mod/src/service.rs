@@ -190,6 +190,12 @@ impl EgoStoreService {
     })
   }
 
+  pub fn wallet_cycle_charge(wallet_id: Principal, cycle: u128) -> Result<bool, EgoError> {
+    EGO_STORE.with(|ego_store| {
+      ego_store.borrow_mut().wallet_cycle_charge(wallet_id, cycle)
+    })
+  }
+
   pub fn admin_ego_tenant_add(tenant_id: Principal) -> Result<bool, EgoError> {
     EGO_STORE.with(|ego_store| {
       ego_store

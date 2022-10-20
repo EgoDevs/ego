@@ -16,7 +16,7 @@ pub struct Wallet {
   pub tenant_id: Principal,
   pub orders: Vec<Memo>,
   pub apps: BTreeMap<AppId, UserApp>,
-  pub cycles: u64,
+  pub cycles: u128,
   pub wallet_id: Principal,
   pub user_id: Principal
 }
@@ -43,5 +43,14 @@ impl Wallet {
     self.orders.push(order.memo);
 
     order
+  }
+
+  pub fn cycle_charge(&mut self, cycle: u128) -> bool {
+    if self.cycles > cycle {
+      self.cycles -= cycle;
+      true
+    } else {
+      false
+    }
   }
 }

@@ -1,10 +1,11 @@
 use ic_cdk::export::Principal;
+use ego_store_mod::app::EgoStoreApp;
 
 use ego_store_mod::service::EgoStoreService;
 use ego_store_mod::state::EGO_STORE;
 use ego_store_mod::types::QueryParam;
-use ego_types::app::{App, Category, Wasm};
-use ego_types::app::CanisterType::{ASSET, BACKEND};
+use ego_types::app::{Category, DeployMode, Wasm};
+use ego_types::app::CanisterType::{BACKEND};
 use ego_types::version::Version;
 
 static FILE_CANISTER_ID: &str = "amybd-zyaaa-aaaah-qc4hq-cai";
@@ -27,9 +28,8 @@ pub fn set_up() {
 
   EGO_STORE.with(|ego_store| {
     // add app
-    let frontend = Wasm::new(EXISTS_APP_ID.to_string(), version, ASSET, None);
-    let backend = Wasm::new(EXISTS_APP_ID.to_string(), version, BACKEND, Some(file_canister));
-    let app = App::new(EXISTS_APP_ID.to_string(), EXISTS_APP_NAME.to_string(), Category::Vault, EXISTS_APP_LOGO.to_string(), EXISTS_APP_DESCRIPTION.to_string(), version, frontend, backend, 1.2f32);
+    let backend = Wasm::new(EXISTS_APP_ID.to_string(), version, BACKEND, file_canister);
+    let app = EgoStoreApp::new(EXISTS_APP_ID.to_string(), EXISTS_APP_NAME.to_string(), Category::Vault, EXISTS_APP_LOGO.to_string(), EXISTS_APP_DESCRIPTION.to_string(), version, None, Some(backend), 1.2f32, DeployMode::DEDICATED);
     ego_store.borrow_mut().apps.insert(EXISTS_APP_ID.to_string(), app);
   });
 }
@@ -47,9 +47,8 @@ fn app_main_release_new_app() {
   let file_canister = Principal::from_text(FILE_CANISTER_ID.to_string()).unwrap();
   let version = Version::new(1, 0, 0);
 
-  let frontend = Wasm::new(NEW_APP_ID.to_string(), version, ASSET, None);
-  let backend = Wasm::new(NEW_APP_ID.to_string(), version, BACKEND, Some(file_canister));
-  let app = App::new(NEW_APP_ID.to_string(), NEW_APP_NAME.to_string(), Category::Vault, NEW_APP_LOGO.to_string(), NEW_APP_DESCRIPTION.to_string(), version, frontend, backend, 1.2f32);
+  let backend = Wasm::new(NEW_APP_ID.to_string(), version, BACKEND, file_canister);
+  let app = EgoStoreApp::new(NEW_APP_ID.to_string(), NEW_APP_NAME.to_string(), Category::Vault, NEW_APP_LOGO.to_string(), NEW_APP_DESCRIPTION.to_string(), version, None, Some(backend), 1.2f32, DeployMode::DEDICATED);
 
   let result = EgoStoreService::app_main_release(app);
   assert!(result.is_ok());
@@ -73,9 +72,9 @@ fn app_main_release_new_app_version() {
   let file_canister = Principal::from_text(FILE_CANISTER_ID.to_string()).unwrap();
   let version = Version::new(1, 0, 1);
 
-  let frontend = Wasm::new(EXISTS_APP_ID.to_string(), version, ASSET, None);
-  let backend = Wasm::new(EXISTS_APP_ID.to_string(), version, BACKEND, Some(file_canister));
-  let app = App::new(EXISTS_APP_ID.to_string(), EXISTS_APP_NAME.to_string(), Category::Vault, EXISTS_APP_LOGO.to_string(), EXISTS_APP_DESCRIPTION.to_string(), version, frontend, backend, 1.2f32);
+
+  let backend = Wasm::new(EXISTS_APP_ID.to_string(), version, BACKEND, file_canister);
+  let app = EgoStoreApp::new(EXISTS_APP_ID.to_string(), EXISTS_APP_NAME.to_string(), Category::Vault, EXISTS_APP_LOGO.to_string(), EXISTS_APP_DESCRIPTION.to_string(), version, None, Some(backend), 1.2f32, DeployMode::DEDICATED);
 
   let result = EgoStoreService::app_main_release(app);
   assert!(result.is_ok());

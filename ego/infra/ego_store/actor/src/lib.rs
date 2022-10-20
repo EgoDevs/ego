@@ -167,9 +167,19 @@ pub async fn wallet_order_new(request: WalletOrderNewRequest) -> Result<WalletOr
 
 /********************  for ego_tenant  ********************/
 // TODO: wallet_cycle_charge
+#[update(name = "wallet_cycle_charge", guard = "user_guard")]
+#[candid_method(update, rename = "wallet_cycle_charge")]
+pub fn wallet_cycle_charge(request: WalletCycleChargeRequest) -> Result<WalletCycleChargeResponse, EgoError> {
+  ic_cdk::println!("ego_store: wallet_cycle_charge");
+
+  match EgoStoreService::wallet_cycle_charge(request.wallet_id, request.cycle) {
+    Ok(ret) => Ok(WalletCycleChargeResponse { ret }),
+    Err(e) => Err(e)
+  }
+}
 
 /********************  for ego_dev  ********************/
-#[update(name = "app_main_release")]
+#[update(name = "app_main_release", guard = "user_guard")]
 #[candid_method(update, rename = "app_main_release")]
 pub async fn app_main_release(request: AppMainReleaseRequest) -> Result<AppMainReleaseResponse, EgoError> {
   ic_cdk::println!("ego_store: app_main_release");
@@ -182,7 +192,7 @@ pub async fn app_main_release(request: AppMainReleaseRequest) -> Result<AppMainR
 
 /********************  ego-ledger callback  ********************/
 // TODO: should add guard here, only ledger can call this method
-#[update(name = "wallet_order_notify")]
+#[update(name = "wallet_order_notify", guard = "user_guard")]
 #[candid_method(update, rename = "wallet_order_notify")]
 pub fn wallet_order_notify(request: WalletOrderNotifyRequest) -> Result<WalletOrderNotifyResponse, EgoError> {
   ic_cdk::println!("ego_store: wallet_order_notify");
@@ -194,10 +204,12 @@ pub fn wallet_order_notify(request: WalletOrderNotifyRequest) -> Result<WalletOr
 }
 
 /********************  owner methods  ********************/
-#[update(name = "admin_ego_tenant_add")]
+#[update(name = "admin_ego_tenant_add", guard = "owner_guard")]
 #[candid_method(update, rename = "admin_ego_tenant_add")]
 pub fn admin_ego_tenant_add(req: AdminEgoTenantAddRequest) -> Result<AdminEgoTenantAddResponse, EgoError> {
   ic_cdk::println!("ego_store: admin_ego_tenant_add");
+
+  role_user_add(req.tenant_id)?;
 
   match EgoStoreService::admin_ego_tenant_add(req.tenant_id) {
     Ok(ret) => Ok(AdminEgoTenantAddResponse { ret }),
@@ -214,6 +226,17 @@ pub fn admin_wallet_provider_add(req: AdminWalletProviderAddRequest) -> Result<A
     Ok(ret) => Ok(AdminWalletProviderAddResponse { ret }),
     Err(e) => Err(e),
   }
+}
+
+#[update(name = "ego_store_setup", guard = "owner_guard")]
+#[candid_method(update, rename = "ego_store_setup")]
+async fn ego_store_setup(req: EgoStoreSetupRequest) -> Result<(), EgoError> {
+  ic_cdk::println!("ego_store: ego_store_setup");
+
+  role_user_add(req.ego_dev_id)?;
+  role_user_add(req.ego_cron_id)?;
+
+  Ok(())
 }
 
 /********************  wallet provider methods  ********************/

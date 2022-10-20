@@ -83,6 +83,6 @@ fn wallet_order_notify() {
   assert_eq!(OrderStatus::SUCCESS, order.status);
 
   EGO_STORE.with(|ego_store| {
-    assert_eq!((1.2f32 * 1000000f32) as u64, ego_store.borrow().wallets.get(&exist_wallet_id).unwrap().cycles);
+    assert_eq!((1.2f32 * 1000000f32) as u128, ego_store.borrow().wallets.get(&exist_wallet_id).unwrap().cycles);
   });
 }

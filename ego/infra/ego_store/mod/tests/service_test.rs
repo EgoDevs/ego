@@ -1,6 +1,7 @@
 use async_trait::async_trait;
 use ic_cdk::export::Principal;
 use mockall::mock;
+use ego_store_mod::app::EgoStoreApp;
 
 use ego_store_mod::c2c::ego_tenant::TEgoTenant;
 use ego_store_mod::service::EgoStoreService;
@@ -9,7 +10,7 @@ use ego_store_mod::tenant::Tenant;
 use ego_store_mod::types::QueryParam;
 use ego_store_mod::user_app::{UserApp};
 use ego_store_mod::wallet::Wallet;
-use ego_types::app::{App, Canister, CanisterType, Category, Wasm};
+use ego_types::app::{Canister, CanisterType, Category, DeployMode, Wasm};
 use ego_types::app::CanisterType::{ASSET, BACKEND};
 use ego_types::ego_error::EgoError;
 use ego_types::version::Version;
@@ -44,8 +45,8 @@ mock! {
   impl TEgoTenant for Tenant {
     async fn app_main_install(&self, ego_tenant_id: Principal, wallet_id: Principal, user_id: Principal, wasm: Wasm) -> Result<Principal, EgoError>;
     async fn app_main_upgrade(&self, ego_tenant_id: Principal, canister_id: Principal, wasm: Wasm) -> Result<bool, EgoError>;
-    async fn canister_main_track(&self, ego_tenant_id: Principal, wallet_id: Principal, canister_id: Principal) -> Result<bool, EgoError>;
-    async fn canister_main_untrack(&self, ego_tenant_id: Principal, wallet_id: Principal, canister_id: Principal) -> Result<bool, EgoError>;
+    async fn canister_main_track(&self, ego_tenant_id: Principal, wallet_id: Principal, canister_id: Principal) -> Result<(), EgoError>;
+    async fn canister_main_untrack(&self, ego_tenant_id: Principal, wallet_id: Principal, canister_id: Principal) -> Result<(), EgoError>;
   }
 }
 
@@ -63,14 +64,14 @@ pub fn set_up() {
     ego_store.borrow_mut().tenants.insert(tenant_principal, Tenant::new(tenant_principal));
 
     // add exists app
-    let frontend = Wasm::new(EXISTS_APP_ID.to_string(), version, ASSET, None);
-    let backend = Wasm::new(EXISTS_APP_ID.to_string(), version, BACKEND, Some(file_canister));
-    let app = App::new(EXISTS_APP_ID.to_string(), APP_NAME.to_string(), Category::Vault, APP_LOGO.to_string(), APP_DESCRIPTION.to_string(), version, frontend, backend, 1.2f32);
+
+    let backend = Wasm::new(EXISTS_APP_ID.to_string(), version, BACKEND, file_canister);
+    let app = EgoStoreApp::new(EXISTS_APP_ID.to_string(), APP_NAME.to_string(), Category::Vault, APP_LOGO.to_string(), APP_DESCRIPTION.to_string(), version, None, Some(backend), 1.2f32, DeployMode::DEDICATED);
     ego_store.borrow_mut().apps.insert(EXISTS_APP_ID.to_string(), app);
 
-    let frontend = Wasm::new(TEST_APP_ID.to_string(), version, ASSET, Some(file_canister));
-    let backend = Wasm::new(TEST_APP_ID.to_string(), version, BACKEND, Some(file_canister));
-    let app = App::new(TEST_APP_ID.to_string(), APP_NAME.to_string(), Category::Vault, APP_LOGO.to_string(), APP_DESCRIPTION.to_string(), version, frontend, backend, 1.2f32);
+    let frontend = Wasm::new(TEST_APP_ID.to_string(), version, ASSET, file_canister);
+    let backend = Wasm::new(TEST_APP_ID.to_string(), version, BACKEND, file_canister);
+    let app = EgoStoreApp::new(TEST_APP_ID.to_string(), APP_NAME.to_string(), Category::Vault, APP_LOGO.to_string(), APP_DESCRIPTION.to_string(), version, Some(frontend), Some(backend), 1.2f32, DeployMode::DEDICATED);
     ego_store.borrow_mut().apps.insert(TEST_APP_ID.to_string(), app);
 
     // add wallet

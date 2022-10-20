@@ -159,6 +159,17 @@ pub struct WalletOrderListResponse {
 }
 
 #[derive(CandidType, Deserialize, Serialize)]
+pub struct WalletCycleChargeRequest {
+  pub wallet_id: Principal,
+  pub cycle: u128,
+}
+
+#[derive(CandidType, Deserialize, Serialize)]
+pub struct WalletCycleChargeResponse {
+  pub ret: bool
+}
+
+#[derive(CandidType, Deserialize, Serialize)]
 pub struct WalletTenantGetResponse {
   pub tenant_id: Principal,
 }
@@ -215,3 +226,8 @@ pub struct AdminWalletProviderAddResponse {
   pub ret: bool,
 }
 
+#[derive(CandidType, Deserialize, Serialize)]
+pub struct EgoStoreSetupRequest {
+  pub ego_dev_id: Principal,
+  pub ego_cron_id: Principal
+}

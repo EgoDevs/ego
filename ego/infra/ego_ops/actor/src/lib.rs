@@ -11,6 +11,7 @@ use serde::Serialize;
 use ego_ops_mod::c2c::ego_cron::EgoCron;
 use ego_ops_mod::c2c::ego_dev::EgoDev;
 use ego_ops_mod::c2c::ego_store::EgoStore;
+use ego_ops_mod::c2c::ego_tenant::EgoTenant;
 use ego_ops_mod::c2c::ego_user::EgoUser;
 use ego_ops_mod::types::{AdminAppCreateRequest, AdminAppCreateResponse, CanisterMainListResponse, CanisterMainRegisterRequest};
 
@@ -61,8 +62,7 @@ fn post_upgrade() {
 }
 
 /********************   owner method   ********************/
-/// register the initial canister into the ego_ops
-#[update(name = "canister_main_register")]
+#[update(name = "canister_main_register", guard = "owner_guard")]
 #[candid_method(update, rename = "canister_main_register")]
 fn canister_main_register(req: CanisterMainRegisterRequest) -> Result<(), EgoError> {
   ic_cdk::println!("ego-ops: canister_main_register");
@@ -73,7 +73,7 @@ fn canister_main_register(req: CanisterMainRegisterRequest) -> Result<(), EgoErr
 }
 
 /// register the initial canister into the ego_ops
-#[update(name = "canister_relation_update")]
+#[update(name = "canister_relation_update", guard = "owner_guard")]
 #[candid_method(update, rename = "canister_relation_update")]
 async fn canister_relation_update() -> Result<(), EgoError> {
   ic_cdk::println!("ego-ops: canister_relation_update");
@@ -82,15 +82,16 @@ async fn canister_relation_update() -> Result<(), EgoError> {
   let ego_dev = EgoDev::new();
   let ego_store = EgoStore::new();
   let ego_cron = EgoCron::new();
+  let ego_tenant = EgoTenant::new();
 
-  EgoOpsService::canister_relation_update(ego_user, ego_dev, ego_store, ego_cron).await?;
+  EgoOpsService::canister_relation_update(ego_user, ego_dev, ego_store, ego_cron, ego_tenant).await?;
 
   Ok(())
 }
 
 
 
-#[query(name = "canister_main_list")]
+#[query(name = "canister_main_list", guard = "owner_guard")]
 #[candid_method(query, rename = "canister_main_list")]
 async fn canister_main_list() -> Result<CanisterMainListResponse, EgoError> {
   ic_cdk::println!("ego-ops: canister_main_list");
@@ -101,7 +102,7 @@ async fn canister_main_list() -> Result<CanisterMainListResponse, EgoError> {
 }
 
 /// register ego infra app
-#[update(name = "admin_app_create")]
+#[update(name = "admin_app_create", guard = "owner_guard")]
 #[candid_method(update, rename = "admin_app_create")]
 async fn admin_app_create(req: AdminAppCreateRequest) -> Result<AdminAppCreateResponse, EgoError> {
   ic_cdk::println!("ego-ops: admin_app_create");

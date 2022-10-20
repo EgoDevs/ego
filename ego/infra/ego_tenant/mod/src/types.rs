@@ -31,47 +31,49 @@ impl From<std::string::String> for EgoTenantErr {
     }
 }
 
-#[derive(Clone, Debug, CandidType, Deserialize, Serialize)]
+#[derive(CandidType, Deserialize, Serialize)]
 pub struct AppMainInstallRequest {
     pub wallet_id: Principal,
     pub user_id: Principal,
     pub wasm: Wasm,
 }
 
-#[derive(Clone, Debug, CandidType, Deserialize, Serialize)]
+#[derive(CandidType, Deserialize, Serialize)]
 pub struct AppMainInstallResponse {
     pub canister_id: Principal
 }
 
-#[derive(Clone, Debug, CandidType, Deserialize, Serialize)]
+#[derive(CandidType, Deserialize, Serialize)]
 pub struct AppMainUpgradeRequest {
     pub canister_id: Principal,
     pub wasm: Wasm,
 }
 
-#[derive(Clone, Debug, CandidType, Deserialize, Serialize)]
+#[derive(CandidType, Deserialize, Serialize)]
 pub struct AppMainUpgradeResponse {
     pub ret: bool
 }
 
-#[derive(Clone, Debug, CandidType, Deserialize, Serialize)]
+#[derive(CandidType, Deserialize, Serialize)]
 pub struct CanisterMainTrackRequest {
     pub wallet_id: Principal,
     pub canister_id: Principal,
 }
 
-#[derive(Clone, Debug, CandidType, Deserialize, Serialize)]
+#[derive(CandidType, Deserialize, Serialize)]
 pub struct CanisterMainTrackResponse {
     pub ret: bool
 }
 
-#[derive(Clone, Debug, CandidType, Deserialize, Serialize)]
+#[derive(CandidType, Deserialize, Serialize)]
 pub struct CanisterMainUnTrackRequest {
     pub wallet_id: Principal,
     pub canister_id: Principal,
 }
 
-#[derive(Clone, Debug, CandidType, Deserialize, Serialize)]
-pub struct CanisterMainUnTrackResponse {
-    pub ret: bool
+#[derive(CandidType, Deserialize, Serialize)]
+pub struct EgoTenantSetupRequest {
+    pub ego_store_id: Principal,
+    pub ego_cron_id: Principal
 }
+

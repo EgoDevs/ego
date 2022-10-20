@@ -9,9 +9,10 @@ use ego_ops_mod::c2c::ego_cron::TEgoCron;
 use ego_ops_mod::c2c::ego_dev::TEgoDev;
 use ego_ops_mod::c2c::ego_store::TEgoStore;
 use ego_ops_mod::c2c::ego_user::TEgoUser;
+use ego_ops_mod::c2c::ego_tenant::TEgoTenant;
 use ego_ops_mod::c2c::c2c_types::{CronInterval};
-use ego_types::app::AppId;
 use ego_types::version::Version;
+use ego_types::app::{AppId, Category, DeployMode};
 
 mock! {
   User {}
@@ -29,7 +30,7 @@ mock! {
   impl TEgoDev for Dev {
     async fn admin_ego_file_add(&self, canister_id: Principal, ego_file_id: Principal) -> Result<bool, EgoError>;
     async fn admin_ego_store_set(&self, canister_id: Principal, ego_store_id: Principal) -> Result<bool, EgoError>;
-    async fn admin_app_create(&self, canister_id: Principal, app_id: AppId, name: String, version: Version, backend_data: Vec<u8>, backend_data_hash: String, frontend: Option<Principal>) -> Result<bool, EgoError>;
+    async fn admin_app_create(&self, canister_id: Principal, app_id: AppId, name: String, version: Version, category: Category, logo: String, description: String, backend_data: Vec<u8>, backend_data_hash: String, frontend: Option<Principal>, deploy_mode: DeployMode) -> Result<bool, EgoError>;
   }
 }
 
@@ -39,6 +40,7 @@ mock! {
   #[async_trait]
   impl TEgoStore for Store {
     async fn admin_ego_tenant_add(&self, canister_id: Principal, ego_tenant_id: Principal) -> Result<bool, EgoError>;
+    async fn ego_store_setup(&self, ego_store_id: Principal, ego_dev_id: Principal, ego_cron_id: Principal) -> Result<bool, EgoError>;
   }
 }
 
@@ -48,6 +50,16 @@ mock! {
   #[async_trait]
   impl TEgoCron for Cron {
     async fn task_main_add(&self, ego_cron_id: Principal, canister_id: Principal, method: String, interval: CronInterval) -> Result<bool, EgoError>;
+  }
+}
+
+
+mock! {
+  Tenant {}
+
+  #[async_trait]
+  impl TEgoTenant for Tenant {
+    async fn ego_tenant_setup(&self, ego_tenant_id: Principal, ego_store_id: Principal, ego_cron_id: Principal) -> Result<bool, EgoError>;
   }
 }
 
@@ -112,7 +124,9 @@ async fn canister_relation_update() {
   let mut ego_dev = MockDev::new();
   let mut ego_store = MockStore::new();
   let mut ego_cron = MockCron::new();
+  let mut ego_tenant = MockTenant::new();
 
+  // ego_dev
   ego_dev.expect_admin_ego_file_add().times(1).returning(move |_dev, _file| {
     assert_eq!(dev_canister, _dev);
     assert_eq!(file_canister, _file);
@@ -124,6 +138,7 @@ async fn canister_relation_update() {
     Ok(true)
   });
 
+  // ego_file
   ego_user.expect_role_user_add().times(1).returning(move |_file, _dev| {
     assert_eq!(file_canister, _file);
     assert_eq!(dev_canister, _dev);
@@ -135,9 +150,11 @@ async fn canister_relation_update() {
     Ok(true)
   });
 
-  ego_user.expect_role_user_add().times(1).returning(move |_tenant, _store| {
-    assert_eq!(tenant_canister, _tenant);
+  // ego_store
+  ego_store.expect_ego_store_setup().returning(move |_store, _dev, _cron| {
     assert_eq!(store_canister, _store);
+    assert_eq!(dev_canister, _dev);
+    assert_eq!(cron_canister, _cron);
     Ok(true)
   });
   ego_store.expect_admin_ego_tenant_add().times(1).returning(move |_store, _tenant| {
@@ -146,8 +163,10 @@ async fn canister_relation_update() {
     Ok(true)
   });
 
-  ego_user.expect_role_user_add().times(1).returning(move |_tenant, _cron| {
+  // ego_tenant
+  ego_tenant.expect_ego_tenant_setup().times(1).returning(move |_tenant, _store, _cron| {
     assert_eq!(tenant_canister, _tenant);
+    assert_eq!(store_canister, _store);
     assert_eq!(cron_canister, _cron);
     Ok(true)
   });
@@ -156,6 +175,8 @@ async fn canister_relation_update() {
     assert_eq!(tenant_canister, _tenant);
     Ok(true)
   });
+
+  // ego_ledger
   ego_user.expect_role_user_add().times(1).returning(move |_ledger, _cron| {
     assert_eq!(ledger_canister, _ledger);
     assert_eq!(cron_canister, _cron);
@@ -168,6 +189,6 @@ async fn canister_relation_update() {
   });
 
 
-  let resp = EgoOpsService::canister_relation_update(ego_user, ego_dev, ego_store, ego_cron).await;
+  let resp = EgoOpsService::canister_relation_update(ego_user, ego_dev, ego_store, ego_cron, ego_tenant).await;
   assert!(resp.is_ok())
 }

@@ -6,6 +6,7 @@ use crate::c2c::c2c_types::CronInterval;
 use crate::c2c::ego_dev::{EgoDev, TEgoDev};
 use crate::c2c::ego_store::{TEgoStore};
 use crate::c2c::ego_cron::{TEgoCron};
+use crate::c2c::ego_tenant::TEgoTenant;
 use crate::c2c::ego_user::{TEgoUser};
 use crate::state::EGO_OPS;
 
@@ -18,7 +19,7 @@ impl EgoOpsService {
     });
   }
 
-  pub async fn canister_relation_update<U: TEgoUser, D: TEgoDev, S: TEgoStore, C: TEgoCron>(ego_user: U, ego_dev: D, ego_store: S, ego_cron: C)  -> Result<bool, EgoError>{
+  pub async fn canister_relation_update<U: TEgoUser, D: TEgoDev, S: TEgoStore, C: TEgoCron, T: TEgoTenant>(ego_user: U, ego_dev: D, ego_store: S, ego_cron: C, ego_tenant: T)  -> Result<bool, EgoError>{
     let canisters = EGO_OPS.with(|ego_ops| {
       ego_ops.borrow().canisters.clone()
     });
@@ -48,14 +49,14 @@ impl EgoOpsService {
     }
 
     // ego_store
+    ego_store.ego_store_setup(ego_store_id.clone(), ego_dev_id.clone(), ego_cron_id.clone(), ).await?;
     for ego_tenant_id in ego_tenant_ids {
-      ego_user.role_user_add(ego_tenant_id.clone(), ego_store_id.clone()).await?;
       ego_store.admin_ego_tenant_add(ego_store_id.clone(), ego_tenant_id.clone()).await?;
     }
 
     // ego_tenant
     for ego_tenant_id in ego_tenant_ids {
-      ego_user.role_user_add(ego_tenant_id.clone(), ego_cron_id.clone()).await?;
+      ego_tenant.ego_tenant_setup(ego_tenant_id.clone(), ego_store_id.clone(), ego_cron_id.clone()).await?;
       ego_cron.task_main_add(ego_cron_id.clone(), ego_tenant_id.clone(), "message_main_notify".to_string(), CronInterval::PerMinute).await?;
     }
 
