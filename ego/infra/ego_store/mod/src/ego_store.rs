@@ -146,27 +146,31 @@ impl EgoStore {
     }
   }
 
-  pub fn wallet_order_notify(&mut self, memo: Memo) -> Result<bool, EgoError> {
+  pub fn wallet_order_notify(&mut self, memo: Memo, operator: Principal) -> Result<bool, EgoError> {
     match self.orders.get_mut(&memo) {
       Some(order) => {
         order.status = OrderStatus::SUCCESS;
 
-        self.wallets.entry(order.wallet_id).and_modify(|wallet| {
-          // TODO: Add Real Recharge Logic
-          wallet.cycles += (order.amount * 1_000_000f32) as u128;
-        });
+        match self.wallets.get_mut(&order.wallet_id) {
+          None => Err(EgoStoreErr::WalletNotExists.into()),
+          Some(wallet) => {
+            // TODO: Add Real Recharge Logic
+            let cycle = (order.amount * 1_000_000f32) as u128;
 
-        Ok(true)
+            wallet.cycle_recharge(cycle, operator,  format!("wallet cycle recharge, order memo {}", memo.0));
+            Ok(true)
+          }
+        }
       }
       None => Err(EgoStoreErr::OrderNotExists.into())
     }
   }
 
-  pub fn wallet_cycle_charge(&mut self, wallet_id: Principal, cycle: u128) -> Result<bool, EgoError> {
+  pub fn wallet_cycle_charge(&mut self, wallet_id: Principal, cycle: u128, operator: Principal, comment: String) -> Result<bool, EgoError> {
     match self.wallets.get_mut(&wallet_id) {
       None => Err(EgoStoreErr::WalletNotExists.into()),
       Some(wallet) => {
-        Ok(wallet.cycle_charge(cycle))
+        Ok(wallet.cycle_charge(cycle, operator, comment))
       }
     }
   }

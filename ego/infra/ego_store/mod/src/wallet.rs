@@ -7,6 +7,7 @@ use serde::Serialize;
 
 use ego_types::app::AppId;
 use ego_types::version::Version;
+use crate::cash_flow::{CashFlow, CashFlowType};
 
 use crate::order::Order;
 use crate::user_app::UserApp;
@@ -18,12 +19,13 @@ pub struct Wallet {
   pub apps: BTreeMap<AppId, UserApp>,
   pub cycles: u128,
   pub wallet_id: Principal,
-  pub user_id: Principal
+  pub user_id: Principal,
+  pub cash_flowes: Vec<CashFlow>
 }
 
 impl Wallet {
   pub fn new(tenant_id: Principal, wallet_id: Principal, user_id: Principal) -> Self {
-    Wallet { tenant_id, orders: vec![], apps: BTreeMap::new(), cycles: 0, wallet_id, user_id }
+    Wallet { tenant_id, orders: vec![], apps: BTreeMap::new(), cycles: 0, wallet_id, user_id, cash_flowes: vec![] }
   }
 
   pub fn app_install(&mut self, app_id: &AppId, user_app: &UserApp) {
@@ -45,12 +47,25 @@ impl Wallet {
     order
   }
 
-  pub fn cycle_charge(&mut self, cycle: u128) -> bool {
+  pub fn cycle_charge(&mut self, cycle: u128, operator: Principal, comment: String) -> bool {
     if self.cycles > cycle {
       self.cycles -= cycle;
+      self.cash_flowes.push(CashFlow::new(CashFlowType::CHARGE, cycle, self.cycles, operator, comment));
       true
     } else {
       false
     }
   }
+
+  pub fn cycle_recharge(&mut self, cycle: u128, operator: Principal, comment: String) -> bool {
+    if self.cycles > cycle {
+      self.cycles += cycle;
+      self.cash_flowes.push(CashFlow::new(CashFlowType::RECHARGE, cycle, self.cycles, operator, comment));
+      true
+    } else {
+      false
+    }
+  }
+
+
 }

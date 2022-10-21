@@ -184,15 +184,15 @@ impl EgoStoreService {
     })
   }
 
-  pub fn wallet_order_notify(memo: Memo) -> Result<bool, EgoError> {
+  pub fn wallet_order_notify(memo: Memo, operator: Principal) -> Result<bool, EgoError> {
     EGO_STORE.with(|ego_store| {
-      ego_store.borrow_mut().wallet_order_notify(memo)
+      ego_store.borrow_mut().wallet_order_notify(memo, operator)
     })
   }
 
-  pub fn wallet_cycle_charge(wallet_id: Principal, cycle: u128) -> Result<bool, EgoError> {
+  pub fn wallet_cycle_charge(wallet_id: Principal, cycle: u128, operator: Principal, comment: String) -> Result<bool, EgoError> {
     EGO_STORE.with(|ego_store| {
-      ego_store.borrow_mut().wallet_cycle_charge(wallet_id, cycle)
+      ego_store.borrow_mut().wallet_cycle_charge(wallet_id, cycle, operator, comment)
     })
   }
 

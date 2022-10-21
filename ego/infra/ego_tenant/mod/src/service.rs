@@ -93,13 +93,13 @@ impl EgoTenantService {
                                 ego_tenant.borrow().ego_store
                             });
                             let cycle_required_to_top_up = cycle_consume_per_nanosecond * HALF_HOUR as u128;
-                            match ego_store.wallet_cycle_charge(ego_store_id, task.wallet_id, cycle_required_to_top_up).await?{
+                            match ego_store.wallet_cycle_charge(ego_store_id, task.wallet_id, cycle_required_to_top_up, format!("wallet cycle charge, top up canister id {}", task.canister_id)).await?{
                                 true => {
                                     management.canister_cycle_top_up(task.canister_id, cycle_required_to_top_up).await?;
                                     current_cycle = current_cycle + cycle_required_to_top_up;
                                 }
                                 false => {
-                                    // TODO: incase wallet controller do not contains enouth cycles
+                                    // TODO: in case wallet controller do not contains enough cycles
                                     continue
                                 }
                             }

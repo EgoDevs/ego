@@ -7,7 +7,7 @@ use crate::c2c::c2c_types::{WalletCycleChargeRequest, WalletCycleChargeResponse}
 
 #[async_trait]
 pub trait TEgoStore {
-  async fn wallet_cycle_charge(&self, store_id: Principal, wallet_id: Principal, cycle: u128) -> Result<bool, EgoError>;
+  async fn wallet_cycle_charge(&self, store_id: Principal, wallet_id: Principal, cycle: u128, comment: String) -> Result<bool, EgoError>;
 }
 
 pub struct EgoStore {
@@ -22,9 +22,9 @@ impl EgoStore{
 
 #[async_trait]
 impl TEgoStore for EgoStore {
-  async fn wallet_cycle_charge(&self, store_id: Principal, wallet_id: Principal, cycle: u128) -> Result<bool, EgoError>{
+  async fn wallet_cycle_charge(&self, store_id: Principal, wallet_id: Principal, cycle: u128, comment: String) -> Result<bool, EgoError>{
     let req = WalletCycleChargeRequest {
-      wallet_id, cycle
+      wallet_id, cycle, comment
     };
 
     let call_result = api::call::call(

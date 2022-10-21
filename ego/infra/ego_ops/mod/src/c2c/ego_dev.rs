@@ -2,11 +2,10 @@ use ic_cdk::api;
 use ic_cdk::export::Principal;
 
 use async_trait::async_trait;
-use ego_dev_mod::types::{AdminAppCreateRequest, AdminAppCreateResponse, AdminEgoFileAddRequest, AdminEgoStoreSetRequest};
+use ego_dev_mod::types::{AdminAppCreateRequest, AdminEgoFileAddRequest, AdminEgoStoreSetRequest};
 use ego_types::app::{AppId, Category, DeployMode};
 use ego_types::ego_error::EgoError;
 use ego_types::version::Version;
-use tracing::error;
 
 #[async_trait]
 pub trait TEgoDev {
@@ -84,26 +83,5 @@ impl TEgoDev for EgoDev {
       },
       _ => Ok(true)
     }
-
-    // let (_resp, ): (AdminAppCreateResponse, ) = match api::call::call(
-    //   canister_id,
-    //   "admin_app_create",
-    //   (req, )
-    // )
-    //   .await
-    // {
-    //   Ok(x) => x,
-    //   Err((code, msg)) => {
-    //     let code = code as u16;
-    //     error!(
-    //       error_code = code,
-    //       error_message = msg.as_str(),
-    //       "Error calling canister_main_create"
-    //     );
-    //     return Err(EgoError { code, msg });
-    //   }
-    // };
-    //
-    // Ok(true)
   }
 }

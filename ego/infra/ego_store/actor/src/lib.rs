@@ -166,13 +166,15 @@ pub async fn wallet_order_new(request: WalletOrderNewRequest) -> Result<WalletOr
 
 
 /********************  for ego_tenant  ********************/
-// TODO: wallet_cycle_charge
 #[update(name = "wallet_cycle_charge", guard = "user_guard")]
 #[candid_method(update, rename = "wallet_cycle_charge")]
 pub fn wallet_cycle_charge(request: WalletCycleChargeRequest) -> Result<WalletCycleChargeResponse, EgoError> {
   ic_cdk::println!("ego_store: wallet_cycle_charge");
 
-  match EgoStoreService::wallet_cycle_charge(request.wallet_id, request.cycle) {
+  // the tenant id or something else
+  let operator = caller();
+
+  match EgoStoreService::wallet_cycle_charge(request.wallet_id, request.cycle, operator, request.comment) {
     Ok(ret) => Ok(WalletCycleChargeResponse { ret }),
     Err(e) => Err(e)
   }
@@ -197,7 +199,10 @@ pub async fn app_main_release(request: AppMainReleaseRequest) -> Result<AppMainR
 pub fn wallet_order_notify(request: WalletOrderNotifyRequest) -> Result<WalletOrderNotifyResponse, EgoError> {
   ic_cdk::println!("ego_store: wallet_order_notify");
 
-  match EgoStoreService::wallet_order_notify(request.memo) {
+  // the ego_ledger id
+  let operator = caller();
+
+  match EgoStoreService::wallet_order_notify(request.memo, operator) {
     Ok(ret) => Ok(WalletOrderNotifyResponse { ret }),
     Err(e) => Err(e),
   }

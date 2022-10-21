@@ -7,6 +7,7 @@ use serde::Serialize;
 pub struct WalletCycleChargeRequest {
   pub wallet_id: Principal,
   pub cycle: u128,
+  pub comment: String
 }
 
 #[derive(CandidType, Deserialize, Serialize)]
