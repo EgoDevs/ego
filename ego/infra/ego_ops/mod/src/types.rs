@@ -45,3 +45,9 @@ pub struct AdminAppDeployRequest {
 pub struct AdminAppDeployResponse {
   pub ret: bool
 }
+
+#[derive(CandidType, Deserialize)]
+pub struct AdminWalletProviderAddRequest {
+  pub wallet_provider: Principal,
+  pub wallet_app_id: AppId
+}

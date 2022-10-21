@@ -15,6 +15,7 @@ candid = "0.7.14"
 serde = "1.0.136"
 async-trait = "0.1.57"
 md5 = "0.7.0"
+tracing = "0.1.29"
 ego_types = { path = "../../../lib/ego_types"}
 ego_dev_mod = {path = "../../ego_dev/mod"}
 ego_store_mod = {path = "../../ego_store/mod"}

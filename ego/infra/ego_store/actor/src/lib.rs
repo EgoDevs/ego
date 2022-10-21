@@ -222,6 +222,8 @@ pub fn admin_ego_tenant_add(req: AdminEgoTenantAddRequest) -> Result<AdminEgoTen
 pub fn admin_wallet_provider_add(req: AdminWalletProviderAddRequest) -> Result<AdminWalletProviderAddResponse, EgoError> {
   ic_cdk::println!("ego_store: admin_wallet_provider_add");
 
+  ic_cdk::println!("wallet_provider: {}, app_id: {}", req.wallet_provider, req.wallet_app_id);
+
   match EgoStoreService::admin_wallet_provider_add(&req.wallet_provider, &req.wallet_app_id) {
     Ok(ret) => Ok(AdminWalletProviderAddResponse { ret }),
     Err(e) => Err(e),
@@ -246,6 +248,8 @@ pub async fn wallet_main_new(req: WalletMainNewRequest) -> Result<WalletMainNewR
   ic_cdk::println!("ego-store: wallet_main_new");
 
   let wallet_provider = caller();
+
+  ic_cdk::println!("wallet_provider is {}", wallet_provider);
 
   let app_id = EGO_STORE.with(|ego_store| {
     match ego_store

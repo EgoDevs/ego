@@ -27,4 +27,8 @@ impl EgoOps {
   pub fn app_canister_exists(&self, app_id: AppId) -> bool {
     self.canisters.contains_key(&app_id)
   }
+
+  pub fn app_canister_get(&self, app_id: AppId) -> &Vec<Principal> {
+    self.canisters.get(&app_id).unwrap()
+  }
 }

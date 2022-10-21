@@ -11,6 +11,7 @@ import { idlFactory } from '@/idls/ego_ops.idl';
 import { identity } from '@/settings/identity';
 import { Principal } from '@dfinity/principal';
 import { ActorSubclass } from '@dfinity/agent';
+import {DeployMode} from "@/idls/ego_dev";
 
 const ego_file_wasm = fs.readFileSync(
   `${[process.cwd()]}` + '/artifacts/ego_file/ego_file_opt.wasm',
@@ -67,11 +68,12 @@ export const opsPostInstall = async () => {
     'astrox_controller',
     version,
     { 'System' : null },
+    {'DEDICATED': null},
     astrox_wasm,
   );
 
   console.log(`4. release omni_wallet canister\n`);
-  await admin_app_create('omni_wallet', 'omni_wallet', version, {'Vault': null}, omni_wallet);
+  await admin_app_create('omni_wallet', 'omni_wallet', version, {'Vault': null}, {'DEDICATED': null}, omni_wallet);
 };
 
 const canister_registers = async () => {
@@ -121,8 +123,9 @@ const admin_app_create = async (
   name: string,
   version: any,
   category: Category,
+  deploy_mode: DeployMode,
   backend_data: ArrayLike<number>,
-  frontend_canister_id?: Principal,
+  frontend_canister_id?: Principal
 ) => {
   let opsOperator = await getOperator<EgoOpsService>('ego_ops');
 
@@ -141,6 +144,7 @@ const admin_app_create = async (
     backend_data: Array.from(new Uint8Array(backend_data)),
     backend_hash,
     frontend: frontend_canister_id ? [frontend_canister_id] : [],
+    deploy_mode
   });
   console.log(resp1);
 };

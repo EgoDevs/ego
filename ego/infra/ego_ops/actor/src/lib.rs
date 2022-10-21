@@ -10,10 +10,10 @@ use ic_cdk::export::candid::{CandidType, Deserialize};
 use serde::Serialize;
 use ego_ops_mod::c2c::ego_cron::EgoCron;
 use ego_ops_mod::c2c::ego_dev::EgoDev;
-use ego_ops_mod::c2c::ego_store::EgoStore;
+use ego_ops_mod::c2c::ego_store::{EgoStore, TEgoStore};
 use ego_ops_mod::c2c::ego_tenant::EgoTenant;
 use ego_ops_mod::c2c::ego_user::EgoUser;
-use ego_ops_mod::types::{AdminAppCreateRequest, AdminAppCreateResponse, CanisterMainListResponse, CanisterMainRegisterRequest};
+use ego_ops_mod::types::{AdminAppCreateRequest, AdminAppCreateResponse, AdminWalletProviderAddRequest, CanisterMainListResponse, CanisterMainRegisterRequest};
 
 use ego_users::inject_ego_users;
 
@@ -64,7 +64,7 @@ fn post_upgrade() {
 /********************   owner method   ********************/
 #[update(name = "canister_main_register", guard = "owner_guard")]
 #[candid_method(update, rename = "canister_main_register")]
-fn canister_main_register(req: CanisterMainRegisterRequest) -> Result<(), EgoError> {
+pub fn canister_main_register(req: CanisterMainRegisterRequest) -> Result<(), EgoError> {
   ic_cdk::println!("ego-ops: canister_main_register");
 
   EgoOpsService::canister_main_register(req.app_id, req.canister_id);
@@ -75,7 +75,7 @@ fn canister_main_register(req: CanisterMainRegisterRequest) -> Result<(), EgoErr
 /// register the initial canister into the ego_ops
 #[update(name = "canister_relation_update", guard = "owner_guard")]
 #[candid_method(update, rename = "canister_relation_update")]
-async fn canister_relation_update() -> Result<(), EgoError> {
+pub async fn canister_relation_update() -> Result<(), EgoError> {
   ic_cdk::println!("ego-ops: canister_relation_update");
 
   let ego_user = EgoUser::new();
@@ -89,11 +89,9 @@ async fn canister_relation_update() -> Result<(), EgoError> {
   Ok(())
 }
 
-
-
 #[query(name = "canister_main_list", guard = "owner_guard")]
 #[candid_method(query, rename = "canister_main_list")]
-async fn canister_main_list() -> Result<CanisterMainListResponse, EgoError> {
+pub async fn canister_main_list() -> Result<CanisterMainListResponse, EgoError> {
   ic_cdk::println!("ego-ops: canister_main_list");
 
   EGO_OPS.with(|ego_ops| {
@@ -104,7 +102,7 @@ async fn canister_main_list() -> Result<CanisterMainListResponse, EgoError> {
 /// register ego infra app
 #[update(name = "admin_app_create", guard = "owner_guard")]
 #[candid_method(update, rename = "admin_app_create")]
-async fn admin_app_create(req: AdminAppCreateRequest) -> Result<AdminAppCreateResponse, EgoError> {
+pub async fn admin_app_create(req: AdminAppCreateRequest) -> Result<AdminAppCreateResponse, EgoError> {
   ic_cdk::println!("ego-ops: admin_app_create");
 
   match EgoOpsService::admin_app_create(req.app_id, req.name, req.version, req.category, req.logo, req.description, req.backend_data, req.backend_hash, req.frontend, req.deploy_mode).await {
@@ -113,4 +111,19 @@ async fn admin_app_create(req: AdminAppCreateRequest) -> Result<AdminAppCreateRe
     },
     Err(e) => Err(e)
   }
+}
+
+#[update(name = "admin_wallet_provider_add", guard = "owner_guard")]
+#[candid_method(update, rename = "admin_wallet_provider_add")]
+pub async fn admin_wallet_provider_add(req: AdminWalletProviderAddRequest) -> Result<(), EgoError> {
+  ic_cdk::println!("ego_ops: admin_wallet_provider_add");
+  let ego_store = EgoStore::new();
+
+  let ego_store_id = EGO_OPS.with(|ego_ops| {
+    ego_ops.borrow().app_canister_get("ego_store".to_string()).get(0).unwrap().clone()
+  });
+
+  ego_store.admin_wallet_provider_add(ego_store_id, req.wallet_provider, req.wallet_app_id).await?;
+
+  Ok(())
 }

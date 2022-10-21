@@ -70,7 +70,7 @@ impl EgoOpsService {
 
   pub async fn admin_app_create(app_id: AppId, name: String, version: Version, category: Category, logo: String, description: String, backend_data: Vec<u8>, backend_hash: String, frontend: Option<Principal>, deploy_mode: DeployMode) -> Result<bool, EgoError> {
     if get_md5(&backend_data) == backend_hash {
-      let ego_dev_id = EGO_OPS.with(|ego_ops| ego_ops.borrow().canisters.get("ego_dev").unwrap().get(0).unwrap().clone());
+      let ego_dev_id = EGO_OPS.with(|ego_ops| ego_ops.borrow().app_canister_get("ego_dev".to_string()).get(0).unwrap().clone());
 
       let ego_dev = EgoDev::new();
       ego_dev.admin_app_create(ego_dev_id, app_id.clone(), name, version, category, logo, description, backend_data, backend_hash, frontend, deploy_mode).await?;
