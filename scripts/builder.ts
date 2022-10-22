@@ -158,17 +158,17 @@ function runBuildRust(ego: ProjectConfig) {
           CAT_DIR="${process.cwd()}/ego/${ego.category}"
           TARGET="wasm32-unknown-unknown"
           cargo build --manifest-path "$EGO_DIR/actor/Cargo.toml" --target $TARGET --release -j1
-          cargo install ic-cdk-optimizer --version 0.3.2
+          cargo install ic-wasm
           STATUS=$?
           echo "$PARENT_DIR/target/$TARGET/release/${ego.package}.wasm"
           if [ "$STATUS" -eq "0" ]; then
-                 ic-cdk-optimizer \
+                 ic-wasm \
                  "$PARENT_DIR/target/$TARGET/release/${ego.package}.wasm" \
-                 -o "${shouldSaveName}"
+                 -o "${shouldSaveName}" shrink
           
              true
            else
-             echo Could not install ic-cdk-optimizer.
+             echo Could not install ic-wasm.
              false
            fi
           `);
