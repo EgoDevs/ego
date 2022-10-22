@@ -9,6 +9,7 @@ use serde::Deserialize;
 use tracing::error;
 
 use ego_types::ego_error::EgoError;
+use crate::consts::INSTALL_CANISTER_CYCLES_FEE;
 
 pub type Cycles = u128;
 
@@ -50,10 +51,11 @@ async fn code_install(canister_id: Principal, mode: InstallMode, wasm_module: Ve
     arg: b" ".to_vec(),
   };
 
-  let (_, ): ((), ) = match api::call::call(
+  let (_, ): ((), ) = match api::call::call_with_payment128(
     Principal::management_canister(),
     "install_code",
     (install_config, ),
+    INSTALL_CANISTER_CYCLES_FEE
   )
     .await
   {
