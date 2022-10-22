@@ -31,7 +31,7 @@
     "ego:upgrade:live": "cross-env NODE_ENV=production node ./dist/deployer.js --upgrade",
     "ego:post_install:project:live": "cross-env NODE_ENV=production NODE_OPTIONS=--experimental-vm-modules jest --verbose -t",
     "ego:deploy": "pnpm ego:pre && pnpm ego:bootstrap && pnpm ego:build && pnpm ego:install && pnpm ego:post_install:project ego_ops",
-    "ego:deploy:live": "pnpm ego:create:live && pnpm ego:install:live && ego:post_install:project:live ego_ops",
+    "ego:deploy:live": "pnpm ego:create:live && pnpm ego:install:live && pnpm ego:post_install:project:live ego_ops",
     "ego:silo": "pnpm ego:post_install:project silo",
     "ego:silo:live": "pnpm ego:post_install:project:live silo"
   },
