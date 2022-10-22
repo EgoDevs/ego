@@ -393,7 +393,10 @@ async function runInstall() {
 
             const result = await walletActor.wallet_call({
               canister: Principal.fromHex(''),
-              cycles: BigInt(8_000_000_000_000),
+              cycles:
+                f.package === 'ego_tenant'
+                  ? BigInt(16_000_000_000_000)
+                  : BigInt(1_200_000_000_000),
               method_name: 'install_code',
               args,
             });
@@ -500,7 +503,10 @@ async function runReInstall() {
 
             const result = await walletActor.wallet_call({
               canister: Principal.fromHex(''),
-              cycles: BigInt(8_000_000_000_000),
+              cycles:
+                f.package === 'ego_tenant'
+                  ? BigInt(16_000_000_000_000)
+                  : BigInt(1_200_000_000_000),
               method_name: 'install_code',
               args,
             });
@@ -603,7 +609,7 @@ async function runUpgrade() {
 
             const result = await walletActor.wallet_call({
               canister: Principal.fromHex(''),
-              cycles: BigInt(8_000_000_000_000),
+              cycles: BigInt(200_000_000_000),
               method_name: 'install_code',
               args,
             });
