@@ -7,6 +7,7 @@ import { ActorSubclass } from '@dfinity/agent';
 import { Principal } from '@dfinity/principal';
 import fs from 'fs';
 import path from 'path';
+import { isProduction } from '@/settings/env';
 
 async function getStoreActor<T>(
   canisterName: string,
@@ -24,20 +25,38 @@ export const egoStoreCanisterId = Principal.fromText(
 );
 
 export const storePostInstall = async () => {
-  const actor = await getStoreActor<EgoStoreService>('ego_store');
+  if (!isProduction) {
+    const actor = await getStoreActor<EgoStoreService>('ego_store');
+    const jsonFile = JSON.parse(
+      fs
+        .readFileSync(
+          path.resolve(
+            `${[process.cwd()]}` +
+              '../../../me_v1/.dfx/local/canister_ids.json',
+          ),
+        )
+        .toString(),
+    );
 
-  const jsonFile = JSON.parse(
-    fs
-      .readFileSync(
-        path.resolve(
-          `${[process.cwd()]}` + '../../../me_v1/.dfx/local/canister_ids.json',
-        ),
-      )
-      .toString(),
-  );
+    await actor.admin_wallet_provider_add({
+      wallet_app_id: 'astrox_controller',
+      wallet_provider: Principal.fromText(jsonFile['me_v1']['local']),
+    });
+  } else {
+    const actor = await getStoreActor<EgoStoreService>('ego_store');
+    const jsonFile = JSON.parse(
+      fs
+        .readFileSync(
+          path.resolve(
+            `${[process.cwd()]}` + '../../../me_v1/canister_ids.json',
+          ),
+        )
+        .toString(),
+    );
 
-  await actor.admin_wallet_provider_add({
-    wallet_app_id: 'astrox_controller',
-    wallet_provider: Principal.fromText(jsonFile['me_v1']['local']),
-  });
+    await actor.admin_wallet_provider_add({
+      wallet_app_id: 'astrox_controller',
+      wallet_provider: Principal.fromText(jsonFile['me_v1']['ic']),
+    });
+  }
 };

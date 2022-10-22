@@ -260,8 +260,8 @@ pub async fn wallet_main_new(req: WalletMainNewRequest) -> Result<WalletMainNewR
     match ego_store
       .borrow().wallet_providers.get(&wallet_provider){
       None => Err(EgoError::from(EgoStoreErr::WalletProviderNotExists)),
-      Some(walelet_provider) => {
-        Ok(walelet_provider.app_id.clone())
+      Some(provider) => {
+        Ok(provider.app_id.clone())
       }
     }
   })?;
