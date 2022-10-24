@@ -210,6 +210,12 @@ impl EgoStoreService {
     })
   }
 
+  pub fn admin_wallet_cycle_recharge(wallet_id: Principal, cycle: u128, operator: Principal, comment: String) -> Result<bool, EgoError> {
+    EGO_STORE.with(|ego_store| {
+      ego_store.borrow_mut().wallet_cycle_recharge(wallet_id, cycle, operator, comment)
+    })
+  }
+
   pub fn app_main_release(app: EgoStoreApp) -> Result<bool, EgoError> {
     EGO_STORE.with(|ego_store| {
       ego_store

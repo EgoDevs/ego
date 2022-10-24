@@ -1,6 +1,6 @@
 use candid::candid_method;
 use ic_cdk::export::candid::{CandidType, Deserialize};
-use ic_cdk::storage;
+use ic_cdk::{call, storage};
 use ic_cdk_macros::*;
 use serde::Serialize;
 
@@ -244,6 +244,17 @@ async fn ego_store_setup(req: EgoStoreSetupRequest) -> Result<(), EgoError> {
   role_user_add(req.ego_cron_id)?;
 
   Ok(())
+}
+
+#[update(name = "admin_wallet_cycle_recharge", guard = "owner_guard")]
+#[candid_method(update, rename = "admin_wallet_cycle_recharge")]
+pub fn admin_wallet_cycle_recharge(req: AdminWalletCycleRechargeRequest) -> Result<bool, EgoError> {
+  ic_cdk::println!("ego_ops: admin_wallet_cycle_recharge");
+
+  // the ego_ops id
+  let operator = caller();
+
+  EgoStoreService::admin_wallet_cycle_recharge(req.wallet_id, req.cycle, operator, req.comment)
 }
 
 /********************  wallet provider methods  ********************/

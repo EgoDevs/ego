@@ -157,8 +157,7 @@ impl EgoStore {
             // TODO: Add Real Recharge Logic
             let cycle = (order.amount * 1_000_000f32) as u128;
 
-            wallet.cycle_recharge(cycle, operator,  format!("wallet cycle recharge, order memo {}", memo.0));
-            Ok(true)
+            self.wallet_cycle_recharge(wallet.wallet_id, cycle, operator, format!("wallet cycle recharge, order memo {}", memo.0))?
           }
         }
       }
@@ -171,6 +170,15 @@ impl EgoStore {
       None => Err(EgoStoreErr::WalletNotExists.into()),
       Some(wallet) => {
         Ok(wallet.cycle_charge(cycle, operator, comment))
+      }
+    }
+  }
+
+  pub fn wallet_cycle_recharge(&mut self, wallet_id: Principal, cycle: u128, operator: Principal, comment: String) -> Result<bool, EgoError> {
+    match self.wallets.get_mut(&wallet_id) {
+      None => Err(EgoStoreErr::WalletNotExists.into()),
+      Some(wallet) => {
+        Ok(wallet.cycle_recharge(cycle, operator, comment))
       }
     }
   }

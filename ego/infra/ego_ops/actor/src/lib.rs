@@ -127,3 +127,18 @@ pub async fn admin_wallet_provider_add(req: AdminWalletProviderAddRequest) -> Re
 
   Ok(())
 }
+
+#[update(name = "admin_wallet_cycle_recharge", guard = "owner_guard")]
+#[candid_method(update, rename = "admin_wallet_cycle_recharge")]
+pub async fn admin_wallet_cycle_recharge(req: AdminWalletProviderAddRequest) -> Result<(), EgoError> {
+  ic_cdk::println!("ego_ops: admin_wallet_provider_add");
+  let ego_store = EgoStore::new();
+
+  let ego_store_id = EGO_OPS.with(|ego_ops| {
+    ego_ops.borrow().app_canister_get("ego_store".to_string()).get(0).unwrap().clone()
+  });
+
+  ego_store.admin_wallet_provider_add(ego_store_id, req.wallet_provider, req.wallet_app_id).await?;
+
+  Ok(())
+}

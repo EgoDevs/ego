@@ -232,3 +232,11 @@ pub struct EgoStoreSetupRequest {
   pub ego_dev_id: Principal,
   pub ego_cron_id: Principal
 }
+
+#[derive(CandidType, Deserialize, Serialize)]
+pub struct AdminWalletCycleRechargeRequest {
+  pub wallet_id: Principal,
+  pub cycle: u128,
+  pub comment: String
+}
+
