@@ -99,6 +99,22 @@ impl EgoStore {
     }
   }
 
+  pub fn wallet_app_get(&self, wallet_id: &Principal, app_id: AppId) -> Result<UserApp, EgoError> {
+    match self.wallets.get(wallet_id) {
+      None => Err(EgoStoreErr::WalletNotExists.into()),
+      Some(wallet) => {
+        match wallet.apps.get(&app_id) {
+          None => {
+            Err(EgoStoreErr::AppNotInstall.into())
+          }
+          Some(user_app) => {
+            Ok(user_app.clone())
+          }
+        }
+      }
+    }
+  }
+
   pub fn wallet_app_install(&mut self, wallet_id: &Principal, app_id: &AppId, user_app: &UserApp) {
     self.wallets.get_mut(wallet_id).unwrap().app_install(app_id, user_app);
   }
@@ -156,8 +172,7 @@ impl EgoStore {
           Some(wallet) => {
             // TODO: Add Real Recharge Logic
             let cycle = (order.amount * 1_000_000f32) as u128;
-
-            self.wallet_cycle_recharge(wallet.wallet_id, cycle, operator, format!("wallet cycle recharge, order memo {}", memo.0))?
+            Ok(wallet.cycle_recharge(cycle, operator, format!("wallet cycle recharge, order memo {}", memo.0)))
           }
         }
       }

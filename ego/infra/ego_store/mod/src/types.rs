@@ -114,16 +114,6 @@ pub struct AppMainGetResponse {
 }
 
 #[derive(CandidType, Deserialize, Serialize)]
-pub struct AddBucketRequest {
-  pub bucket_id: Principal,
-}
-
-#[derive(CandidType, Deserialize, Serialize)]
-pub struct AddBucketResponse {
-  pub ret: bool,
-}
-
-#[derive(CandidType, Deserialize, Serialize)]
 pub struct WalletOrderNotifyRequest {
   pub memo: Memo,
 }
@@ -134,14 +124,15 @@ pub struct WalletOrderNotifyResponse {
 }
 
 #[derive(CandidType, Deserialize, Serialize)]
-pub struct CreateOrderRequest {
+pub struct WalletCanisterTrackRequest {
   pub app_id: AppId,
 }
 
 #[derive(CandidType, Deserialize, Serialize)]
-pub struct CreateOrderResponse {
-  pub order: Order,
+pub struct WalletCanisterUnTrackRequest {
+  pub app_id: AppId,
 }
+
 
 #[derive(CandidType, Deserialize, Serialize)]
 pub struct WalletOrderNewRequest {

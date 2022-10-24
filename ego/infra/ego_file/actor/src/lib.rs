@@ -10,8 +10,9 @@ use ic_cdk::api::stable::{stable64_grow, stable64_read, stable64_write};
 use ego_file_mod::storage::{DEFAULT_FILE_SIZE, Storage, HEADER_SIZE, WASM_PAGE_SIZE};
 use ego_types::ego_error::EgoError;
 use ego_users::inject_ego_users;
+use ego_macros::inject_balance_get;
 
-
+inject_balance_get!();
 inject_ego_users!();
 
 

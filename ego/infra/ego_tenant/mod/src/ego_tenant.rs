@@ -31,7 +31,9 @@ impl EgoTenant {
   }
 
   pub fn tasks_get(&self, sentinel: u64) -> Vec<Task>{
-    self.tasks.values().filter(|&task| task.next_check_time <= sentinel).cloned().collect()
+    self.tasks.values().filter(|&task| {
+      task.next_check_time <= sentinel
+    }).cloned().collect()
   }
 
   pub fn task_update(&mut self, canister_id: Principal, current_cycle: u128, next_check_time: u64) {

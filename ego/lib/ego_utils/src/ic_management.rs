@@ -149,6 +149,8 @@ pub async fn canister_code_upgrade(canister_id: Principal, wasm_module: Vec<u8>)
 }
 
 pub async fn canister_status_get(canister_id: Principal) -> Result<CanisterStatusResponse, EgoError> {
+  ic_cdk::println!("canister_status_get");
+
   let req = CanisterIdRecord {
     canister_id,
   };
@@ -158,7 +160,10 @@ pub async fn canister_status_get(canister_id: Principal) -> Result<CanisterStatu
     "canister_status",
     (req, ),
   ).await {
-    Ok(x) => x,
+    Ok(x) => {
+      ic_cdk::println!("canister_status_get success {:?}", x);
+      x
+    },
     Err((code, msg)) => {
       let code = code as u16;
       error!(

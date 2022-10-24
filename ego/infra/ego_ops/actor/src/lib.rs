@@ -1,4 +1,4 @@
-use ic_cdk::{storage};
+use ic_cdk::{id, storage};
 use ic_cdk_macros::*;
 use ego_ops_mod::service::EgoOpsService;
 
@@ -16,7 +16,9 @@ use ego_ops_mod::c2c::ego_user::EgoUser;
 use ego_ops_mod::types::{AdminAppCreateRequest, AdminAppCreateResponse, AdminWalletProviderAddRequest, CanisterMainListResponse, CanisterMainRegisterRequest};
 
 use ego_users::inject_ego_users;
+use ego_macros::inject_balance_get;
 
+inject_balance_get!();
 inject_ego_users!();
 
 
@@ -89,6 +91,19 @@ pub async fn canister_relation_update() -> Result<(), EgoError> {
   Ok(())
 }
 
+#[update(name = "canister_main_track", guard = "owner_guard")]
+#[candid_method(update, rename = "canister_main_track")]
+pub async fn canister_main_track() -> Result<(), EgoError> {
+  ic_cdk::println!("ego-ops: canister_main_track");
+
+  let wallet_id = id();
+  let ego_tenant = EgoTenant::new();
+
+  EgoOpsService::canister_main_track(ego_tenant, wallet_id).await?;
+
+  Ok(())
+}
+
 #[query(name = "canister_main_list", guard = "owner_guard")]
 #[candid_method(query, rename = "canister_main_list")]
 pub async fn canister_main_list() -> Result<CanisterMainListResponse, EgoError> {
@@ -99,7 +114,6 @@ pub async fn canister_main_list() -> Result<CanisterMainListResponse, EgoError> 
   })
 }
 
-/// register ego infra app
 #[update(name = "admin_app_create", guard = "owner_guard")]
 #[candid_method(update, rename = "admin_app_create")]
 pub async fn admin_app_create(req: AdminAppCreateRequest) -> Result<AdminAppCreateResponse, EgoError> {

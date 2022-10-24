@@ -1,4 +1,5 @@
 use ic_cdk::export::Principal;
+use ic_cdk::id;
 use ego_types::app::{AppId, Category, DeployMode};
 use ego_types::ego_error::EgoError;
 use ego_types::version::Version;
@@ -64,6 +65,51 @@ impl EgoOpsService {
     ego_user.role_user_add(ego_ledger_id.clone(), ego_cron_id.clone()).await?;
     ego_cron.task_main_add(ego_cron_id.clone(), ego_ledger_id.clone(), "message_main_notify".to_string(), CronInterval::PerMinute).await?;
 
+
+    Ok(true)
+  }
+
+  pub async fn canister_main_track<T: TEgoTenant>(ego_tenant: T, wallet_id: Principal)  -> Result<bool, EgoError>{
+    let canisters = EGO_OPS.with(|ego_ops| {
+      ego_ops.borrow().canisters.clone()
+    });
+
+    let ego_dev_id = canisters.get("ego_dev").unwrap().get(0).unwrap();
+    let ego_file_ids = canisters.get("ego_file").unwrap();
+
+    let ego_store_id = canisters.get("ego_store").unwrap().get(0).unwrap();
+    let ego_tenant_ids = canisters.get("ego_tenant").unwrap();
+
+    let ego_cron_id = canisters.get("ego_cron").unwrap().get(0).unwrap();
+    let ego_ledger_id = canisters.get("ego_ledger").unwrap().get(0).unwrap();
+
+    let tracker_ego_tenant_id = ego_tenant_ids.get(0).unwrap().clone();
+
+
+    // ego_dev
+    ego_tenant.canister_main_track(tracker_ego_tenant_id, wallet_id,ego_dev_id.clone()).await?;
+
+    // ego_file
+    for ego_file_id in ego_file_ids {
+      ego_tenant.canister_main_track(tracker_ego_tenant_id, wallet_id,ego_file_id.clone()).await?;
+    }
+
+    // ego_store
+    ego_tenant.canister_main_track(tracker_ego_tenant_id, wallet_id,ego_store_id.clone()).await?;
+
+    // ego_tenant
+    for ego_tenant_id in ego_tenant_ids {
+      ego_tenant.canister_main_track(tracker_ego_tenant_id, wallet_id,ego_tenant_id.clone()).await?;
+    }
+
+    // ego_cron
+    ego_tenant.canister_main_track(tracker_ego_tenant_id, wallet_id,ego_cron_id.clone()).await?;
+
+    // ego_ledger
+    ego_tenant.canister_main_track(tracker_ego_tenant_id, wallet_id,ego_ledger_id.clone()).await?;
+
+    // ego_ops
+    ego_tenant.canister_main_track(tracker_ego_tenant_id, wallet_id,wallet_id).await?;
 
     Ok(true)
   }

@@ -14,7 +14,9 @@ use ego_cron_mod::types::{cron_interval, TaskMainAddRequest, TaskMainCancelReque
 use ego_types::ego_error::EgoError;
 
 use ego_users::inject_ego_users;
+use ego_macros::inject_balance_get;
 
+inject_balance_get!();
 inject_ego_users!();
 
 #[derive(Clone, Debug, CandidType, Deserialize)]

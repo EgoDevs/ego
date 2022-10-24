@@ -170,6 +170,56 @@ impl EgoStoreService {
     })
   }
 
+  pub async fn wallet_canister_track<T: TEgoTenant>(ego_tenant: T, wallet_id: Principal, app_id: AppId) -> Result<(), EgoError> {
+    ic_cdk::println!("1 get ego tenant id");
+    let ego_tenant_id = EGO_STORE.with(|ego_store| {
+      ego_store.borrow_mut().tenant_get()
+    })?;
+
+    ic_cdk::println!("2 get user app");
+    let user_app = EGO_STORE.with(|ego_store| {
+      ego_store
+        .borrow().wallet_app_get(&wallet_id, app_id)
+    })?;
+
+    ic_cdk::println!("3 track frontend");
+    if user_app.frontend.is_some() {
+      ego_tenant.canister_main_track(ego_tenant_id, wallet_id, user_app.frontend.unwrap().canister_id).await?;
+    }
+
+    ic_cdk::println!("4 track backend");
+    if user_app.backend.is_some() {
+      ego_tenant.canister_main_track(ego_tenant_id, wallet_id, user_app.backend.unwrap().canister_id).await?;
+    }
+
+    Ok(())
+  }
+
+  pub async fn wallet_canister_untrack<T: TEgoTenant>(ego_tenant: T, wallet_id: Principal, app_id: AppId) -> Result<(), EgoError> {
+    ic_cdk::println!("1 get ego tenant id");
+    let ego_tenant_id = EGO_STORE.with(|ego_store| {
+      ego_store.borrow_mut().tenant_get()
+    })?;
+
+    ic_cdk::println!("2 get user app");
+    let user_app = EGO_STORE.with(|ego_store| {
+      ego_store
+        .borrow().wallet_app_get(&wallet_id, app_id)
+    })?;
+
+    ic_cdk::println!("3 untrack frontend");
+    if user_app.frontend.is_some() {
+      ego_tenant.canister_main_untrack(ego_tenant_id, wallet_id, user_app.frontend.unwrap().canister_id).await?;
+    }
+
+    ic_cdk::println!("4 untrack backend");
+    if user_app.backend.is_some() {
+      ego_tenant.canister_main_untrack(ego_tenant_id, wallet_id, user_app.backend.unwrap().canister_id).await?;
+    }
+
+    Ok(())
+  }
+
   pub fn wallet_order_list(wallet_id: Principal) -> Result<Vec<Order>, EgoError> {
     EGO_STORE.with(|ego_store| {
       ego_store

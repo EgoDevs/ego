@@ -24,3 +24,4 @@ serde_bytes = "0.11"
 ego_ledger_mod = { path = "../mod" }
 ego_types = { path = "../../../lib/ego_types"}
 ego_users = { path = "../../../lib/ego_users" }
+ego_macros = { path = "../../../lib/ego_macros" }

@@ -62,7 +62,10 @@ export const opsPostInstall = async () => {
   console.log(`2. canister_relation_update\n`);
   await opsOperator.canister_relation_update();
 
-  console.log(`3. release astrox_controller canister\n`);
+  console.log(`3. canister_main_track\n`);
+  await opsOperator.canister_main_track();
+
+  console.log(`4. release astrox_controller canister\n`);
   await admin_app_create(
     'astrox_controller',
     'astrox_controller',
@@ -72,7 +75,7 @@ export const opsPostInstall = async () => {
     astrox_wasm,
   );
 
-  console.log(`4. release omni_wallet canister\n`);
+  console.log(`5. release omni_wallet canister\n`);
   await admin_app_create(
     'omni_wallet',
     'omni_wallet',

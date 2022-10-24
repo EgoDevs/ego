@@ -10,6 +10,7 @@ pub trait TEgoStore {
   async fn wallet_cycle_charge(&self, store_id: Principal, wallet_id: Principal, cycle: u128, comment: String) -> Result<bool, EgoError>;
 }
 
+#[derive(Clone)]
 pub struct EgoStore {
 
 }

@@ -1,0 +1,13 @@
+[package]
+name = "ego_macros"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+path = "src/mod.rs"
+
+[dependencies]
+candid = "0.7.10"
+ic-cdk = "0.5"
+ic-types = "0.4.0"
+serde = "1.0"

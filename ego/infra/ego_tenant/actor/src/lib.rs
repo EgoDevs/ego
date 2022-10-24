@@ -13,7 +13,9 @@ use ego_tenant_mod::c2c::ego_store::EgoStore;
 use ego_tenant_mod::state::EGO_TENANT;
 use ego_types::ego_error::EgoError;
 use ego_users::inject_ego_users;
+use ego_macros::inject_balance_get;
 
+inject_balance_get!();
 inject_ego_users!();
 
 
@@ -119,9 +121,19 @@ fn canister_main_untrack(req: CanisterMainUnTrackRequest) -> Result<(), EgoError
 async fn message_main_notify() -> Result<(), EgoError> {
     ic_cdk::println!("ego-tenant: message_main_notify");
 
-    let management = IcManagement::new();
-    let ego_store = EgoStore::new();
-    EgoTenantService::canister_cycles_check(management, ego_store, time()).await?;
+    let sentinel = time();
+    let tasks = EGO_TENANT.with(|ego_tenant| ego_tenant.borrow_mut().tasks_get(sentinel));
+
+    for task in tasks {
+        let management = IcManagement::new();
+        let ego_store = EgoStore::new();
+        match EgoTenantService::canister_cycles_check(management, ego_store, sentinel, task).await {
+            Ok(_) => {}
+            Err(e) => {
+                ic_cdk::println!("canister_cycles_check failed: {:?}", e);
+            }
+        }
+    }
 
     Ok(())
 }

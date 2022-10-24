@@ -51,3 +51,4 @@ pub struct AdminWalletProviderAddRequest {
   pub wallet_provider: Principal,
   pub wallet_app_id: AppId
 }
+

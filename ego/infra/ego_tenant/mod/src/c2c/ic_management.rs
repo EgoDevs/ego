@@ -18,6 +18,7 @@ pub trait TIcManagement {
   async fn canister_cycle_top_up(&self, canister_id: Principal, cycles_to_use: Cycles) -> Result<(), EgoError>;
 }
 
+#[derive(Clone)]
 pub struct IcManagement {
 }
 

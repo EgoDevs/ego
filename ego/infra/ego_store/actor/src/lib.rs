@@ -12,8 +12,12 @@ use ego_store_mod::types::*;
 use ego_types::app::App;
 use ego_types::ego_error::EgoError;
 use ego_users::inject_ego_users;
+use ego_macros::inject_balance_get;
+
+inject_balance_get!();
 
 inject_ego_users!();
+
 
 
 #[derive(Clone, Debug, CandidType, Deserialize)]
@@ -139,6 +143,30 @@ pub fn wallet_app_remove(req: WalletAppRemoveRequest) -> Result<WalletAppRemoveR
   }
 }
 
+#[update(name = "wallet_canister_track", guard = "user_guard")]
+#[candid_method(update, rename = "wallet_canister_track")]
+pub async fn wallet_canister_track(req: WalletCanisterTrackRequest) -> Result<(), EgoError> {
+  ic_cdk::println!("ego_tenant: canister_main_track");
+
+  let ego_tenant = EgoTenant::new();
+  let wallet_id = caller();
+
+  EgoStoreService::wallet_canister_track(ego_tenant, wallet_id, req.app_id).await?;
+  Ok(())
+}
+
+#[update(name = "wallet_canister_untrack", guard = "user_guard")]
+#[candid_method(update, rename = "wallet_canister_untrack")]
+pub async fn wallet_canister_untrack(req: WalletCanisterUnTrackRequest) -> Result<(), EgoError> {
+  ic_cdk::println!("ego_tenant: canister_main_untrack");
+
+  let ego_tenant = EgoTenant::new();
+  let wallet_id = caller();
+
+  EgoStoreService::wallet_canister_untrack(ego_tenant, wallet_id, req.app_id).await?;
+  Ok(())
+}
+
 
 #[query(name = "wallet_order_list")]
 #[candid_method(query, rename = "wallet_order_list")]
@@ -240,8 +268,13 @@ pub fn admin_wallet_provider_add(req: AdminWalletProviderAddRequest) -> Result<A
 async fn ego_store_setup(req: EgoStoreSetupRequest) -> Result<(), EgoError> {
   ic_cdk::println!("ego_store: ego_store_setup");
 
+  // the ego_ops id
+  let operator = caller();
+
   role_user_add(req.ego_dev_id)?;
   role_user_add(req.ego_cron_id)?;
+
+  EgoStoreService::wallet_main_register(operator, operator)?;
 
   Ok(())
 }
