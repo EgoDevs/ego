@@ -1,7 +1,7 @@
 use ic_cdk::export::candid::{ Deserialize};
 use candid::{CandidType, Principal};
-
 use serde::Serialize;
+
 
 /// OwnerTrait, keep it simple
 pub trait OwnerTrait {
