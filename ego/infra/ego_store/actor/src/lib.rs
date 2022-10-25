@@ -1,6 +1,6 @@
 use candid::candid_method;
 use ic_cdk::export::candid::{CandidType, Deserialize};
-use ic_cdk::{call, storage};
+use ic_cdk::{storage};
 use ic_cdk_macros::*;
 use serde::Serialize;
 
@@ -15,10 +15,7 @@ use ego_users::inject_ego_users;
 use ego_macros::inject_balance_get;
 
 inject_balance_get!();
-
 inject_ego_users!();
-
-
 
 #[derive(Clone, Debug, CandidType, Deserialize)]
 pub struct InitArg {

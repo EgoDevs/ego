@@ -1,5 +1,4 @@
 use ic_cdk::export::Principal;
-use ic_cdk::id;
 use ego_types::app::{AppId, Category, DeployMode};
 use ego_types::ego_error::EgoError;
 use ego_types::version::Version;

@@ -29,5 +29,6 @@ serde_cbor = "0.11"
 serde_with = "1.6.2"
 ego_tenant_mod = { path = "../mod" }
 ego_users = { path = "../../../lib/ego_users"}
+ego_registry = { path = "../../../lib/ego_registry"}
 ego_types = { path = "../../../lib/ego_types"}
 ego_macros = { path = "../../../lib/ego_macros" }

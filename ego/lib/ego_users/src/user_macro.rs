@@ -44,10 +44,10 @@ macro_rules! inject_ego_users {
         }
 
         use ic_cdk::export::Principal;
-        use ego_users::users::User;
+        use ego_users::user::User;
         use std::cell::RefCell;
-        use ego_users::users::OwnerTrait;
-        use ego_users::users::UserTrait;
+        use ego_users::user::OwnerTrait;
+        use ego_users::user::UserTrait;
         use ic_cdk::caller;
         use ic_cdk::trap;
 

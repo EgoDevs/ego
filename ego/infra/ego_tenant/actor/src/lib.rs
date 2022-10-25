@@ -14,9 +14,11 @@ use ego_tenant_mod::state::EGO_TENANT;
 use ego_types::ego_error::EgoError;
 use ego_users::inject_ego_users;
 use ego_macros::inject_balance_get;
+use ego_registry::inject_ego_registry;
 
 inject_balance_get!();
 inject_ego_users!();
+inject_ego_registry!();
 
 
 #[derive(Clone, Debug, CandidType, Deserialize)]

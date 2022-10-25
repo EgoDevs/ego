@@ -16,10 +16,13 @@ members = [
     "infra/ego_tenant/mod",
     "infra/ego_dev/actor",
     "infra/ego_dev/mod",
+    "infra/ego_log/actor",
+    "infra/ego_log/mod",
     "lib/ego_utils",
     "lib/ego_users",
     "lib/ego_types",
     "lib/ego_macros",
+    "lib/ego_registry",
 ]
 
 [profile.release]
