@@ -1,6 +1,6 @@
-use ic_cdk::export::candid::{CandidType, Deserialize};
 use ego_types::app::FileId;
 use ego_types::ego_error::EgoError;
+use ic_cdk::export::candid::{CandidType, Deserialize};
 
 #[derive(CandidType, Deserialize, Clone, Debug)]
 pub struct FileMainWriteRequest {
@@ -13,7 +13,6 @@ pub struct FileMainWriteRequest {
 pub struct FileMainWriteResponse {
     pub ret: bool,
 }
-
 
 #[derive(CandidType, Deserialize, Clone, Debug)]
 pub struct FileMainReadRequest {
