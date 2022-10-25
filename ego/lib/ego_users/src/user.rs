@@ -1,7 +1,6 @@
-use ic_cdk::export::candid::{ Deserialize};
 use candid::{CandidType, Principal};
+use ic_cdk::export::candid::Deserialize;
 use serde::Serialize;
-
 
 /// OwnerTrait, keep it simple
 pub trait OwnerTrait {
@@ -42,7 +41,10 @@ pub struct User {
 
 impl Default for User {
     fn default() -> Self {
-        User { owners: vec![], users: vec![] }
+        User {
+            owners: vec![],
+            users: vec![],
+        }
     }
 }
 

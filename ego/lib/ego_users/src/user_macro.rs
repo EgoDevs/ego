@@ -43,38 +43,38 @@ macro_rules! inject_ego_users {
           pub static USER: RefCell<User> = RefCell::new(User::default());
         }
 
-        use ic_cdk::export::Principal;
-        use ego_users::user::User;
-        use std::cell::RefCell;
         use ego_users::user::OwnerTrait;
+        use ego_users::user::User;
         use ego_users::user::UserTrait;
         use ic_cdk::caller;
+        use ic_cdk::export::Principal;
         use ic_cdk::trap;
+        use std::cell::RefCell;
 
         #[inline(always)]
         pub fn owner_guard() -> Result<(), String> {
             if USER.with(|b| b.borrow().check_owner(caller())) {
                 Ok(())
             } else {
-              trap(&format!("{} unauthorized", caller()));
+                trap(&format!("{} unauthorized", caller()));
             }
         }
 
-        #[update(name = "role_owner_set", guard="owner_guard")]
+        #[update(name = "role_owner_set", guard = "owner_guard")]
         #[candid_method(update, rename = "role_owner_set")]
         pub fn role_owner_set(principals: Vec<Principal>) -> Result<(), String> {
             USER.with(|s| s.borrow_mut().role_owner_set(principals));
             Ok(())
         }
 
-        #[update(name = "role_owner_add", guard="owner_guard")]
+        #[update(name = "role_owner_add", guard = "owner_guard")]
         #[candid_method(update, rename = "role_owner_add")]
-        pub fn role_owner_add(principal: Principal) -> Result<(), String>  {
+        pub fn role_owner_add(principal: Principal) -> Result<(), String> {
             USER.with(|s| s.borrow_mut().role_owner_add(principal));
             Ok(())
         }
 
-        #[update(name = "role_owner_remove", guard="owner_guard")]
+        #[update(name = "role_owner_remove", guard = "owner_guard")]
         #[candid_method(update, rename = "role_owner_remove")]
         pub fn role_owner_remove(principal: Principal) -> Result<(), String> {
             USER.with(|s| s.borrow_mut().role_owner_remove(principal));
@@ -86,32 +86,32 @@ macro_rules! inject_ego_users {
             if USER.with(|b| b.borrow().check_user(caller())) {
                 Ok(())
             } else {
-              trap(&format!("{} unauthorized", caller()));
+                trap(&format!("{} unauthorized", caller()));
             }
         }
 
-        #[update(name = "role_user_set", guard="owner_guard")]
+        #[update(name = "role_user_set", guard = "owner_guard")]
         #[candid_method(update, rename = "role_user_set")]
         pub fn role_user_set(principals: Vec<Principal>) -> Result<(), String> {
             USER.with(|s| s.borrow_mut().role_user_set(principals));
             Ok(())
         }
 
-        #[update(name = "role_user_add", guard="owner_guard")]
+        #[update(name = "role_user_add", guard = "owner_guard")]
         #[candid_method(update, rename = "role_user_add")]
         pub fn role_user_add(principal: Principal) -> Result<(), String> {
             USER.with(|s| s.borrow_mut().role_user_add(principal));
             Ok(())
         }
 
-        #[update(name = "role_user_remove", guard="owner_guard")]
+        #[update(name = "role_user_remove", guard = "owner_guard")]
         #[candid_method(update, rename = "role_user_remove")]
         pub fn role_user_remove(principal: Principal) -> Result<(), String> {
             USER.with(|s| s.borrow_mut().role_user_remove(principal));
             Ok(())
         }
 
-        pub fn users_init(caller:Principal) {
+        pub fn users_init(caller: Principal) {
             USER.with(|s| {
                 let mut s = s.borrow_mut();
                 s.role_owner_add(caller)
