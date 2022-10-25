@@ -1,4 +1,4 @@
-use crate::ego_tenant::{EgoTenant};
+use crate::ego_tenant::EgoTenant;
 use std::cell::RefCell;
 
 thread_local! {

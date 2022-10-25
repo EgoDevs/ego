@@ -1,8 +1,8 @@
-use ic_cdk::export::candid::{CandidType, Deserialize};
-use serde::Serialize;
-use ic_cdk::export::Principal;
-use ego_types::app::{Wasm};
+use ego_types::app::Wasm;
 use ego_types::ego_error::EgoError;
+use ic_cdk::export::candid::{CandidType, Deserialize};
+use ic_cdk::export::Principal;
+use serde::Serialize;
 
 #[derive(Clone, Debug, CandidType, Deserialize, Serialize)]
 pub enum EgoTenantErr {
@@ -15,11 +15,15 @@ pub enum EgoTenantErr {
 
 impl From<EgoTenantErr> for EgoError {
     fn from(e: EgoTenantErr) -> Self {
-        match e{
+        match e {
             EgoTenantErr::WalletExists => EgoError::new(4001, "ego-tenant: wallet exists"),
-            EgoTenantErr::WalletNotExists=> EgoError::new(4002, "ego-tenant: wallet not exists"),
-            EgoTenantErr::AppNotInstalled=> EgoError::new(4003, "ego-tenant: you have not install this app"),
-            EgoTenantErr::CanisterNotFounded=> EgoError::new(4004, "ego-tenant: can not find canister to installed"),
+            EgoTenantErr::WalletNotExists => EgoError::new(4002, "ego-tenant: wallet not exists"),
+            EgoTenantErr::AppNotInstalled => {
+                EgoError::new(4003, "ego-tenant: you have not install this app")
+            }
+            EgoTenantErr::CanisterNotFounded => {
+                EgoError::new(4004, "ego-tenant: can not find canister to installed")
+            }
             EgoTenantErr::SystemError(msg) => msg.into(),
         }
     }
@@ -40,7 +44,7 @@ pub struct AppMainInstallRequest {
 
 #[derive(CandidType, Deserialize, Serialize)]
 pub struct AppMainInstallResponse {
-    pub canister_id: Principal
+    pub canister_id: Principal,
 }
 
 #[derive(CandidType, Deserialize, Serialize)]
@@ -51,7 +55,7 @@ pub struct AppMainUpgradeRequest {
 
 #[derive(CandidType, Deserialize, Serialize)]
 pub struct AppMainUpgradeResponse {
-    pub ret: bool
+    pub ret: bool,
 }
 
 #[derive(CandidType, Deserialize, Serialize)]
@@ -62,7 +66,7 @@ pub struct CanisterMainTrackRequest {
 
 #[derive(CandidType, Deserialize, Serialize)]
 pub struct CanisterMainTrackResponse {
-    pub ret: bool
+    pub ret: bool,
 }
 
 #[derive(CandidType, Deserialize, Serialize)]
@@ -70,10 +74,3 @@ pub struct CanisterMainUnTrackRequest {
     pub wallet_id: Principal,
     pub canister_id: Principal,
 }
-
-#[derive(CandidType, Deserialize, Serialize)]
-pub struct EgoTenantSetupRequest {
-    pub ego_store_id: Principal,
-    pub ego_cron_id: Principal
-}
-
