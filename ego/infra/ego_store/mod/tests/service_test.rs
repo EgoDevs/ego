@@ -130,6 +130,21 @@ fn wallet_main_register() {
 }
 
 #[test]
+fn wallet_main_register_failed(){
+  set_up();
+
+  let exists_wallet_principal = Principal::from_text(EXISTS_WALLET_ID).unwrap();
+  let user_principal = Principal::from_text(TEST_USER_ID).unwrap();
+  // wallet exists
+  let exists_wallet = EgoStoreService::wallet_main_register(exists_wallet_principal, user_principal);
+  assert!(exists_wallet.is_err());
+  let wallet_exists = exists_wallet.unwrap_err();
+  assert_eq!(3007, wallet_exists.code);
+  assert_eq!("ego-store: wallet exists", wallet_exists.msg);
+}
+
+
+#[test]
 fn wallet_app_list() {
   set_up();
 
@@ -142,6 +157,18 @@ fn wallet_app_list() {
   assert_eq!(1, apps.len());
   let app = apps.first().unwrap();
   assert_eq!(EXISTS_APP_ID, app.app_id)
+}
+
+#[test]
+fn wallet_app_list_failed_wallet_not_exists(){
+  set_up();
+  let wallet_id = Principal::from_text(TEST_WALLET_ID).unwrap();
+  // wallet not exists
+  let result = EgoStoreService::wallet_app_list(wallet_id);
+  assert!(result.is_err());
+  let wallet_not_exists = result.unwrap_err();
+  assert_eq!(3006, wallet_not_exists.code);
+  assert_eq!("ego-store: wallet not exists", wallet_not_exists.msg);
 }
 
 #[tokio::test]
@@ -388,4 +415,15 @@ fn wallet_tenant_get() {
   let result = EgoStoreService::wallet_tenant_get(exist_wallet_id);
   assert!(result.is_ok());
   assert_eq!(EXISTS_TENANT_ID, result.unwrap().to_string())
+}
+
+#[test]
+fn wallet_tenant_get_failed_wallet_not_exists(){
+  set_up();
+  let wallet_id = Principal::from_text(TEST_WALLET_ID).unwrap();
+  let result = EgoStoreService::wallet_tenant_get(wallet_id);
+  assert!(result.is_err());
+  let wallet_not_exists = result.unwrap_err();
+  assert_eq!(3006, wallet_not_exists.code);
+  assert_eq!("ego-store: wallet not exists", wallet_not_exists.msg);
 }
