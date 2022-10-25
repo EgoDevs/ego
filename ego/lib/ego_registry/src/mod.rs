@@ -1,2 +1,2 @@
-pub mod registry_macro;
 pub mod registry;
+pub mod registry_macro;
