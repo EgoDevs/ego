@@ -21,3 +21,4 @@ serde_bytes = "0.11"
 ic-ledger-types = "0.1.2"
 async-trait = "0.1.57"
 ego_types = { path = "../../../lib/ego_types"}
+ego_cron_mod = { path = "../../ego_cron/mod" }
