@@ -1,19 +1,18 @@
 use ic_cdk::export::candid::{CandidType, Deserialize};
-use serde::Serialize;
 use ic_cdk::export::Principal;
-
+use serde::Serialize;
 
 #[derive(CandidType, Deserialize, Serialize, Debug, Clone, Eq)]
 pub struct Task {
     pub canister_id: Principal,
-    pub method: String
+    pub method: String,
 }
 
 impl Task {
     pub fn new(canister_id: Principal, method: String) -> Self {
         Task {
             canister_id,
-            method
+            method,
         }
     }
 }
