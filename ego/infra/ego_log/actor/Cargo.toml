@@ -23,4 +23,5 @@ serde_json = "1.0"
 serde_bytes = "0.11"
 ego_log_mod = { path = "../mod" }
 ego_users = { path = "../../../lib/ego_users" }
+ego_registry = { path = "../../../lib/ego_registry"}
 ego_macros = { path = "../../../lib/ego_macros" }
