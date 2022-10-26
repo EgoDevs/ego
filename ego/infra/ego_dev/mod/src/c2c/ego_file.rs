@@ -6,42 +6,42 @@ use ego_file_mod::types::{FileMainWriteRequest, FileMainWriteResponse};
 use ego_types::app::FileId;
 use ego_types::ego_error::EgoError;
 
-
 #[async_trait]
 pub trait TEgoFile {
-  async fn file_main_write(&self, canister_id: Principal, fid: FileId, hash: String, data: Vec<u8>) -> Result<bool, EgoError>;
+    async fn file_main_write(
+        &self,
+        canister_id: Principal,
+        fid: FileId,
+        hash: String,
+        data: Vec<u8>,
+    ) -> Result<bool, EgoError>;
 }
 
-pub struct EgoFile {
-}
+pub struct EgoFile {}
 
-impl EgoFile{
-  pub fn new() -> Self {
-    EgoFile{}
-  }
+impl EgoFile {
+    pub fn new() -> Self {
+        EgoFile {}
+    }
 }
 
 #[async_trait]
 impl TEgoFile for EgoFile {
-  async fn file_main_write(&self, canister_id: Principal, fid: FileId, hash: String, data: Vec<u8>) -> Result<bool, EgoError>{
-    let req = FileMainWriteRequest {
-      fid, hash, data
-    };
+    async fn file_main_write(
+        &self,
+        canister_id: Principal,
+        fid: FileId,
+        hash: String,
+        data: Vec<u8>,
+    ) -> Result<bool, EgoError> {
+        let req = FileMainWriteRequest { fid, hash, data };
 
-    let call_result = api::call::call(
-      canister_id,
-      "file_main_write",
-      (req,),
-    )
-      .await as Result<(Result<FileMainWriteResponse, EgoError>,), _>;
+        let call_result = api::call::call(canister_id, "file_main_write", (req,)).await
+            as Result<(Result<FileMainWriteResponse, EgoError>,), _>;
 
-    match call_result.unwrap().0 {
-      Ok(resp) => {
-        Ok(resp.ret)
-      },
-      Err(e) => {
-        Err(e)
-      }
+        match call_result.unwrap().0 {
+            Ok(resp) => Ok(resp.ret),
+            Err(e) => Err(e),
+        }
     }
-  }
 }
