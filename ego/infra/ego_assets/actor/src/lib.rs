@@ -1,4 +1,5 @@
 use candid::candid_method;
+use candid::CandidType;
 use ego_assets_mod::rc_bytes::RcBytes;
 use ego_assets_mod::state::STATE;
 use ego_assets_mod::state_machine::{AssetDetails, EncodedAsset, StableState, State};
@@ -9,11 +10,10 @@ use ego_assets_mod::types::{
     StreamingCallbackToken, UnsetAssetContentArguments,
 };
 use ic_cdk::api::{data_certificate, set_certified_data, time};
+use ic_cdk::export::candid::Deserialize;
+use ic_cdk::export::Principal;
 use ic_cdk::{caller, trap};
 use ic_cdk_macros::*;
-use ic_cdk::export::Principal;
-use ic_cdk::export::candid::{Deserialize};
-use candid::CandidType;
 
 #[derive(Clone, Debug, CandidType, Deserialize)]
 pub struct InitArg {
