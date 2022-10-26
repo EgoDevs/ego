@@ -1,4 +1,4 @@
-use crate::ego_ops::{EgoOps};
+use crate::ego_ops::EgoOps;
 use std::cell::RefCell;
 
 thread_local! {

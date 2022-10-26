@@ -2,43 +2,28 @@ use ic_cdk::api;
 use ic_cdk::export::Principal;
 
 use async_trait::async_trait;
-use ego_types::ego_error::EgoError;
 
 #[async_trait]
-pub trait TEgoUser {
-    async fn role_user_add(
-        &self,
-        canister_id: Principal,
-        principal: Principal,
-    ) -> Result<bool, EgoError>;
+pub trait TEgoCanister {
+    fn role_user_add(&self, canister_id: Principal, principal: Principal);
+    fn canister_add(&self, canister_id: &Principal, name: String, principal: &Principal);
 }
 
-pub struct EgoUser {}
+pub struct EgoCanister {}
 
-impl EgoUser {
+impl EgoCanister {
     pub fn new() -> Self {
-        EgoUser {}
+        EgoCanister {}
     }
 }
 
 #[async_trait]
-impl TEgoUser for EgoUser {
-    async fn role_user_add(
-        &self,
-        canister_id: Principal,
-        principal: Principal,
-    ) -> Result<bool, EgoError> {
-        let notify_result = api::call::notify(canister_id, "role_user_add", (principal,));
+impl TEgoCanister for EgoCanister {
+    fn role_user_add(&self, canister_id: Principal, principal: Principal) {
+        let _result = api::call::notify(canister_id, "role_user_add", (principal,));
+    }
 
-        match notify_result {
-            Err(code) => {
-                let code = code as u16;
-                Err(EgoError {
-                    code,
-                    msg: "role_user_add failed".to_string(),
-                })
-            }
-            _ => Ok(true),
-        }
+    fn canister_add(&self, canister_id: &Principal, name: String, principal: &Principal) {
+        let _result = api::call::notify(canister_id.clone(), "canister_add", (name, principal.clone()));
     }
 }
