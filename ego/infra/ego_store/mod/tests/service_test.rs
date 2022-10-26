@@ -492,6 +492,8 @@ fn wallet_tenant_get() {
 fn wallet_tenant_get_failed_wallet_not_exists() {
   set_up();
   let wallet_id = Principal::from_text(TEST_WALLET_ID).unwrap();
+  let exist_wallet_id = Principal::from_text(EXISTS_WALLET_ID).unwrap();
+
   let result = EgoStoreService::wallet_tenant_get(wallet_id);
   assert!(result.is_err());
   let wallet_not_exists = result.unwrap_err();
