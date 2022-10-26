@@ -21,7 +21,7 @@ num-traits = "0.2.15"
 ego_types = { path = "../../../lib/ego_types"}
 ego_utils = { path = "../../../lib/ego_utils"}
 ego_file_mod = { path = "../../ego_file/mod"}
-
+ego_cron_mod = { path = "../../ego_cron/mod" }
 
 [dev-dependencies]
 mockall = "0.11.2"

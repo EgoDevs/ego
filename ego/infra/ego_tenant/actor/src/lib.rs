@@ -19,6 +19,7 @@ use ic_cdk::storage;
 use ic_cdk_macros::*;
 use serde::Serialize;
 use ego_tenant_mod::c2c::ego_canister::EgoCanister;
+use ego_tenant_mod::c2c::ego_cron::{EgoCron, TEgoCron};
 
 inject_balance_get!();
 inject_ego_users!();
@@ -71,6 +72,21 @@ fn post_upgrade() {
     registry_post_upgrade(state.registry)
 }
 
+/********************  methods for ego_registry   ********************/
+fn on_canister_added(name: &str, canister_id: Principal) {
+    let _ = match name {
+        "ego_store" => role_user_add(canister_id).unwrap(),
+        "ego_cron" => {
+            role_user_add(canister_id).unwrap();
+
+            let ego_cron = EgoCron::new();
+            ego_cron.task_main_add(canister_id, "message_main_notify");
+        },
+        _ => {}
+    };
+}
+
+/********************  methods for ego_store   ********************/
 #[update(name = "app_main_install", guard = "user_guard")]
 #[candid_method(update, rename = "app_main_install")]
 async fn app_main_install(req: AppMainInstallRequest) -> Result<AppMainInstallResponse, EgoError> {
@@ -119,7 +135,7 @@ fn canister_main_untrack(req: CanisterMainUnTrackRequest) -> Result<(), EgoError
     Ok(())
 }
 
-/********************  notify  ********************/
+/********************  methods for ego_notify  ********************/
 #[update(name = "message_main_notify", guard = "user_guard")]
 #[candid_method(update, rename = "message_main_notify")]
 async fn message_main_notify() -> Result<(), EgoError> {
