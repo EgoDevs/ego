@@ -13,10 +13,12 @@ use ego_file_mod::storage::{Storage, DEFAULT_FILE_SIZE, HEADER_SIZE, WASM_PAGE_S
 use ego_macros::inject_balance_get;
 use ego_types::ego_error::EgoError;
 use ego_users::inject_ego_users;
+use ego_registry::inject_ego_registry;
 use ic_cdk::api::stable::{stable64_grow, stable64_read, stable64_write};
 
 inject_balance_get!();
 inject_ego_users!();
+inject_ego_registry!();
 
 #[derive(Clone, Debug, CandidType, Deserialize)]
 pub struct InitArg {
@@ -60,6 +62,15 @@ fn post_upgrade() {
     }
 }
 
+/********************  methods for ego_registry   ********************/
+fn on_canister_added(name: &str, canister_id: Principal) {
+    let _ = match name {
+        "ego_dev" => role_user_add(canister_id).unwrap(),
+        "ego_tenant" => role_user_add(canister_id).unwrap(),
+        _ => {}
+    };
+}
+
 /********************  file method ********************/
 #[update(name = "file_main_write", guard = "user_guard")]
 #[candid_method(update, rename = "file_main_write")]
@@ -81,8 +92,9 @@ fn file_main_read(req: FileMainReadRequest) -> Result<FileMainReadResponse, EgoE
 
 #[derive(CandidType, Deserialize)]
 struct PersistState {
-    storage: Storage,
-    user: User,
+    pub storage: Storage,
+    pub user: User,
+    pub registry: Registry,
 }
 
 /********************  persist method ********************/
@@ -93,8 +105,9 @@ fn state_persist() -> Result<bool, EgoError> {
 
     let storage = STORAGE.with(|s| s.borrow().clone());
     let user = users_pre_upgrade();
+    let registry = registry_pre_upgrade();
 
-    let state = PersistState { storage, user };
+    let state = PersistState { storage, user, registry };
 
     let data = Encode!(&state).unwrap();
 
@@ -127,6 +140,7 @@ fn state_restore() -> Result<bool, EgoError> {
 
     STORAGE.with(|s| *s.borrow_mut() = state.storage);
     users_post_upgrade(state.user);
+    registry_post_upgrade(state.registry);
 
     Ok(true)
 }
