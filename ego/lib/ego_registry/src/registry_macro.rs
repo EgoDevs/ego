@@ -1,3 +1,4 @@
+// macro user should implement the on_canister_added method
 #[macro_export]
 macro_rules! inject_ego_registry {
     () => {
@@ -11,7 +12,8 @@ macro_rules! inject_ego_registry {
         #[update(name = "canister_add", guard = "owner_guard")]
         #[candid_method(update, rename = "canister_add")]
         pub fn canister_add(name: String, canister_id: Principal) -> Result<(), String> {
-            REGISTRY.with(|s| s.borrow_mut().canister_add(name, canister_id));
+            REGISTRY.with(|s| s.borrow_mut().canister_add(name.clone(), canister_id));
+            on_canister_added(&name, canister_id);
             Ok(())
         }
 

@@ -12,10 +12,10 @@ pub trait CanisterTrait {
     fn canister_remove(&mut self, name: String, canister_id: Principal);
 
     // get all the canisters under the specified name
-    fn canister_get_all(&self, name: String) -> Vec<Principal>;
+    fn canister_get_all(&self, name: &str) -> Vec<Principal>;
 
     // get canisters under the specified name
-    fn canister_get_one(&self, name: String) -> Option<Principal>;
+    fn canister_get_one(&self, name: &str) -> Option<Principal>;
 }
 
 #[derive(CandidType, Serialize, Deserialize, Clone, Debug)]
@@ -46,12 +46,12 @@ impl CanisterTrait for Registry {
         canister_ids.retain(|exists_canister_id| *exists_canister_id == canister_id)
     }
 
-    fn canister_get_all(&self, name: String) -> Vec<Principal> {
-        self.canisters.get(&name).cloned().unwrap()
+    fn canister_get_all(&self, name: &str) -> Vec<Principal> {
+        self.canisters.get(name).cloned().unwrap()
     }
 
-    fn canister_get_one(&self, name: String) -> Option<Principal> {
-        let canisters = self.canisters.get(&name).unwrap();
+    fn canister_get_one(&self, name: &str) -> Option<Principal> {
+        let canisters = self.canisters.get(name).unwrap();
         if canisters.is_empty() {
             None
         } else {
