@@ -4,39 +4,49 @@ use ic_ledger_types::{AccountIdentifier, Memo, Subaccount};
 use serde::Serialize;
 
 #[derive(
-CandidType, Serialize, Deserialize, Clone, Copy, Debug, Ord, PartialOrd, Eq, PartialEq,
+    CandidType, Serialize, Deserialize, Clone, Copy, Debug, Ord, PartialOrd, Eq, PartialEq,
 )]
 pub enum OrderStatus {
-  NEW,
-  SUCCESS,
+    NEW,
+    SUCCESS,
 }
 
 #[derive(CandidType, Serialize, Deserialize, Clone, Debug)]
 pub struct Order {
-  pub wallet_id: Principal,
-  pub from: AccountIdentifier,
-  pub to: AccountIdentifier,
-  pub amount: f32,
-  pub memo: Memo,
-  pub status: OrderStatus,
+    pub wallet_id: Principal,
+    pub from: AccountIdentifier,
+    pub to: AccountIdentifier,
+    pub amount: f32,
+    pub memo: Memo,
+    pub status: OrderStatus,
 }
 
 #[derive(CandidType, Serialize, Deserialize, Clone, Debug, PartialEq)]
 pub enum OrderType {
-  APP,
-  RECHARGE,
+    APP,
+    RECHARGE,
 }
 
 impl Order {
-  pub fn new(wallet_id: Principal, store_id: &Principal, amount: f32, memo: u64) -> Self {
-    let mut bytes = [0u8; 32];
-    let mut subaccount = Subaccount(bytes);
-    let from = AccountIdentifier::new(&wallet_id, &subaccount);
+    pub fn new(wallet_id: Principal, store_id: &Principal, amount: f32, memo: u64) -> Self {
+        let mut bytes = [0u8; 32];
+        let mut subaccount = Subaccount(bytes);
+        let from = AccountIdentifier::new(&wallet_id, &subaccount);
 
-    bytes.split_at_mut(8).0.copy_from_slice(memo.to_le_bytes().as_slice());
-    subaccount = Subaccount(bytes);
-    let to = AccountIdentifier::new(store_id, &subaccount);
+        bytes
+            .split_at_mut(8)
+            .0
+            .copy_from_slice(memo.to_le_bytes().as_slice());
+        subaccount = Subaccount(bytes);
+        let to = AccountIdentifier::new(store_id, &subaccount);
 
-    Order { wallet_id, from, to, amount, memo: Memo(memo), status: OrderStatus::NEW }
-  }
+        Order {
+            wallet_id,
+            from,
+            to,
+            amount,
+            memo: Memo(memo),
+            status: OrderStatus::NEW,
+        }
+    }
 }

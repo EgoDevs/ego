@@ -1,14 +1,14 @@
 use async_trait::async_trait;
 use ic_cdk::export::Principal;
 use mockall::mock;
-use ego_store_mod::app::EgoStoreApp;
 
+use ego_store_mod::app::EgoStoreApp;
 use ego_store_mod::c2c::ego_tenant::TEgoTenant;
 use ego_store_mod::service::EgoStoreService;
 use ego_store_mod::state::EGO_STORE;
 use ego_store_mod::tenant::Tenant;
 use ego_store_mod::types::QueryParam;
-use ego_store_mod::user_app::{UserApp};
+use ego_store_mod::user_app::UserApp;
 use ego_store_mod::wallet::Wallet;
 use ego_types::app::{Canister, CanisterType, Category, DeployMode, Wasm};
 use ego_types::app::CanisterType::{ASSET, BACKEND};
@@ -37,7 +37,6 @@ static TEST_USER_ID: &str = "2265i-mqaaa-aaaad-qbsga-cai";
 static TEST_USER_APP_FRONTEND: &str = "224lq-3aaaa-aaaaf-ase7a-cai";
 static TEST_USER_APP_BACKEND: &str = "225cg-4iaaa-aaaaj-adouq-cai";
 
-
 mock! {
   Tenant {}
 
@@ -50,7 +49,6 @@ mock! {
   }
 }
 
-
 pub fn set_up() {
   let tenant_principal = Principal::from_text(EXISTS_TENANT_ID.to_string()).unwrap();
   let wallet_principal = Principal::from_text(EXISTS_WALLET_ID.to_string()).unwrap();
@@ -61,35 +59,79 @@ pub fn set_up() {
 
   EGO_STORE.with(|ego_store| {
     // add tenant
-    ego_store.borrow_mut().tenants.insert(tenant_principal, Tenant::new(tenant_principal));
+    ego_store
+      .borrow_mut()
+      .tenants
+      .insert(tenant_principal, Tenant::new(tenant_principal));
 
     // add exists app
 
     let backend = Wasm::new(EXISTS_APP_ID.to_string(), version, BACKEND, file_canister);
-    let app = EgoStoreApp::new(EXISTS_APP_ID.to_string(), APP_NAME.to_string(), Category::Vault, APP_LOGO.to_string(), APP_DESCRIPTION.to_string(), version, None, Some(backend), 1.2f32, DeployMode::DEDICATED);
-    ego_store.borrow_mut().apps.insert(EXISTS_APP_ID.to_string(), app);
+    let app = EgoStoreApp::new(
+      EXISTS_APP_ID.to_string(),
+      APP_NAME.to_string(),
+      Category::Vault,
+      APP_LOGO.to_string(),
+      APP_DESCRIPTION.to_string(),
+      version,
+      None,
+      Some(backend),
+      1.2f32,
+      DeployMode::DEDICATED,
+    );
+    ego_store
+      .borrow_mut()
+      .apps
+      .insert(EXISTS_APP_ID.to_string(), app);
 
     let frontend = Wasm::new(TEST_APP_ID.to_string(), version, ASSET, file_canister);
     let backend = Wasm::new(TEST_APP_ID.to_string(), version, BACKEND, file_canister);
-    let app = EgoStoreApp::new(TEST_APP_ID.to_string(), APP_NAME.to_string(), Category::Vault, APP_LOGO.to_string(), APP_DESCRIPTION.to_string(), version, Some(frontend), Some(backend), 1.2f32, DeployMode::DEDICATED);
-    ego_store.borrow_mut().apps.insert(TEST_APP_ID.to_string(), app);
+    let app = EgoStoreApp::new(
+      TEST_APP_ID.to_string(),
+      APP_NAME.to_string(),
+      Category::Vault,
+      APP_LOGO.to_string(),
+      APP_DESCRIPTION.to_string(),
+      version,
+      Some(frontend),
+      Some(backend),
+      1.2f32,
+      DeployMode::DEDICATED,
+    );
+    ego_store
+      .borrow_mut()
+      .apps
+      .insert(TEST_APP_ID.to_string(), app);
 
     // add wallet
     let mut wallet = Wallet::new(tenant_principal, wallet_principal, user_principal);
 
-    let frontend_principal = Principal::from_text(EXISTS_USER_APP_FRONTEND.to_string()).unwrap();
+    let frontend_principal =
+      Principal::from_text(EXISTS_USER_APP_FRONTEND.to_string()).unwrap();
     let backend_principal = Principal::from_text(EXISTS_USER_APP_BACKEND.to_string()).unwrap();
-    wallet.apps.insert(EXISTS_APP_ID.to_string(), UserApp::new(&EXISTS_APP_ID.to_string(), &version, Some(Canister::new(frontend_principal, CanisterType::ASSET)), Some(Canister::new(backend_principal, CanisterType::BACKEND))));
-    ego_store.borrow_mut().wallets.insert(wallet_principal, wallet);
+    wallet.apps.insert(
+      EXISTS_APP_ID.to_string(),
+      UserApp::new(
+        &EXISTS_APP_ID.to_string(),
+        &version,
+        Some(Canister::new(frontend_principal, CanisterType::ASSET)),
+        Some(Canister::new(backend_principal, CanisterType::BACKEND)),
+      ),
+    );
+    ego_store
+      .borrow_mut()
+      .wallets
+      .insert(wallet_principal, wallet);
   });
 }
-
 
 #[test]
 fn app_main_list() {
   set_up();
 
-  let result = EgoStoreService::app_main_list(QueryParam::ByCategory { category: Category::Vault });
+  let result = EgoStoreService::app_main_list(QueryParam::ByCategory {
+    category: Category::Vault,
+  });
   assert!(result.is_ok());
 
   let apps = result.unwrap();
@@ -130,7 +172,7 @@ fn wallet_main_register() {
 }
 
 #[test]
-fn wallet_main_register_failed(){
+fn wallet_main_register_failed() {
   set_up();
 
   let exists_wallet_principal = Principal::from_text(EXISTS_WALLET_ID).unwrap();
@@ -160,7 +202,7 @@ fn wallet_app_list() {
 }
 
 #[test]
-fn wallet_app_list_failed_wallet_not_exists(){
+fn wallet_app_list_failed_wallet_not_exists() {
   set_up();
   let wallet_id = Principal::from_text(TEST_WALLET_ID).unwrap();
   // wallet not exists
@@ -180,7 +222,8 @@ async fn wallet_app_install_not_exists_wallet() {
   // install with not exists wallet
   let ego_tenant = MockTenant::new();
 
-  let result = EgoStoreService::wallet_app_install(ego_tenant, wallet_id, EXISTS_APP_ID.to_string()).await;
+  let result =
+    EgoStoreService::wallet_app_install(ego_tenant, wallet_id, EXISTS_APP_ID.to_string()).await;
   assert!(result.is_err());
   assert_eq!(3006, result.unwrap_err().code);
 }
@@ -199,7 +242,12 @@ async fn wallet_app_install_not_exists_app() {
   // install app
   let ego_tenant = MockTenant::new();
 
-  let result = EgoStoreService::wallet_app_install(ego_tenant, wallet_principal, "not_exists_app".to_string()).await;
+  let result = EgoStoreService::wallet_app_install(
+    ego_tenant,
+    wallet_principal,
+    "not_exists_app".to_string(),
+  )
+    .await;
   assert!(result.is_err());
   assert_eq!(3002, result.unwrap_err().code);
 }
@@ -213,11 +261,12 @@ async fn wallet_app_install_installed_app() {
   // install app
   let ego_tenant = MockTenant::new();
 
-  let result = EgoStoreService::wallet_app_install(ego_tenant, exist_wallet_id, EXISTS_APP_ID.to_string()).await;
+  let result =
+    EgoStoreService::wallet_app_install(ego_tenant, exist_wallet_id, EXISTS_APP_ID.to_string())
+      .await;
   assert!(result.is_err());
   assert_eq!(3009, result.unwrap_err().code);
 }
-
 
 #[tokio::test]
 async fn wallet_app_install_success() {
@@ -240,14 +289,17 @@ async fn wallet_app_install_success() {
 
   // install app
   let mut ego_tenant = MockTenant::new();
-  ego_tenant.expect_app_main_install().times(1).returning(move |_, _, _, _| {
-    Ok(frontend_principal)
-  });
-  ego_tenant.expect_app_main_install().returning(move |_, _, _, _| {
-    Ok(backend_principal)
-  });
+  ego_tenant
+    .expect_app_main_install()
+    .times(1)
+    .returning(move |_, _, _, _| Ok(frontend_principal));
+  ego_tenant
+    .expect_app_main_install()
+    .returning(move |_, _, _, _| Ok(backend_principal));
 
-  let result = EgoStoreService::wallet_app_install(ego_tenant, wallet_principal, TEST_APP_ID.to_string()).await;
+  let result =
+    EgoStoreService::wallet_app_install(ego_tenant, wallet_principal, TEST_APP_ID.to_string())
+      .await;
   assert!(result.is_ok());
 
   // get app list after app install
@@ -258,8 +310,14 @@ async fn wallet_app_install_success() {
   match result {
     Ok(app_installeds) => {
       let app_installed = app_installeds.get(0).unwrap();
-      assert_eq!(frontend_principal, app_installed.frontend.as_ref().unwrap().canister_id);
-      assert_eq!(backend_principal, app_installed.backend.as_ref().unwrap().canister_id);
+      assert_eq!(
+        frontend_principal,
+        app_installed.frontend.as_ref().unwrap().canister_id
+      );
+      assert_eq!(
+        backend_principal,
+        app_installed.backend.as_ref().unwrap().canister_id
+      );
     }
     Err(_) => {
       panic!("should not go here")
@@ -276,7 +334,8 @@ async fn wallet_app_upgrade_not_exists_wallet() {
   // install with not exists wallet
   let ego_tenant = MockTenant::new();
 
-  let result = EgoStoreService::wallet_app_upgrade(ego_tenant, wallet_id, EXISTS_APP_ID.to_string()).await;
+  let result =
+    EgoStoreService::wallet_app_upgrade(ego_tenant, wallet_id, EXISTS_APP_ID.to_string()).await;
   assert!(result.is_err());
   assert_eq!(3006, result.unwrap_err().code);
 }
@@ -295,7 +354,12 @@ async fn wallet_app_upgrade_not_exists_app() {
   // install app
   let ego_tenant = MockTenant::new();
 
-  let result = EgoStoreService::wallet_app_install(ego_tenant, wallet_principal, "not_exists_app".to_string()).await;
+  let result = EgoStoreService::wallet_app_install(
+    ego_tenant,
+    wallet_principal,
+    "not_exists_app".to_string(),
+  )
+    .await;
   assert!(result.is_err());
   assert_eq!(3002, result.unwrap_err().code);
 }
@@ -314,7 +378,12 @@ async fn wallet_app_upgrade_not_installed_app() {
   // upgrade not installed app
   let ego_tenant = MockTenant::new();
 
-  let result = EgoStoreService::wallet_app_upgrade(ego_tenant, wallet_principal, EXISTS_APP_ID.to_string()).await;
+  let result = EgoStoreService::wallet_app_upgrade(
+    ego_tenant,
+    wallet_principal,
+    EXISTS_APP_ID.to_string(),
+  )
+    .await;
   assert!(result.is_err());
   assert_eq!(3010, result.unwrap_err().code);
 }
@@ -332,10 +401,12 @@ async fn wallet_app_upgrade_success() {
 
   // upgrade installed app
   let mut ego_tenant = MockTenant::new();
-  ego_tenant.expect_app_main_upgrade().returning(|_, _, _| {
-    Ok(true)
-  });
-  let result = EgoStoreService::wallet_app_upgrade(ego_tenant, exist_wallet_id, EXISTS_APP_ID.to_string()).await;
+  ego_tenant
+    .expect_app_main_upgrade()
+    .returning(|_, _, _| Ok(true));
+  let result =
+    EgoStoreService::wallet_app_upgrade(ego_tenant, exist_wallet_id, EXISTS_APP_ID.to_string())
+      .await;
   assert!(result.is_ok());
 
   // get app list after upgrade
@@ -418,7 +489,7 @@ fn wallet_tenant_get() {
 }
 
 #[test]
-fn wallet_tenant_get_failed_wallet_not_exists(){
+fn wallet_tenant_get_failed_wallet_not_exists() {
   set_up();
   let wallet_id = Principal::from_text(TEST_WALLET_ID).unwrap();
   let result = EgoStoreService::wallet_tenant_get(wallet_id);
@@ -426,4 +497,8 @@ fn wallet_tenant_get_failed_wallet_not_exists(){
   let wallet_not_exists = result.unwrap_err();
   assert_eq!(3006, wallet_not_exists.code);
   assert_eq!("ego-store: wallet not exists", wallet_not_exists.msg);
+
+  let result = EgoStoreService::wallet_tenant_get(exist_wallet_id);
+  assert!(result.is_ok());
+  assert_eq!(EXISTS_TENANT_ID, result.unwrap().to_string())
 }
