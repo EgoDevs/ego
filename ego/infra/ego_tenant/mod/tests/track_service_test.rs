@@ -11,8 +11,6 @@ use ego_tenant_mod::task::Task;
 use ego_types::ego_error::EgoError;
 use ego_utils::ic_management::Cycles;
 
-static EGO_STORE_ID: &str = "22f7h-vyaaa-aaaai-qibka-cai";
-
 static EXISTS_WALLET_ID: &str = "22fyd-yaaaa-aaaaf-aml4q-cai";
 static EXISTS_CANISTER_ID: &str = "223xb-saaaa-aaaaf-arlqa-cai";
 
@@ -53,7 +51,7 @@ mock! {
 
   #[async_trait]
   impl TEgoStore for Store {
-    async fn wallet_cycle_charge(&self, store_id: Principal, wallet_id: Principal, cycle: u128, comment: String) -> Result<bool, EgoError>;
+    async fn wallet_cycle_charge(&self, wallet_id: Principal, cycle: u128, comment: String) -> Result<bool, EgoError>;
   }
 }
 
@@ -82,7 +80,6 @@ async fn canister_cycles_check_first_time() {
   set_up();
 
   let canister_principal = Principal::from_text(EXISTS_CANISTER_ID.to_string()).unwrap();
-  let ego_store_id = Principal::from_text(EGO_STORE_ID.to_string()).unwrap();
 
   let sentinel = 10u64;
   let cycle = 1_000_000u128;
@@ -115,7 +112,6 @@ async fn canister_cycles_check_first_time() {
   let _result = EgoTenantService::canister_cycles_check(
     management,
     ego_store,
-    ego_store_id,
     ego_canister,
     sentinel,
     task,
@@ -142,7 +138,6 @@ async fn canister_cycles_check_second_time_zero_cycle_consumption() {
   set_up();
 
   let canister_principal = Principal::from_text(EXISTS_CANISTER_ID.to_string()).unwrap();
-  let ego_store_id = Principal::from_text(EGO_STORE_ID.to_string()).unwrap();
 
   let sentinel = 10u64;
   let cycle = 1_000_000u128;
@@ -182,7 +177,6 @@ async fn canister_cycles_check_second_time_zero_cycle_consumption() {
   let _result = EgoTenantService::canister_cycles_check(
     management,
     ego_store,
-    ego_store_id,
     ego_canister,
     sentinel,
     task,
@@ -210,7 +204,6 @@ async fn canister_cycles_check_second_time_none_zero_cycle_consumption() {
 
   let wallet_principal = Principal::from_text(EXISTS_WALLET_ID.to_string()).unwrap();
   let canister_principal = Principal::from_text(EXISTS_CANISTER_ID.to_string()).unwrap();
-  let ego_store_id = Principal::from_text(EGO_STORE_ID.to_string()).unwrap();
 
   let sentinel = 10u64;
   let cycle = 1_000_000u128;
@@ -248,7 +241,7 @@ async fn canister_cycles_check_second_time_none_zero_cycle_consumption() {
     });
 
   ego_store.expect_wallet_cycle_charge().returning(
-    move |_store_id, wallet_id, cycle, _comment| {
+    move |wallet_id, cycle, _comment| {
       assert_eq!(wallet_principal, wallet_id);
       assert_eq!(180000000000, cycle);
       Ok(true)
@@ -266,7 +259,6 @@ async fn canister_cycles_check_second_time_none_zero_cycle_consumption() {
   let _result = EgoTenantService::canister_cycles_check(
     management,
     ego_store,
-    ego_store_id,
     ego_canister,
     sentinel,
     task,
