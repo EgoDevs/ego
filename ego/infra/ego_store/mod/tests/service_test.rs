@@ -435,3 +435,6 @@ fn wallet_tenant_get_failed_wallet_not_exists() {
   assert!(result.is_ok());
   assert_eq!(EXISTS_TENANT_ID, result.unwrap().to_string())
 }
+
+
+// TODO: add test case for shared install mode

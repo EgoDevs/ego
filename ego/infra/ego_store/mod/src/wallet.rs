@@ -57,7 +57,7 @@ impl Wallet {
         order
     }
 
-    pub fn cycle_charge(&mut self, cycle: u128, operator: Principal, comment: String) -> bool {
+    pub fn cycle_charge(&mut self, cycle: u128, operator: Principal, ts: u64, comment: String) -> bool {
         if self.cycles > cycle {
             self.cycles -= cycle;
             self.cash_flowes.push(CashFlow::new(
@@ -65,6 +65,7 @@ impl Wallet {
                 cycle,
                 self.cycles,
                 operator,
+                ts,
                 comment,
             ));
             true
@@ -73,19 +74,16 @@ impl Wallet {
         }
     }
 
-    pub fn cycle_recharge(&mut self, cycle: u128, operator: Principal, comment: String) -> bool {
-        if self.cycles > cycle {
-            self.cycles += cycle;
-            self.cash_flowes.push(CashFlow::new(
-                CashFlowType::RECHARGE,
-                cycle,
-                self.cycles,
-                operator,
-                comment,
-            ));
-            true
-        } else {
-            false
-        }
+    pub fn cycle_recharge(&mut self, cycle: u128, operator: Principal, ts: u64, comment: String) -> bool {
+        self.cycles += cycle;
+        self.cash_flowes.push(CashFlow::new(
+            CashFlowType::RECHARGE,
+            cycle,
+            self.cycles,
+            operator,
+            ts,
+            comment,
+        ));
+        true
     }
 }

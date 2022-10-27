@@ -24,14 +24,14 @@ impl CashFlow {
         cycles: u128,
         balance: u128,
         operator: Principal,
+        ts: u64,
         comment: String,
     ) -> Self {
-        let now = ic_cdk::api::time();
         CashFlow {
             cash_flow_type,
             cycles,
             balance,
-            created_at: now,
+            created_at: ts,
             operator,
             comment,
         }

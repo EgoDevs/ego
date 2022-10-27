@@ -1,4 +1,5 @@
 use candid::candid_method;
+use ic_cdk::api::time;
 use ic_cdk::export::candid::{CandidType, Deserialize};
 use ic_cdk::storage;
 use ic_cdk_macros::*;
@@ -282,6 +283,7 @@ pub fn wallet_cycle_charge(
         request.wallet_id,
         request.cycle,
         operator,
+        time(),
         request.comment,
     ) {
         Ok(ret) => Ok(WalletCycleChargeResponse { ret }),
@@ -314,7 +316,7 @@ pub fn wallet_order_notify(
     // the ego_ledger id
     let operator = caller();
 
-    match EgoStoreService::wallet_order_notify(request.memo, operator) {
+    match EgoStoreService::wallet_order_notify(request.memo, operator, ic_cdk::api::time()) {
         Ok(ret) => Ok(WalletOrderNotifyResponse { ret }),
         Err(e) => Err(e),
     }
@@ -349,7 +351,7 @@ pub fn admin_wallet_cycle_recharge(req: AdminWalletCycleRechargeRequest) -> Resu
     // the ego_ops id
     let operator = caller();
 
-    EgoStoreService::admin_wallet_cycle_recharge(req.wallet_id, req.cycle, operator, req.comment)
+    EgoStoreService::admin_wallet_cycle_recharge(req.wallet_id, req.cycle, operator,  time(), req.comment)
 }
 
 /********************  methods for wallet provider  ********************/

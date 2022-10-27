@@ -196,6 +196,7 @@ impl EgoStore {
         &mut self,
         memo: Memo,
         operator: Principal,
+        ts: u64
     ) -> Result<bool, EgoError> {
         match self.orders.get_mut(&memo) {
             Some(order) => {
@@ -209,6 +210,7 @@ impl EgoStore {
                         Ok(wallet.cycle_recharge(
                             cycle,
                             operator,
+                            ts,
                             format!("wallet cycle recharge, order memo {}", memo.0),
                         ))
                     }
@@ -223,11 +225,12 @@ impl EgoStore {
         wallet_id: Principal,
         cycle: u128,
         operator: Principal,
+        ts: u64,
         comment: String,
     ) -> Result<bool, EgoError> {
         match self.wallets.get_mut(&wallet_id) {
             None => Err(EgoStoreErr::WalletNotExists.into()),
-            Some(wallet) => Ok(wallet.cycle_charge(cycle, operator, comment)),
+            Some(wallet) => Ok(wallet.cycle_charge(cycle, operator, ts, comment)),
         }
     }
 
@@ -236,11 +239,12 @@ impl EgoStore {
         wallet_id: Principal,
         cycle: u128,
         operator: Principal,
+        ts: u64,
         comment: String,
     ) -> Result<bool, EgoError> {
         match self.wallets.get_mut(&wallet_id) {
             None => Err(EgoStoreErr::WalletNotExists.into()),
-            Some(wallet) => Ok(wallet.cycle_recharge(cycle, operator, comment)),
+            Some(wallet) => Ok(wallet.cycle_recharge(cycle, operator, ts, comment)),
         }
     }
 
