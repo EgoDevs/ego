@@ -185,8 +185,7 @@ impl EgoDevService {
         caller: Principal,
         app_id: AppId,
         version: Version,
-        ego_store: S,
-        ego_store_id: Principal
+        ego_store: S
     ) -> Result<AppVersion, EgoError> {
         let app_version = EGO_DEV.with(|ego_dev| {
             match ego_dev.borrow_mut().developer_app_get_mut(&caller, &app_id) {
@@ -203,7 +202,7 @@ impl EgoDevService {
         })?;
 
         ego_store
-            .app_main_release(ego_store_id, app, app_version.clone());
+            .app_main_release(app, app_version.clone());
 
         Ok(app_version)
     }

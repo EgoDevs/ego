@@ -242,9 +242,10 @@ pub async fn app_version_release(
 ) -> Result<AppVersionReleaseResponse, EgoError> {
     ic_cdk::println!("ego-dev: app_version_release");
     let caller = caller();
-    let ego_store = EgoStore::new();
+
     let ego_store_id = REGISTRY.with(|r| r.borrow().canister_get_one("ego_store")).unwrap();
-    let app_version = EgoDevService::app_version_release(caller, request.app_id.clone(), request.version, ego_store, ego_store_id)?;
+    let ego_store = EgoStore::new(ego_store_id);
+    let app_version = EgoDevService::app_version_release(caller, request.app_id.clone(), request.version, ego_store)?;
     Ok(AppVersionReleaseResponse { app_version })
 }
 
@@ -353,11 +354,12 @@ pub async fn admin_app_create(
         )?;
     }
 
-    let ego_store = EgoStore::new();
-    ic_cdk::println!("6. app_version_release");
 
+    ic_cdk::println!("6. app_version_release");
     let ego_store_id = REGISTRY.with(|r| r.borrow().canister_get_one("ego_store")).unwrap();
-    let app_version = EgoDevService::app_version_release(caller, request.app_id.clone(), request.version, ego_store, ego_store_id)?;
+    let ego_store = EgoStore::new(ego_store_id);
+
+    let app_version = EgoDevService::app_version_release(caller, request.app_id.clone(), request.version, ego_store)?;
     Ok(AdminAppCreateResponse{app_version})
 }
 

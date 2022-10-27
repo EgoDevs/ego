@@ -6,17 +6,18 @@ use ic_cdk::export::Principal;
 pub trait TEgoStore {
     fn app_main_release(
         &self,
-        canister_id: Principal,
         app: EgoDevApp,
         app_version: AppVersion
     );
 }
 
-pub struct EgoStore {}
+pub struct EgoStore {
+    pub canister_id: Principal
+}
 
 impl EgoStore {
-    pub fn new() -> Self {
-        EgoStore {}
+    pub fn new(canister_id: Principal) -> Self {
+        EgoStore {canister_id}
     }
 }
 
@@ -24,7 +25,6 @@ impl EgoStore {
 impl TEgoStore for EgoStore {
     fn app_main_release(
         &self,
-        canister_id: Principal,
         app: EgoDevApp,
         released_version: AppVersion
     ) {
@@ -45,6 +45,6 @@ impl TEgoStore for EgoStore {
             },
         };
 
-        let _result = api::call::notify(canister_id, "app_main_release", (req,));
+        let _result = api::call::notify(self.canister_id, "app_main_release", (req,));
     }
 }
