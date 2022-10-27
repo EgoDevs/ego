@@ -116,15 +116,12 @@ async function canister_register(canister_name: string) {
 
   let canister_id = Principal.fromText(getCanisterId(canister_name)!);
 
-  console.log(`==> a. set ego_ops as ${canister_name} owner\n`);
-  let resp1 = await canister_operator.role_owner_set([ego_ops_id]);
+  console.log(`==> a. add ego_ops as ${canister_name} owner\n`);
+  let resp1 = await canister_operator.role_owner_add(ego_ops_id);
   console.log(resp1);
 
-  console.log(`==> a. register ${canister_name} to ego_ops\n`);
-  let resp2 = await opsOperator.canister_main_register({
-    app_id: canister_name,
-    canister_id: canister_id,
-  });
+  console.log(`==> b. register ${canister_name} to ego_ops\n`);
+  let resp2 = await opsOperator.canister_add(canister_name, canister_id);
   console.log(resp2);
 }
 

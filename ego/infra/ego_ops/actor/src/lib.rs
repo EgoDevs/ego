@@ -90,13 +90,15 @@ pub async fn canister_relation_update() {
         let ego_ledger_id = register.borrow().canister_get_one("ego_ledger").unwrap();
 
         // ego_dev
+        ic_cdk::println!("1 add canister to ego_dev");
         for ego_file_id in ego_file_ids.iter() {
-            ego_canister.canister_add(&ego_dev_id, "ego_dev".to_string(), ego_file_id);
+            ego_canister.canister_add(&ego_dev_id, "ego_file".to_string(), ego_file_id);
         }
         ego_canister
           .canister_add(&ego_dev_id, "ego_store".to_string(), &ego_store_id);
 
         // ego_file
+        ic_cdk::println!("2 add canister to ego_file");
         for ego_file_id in ego_file_ids.iter() {
             ego_canister.canister_add(ego_file_id, "ego_dev".to_string(), &ego_dev_id);
             for ego_tenant_id in ego_tenant_ids.iter() {
@@ -105,6 +107,7 @@ pub async fn canister_relation_update() {
         }
 
         // ego_store
+        ic_cdk::println!("3 add canister to ego_store");
         ego_canister.canister_add(&ego_store_id, "ego_dev".to_string(), &ego_dev_id);
         ego_canister.canister_add(&ego_store_id, "ego_cron".to_string(), &ego_cron_id);
         for ego_tenant_id in ego_tenant_ids.iter() {
@@ -112,12 +115,21 @@ pub async fn canister_relation_update() {
         }
 
         // ego_tenant
+        ic_cdk::println!("4 add canister to ego_tenant");
         for ego_tenant_id in ego_tenant_ids.iter() {
             ego_canister.canister_add(ego_tenant_id, "ego_store".to_string(), &ego_store_id);
             ego_canister.canister_add(ego_tenant_id, "ego_cron".to_string(), &ego_cron_id);
         }
 
+        // ego_cron
+        ic_cdk::println!("5 add canister to ego_cron");
+        ego_canister.canister_add(&ego_cron_id, "ego_ledger".to_string(), &ego_ledger_id);
+        for ego_tenant_id in ego_tenant_ids.iter() {
+            ego_canister.canister_add(&ego_cron_id, "ego_tenant".to_string(), ego_tenant_id);
+        }
+
         // ego_ledger
+        ic_cdk::println!("6 add canister to ego_ledger");
         ego_canister.canister_add(&ego_ledger_id, "ego_cron".to_string(), &ego_cron_id);
         ego_canister.canister_add(&ego_ledger_id, "ego_store".to_string(), &ego_store_id);
     });
@@ -135,36 +147,43 @@ pub async fn canister_main_track() {
         let tracker_ego_tenant_id = register.borrow().canister_get_one("ego_tenant").unwrap();
 
         // ego_dev
+        ic_cdk::println!("1 track ego_dev");
         let ego_dev_id = register.borrow().canister_get_one("ego_dev").unwrap();
         ego_tenant.canister_main_track(tracker_ego_tenant_id, wallet_id, ego_dev_id);
 
         // ego_file
+        ic_cdk::println!("2 track ego_file");
         for ego_file_id in register.borrow().canister_get_all("ego_file") {
             ego_tenant.canister_main_track(tracker_ego_tenant_id, wallet_id, ego_file_id);
         }
 
         // ego_store
+        ic_cdk::println!("3 track ego_store");
         let ego_store_id = register.borrow().canister_get_one("ego_store").unwrap();
         ego_tenant
           .canister_main_track(tracker_ego_tenant_id, wallet_id, ego_store_id);
 
         // ego_tenant
+        ic_cdk::println!("4 track ego_tenant");
         for ego_tenant_id in register.borrow().canister_get_all("ego_tenant") {
             ego_tenant
               .canister_main_track(tracker_ego_tenant_id, wallet_id, ego_tenant_id);
         }
 
         // ego_cron
+        ic_cdk::println!("5 track ego_cron");
         let ego_cron_id = register.borrow().canister_get_one("ego_cron").unwrap();
         ego_tenant
           .canister_main_track(tracker_ego_tenant_id, wallet_id, ego_cron_id);
 
         // ego_ledger
+        ic_cdk::println!("6 track ego_ledger");
         let ego_ledger_id = register.borrow().canister_get_one("ego_ledger").unwrap();
         ego_tenant
           .canister_main_track(tracker_ego_tenant_id, wallet_id, ego_ledger_id);
 
         // ego_ops
+        ic_cdk::println!("7 track ego_ops");
         ego_tenant
           .canister_main_track(tracker_ego_tenant_id, wallet_id, wallet_id);
 

@@ -67,8 +67,12 @@ fn post_upgrade() {
 /********************  methods for ego_registry   ********************/
 fn on_canister_added(name: &str, canister_id: Principal) {
     let _ = match name {
-        "ego_ledger" => role_user_add(canister_id).unwrap(),
-        "ego_tenant" => role_user_add(canister_id).unwrap(),
+        "ego_ledger" => {
+            role_user_add(canister_id).unwrap();
+        },
+        "ego_tenant" => {
+            role_user_add(canister_id).unwrap();
+        },
         _ => {}
     };
 }

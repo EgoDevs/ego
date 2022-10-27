@@ -19,7 +19,7 @@ pub trait TEgoDev {
         backend_data_hash: String,
         frontend: Option<Principal>,
         deploy_mode: DeployMode,
-    ) ;
+    );
 }
 
 pub struct EgoDev {}
