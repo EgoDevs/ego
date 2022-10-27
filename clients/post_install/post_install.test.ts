@@ -32,13 +32,6 @@ describe('post_ops', () => {
   });
 });
 
-// run post_ledger
-// describe('post_ledger', () => {
-//   test('ledger post install', async () => {
-//     await ledgerPostInstall();
-//   });
-// });
-
 describe('silo', () => {
   test('silo post install', async () => {
     await storePostInstall();

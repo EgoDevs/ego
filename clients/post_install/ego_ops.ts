@@ -29,6 +29,10 @@ const ego_store_wasm = fs.readFileSync(
   `${[process.cwd()]}` + '/artifacts/ego_store/ego_store_opt.wasm',
 );
 
+const ego_assets_wasm = fs.readFileSync(
+  `${[process.cwd()]}` + '/artifacts/ego_assets/ego_assets_opt.wasm',
+);
+
 const astrox_wasm = fs.readFileSync(
   path.resolve(
     `${[process.cwd()]}` +
@@ -65,7 +69,17 @@ export const opsPostInstall = async () => {
   console.log(`3. canister_main_track\n`);
   await opsOperator.canister_main_track();
 
-  console.log(`4. release astrox_controller canister\n`);
+  console.log(`4. release ego_assets canister\n`);
+  await admin_app_create(
+    'ego_assets',
+    'ego_assets',
+    version,
+    { System: null },
+    { DEDICATED: null },
+    astrox_wasm,
+  );
+
+  console.log(`5. release astrox_controller canister\n`);
   await admin_app_create(
     'astrox_controller',
     'astrox_controller',
@@ -75,7 +89,7 @@ export const opsPostInstall = async () => {
     astrox_wasm,
   );
 
-  console.log(`5. release omni_wallet canister\n`);
+  console.log(`6. release omni_wallet canister\n`);
   await admin_app_create(
     'omni_wallet',
     'omni_wallet',

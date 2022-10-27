@@ -71,7 +71,7 @@ pub struct WalletAppInstallRequest {
 
 #[derive(CandidType, Deserialize, Serialize)]
 pub struct WalletAppInstallResponse {
-    pub user_app: UserApp,
+    pub user_app: AppInstalled,
 }
 
 #[derive(CandidType, Deserialize, Serialize)]
@@ -81,7 +81,7 @@ pub struct WalletAppUpgradeRequest {
 
 #[derive(CandidType, Deserialize, Serialize)]
 pub struct WalletAppUpgradeResponse {
-    pub user_app: UserApp,
+    pub user_app: AppInstalled,
 }
 
 #[derive(CandidType, Deserialize, Serialize)]

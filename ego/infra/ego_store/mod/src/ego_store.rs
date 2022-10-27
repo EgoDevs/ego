@@ -76,13 +76,13 @@ impl EgoStore {
         user_id: Principal,
     ) -> Result<Principal, EgoError> {
         match self.wallets.get(&wallet_id) {
-            Some(_) => Err(EgoStoreErr::WalletExists.into()),
+            Some(wallet) => Ok(wallet.tenant_id),
             None => {
                 let tenant_id = self.tenant_get()?;
                 let wallet = self
-                    .wallets
-                    .entry(wallet_id)
-                    .or_insert(Wallet::new(tenant_id, wallet_id, user_id));
+                  .wallets
+                  .entry(wallet_id)
+                  .or_insert(Wallet::new(tenant_id, wallet_id, user_id));
 
                 Ok(wallet.tenant_id)
             }
@@ -114,12 +114,15 @@ impl EgoStore {
         &self,
         wallet_id: &Principal,
         app_id: AppId,
-    ) -> Result<UserApp, EgoError> {
+    ) -> Result<AppInstalled, EgoError> {
         match self.wallets.get(wallet_id) {
             None => Err(EgoStoreErr::WalletNotExists.into()),
             Some(wallet) => match wallet.apps.get(&app_id) {
                 None => Err(EgoStoreErr::AppNotInstall.into()),
-                Some(user_app) => Ok(user_app.clone()),
+                Some(user_app) => {
+                    let app = self.apps.get(&app_id).unwrap();
+                    Ok(AppInstalled::new(user_app, app))
+                },
             },
         }
     }

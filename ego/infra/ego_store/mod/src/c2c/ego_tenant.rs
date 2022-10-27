@@ -16,13 +16,13 @@ pub trait TEgoTenant {
         ego_tenant_id: Principal,
         wallet_id: Principal,
         user_id: Principal,
-        wasm: Wasm,
+        wasm: &Wasm,
     ) -> Result<Principal, EgoError>;
     async fn app_main_upgrade(
         &self,
         ego_tenant_id: Principal,
         canister_id: Principal,
-        wasm: Wasm,
+        wasm: &Wasm,
     ) -> Result<bool, EgoError>;
     async fn canister_main_track(
         &self,
@@ -53,12 +53,12 @@ impl TEgoTenant for EgoTenant {
         ego_tenant_id: Principal,
         wallet_id: Principal,
         user_id: Principal,
-        wasm: Wasm,
+        wasm: &Wasm,
     ) -> Result<Principal, EgoError> {
         let req = AppMainInstallRequest {
             wallet_id,
             user_id,
-            wasm,
+            wasm: wasm.clone(),
         };
 
         let call_result = api::call::call(ego_tenant_id, "app_main_install", (req,)).await
@@ -80,9 +80,9 @@ impl TEgoTenant for EgoTenant {
         &self,
         ego_tenant_id: Principal,
         canister_id: Principal,
-        wasm: Wasm,
+        wasm: &Wasm,
     ) -> Result<bool, EgoError> {
-        let req = AppMainUpgradeRequest { canister_id, wasm };
+        let req = AppMainUpgradeRequest { canister_id, wasm: wasm.clone() };
 
         let call_result = api::call::call(ego_tenant_id, "app_main_upgrade", (req,)).await
             as Result<(Result<AppMainUpgradeResponse, EgoError>,), _>;
