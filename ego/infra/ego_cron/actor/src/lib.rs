@@ -146,23 +146,7 @@ async fn tick() {
             .get_payload::<Task>()
             .expect("Unable to deserialize cron task kind");
 
-        cron_call(task).await;
+        ic_cdk::println!("ego-cron: notify task: {:?}", task);
+        let _result = notify(task.canister_id, task.method.as_str(), ());
     }
-}
-
-pub async fn cron_call(task: Task) {
-    ic_cdk::println!("ego-cron: notify task: {:?}", task);
-    let notify_result = notify(task.canister_id, task.method.as_str(), ());
-
-    match notify_result {
-        Err(code) => {
-            let code = code as u16;
-            Err(EgoError {
-                code,
-                msg: "cron_call failed".to_string(),
-            })
-        }
-        _ => Ok(true),
-    }
-    .expect("notify success");
 }
