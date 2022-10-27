@@ -5,7 +5,7 @@ use ego_dev_mod::c2c::ego_store::TEgoStore;
 use ego_dev_mod::developer::Developer;
 use ego_dev_mod::file::File;
 use ego_dev_mod::service::EgoDevService;
-use ego_dev_mod::state::{EGO_DEV, EGO_STORE_CANISTER_ID};
+use ego_dev_mod::state::{EGO_DEV};
 use ego_types::app::{Category, DeployMode};
 use ego_types::ego_error::EgoError;
 use ego_types::version::Version;
@@ -26,12 +26,15 @@ mock! {
 
   #[async_trait]
   impl TEgoStore for Store {
-    async fn app_main_release(&self, canister_id: Principal, app: EgoDevApp) -> Result<bool, EgoError>;
+    fn app_main_release(
+        &self,
+        app: EgoDevApp,
+        app_version: AppVersion
+    );
   }
 }
 
 static FILE_CANISTER_ID: &str = "amybd-zyaaa-aaaah-qc4hq-cai";
-static STORE_CANISTER_ID: &str = "2265i-mqaaa-aaaad-qbsga-cai";
 
 static AUDITER_PRINCIPAL_ID: &str = "22ayq-aiaaa-aaaai-qgmma-cai";
 
@@ -55,7 +58,6 @@ pub fn set_up() {
     let developer_principal = Principal::from_text(DEVELOPER_PRINCIPAL_ID.to_string()).unwrap();
     let auditer_principal = Principal::from_text(AUDITER_PRINCIPAL_ID.to_string()).unwrap();
     let file_canister = Principal::from_text(FILE_CANISTER_ID.to_string()).unwrap();
-    let store_canister = Principal::from_text(STORE_CANISTER_ID.to_string()).unwrap();
 
     let version = Version::new(1, 0, 1);
 
@@ -123,17 +125,12 @@ pub fn set_up() {
             .apps
             .insert(RELEASED_APP_ID.to_string(), app);
     });
-
-    EGO_STORE_CANISTER_ID.with(|s| {
-        *s.borrow_mut() = Some(store_canister);
-    });
 }
 
 #[test]
 fn admin_file_add() {
     let file_canister = Principal::from_text(FILE_CANISTER_ID.to_string()).unwrap();
-    let resp = EgoDevService::admin_ego_file_add(file_canister);
-    assert!(resp.is_ok());
+    EgoDevService::admin_ego_file_add(file_canister);
 
     EGO_DEV.with(|ego_dev| {
         assert_eq!(1, ego_dev.borrow().ego_files.len());
@@ -432,7 +429,7 @@ async fn app_version_release() {
     let mut ego_store = MockStore::new();
     ego_store
         .expect_app_main_release()
-        .returning(|_, _| Ok(true));
+        .returning(|_, _| ());
 
     // approve version
     let result = EgoDevService::app_version_approve(EXIST_APP_ID.to_string(), version);
@@ -440,8 +437,7 @@ async fn app_version_release() {
 
     // check after audit
     let result =
-        EgoDevService::app_version_release(developer, EXIST_APP_ID.to_string(), version, ego_store)
-            .await;
+        EgoDevService::app_version_release(developer, EXIST_APP_ID.to_string(), version, ego_store);
     assert!(result.is_ok());
 
     // check after audit
@@ -803,32 +799,28 @@ async fn app_version_release_fail() {
 
     // app not exists
     let mut ego_store = MockStore::new();
-    ego_store
-        .expect_app_main_release()
-        .returning(|_, _| Ok(true));
+    let _result = ego_store
+        .expect_app_main_release();
     let version_release = EgoDevService::app_version_release(
         caller_test,
         TEST_APP_ID.to_string(),
         version,
         ego_store,
-    )
-    .await;
+    );
     assert!(version_release.is_err());
     let version_release = version_release.unwrap_err();
     assert_eq!(version_release.code, 1002);
 
     // test caller unauthorized
     let mut ego_store = MockStore::new();
-    ego_store
-        .expect_app_main_release()
-        .returning(|_, _| Ok(true));
+    let _result = ego_store
+        .expect_app_main_release();
     let caller_unauthorized = EgoDevService::app_version_release(
         caller_test,
         EXIST_APP_ID.to_string(),
         version,
         ego_store,
-    )
-    .await;
+    );
     assert!(caller_unauthorized.is_err());
     assert_eq!(1007, caller_unauthorized.unwrap_err().code);
 }
