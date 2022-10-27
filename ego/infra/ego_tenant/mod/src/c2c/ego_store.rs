@@ -9,19 +9,19 @@ use ic_cdk::export::Principal;
 pub trait TEgoStore {
     async fn wallet_cycle_charge(
         &self,
-        store_id: Principal,
         wallet_id: Principal,
         cycle: u128,
         comment: String,
     ) -> Result<bool, EgoError>;
 }
 
-#[derive(Clone)]
-pub struct EgoStore {}
+pub struct EgoStore {
+    pub canister_id: Principal
+}
 
 impl EgoStore {
-    pub fn new() -> Self {
-        EgoStore {}
+    pub fn new(canister_id: Principal) -> Self {
+        EgoStore {canister_id}
     }
 }
 
@@ -29,7 +29,6 @@ impl EgoStore {
 impl TEgoStore for EgoStore {
     async fn wallet_cycle_charge(
         &self,
-        store_id: Principal,
         wallet_id: Principal,
         cycle: u128,
         comment: String,
@@ -40,7 +39,7 @@ impl TEgoStore for EgoStore {
             comment,
         };
 
-        let call_result = api::call::call(store_id, "wallet_cycle_charge", (req,)).await
+        let call_result = api::call::call(self.canister_id, "wallet_cycle_charge", (req,)).await
             as Result<(Result<WalletCycleChargeResponse, EgoError>,), (RejectionCode, String)>;
 
         match call_result {

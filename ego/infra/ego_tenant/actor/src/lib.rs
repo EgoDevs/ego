@@ -79,8 +79,8 @@ fn on_canister_added(name: &str, canister_id: Principal) {
         "ego_cron" => {
             role_user_add(canister_id).unwrap();
 
-            let ego_cron = EgoCron::new();
-            ego_cron.task_main_add(canister_id, "message_main_notify");
+            let ego_cron = EgoCron::new(canister_id);
+            ego_cron.task_main_add("message_main_notify");
         },
         _ => {}
     };
@@ -150,13 +150,12 @@ async fn message_main_notify() -> Result<(), EgoError> {
 
             for task in tasks {
                 let management = IcManagement::new();
-                let ego_store = EgoStore::new();
+                let ego_store = EgoStore::new(ego_store_id);
                 let ego_canister = EgoCanister::new();
 
                 match EgoTenantService::canister_cycles_check(
                     management,
                     ego_store,
-                    ego_store_id,
                     ego_canister,
                     sentinel,
                     task,

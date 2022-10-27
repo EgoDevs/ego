@@ -101,7 +101,6 @@ impl EgoTenantService {
     pub async fn canister_cycles_check<M: TIcManagement, S: TEgoStore, EC: TEgoCanister>(
         management: M,
         ego_store: S,
-        ego_store_id: Principal,
         canister: EC,
         sentinel: u64,
         task: Task,
@@ -138,7 +137,6 @@ impl EgoTenantService {
                             cycle_consume_per_nanosecond * HALF_HOUR as u128;
                         match ego_store
                             .wallet_cycle_charge(
-                                ego_store_id,
                                 task.wallet_id,
                                 cycle_required_to_top_up,
                                 format!(
