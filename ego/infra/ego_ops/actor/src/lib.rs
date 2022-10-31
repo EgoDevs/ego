@@ -88,6 +88,7 @@ pub async fn canister_relation_update() {
 
         let ego_cron_id = register.borrow().canister_get_one("ego_cron").unwrap();
         let ego_ledger_id = register.borrow().canister_get_one("ego_ledger").unwrap();
+        let ego_log_id = register.borrow().canister_get_one("ego_log").unwrap();
 
         // ego_dev
         ic_cdk::println!("1 add canister to ego_dev");
@@ -132,6 +133,11 @@ pub async fn canister_relation_update() {
         ic_cdk::println!("6 add canister to ego_ledger");
         ego_canister.canister_add(&ego_ledger_id, "ego_cron".to_string(), &ego_cron_id);
         ego_canister.canister_add(&ego_ledger_id, "ego_store".to_string(), &ego_store_id);
+        ego_canister.canister_add(&ego_ledger_id, "ego_log".to_string(), &ego_log_id);
+
+        // ego_log
+        ic_cdk::println!("7 add canister to ego_log");
+        ego_canister.canister_add(&ego_log_id, "ego_cron".to_string(), &ego_ledger_id);
     });
 }
 
@@ -186,6 +192,12 @@ pub async fn canister_main_track() {
         ic_cdk::println!("7 track ego_ops");
         ego_tenant
           .canister_main_track(tracker_ego_tenant_id, wallet_id, wallet_id);
+
+        // ego_log
+        let ego_log_id = register.borrow().canister_get_one("ego_log").unwrap();
+        ic_cdk::println!("7 track ego_log");
+        ego_tenant
+          .canister_main_track(tracker_ego_tenant_id, wallet_id, ego_log_id);
 
     });
 }

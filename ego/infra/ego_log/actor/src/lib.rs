@@ -72,18 +72,19 @@ fn on_canister_added(name: &str, canister_id: Principal) {
 #[update(name = "canister_log_add", guard = "user_guard")]
 #[candid_method(update, rename = "canister_log_add")]
 fn canister_log_add(message: String) {
-    ic_cdk::println!("ego-log: canister_log_add");
+    let ts = time();
+    ic_cdk::println!("ego-log: canister_log_add, message: {}, ts: {}", message, ts);
     EGO_LOG.with(|ego_log| {
         ego_log
             .borrow_mut()
-            .canister_log_add(caller(), time(), message)
+            .canister_log_add(caller(), ts, message)
     });
 }
 
 #[query(name = "canister_log_get", guard = "user_guard")]
 #[candid_method(query, rename = "canister_log_get")]
 fn canister_log_get(from_ts: u64, to_ts: u64) -> Vec<Log> {
-    ic_cdk::println!("ego-log: canister_log_get");
+    ic_cdk::println!("ego-log: canister_log_get between {} and {}", from_ts, to_ts);
     EGO_LOG.with(|ego_log| ego_log.borrow().canister_log_get(from_ts, to_ts))
 }
 

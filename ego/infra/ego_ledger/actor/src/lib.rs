@@ -4,9 +4,12 @@ use ego_ledger_mod::service::EgoLedgerService;
 use ic_cdk::export::candid::{CandidType, Deserialize};
 use ic_cdk::storage;
 use ic_cdk_macros::*;
+use ic_ledger_types::MAINNET_LEDGER_CANISTER_ID;
 use serde::Serialize;
 use ego_ledger_mod::c2c::ego_cron::{EgoCron, TEgoCron};
+use ego_ledger_mod::c2c::ego_log::EgoLog;
 use ego_ledger_mod::c2c::ego_store::EgoStore;
+use ego_ledger_mod::c2c::ic_ledger::IcLedger;
 
 use ego_ledger_mod::state::{EGO_LEDGER};
 use ego_ledger_mod::types::{
@@ -77,8 +80,8 @@ fn on_canister_added(name: &str, canister_id: Principal) {
         "ego_cron" => {
             role_user_add(canister_id).unwrap();
 
-            let ego_cron = EgoCron::new();
-            ego_cron.task_main_add(canister_id, "message_main_notify");
+            let ego_cron = EgoCron::new(canister_id);
+            ego_cron.task_main_add("message_main_notify");
         },
         _ => {}
     };
@@ -97,7 +100,7 @@ fn ledger_payment_add(req: LedgerPaymentAddRequest) -> Result<(), EgoError> {
 /********************  owner  ********************/
 #[update(name = "ledger_main_init", guard = "owner_guard")]
 #[candid_method(update, rename = "ledger_main_init")]
-async fn ledger_main_init(req: LedgerMainInitRequest) -> Result<(), EgoError> {
+fn ledger_main_init(req: LedgerMainInitRequest) -> Result<(), EgoError> {
     ic_cdk::println!("ego-ledger: ledger_main_init");
     EgoLedgerService::ledger_main_init(req.start);
     Ok(())
@@ -109,10 +112,16 @@ async fn ledger_main_init(req: LedgerMainInitRequest) -> Result<(), EgoError> {
 async fn message_main_notify() -> Result<(), EgoError> {
     ic_cdk::println!("ego-ledger: message_main_notify");
 
-    let ego_store = EgoStore::new();
-    let ego_store_id = REGISTRY.with(|r| r.borrow().canister_get_one("ego_store")).unwrap();
 
-    EgoLedgerService::ledger_block_query(ego_store, ego_store_id).await?;
+    let ego_store_id = REGISTRY.with(|r| r.borrow().canister_get_one("ego_store")).unwrap();
+    let ego_store = EgoStore::new(ego_store_id);
+
+    let ego_log_id = REGISTRY.with(|r| r.borrow().canister_get_one("ego_log")).unwrap();
+    let ego_log = EgoLog::new(ego_log_id);
+
+    let ic_ledger = IcLedger::new(MAINNET_LEDGER_CANISTER_ID);
+
+    EgoLedgerService::ledger_payment_match(ego_store, ego_log, ic_ledger).await?;
 
     Ok(())
 }

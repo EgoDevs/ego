@@ -2,9 +2,11 @@ import { getActor } from '@/settings/agent';
 import { _SERVICE as EgoDevService } from '@/idls/ego_dev';
 import {_SERVICE as EgoStoreService, Category} from '@/idls/ego_store';
 import { _SERVICE as EgoOpsService } from '@/idls/ego_ops';
+import { _SERVICE as EgoLogService } from '@/idls/ego_log';
 import { identity } from '@/settings/identity';
 import { idlFactory as EgoDevIdlFactory} from '@/idls/ego_dev.idl';
 import { idlFactory as EgoStoreIdlFactory } from '@/idls/ego_store.idl';
+import { idlFactory as EgoLogIdlFactory } from '@/idls/ego_log.idl';
 import { getCanisterId } from '@/settings/utils';
 import {Principal} from "@dfinity/principal";
 import path from "path";
@@ -25,6 +27,12 @@ export const egoOpsDeployerActor = getActor<EgoOpsService>(
   identity,
   EgoStoreIdlFactory,
   getCanisterId('ego_store')!,
+);
+
+export const egoLogDeployerActor = getActor<EgoLogService>(
+  identity,
+  EgoLogIdlFactory,
+  getCanisterId('ego_log')!,
 );
 
 describe('scripts', () => {
@@ -78,4 +86,14 @@ describe('scripts', () => {
     let resp2 = await deployer.app_main_list({ query_param: { 'ByCategory' : { 'category' : { 'Vault' : null } } } });
     console.log(resp2.Ok.apps);
   });
+
+  test('get_log', async () => {
+    const deployer = await egoLogDeployerActor;
+
+    console.log(`\t\t list last 30min logs\n`);
+    let logs = await deployer.canister_log_get(BigInt((Date.now() - 1000 * 60 * 30) * 1000000), BigInt(Date.now() * 1000000)) // use nanoseconds
+    logs.forEach(log => {
+      console.log(`canister_id: ${log.canister_id}, message: ${log.log}, ts: ${log.created_at}`)
+    })
+  })
 });

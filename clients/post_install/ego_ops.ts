@@ -107,6 +107,7 @@ const canister_registers = async () => {
   await canister_register('ego_tenant');
   await canister_register('ego_cron');
   await canister_register('ego_ledger');
+  await canister_register('ego_log');
 };
 
 async function getOperator<T>(canisterName: string): Promise<ActorSubclass<T>> {

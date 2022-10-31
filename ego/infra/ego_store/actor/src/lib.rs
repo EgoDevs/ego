@@ -7,6 +7,7 @@ use serde::Serialize;
 
 use ego_macros::inject_balance_get;
 use ego_registry::inject_ego_registry;
+use ego_store_mod::c2c::ego_ledger::EgoLedger;
 use ego_store_mod::c2c::ego_tenant::EgoTenant;
 use ego_store_mod::ego_store::EgoStore;
 use ego_store_mod::service::*;
@@ -260,7 +261,10 @@ pub async fn wallet_order_new(
 ) -> Result<WalletOrderNewResponse, EgoError> {
     ic_cdk::println!("ego_store: wallet_order_new");
 
-    match EgoStoreService::wallet_order_new(ic_cdk::caller(), ic_cdk::id(), request.amount) {
+    let ego_ledger_id = REGISTRY.with(|r| r.borrow().canister_get_one("ego_ledger")).unwrap();
+    let ego_ledger = EgoLedger::new(ego_ledger_id);
+
+    match EgoStoreService::wallet_order_new(ego_ledger, ic_cdk::caller(), ic_cdk::id(), request.amount) {
         Ok(order) => Ok(WalletOrderNewResponse { memo: order.memo }),
         Err(e) => Err(e),
     }

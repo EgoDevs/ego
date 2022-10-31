@@ -4,6 +4,7 @@ use ic_ledger_types::Memo;
 use crate::app::EgoStoreApp;
 use ego_types::app::{App, AppId, Canister, CanisterType};
 use ego_types::ego_error::EgoError;
+use crate::c2c::ego_ledger::TEgoLedger;
 
 use crate::c2c::ego_tenant::TEgoTenant;
 use crate::order::Order;
@@ -246,16 +247,19 @@ impl EgoStoreService {
         EGO_STORE.with(|ego_store| ego_store.borrow().wallet_order_list(&wallet_id))
     }
 
-    pub fn wallet_order_new(
+    pub fn wallet_order_new<L: TEgoLedger>(
+        ego_ledger: L,
         wallet_id: Principal,
         store_id: Principal,
         amount: f32,
     ) -> Result<Order, EgoError> {
-        EGO_STORE.with(|ego_store| {
+        let order = EGO_STORE.with(|ego_store| {
             ego_store
                 .borrow_mut()
                 .wallet_order_new(&wallet_id, &store_id, amount)
-        })
+        })?;
+        ego_ledger.ledger_payment_add(&order);
+        Ok(order)
     }
 
     pub fn wallet_order_notify(memo: Memo, operator: Principal, ts: u64) -> Result<bool, EgoError> {

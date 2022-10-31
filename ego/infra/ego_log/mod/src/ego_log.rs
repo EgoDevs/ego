@@ -1,6 +1,7 @@
 use crate::log::Log;
 use ic_cdk::export::candid::{CandidType, Deserialize};
-use ic_types::Principal;
+use ic_cdk::export::Principal;
+
 use serde::Serialize;
 
 #[derive(Clone, Debug, CandidType, Deserialize, Serialize)]

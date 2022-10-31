@@ -1,13 +1,10 @@
-use crate::payment::Payment;
+use crate::payment::{Payment, PaymentStatus};
 use crate::state::{EGO_LEDGER};
-use crate::types::EgoLedgerErr;
 use ego_types::ego_error::EgoError;
-use ic_ledger_types::{
-    query_blocks, AccountIdentifier, BlockIndex, GetBlocksArgs, Memo, Operation, Tokens,
-    Transaction, MAINNET_LEDGER_CANISTER_ID,
-};
-use ic_types::Principal;
+use ic_ledger_types::{AccountIdentifier, BlockIndex, Memo, Operation, Tokens, Transaction};
+use crate::c2c::ego_log::TEgoLog;
 use crate::c2c::ego_store::TEgoStore;
+use crate::c2c::ic_ledger::TIcLedger;
 
 pub struct EgoLedgerService {}
 
@@ -28,39 +25,13 @@ impl EgoLedgerService {
         })
     }
 
-    pub async fn ledger_block_query<S: TEgoStore>(ego_store: S, ego_store_id: Principal) -> Result<(), EgoError> {
-        ic_cdk::println!("==> 1.query blocks");
+    pub async fn ledger_payment_match<S: TEgoStore, L: TEgoLog, IL: TIcLedger>(ego_store: S, ego_log: L, ic_ledger: IL) -> Result<(), EgoError> {
+        ego_log.canister_log_add("1.query blocks");
         let start = EGO_LEDGER.with(|ego_ledger| ego_ledger.borrow().start);
 
-        let blocks = match query_blocks(
-            MAINNET_LEDGER_CANISTER_ID,
-            GetBlocksArgs {
-                start: start,
-                length: 100,
-            },
-        )
-        .await
-        {
-            Ok(t) => {
-                ic_cdk::println!("query block successful");
-                Ok(t.blocks)
-            }
-            Err((code, detail)) => {
-                ic_cdk::println!(
-                    "query block failed with rejectionCode {:?} and detail {:?}",
-                    code,
-                    detail
-                );
-                Err(EgoError::from(EgoLedgerErr::FailedQueryBlocks))
-            }
-        }?;
+        let blocks = ic_ledger.query_blocks(start).await?;
 
-        let length = blocks.len();
-
-        ic_cdk::println!("==> 2.update length");
-        EGO_LEDGER.with(|ego_ledger| ego_ledger.borrow_mut().start += length as u64);
-
-        ic_cdk::println!("==> 3.add block to confirmed");
+        ego_log.canister_log_add("2.add block to confirmed");
         EGO_LEDGER.with(|ego_ledger| {
             let mut e_l = ego_ledger.borrow_mut();
             for block in blocks {
@@ -73,9 +44,7 @@ impl EgoLedgerService {
                             amount,
                             fee: _,
                         } => {
-                            e_l.confirmed
-                                .entry(trx.memo)
-                                .or_insert(Payment::new(from, to, amount, trx.memo));
+                            e_l.block_confirm(from, to, amount);
                         }
                         _ => {}
                     }
@@ -83,25 +52,18 @@ impl EgoLedgerService {
             }
         });
 
-        ic_cdk::println!("==> 4.get matched memos");
-        let matched_memos =
-            EGO_LEDGER.with(|ego_ledger| ego_ledger.borrow().ledger_payment_matched());
 
-        ic_cdk::println!("==> 5.notify ego_store");
-        let mut successes_memos = vec![];
-
-        for matched_memo in matched_memos {
-            ego_store
-                .wallet_order_notify(ego_store_id, matched_memo)
-                .await?;
-            successes_memos.push(matched_memo);
-        }
-
-        ic_cdk::println!("==> 6.remove notify successes memos");
+        ego_log.canister_log_add("3.notify ego_store");
         EGO_LEDGER.with(|ego_ledger| {
-            ego_ledger
-                .borrow_mut()
-                .ledger_payment_remove(successes_memos)
+            for (_to, payment) in ego_ledger.borrow_mut().payments.iter_mut() {
+                ego_store.wallet_order_notify(payment.memo);
+                payment.status = PaymentStatus::NOTIFIED;
+            }
+        });
+
+        ego_log.canister_log_add("4.remove notified successes memos");
+        EGO_LEDGER.with(|ego_ledger| {
+            ego_ledger.borrow_mut().payments.retain(|_to, payment| payment.status != PaymentStatus::NOTIFIED)
         });
 
         Ok(())
