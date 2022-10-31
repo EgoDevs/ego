@@ -66,7 +66,7 @@ impl EgoTenantService {
 
         ic_cdk::println!("4 change canister controller to wallet");
         management
-            .canister_controller_set(canister_id, vec![wallet_id])
+            .canister_controller_set(canister_id, vec![wallet_id, user_id])
             .await?;
 
         ic_cdk::println!("4 change canister owner to user");
