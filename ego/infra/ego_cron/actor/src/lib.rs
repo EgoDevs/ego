@@ -134,19 +134,28 @@ fn task_main_cancel(req: TaskMainCancelRequest) -> Result<(), EgoError> {
     Ok(())
 }
 
-/********************   heartbeat   ********************/
-implement_cron!();
-
-#[heartbeat]
-async fn tick() {
+#[update(name = "task_main_check", guard = "owner_guard")]
+#[candid_method(update, rename = "task_main_check")]
+fn task_main_check() -> Result<(), EgoError> {
     let ready_tasks = cron_ready_tasks();
 
     for tasks in ready_tasks {
         let task = tasks
-            .get_payload::<Task>()
-            .expect("Unable to deserialize cron task kind");
+          .get_payload::<Task>()
+          .expect("Unable to deserialize cron task kind");
 
         ic_cdk::println!("ego-cron: notify task: {:?}", task);
         let _result = notify(task.canister_id, task.method.as_str(), ());
     }
+
+    Ok(())
+}
+
+/********************   heartbeat   ********************/
+implement_cron!();
+
+// remove heartbeat to save cycle
+// #[heartbeat]
+async fn tick() {
+    let _result = task_main_check();
 }

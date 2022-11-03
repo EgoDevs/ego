@@ -39,3 +39,10 @@ pub struct AdminWalletProviderAddRequest {
     pub wallet_provider: Principal,
     pub wallet_app_id: AppId,
 }
+
+#[derive(CandidType, Deserialize)]
+pub struct AdminWalletCycleRechargeRequest {
+    pub wallet_id: Principal,
+    pub cycle: u128,
+    pub comment: String,
+}

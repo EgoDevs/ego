@@ -1,114 +1,74 @@
 use ic_cdk::export::Principal;
 
-use async_trait::async_trait;
-use ego_store_mod::types::{
-    AdminEgoTenantAddRequest, AdminWalletProviderAddRequest, EgoStoreSetupRequest,
-};
+use ego_store_mod::types::{AdminWalletCycleRechargeRequest, AdminWalletProviderAddRequest, WalletOrderNewRequest};
 use ego_types::app::AppId;
-use ego_types::ego_error::EgoError;
 use ic_cdk::api;
 
-#[async_trait]
 pub trait TEgoStore {
-    async fn admin_ego_tenant_add(
+    fn admin_wallet_provider_add(
         &self,
-        canister_id: Principal,
-        ego_tenant_id: Principal,
-    ) -> Result<bool, EgoError>;
-    async fn ego_store_setup(
-        &self,
-        ego_store_id: Principal,
-        ego_dev_id: Principal,
-        ego_cron_id: Principal,
-    ) -> Result<bool, EgoError>;
-    async fn admin_wallet_provider_add(
-        &self,
-        ego_store_id: Principal,
         wallet_provider: Principal,
         wallet_app_id: AppId,
-    ) -> Result<(), EgoError>;
+    );
+
+    fn admin_wallet_cycle_recharge(
+        &self,
+        wallet_id: Principal,
+        cycle: u128,
+        comment: String
+    );
+
+    fn admin_wallet_order_new(
+        &self,
+        amount: f32
+    );
 }
 
-pub struct EgoStore {}
+pub struct EgoStore {
+    pub canister_id: Principal
+}
 
 impl EgoStore {
-    pub fn new() -> Self {
-        EgoStore {}
+    pub fn new(canister_id: Principal) -> Self {
+        EgoStore {canister_id}
     }
 }
 
-#[async_trait]
 impl TEgoStore for EgoStore {
-    async fn admin_ego_tenant_add(
+    fn admin_wallet_provider_add(
         &self,
-        canister_id: Principal,
-        ego_tenant_id: Principal,
-    ) -> Result<bool, EgoError> {
-        let req = AdminEgoTenantAddRequest {
-            tenant_id: ego_tenant_id,
-        };
-
-        let notify_result = api::call::notify(canister_id, "admin_ego_tenant_add", (req,));
-
-        match notify_result {
-            Err(code) => {
-                let code = code as u16;
-                Err(EgoError {
-                    code,
-                    msg: "admin_egp_tenant_add failed".to_string(),
-                })
-            }
-            _ => Ok(true),
-        }
-    }
-
-    async fn ego_store_setup(
-        &self,
-        ego_store_id: Principal,
-        ego_dev_id: Principal,
-        ego_cron_id: Principal,
-    ) -> Result<bool, EgoError> {
-        let req = EgoStoreSetupRequest {
-            ego_dev_id,
-            ego_cron_id,
-        };
-
-        let notify_result = api::call::notify(ego_store_id, "ego_store_setup", (req,));
-
-        match notify_result {
-            Err(code) => {
-                let code = code as u16;
-                Err(EgoError {
-                    code,
-                    msg: "ego_store_setup failed".to_string(),
-                })
-            }
-            _ => Ok(true),
-        }
-    }
-
-    async fn admin_wallet_provider_add(
-        &self,
-        ego_store_id: Principal,
         wallet_provider: Principal,
         wallet_app_id: AppId,
-    ) -> Result<(), EgoError> {
+    ) {
         let req = AdminWalletProviderAddRequest {
             wallet_provider,
             wallet_app_id,
         };
 
-        let notify_result = api::call::notify(ego_store_id, "admin_wallet_provider_add", (req,));
+        let _result = api::call::notify(self.canister_id, "admin_wallet_provider_add", (req,));
+    }
 
-        match notify_result {
-            Err(code) => {
-                let code = code as u16;
-                Err(EgoError {
-                    code,
-                    msg: "admin_wallet_provider_add failed".to_string(),
-                })
-            }
-            _ => Ok(()),
-        }
+    fn admin_wallet_cycle_recharge(
+        &self,
+        wallet_id: Principal,
+        cycle: u128,
+        comment: String
+    ) {
+        let req = AdminWalletCycleRechargeRequest {
+            wallet_id, cycle, comment
+        };
+
+        let _result = api::call::notify(self.canister_id, "admin_wallet_cycle_recharge", (req,));
+    }
+
+    fn admin_wallet_order_new(
+        &self,
+        amount: f32
+    )  {
+        let req = WalletOrderNewRequest {
+            amount
+        };
+
+        let _result = api::call::notify(self.canister_id, "wallet_order_new", (req,));
     }
 }

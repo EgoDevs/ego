@@ -9,9 +9,7 @@ use ego_ops_mod::c2c::ego_store::{EgoStore, TEgoStore};
 use ego_ops_mod::c2c::ego_tenant::{EgoTenant, TEgoTenant};
 use ego_ops_mod::ego_ops::EgoOps;
 use ego_ops_mod::state::EGO_OPS;
-use ego_ops_mod::types::{
-    AdminAppCreateRequest, AdminWalletProviderAddRequest
-};
+use ego_ops_mod::types::{AdminAppCreateRequest, AdminWalletCycleRechargeRequest, AdminWalletProviderAddRequest};
 use ego_types::ego_error::EgoError;
 use ic_cdk::export::candid::{CandidType, Deserialize};
 use serde::Serialize;
@@ -232,30 +230,46 @@ pub fn admin_app_create(
 
 #[update(name = "admin_wallet_provider_add", guard = "owner_guard")]
 #[candid_method(update, rename = "admin_wallet_provider_add")]
-pub async fn admin_wallet_provider_add(req: AdminWalletProviderAddRequest) -> Result<(), EgoError> {
+pub fn admin_wallet_provider_add(req: AdminWalletProviderAddRequest) -> Result<(), EgoError> {
     ic_cdk::println!("ego_ops: admin_wallet_provider_add");
-    let ego_store = EgoStore::new();
+
     let ego_store_id = REGISTRY.with(|r| r.borrow().canister_get_one("ego_store")).unwrap();
+    let ego_store = EgoStore::new(ego_store_id);
 
     ego_store
-        .admin_wallet_provider_add(ego_store_id, req.wallet_provider, req.wallet_app_id)
-        .await?;
+        .admin_wallet_provider_add(req.wallet_provider, req.wallet_app_id);
 
     Ok(())
 }
 
 #[update(name = "admin_wallet_cycle_recharge", guard = "owner_guard")]
 #[candid_method(update, rename = "admin_wallet_cycle_recharge")]
-pub async fn admin_wallet_cycle_recharge(
-    req: AdminWalletProviderAddRequest,
+pub fn admin_wallet_cycle_recharge(
+    req: AdminWalletCycleRechargeRequest,
 ) -> Result<(), EgoError> {
-    ic_cdk::println!("ego_ops: admin_wallet_provider_add");
-    let ego_store = EgoStore::new();
+    ic_cdk::println!("ego_ops: admin_wallet_cycle_recharge");
+
     let ego_store_id = REGISTRY.with(|r| r.borrow().canister_get_one("ego_store")).unwrap();
+    let ego_store = EgoStore::new(ego_store_id);
 
     ego_store
-        .admin_wallet_provider_add(ego_store_id, req.wallet_provider, req.wallet_app_id)
-        .await?;
+        .admin_wallet_cycle_recharge(req.wallet_id, req.cycle, req.comment);
+
+    Ok(())
+}
+
+#[update(name = "admin_wallet_order_new", guard = "owner_guard")]
+#[candid_method(update, rename = "admin_wallet_order_new")]
+pub fn admin_wallet_order_new(
+    amount: f32,
+) -> Result<(), EgoError> {
+    ic_cdk::println!("ego_ops: admin_wallet_order_new");
+
+    let ego_store_id = REGISTRY.with(|r| r.borrow().canister_get_one("ego_store")).unwrap();
+    let ego_store = EgoStore::new(ego_store_id);
+
+    ego_store
+      .admin_wallet_order_new(amount);
 
     Ok(())
 }
