@@ -266,7 +266,10 @@ pub async fn wallet_order_new(
 
     match EgoStoreService::wallet_order_new(ego_ledger, ic_cdk::caller(), ic_cdk::id(), request.amount) {
         Ok(order) => Ok(WalletOrderNewResponse { memo: order.memo }),
-        Err(e) => Err(e),
+        Err(e) => {
+            ic_cdk::println!("ego_store: wallet_order_new {:?}", e);
+            Err(e)
+        },
     }
 }
 

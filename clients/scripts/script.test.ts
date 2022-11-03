@@ -1,12 +1,15 @@
 import { getActor } from '@/settings/agent';
 import { _SERVICE as EgoDevService } from '@/idls/ego_dev';
 import {_SERVICE as EgoStoreService, Category} from '@/idls/ego_store';
-import { _SERVICE as EgoOpsService } from '@/idls/ego_ops';
+import {_SERVICE as EgoOpsService, AdminWalletProviderAddRequest} from '@/idls/ego_ops';
 import { _SERVICE as EgoLogService } from '@/idls/ego_log';
+import { _SERVICE as EgoCronService } from '@/idls/ego_cron';
 import { identity } from '@/settings/identity';
 import { idlFactory as EgoDevIdlFactory} from '@/idls/ego_dev.idl';
 import { idlFactory as EgoStoreIdlFactory } from '@/idls/ego_store.idl';
 import { idlFactory as EgoLogIdlFactory } from '@/idls/ego_log.idl';
+import { idlFactory as EgoCronIdlFactory } from '@/idls/ego_cron.idl';
+import { idlFactory as EgoOpsIdlFactory } from '@/idls/ego_ops.idl';
 import { getCanisterId } from '@/settings/utils';
 import {Principal} from "@dfinity/principal";
 import path from "path";
@@ -25,8 +28,8 @@ export const egoStoreDeployerActor = getActor<EgoStoreService>(
 
 export const egoOpsDeployerActor = getActor<EgoOpsService>(
   identity,
-  EgoStoreIdlFactory,
-  getCanisterId('ego_store')!,
+  EgoOpsIdlFactory,
+  getCanisterId('ego_ops')!,
 );
 
 export const egoLogDeployerActor = getActor<EgoLogService>(
@@ -34,6 +37,13 @@ export const egoLogDeployerActor = getActor<EgoLogService>(
   EgoLogIdlFactory,
   getCanisterId('ego_log')!,
 );
+
+export const egoCronDeployerActor = getActor<EgoCronService>(
+  identity,
+  EgoCronIdlFactory,
+  getCanisterId('ego_cron')!,
+);
+
 
 describe('scripts', () => {
   test('set_auditor', async () => {
@@ -95,5 +105,21 @@ describe('scripts', () => {
     logs.forEach(log => {
       console.log(`canister_id: ${log.canister_id}, message: ${log.log}, ts: ${log.created_at}`)
     })
+  })
+
+  // manually trigger ego_cron
+  test('trigger_cron', async () => {
+    const deployer = await egoCronDeployerActor;
+
+    console.log(`\t\t trigger cron tick\n`);
+    await deployer.task_main_check();
+  })
+
+  // manually create an order
+  test('admin_wallet_order_new', async () => {
+    const deployer = await egoOpsDeployerActor;
+
+    console.log(`\t\t create an order\n`);
+    await deployer.admin_wallet_order_new(0.001);
   })
 });

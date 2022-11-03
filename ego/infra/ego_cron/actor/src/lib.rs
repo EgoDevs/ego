@@ -95,20 +95,26 @@ fn task_main_add(req: TaskMainAddRequest) -> Result<(), EgoError> {
         req.interval
     );
 
-    match EgoCronService::task_main_add(canister_id, req.method) {
-        Some(task) => {
+    match EgoCronService::task_main_get(canister_id, req.method.clone()){
+        None => {
             let duration_nano = cron_interval(req.interval);
-            let _res = cron_enqueue(
+            let task = Task::new(canister_id, req.method);
+             match cron_enqueue(
                 task.clone(),
                 SchedulingOptions {
                     delay_nano: 0,
                     interval_nano: duration_nano,
                     iterations: Iterations::Infinite,
                 },
-            );
+            ) {
+                 Ok(task_id) => {
+                     EgoCronService::task_main_add(task_id, task);
+                 }
+                 Err(_) => {}
+             };
         }
-        _ => {}
-    };
+        Some(_) => {}
+    }
 
     Ok(())
 }
@@ -124,12 +130,13 @@ fn task_main_cancel(req: TaskMainCancelRequest) -> Result<(), EgoError> {
         req.method
     );
 
-    match EgoCronService::task_main_cancel(canister_id, req.method) {
+    match EgoCronService::task_main_get(canister_id, req.method.clone()){
+        None => {}
         Some(task_id) => {
+            EgoCronService::task_main_cancel(task_id);
             cron_dequeue(task_id);
         }
-        _ => {}
-    };
+    }
 
     Ok(())
 }

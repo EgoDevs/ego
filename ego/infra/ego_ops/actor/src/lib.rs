@@ -88,6 +88,8 @@ pub async fn canister_relation_update() {
         let ego_ledger_id = register.borrow().canister_get_one("ego_ledger").unwrap();
         let ego_log_id = register.borrow().canister_get_one("ego_log").unwrap();
 
+        let ego_ops_id = id();
+
         // ego_dev
         ic_cdk::println!("1 add canister to ego_dev");
         for ego_file_id in ego_file_ids.iter() {
@@ -107,11 +109,12 @@ pub async fn canister_relation_update() {
 
         // ego_store
         ic_cdk::println!("3 add canister to ego_store");
-        ego_canister.canister_add(&ego_store_id, "ego_dev".to_string(), &ego_dev_id);
-        ego_canister.canister_add(&ego_store_id, "ego_cron".to_string(), &ego_cron_id);
         for ego_tenant_id in ego_tenant_ids.iter() {
             ego_canister.canister_add(&ego_store_id, "ego_tenant".to_string(), ego_tenant_id);
         }
+        ego_canister.canister_add(&ego_store_id, "ego_dev".to_string(), &ego_dev_id);
+        ego_canister.canister_add(&ego_store_id, "ego_ops".to_string(), &ego_ops_id);
+        ego_canister.canister_add(&ego_store_id, "ego_ledger".to_string(), &ego_ledger_id);
 
         // ego_tenant
         ic_cdk::println!("4 add canister to ego_tenant");
