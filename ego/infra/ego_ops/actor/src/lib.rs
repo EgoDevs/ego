@@ -1,5 +1,5 @@
 use ego_ops_mod::service::EgoOpsService;
-use ic_cdk::{id, storage};
+use ic_cdk::{storage};
 use ic_cdk_macros::*;
 
 use candid::candid_method;
@@ -15,12 +15,14 @@ use ic_cdk::export::candid::{CandidType, Deserialize};
 use serde::Serialize;
 
 use ego_macros::inject_balance_get;
+use ego_macros::inject_ego_log;
 use ego_users::inject_ego_users;
 use ego_registry::inject_ego_registry;
 
 inject_balance_get!();
 inject_ego_users!();
 inject_ego_registry!();
+inject_ego_log!();
 
 #[derive(Clone, Debug, CandidType, Deserialize)]
 pub struct InitArg {
@@ -65,15 +67,15 @@ fn post_upgrade() {
 }
 
 /********************  methods for ego_registry   ********************/
-fn on_canister_added(_name: &str, _canister_id: Principal) {
-
+fn on_canister_added(name: &str, canister_id: Principal) {
+    ego_log(&format!("on_canister_added name: {}, canister_id: {}", name, canister_id));
 }
 
 /********************   owner method   ********************/
 #[update(name = "canister_relation_update", guard = "owner_guard")]
 #[candid_method(update, rename = "canister_relation_update")]
-pub async fn canister_relation_update() {
-    ic_cdk::println!("ego-ops: canister_relation_update");
+pub fn canister_relation_update(name: String) {
+    ego_log(&format!("ego-ops: canister_relation_update {}", name));
 
     REGISTRY.with(|register| {
         let ego_canister = EgoCanister::new();
@@ -88,64 +90,81 @@ pub async fn canister_relation_update() {
         let ego_ledger_id = register.borrow().canister_get_one("ego_ledger").unwrap();
         let ego_log_id = register.borrow().canister_get_one("ego_log").unwrap();
 
-        let ego_ops_id = id();
-
         // ego_dev
-        ic_cdk::println!("1 add canister to ego_dev");
-        for ego_file_id in ego_file_ids.iter() {
-            ego_canister.canister_add(&ego_dev_id, "ego_file".to_string(), ego_file_id);
+        match name.as_str() {
+            "ego_dev" => {
+                ego_canister.canister_add(&ego_dev_id, "ego_log".to_string(), &ego_log_id);
+                for ego_file_id in ego_file_ids.iter() {
+                    ego_canister.canister_add(&ego_dev_id, "ego_file".to_string(), ego_file_id);
+                }
+                ego_canister
+                  .canister_add(&ego_dev_id, "ego_store".to_string(), &ego_store_id);
+            },
+            "ego_file" => {
+                for ego_file_id in ego_file_ids.iter() {
+                    ego_canister.canister_add(ego_file_id, "ego_log".to_string(), &ego_log_id);
+                    ego_canister.canister_add(ego_file_id, "ego_dev".to_string(), &ego_dev_id);
+                    for ego_tenant_id in ego_tenant_ids.iter() {
+                        ego_canister.canister_add(ego_file_id, "ego_tenant".to_string(), ego_tenant_id);
+                    }
+                }
+            },
+            "ego_store" => {
+                ego_canister.canister_add(&ego_store_id, "ego_log".to_string(), &ego_log_id);
+                ego_canister.canister_add(&ego_store_id, "ego_dev".to_string(), &ego_dev_id);
+                ego_canister.canister_add(&ego_store_id, "ego_ledger".to_string(), &ego_ledger_id);
+                for ego_tenant_id in ego_tenant_ids.iter() {
+                    ego_canister.canister_add(&ego_store_id, "ego_tenant".to_string(), ego_tenant_id);
+                }
+            },
+            "ego_tenant" => {
+                for ego_tenant_id in ego_tenant_ids.iter() {
+                    ego_canister.canister_add(ego_tenant_id, "ego_log".to_string(), &ego_log_id);
+                    ego_canister.canister_add(ego_tenant_id, "ego_store".to_string(), &ego_store_id);
+                    ego_canister.canister_add(ego_tenant_id, "ego_cron".to_string(), &ego_cron_id);
+                }
+            },
+            "ego_cron" => {
+                ego_canister.canister_add(&ego_cron_id, "ego_log".to_string(), &ego_log_id);
+                ego_canister.canister_add(&ego_cron_id, "ego_ledger".to_string(), &ego_ledger_id);
+                for ego_tenant_id in ego_tenant_ids.iter() {
+                    ego_canister.canister_add(&ego_cron_id, "ego_tenant".to_string(), ego_tenant_id);
+                }
+            },
+            "ego_ledger" => {
+                ego_canister.canister_add(&ego_ledger_id, "ego_log".to_string(), &ego_log_id);
+                ego_canister.canister_add(&ego_ledger_id, "ego_cron".to_string(), &ego_cron_id);
+                ego_canister.canister_add(&ego_ledger_id, "ego_store".to_string(), &ego_store_id);
+            },
+            "ego_log" => {
+                ego_canister.canister_add(&ego_log_id, "ego_cron".to_string(), &ego_cron_id);
+                ego_canister.canister_add(&ego_log_id, "ego_dev".to_string(), &ego_dev_id);
+
+                for ego_file_id in ego_file_ids.iter() {
+                    ego_canister.canister_add(&ego_log_id, "ego_file".to_string(), ego_file_id);
+                }
+
+                ego_canister.canister_add(&ego_log_id, "ego_ledger".to_string(), &ego_ledger_id);
+                ego_canister.canister_add(&ego_log_id, "ego_ops".to_string(), &id());
+                ego_canister.canister_add(&ego_log_id, "ego_store".to_string(), &ego_store_id);
+
+                for ego_tenant_id in ego_tenant_ids.iter() {
+                    ego_canister.canister_add(&ego_log_id, "ego_tenant".to_string(), ego_tenant_id);
+                }
+            },
+            "ego_ops" => {
+                let ego_store = EgoStore::new(ego_store_id);
+                ego_store.admin_wallet_main_register(caller());
+            },
+            _ => {}
         }
-        ego_canister
-          .canister_add(&ego_dev_id, "ego_store".to_string(), &ego_store_id);
-
-        // ego_file
-        ic_cdk::println!("2 add canister to ego_file");
-        for ego_file_id in ego_file_ids.iter() {
-            ego_canister.canister_add(ego_file_id, "ego_dev".to_string(), &ego_dev_id);
-            for ego_tenant_id in ego_tenant_ids.iter() {
-                ego_canister.canister_add(ego_file_id, "ego_tenant".to_string(), ego_tenant_id);
-            }
-        }
-
-        // ego_store
-        ic_cdk::println!("3 add canister to ego_store");
-        for ego_tenant_id in ego_tenant_ids.iter() {
-            ego_canister.canister_add(&ego_store_id, "ego_tenant".to_string(), ego_tenant_id);
-        }
-        ego_canister.canister_add(&ego_store_id, "ego_dev".to_string(), &ego_dev_id);
-        ego_canister.canister_add(&ego_store_id, "ego_ops".to_string(), &ego_ops_id);
-        ego_canister.canister_add(&ego_store_id, "ego_ledger".to_string(), &ego_ledger_id);
-
-        // ego_tenant
-        ic_cdk::println!("4 add canister to ego_tenant");
-        for ego_tenant_id in ego_tenant_ids.iter() {
-            ego_canister.canister_add(ego_tenant_id, "ego_store".to_string(), &ego_store_id);
-            ego_canister.canister_add(ego_tenant_id, "ego_cron".to_string(), &ego_cron_id);
-        }
-
-        // ego_cron
-        ic_cdk::println!("5 add canister to ego_cron");
-        ego_canister.canister_add(&ego_cron_id, "ego_ledger".to_string(), &ego_ledger_id);
-        for ego_tenant_id in ego_tenant_ids.iter() {
-            ego_canister.canister_add(&ego_cron_id, "ego_tenant".to_string(), ego_tenant_id);
-        }
-
-        // ego_ledger
-        ic_cdk::println!("6 add canister to ego_ledger");
-        ego_canister.canister_add(&ego_ledger_id, "ego_cron".to_string(), &ego_cron_id);
-        ego_canister.canister_add(&ego_ledger_id, "ego_store".to_string(), &ego_store_id);
-        ego_canister.canister_add(&ego_ledger_id, "ego_log".to_string(), &ego_log_id);
-
-        // ego_log
-        ic_cdk::println!("7 add canister to ego_log");
-        ego_canister.canister_add(&ego_log_id, "ego_cron".to_string(), &ego_ledger_id);
     });
 }
 
 #[update(name = "canister_main_track", guard = "owner_guard")]
 #[candid_method(update, rename = "canister_main_track")]
-pub async fn canister_main_track() {
-    ic_cdk::println!("ego-ops: canister_main_track");
+pub fn canister_main_track() {
+    ego_log("ego-ops: canister_main_track");
 
     let wallet_id = id();
     let ego_tenant = EgoTenant::new();
@@ -154,49 +173,49 @@ pub async fn canister_main_track() {
         let tracker_ego_tenant_id = register.borrow().canister_get_one("ego_tenant").unwrap();
 
         // ego_dev
-        ic_cdk::println!("1 track ego_dev");
+        ego_log("1 track ego_dev");
         let ego_dev_id = register.borrow().canister_get_one("ego_dev").unwrap();
         ego_tenant.canister_main_track(tracker_ego_tenant_id, wallet_id, ego_dev_id);
 
         // ego_file
-        ic_cdk::println!("2 track ego_file");
+        ego_log("2 track ego_file");
         for ego_file_id in register.borrow().canister_get_all("ego_file") {
             ego_tenant.canister_main_track(tracker_ego_tenant_id, wallet_id, ego_file_id);
         }
 
         // ego_store
-        ic_cdk::println!("3 track ego_store");
+        ego_log("3 track ego_store");
         let ego_store_id = register.borrow().canister_get_one("ego_store").unwrap();
         ego_tenant
           .canister_main_track(tracker_ego_tenant_id, wallet_id, ego_store_id);
 
         // ego_tenant
-        ic_cdk::println!("4 track ego_tenant");
+        ego_log("4 track ego_tenant");
         for ego_tenant_id in register.borrow().canister_get_all("ego_tenant") {
             ego_tenant
               .canister_main_track(tracker_ego_tenant_id, wallet_id, ego_tenant_id);
         }
 
         // ego_cron
-        ic_cdk::println!("5 track ego_cron");
+        ego_log("5 track ego_cron");
         let ego_cron_id = register.borrow().canister_get_one("ego_cron").unwrap();
         ego_tenant
           .canister_main_track(tracker_ego_tenant_id, wallet_id, ego_cron_id);
 
         // ego_ledger
-        ic_cdk::println!("6 track ego_ledger");
+        ego_log("6 track ego_ledger");
         let ego_ledger_id = register.borrow().canister_get_one("ego_ledger").unwrap();
         ego_tenant
           .canister_main_track(tracker_ego_tenant_id, wallet_id, ego_ledger_id);
 
         // ego_ops
-        ic_cdk::println!("7 track ego_ops");
+        ego_log("7 track ego_ops");
         ego_tenant
           .canister_main_track(tracker_ego_tenant_id, wallet_id, wallet_id);
 
         // ego_log
         let ego_log_id = register.borrow().canister_get_one("ego_log").unwrap();
-        ic_cdk::println!("7 track ego_log");
+        ego_log("7 track ego_log");
         ego_tenant
           .canister_main_track(tracker_ego_tenant_id, wallet_id, ego_log_id);
 
@@ -208,7 +227,7 @@ pub async fn canister_main_track() {
 pub fn admin_app_create(
     req: AdminAppCreateRequest,
 ) -> Result<(), EgoError> {
-    ic_cdk::println!("ego-ops: admin_app_create");
+    ego_log("ego-ops: admin_app_create");
 
     let ego_dev = EgoDev::new();
     let ego_dev_id = REGISTRY.with(|r| r.borrow().canister_get_one("ego_dev")).unwrap();
@@ -234,7 +253,7 @@ pub fn admin_app_create(
 #[update(name = "admin_wallet_provider_add", guard = "owner_guard")]
 #[candid_method(update, rename = "admin_wallet_provider_add")]
 pub fn admin_wallet_provider_add(req: AdminWalletProviderAddRequest) -> Result<(), EgoError> {
-    ic_cdk::println!("ego_ops: admin_wallet_provider_add");
+    ego_log("ego_ops: admin_wallet_provider_add");
 
     let ego_store_id = REGISTRY.with(|r| r.borrow().canister_get_one("ego_store")).unwrap();
     let ego_store = EgoStore::new(ego_store_id);
@@ -250,7 +269,7 @@ pub fn admin_wallet_provider_add(req: AdminWalletProviderAddRequest) -> Result<(
 pub fn admin_wallet_cycle_recharge(
     req: AdminWalletCycleRechargeRequest,
 ) -> Result<(), EgoError> {
-    ic_cdk::println!("ego_ops: admin_wallet_cycle_recharge");
+    ego_log("ego_ops: admin_wallet_cycle_recharge");
 
     let ego_store_id = REGISTRY.with(|r| r.borrow().canister_get_one("ego_store")).unwrap();
     let ego_store = EgoStore::new(ego_store_id);
@@ -266,7 +285,7 @@ pub fn admin_wallet_cycle_recharge(
 pub fn admin_wallet_order_new(
     amount: f32,
 ) -> Result<(), EgoError> {
-    ic_cdk::println!("ego_ops: admin_wallet_order_new");
+    ego_log("ego_ops: admin_wallet_order_new");
 
     let ego_store_id = REGISTRY.with(|r| r.borrow().canister_get_one("ego_store")).unwrap();
     let ego_store = EgoStore::new(ego_store_id);

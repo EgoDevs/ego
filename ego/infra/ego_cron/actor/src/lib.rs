@@ -14,12 +14,14 @@ use ego_cron_mod::types::{cron_interval, TaskMainAddRequest, TaskMainCancelReque
 use ego_types::ego_error::EgoError;
 
 use ego_macros::inject_balance_get;
+use ego_macros::inject_ego_log;
 use ego_users::inject_ego_users;
 use ego_registry::inject_ego_registry;
 
 inject_balance_get!();
 inject_ego_users!();
 inject_ego_registry!();
+inject_ego_log!();
 
 #[derive(Clone, Debug, CandidType, Deserialize)]
 pub struct InitArg {
@@ -88,11 +90,11 @@ enum TaskKind {
 #[candid_method(update, rename = "task_main_add")]
 fn task_main_add(req: TaskMainAddRequest) -> Result<(), EgoError> {
     let canister_id = caller();
-    ic_cdk::println!(
+    ego_log(&format!(
         "ego-cron: task_main_add {} / {} / {:?}",
         canister_id,
         req.method,
-        req.interval
+        req.interval)
     );
 
     match EgoCronService::task_main_get(canister_id, req.method.clone()){
@@ -124,10 +126,10 @@ fn task_main_add(req: TaskMainAddRequest) -> Result<(), EgoError> {
 fn task_main_cancel(req: TaskMainCancelRequest) -> Result<(), EgoError> {
     let canister_id = caller();
 
-    ic_cdk::println!(
+    ego_log(&format!(
         "ego-cron: task_main_cancel {} / {}",
         canister_id,
-        req.method
+        req.method)
     );
 
     match EgoCronService::task_main_get(canister_id, req.method.clone()){
@@ -151,7 +153,7 @@ fn task_main_check() -> Result<(), EgoError> {
           .get_payload::<Task>()
           .expect("Unable to deserialize cron task kind");
 
-        ic_cdk::println!("ego-cron: notify task: {:?}", task);
+        ego_log(&format!("ego-cron: notify task: {:?}", task));
         let _result = notify(task.canister_id, task.method.as_str(), ());
     }
 

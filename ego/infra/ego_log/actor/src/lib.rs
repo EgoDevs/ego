@@ -10,12 +10,14 @@ use ego_log_mod::state::EGO_LOG;
 use ic_cdk_macros::*;
 
 use ego_macros::inject_balance_get;
+use ego_macros::inject_ego_log;
 use ego_users::inject_ego_users;
 use ego_registry::inject_ego_registry;
 
 inject_balance_get!();
 inject_ego_users!();
 inject_ego_registry!();
+inject_ego_log!();
 
 #[derive(Clone, Debug, CandidType, Deserialize)]
 pub struct InitArg {
@@ -86,6 +88,13 @@ fn canister_log_add(message: String) {
 fn canister_log_get(from_ts: u64, to_ts: u64) -> Vec<Log> {
     ic_cdk::println!("ego-log: canister_log_get between {} and {}", from_ts, to_ts);
     EGO_LOG.with(|ego_log| ego_log.borrow().canister_log_get(from_ts, to_ts))
+}
+
+#[query(name = "canister_log_clear", guard = "owner_guard")]
+#[candid_method(query, rename = "canister_log_clear")]
+fn canister_log_clear()  {
+    ic_cdk::println!("ego-log: canister_log_clear");
+    EGO_LOG.with(|ego_log| ego_log.borrow_mut().logs.clear());
 }
 
 /********************  notify  ********************/

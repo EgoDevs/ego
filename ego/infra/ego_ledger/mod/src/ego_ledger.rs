@@ -33,7 +33,7 @@ impl EgoLedger {
     pub fn block_confirm(&mut self, _from: AccountIdentifier, to: AccountIdentifier, amount: Tokens) {
         if self.payments.contains_key(&to) {
             let payment = self.payments.get_mut(&to).unwrap();
-            if payment.amount == amount {
+            if payment.amount.e8s() == amount.e8s() {
                 payment.status = PaymentStatus::CONFIRMED
             }
         }

@@ -20,10 +20,12 @@ use ic_cdk_macros::*;
 use serde::Serialize;
 use ego_tenant_mod::c2c::ego_canister::EgoCanister;
 use ego_tenant_mod::c2c::ego_cron::{EgoCron, TEgoCron};
+use ego_macros::inject_ego_log;
 
 inject_balance_get!();
 inject_ego_users!();
 inject_ego_registry!();
+inject_ego_log!();
 
 #[derive(Clone, Debug, CandidType, Deserialize)]
 pub struct InitArg {
@@ -90,7 +92,7 @@ fn on_canister_added(name: &str, canister_id: Principal) {
 #[update(name = "app_main_install", guard = "user_guard")]
 #[candid_method(update, rename = "app_main_install")]
 async fn app_main_install(req: AppMainInstallRequest) -> Result<AppMainInstallResponse, EgoError> {
-    ic_cdk::println!("ego_tenant: app_main_install");
+    ego_log("ego_tenant: app_main_install");
     let management = IcManagement::new();
     let ego_file = EgoFile::new();
 
@@ -108,7 +110,7 @@ async fn app_main_install(req: AppMainInstallRequest) -> Result<AppMainInstallRe
 #[update(name = "app_main_upgrade", guard = "user_guard")]
 #[candid_method(update, rename = "app_main_upgrade")]
 async fn app_main_upgrade(req: AppMainUpgradeRequest) -> Result<AppMainUpgradeResponse, EgoError> {
-    ic_cdk::println!("ego_tenant: app_main_upgrade");
+    ego_log("ego_tenant: app_main_upgrade");
     let management = IcManagement::new();
     let ego_file = EgoFile::new();
 
@@ -120,7 +122,7 @@ async fn app_main_upgrade(req: AppMainUpgradeRequest) -> Result<AppMainUpgradeRe
 #[update(name = "canister_main_track", guard = "user_guard")]
 #[candid_method(update, rename = "canister_main_track")]
 fn canister_main_track(req: CanisterMainTrackRequest) -> Result<(), EgoError> {
-    ic_cdk::println!("ego_tenant: canister_main_track");
+    ego_log("ego_tenant: canister_main_track");
 
     EgoTenantService::canister_main_track(req.wallet_id, req.canister_id)?;
     Ok(())
@@ -129,7 +131,7 @@ fn canister_main_track(req: CanisterMainTrackRequest) -> Result<(), EgoError> {
 #[update(name = "canister_main_untrack", guard = "user_guard")]
 #[candid_method(update, rename = "canister_main_untrack")]
 fn canister_main_untrack(req: CanisterMainUnTrackRequest) -> Result<(), EgoError> {
-    ic_cdk::println!("ego_tenant: canister_main_untrack");
+    ego_log("ego_tenant: canister_main_untrack");
 
     EgoTenantService::canister_main_untrack(req.wallet_id, req.canister_id)?;
     Ok(())
@@ -139,7 +141,7 @@ fn canister_main_untrack(req: CanisterMainUnTrackRequest) -> Result<(), EgoError
 #[update(name = "message_main_notify", guard = "user_guard")]
 #[candid_method(update, rename = "message_main_notify")]
 async fn message_main_notify() -> Result<(), EgoError> {
-    ic_cdk::println!("ego-tenant: message_main_notify");
+    ego_log("ego-tenant: message_main_notify");
 
     let result = REGISTRY.with(|r| r.borrow().canister_get_one("ego_store"));
     match result {
@@ -164,7 +166,7 @@ async fn message_main_notify() -> Result<(), EgoError> {
                 {
                     Ok(_) => {}
                     Err(e) => {
-                        ic_cdk::println!("canister_cycles_check failed: {:?}", e);
+                        ego_log(&format!("canister_cycles_check failed: {:?}", e));
                     }
                 }
             }

@@ -11,6 +11,8 @@ fn main() {
     use ego_file_mod::types::*;
     use ego_types::ego_error::EgoError;
     use ic_cdk::export::Principal;
+    use std::collections::BTreeMap;
+
     candid::export_service!();
     std::print!("{}", __export_service());
 }

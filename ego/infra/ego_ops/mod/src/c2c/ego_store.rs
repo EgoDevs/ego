@@ -1,6 +1,6 @@
 use ic_cdk::export::Principal;
 
-use ego_store_mod::types::{AdminWalletCycleRechargeRequest, AdminWalletProviderAddRequest, WalletOrderNewRequest};
+use ego_store_mod::types::{AdminWalletCycleRechargeRequest, AdminWalletProviderAddRequest, WalletMainRegisterRequest, WalletOrderNewRequest};
 use ego_types::app::AppId;
 use ic_cdk::api;
 
@@ -22,6 +22,8 @@ pub trait TEgoStore {
         &self,
         amount: f32
     );
+
+    fn admin_wallet_main_register(&self, user_id: Principal);
 }
 
 pub struct EgoStore {
@@ -70,5 +72,13 @@ impl TEgoStore for EgoStore {
         };
 
         let _result = api::call::notify(self.canister_id, "wallet_order_new", (req,));
+    }
+
+    fn admin_wallet_main_register(&self, user_id: Principal){
+        let req = WalletMainRegisterRequest {
+            user_id
+        };
+
+        let _result = api::call::notify(self.canister_id, "wallet_main_register", (req,));
     }
 }

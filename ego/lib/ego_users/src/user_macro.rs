@@ -48,15 +48,18 @@ macro_rules! inject_ego_users {
         use ego_users::user::UserTrait;
         use ic_cdk::caller;
         use ic_cdk::export::Principal;
-        use ic_cdk::trap;
+        use ic_cdk::{id, trap};
         use std::cell::RefCell;
 
         #[inline(always)]
         pub fn owner_guard() -> Result<(), String> {
-            if USER.with(|b| b.borrow().check_owner(caller())) {
+            let caller = caller();
+            let ret = USER.with(|b| b.borrow().check_owner(caller));
+            ego_log(&format!("{} check owner: {}, result: {}", id(), caller, ret));
+            if ret {
                 Ok(())
             } else {
-                trap(&format!("{} unauthorized", caller()));
+                trap(&format!("{} unauthorized", caller));
             }
         }
 
@@ -83,10 +86,13 @@ macro_rules! inject_ego_users {
 
         #[inline(always)]
         pub fn user_guard() -> Result<(), String> {
-            if USER.with(|b| b.borrow().check_user(caller())) {
+            let caller = caller();
+            let ret = USER.with(|b| b.borrow().check_user(caller));
+            ego_log(&format!("{} check user: {}, result: {}", id(), caller, ret));
+            if ret {
                 Ok(())
             } else {
-                trap(&format!("{} unauthorized", caller()));
+                trap(&format!("{} unauthorized", caller));
             }
         }
 

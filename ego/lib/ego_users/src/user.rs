@@ -70,9 +70,7 @@ impl OwnerTrait for User {
     }
 
     fn check_owner(&self, who: Principal) -> bool {
-        let ret = self.owners.contains(&who);
-        ic_cdk::println!("{} check owner: {}, result: {}", id(), who, ret);
-        ret
+        self.owners.contains(&who)
     }
 }
 
@@ -97,8 +95,6 @@ impl UserTrait for User {
     }
 
     fn check_user(&self, who: Principal) -> bool {
-        let ret = self.users.contains(&who) || self.owners.contains(&who);
-        ic_cdk::println!("{} check user: {}, result: {}", id(), who, ret);
-        ret
+        self.users.contains(&who) || self.owners.contains(&who)
     }
 }

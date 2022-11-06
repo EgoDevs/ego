@@ -6,6 +6,7 @@ use serde::Serialize;
 use crate::app::EgoStoreApp;
 use ego_types::app::{App, AppId, Category};
 use ego_types::ego_error::EgoError;
+use crate::cash_flow::CashFlow;
 
 use crate::order::Order;
 use crate::user_app::{AppInstalled, UserApp};
@@ -146,6 +147,12 @@ pub struct WalletOrderNewRequest {
 pub struct WalletOrderNewResponse {
     pub memo: Memo,
 }
+
+#[derive(CandidType, Deserialize, Serialize)]
+pub struct WalletCycleListResponse {
+    pub cash_flows: Vec<CashFlow>,
+}
+
 
 #[derive(CandidType, Deserialize, Serialize)]
 pub struct WalletOrderListResponse {

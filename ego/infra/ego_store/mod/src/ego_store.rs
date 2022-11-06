@@ -9,6 +9,7 @@ use crate::app::EgoStoreApp;
 use ego_types::app::{App, AppId};
 use ego_types::ego_error::EgoError;
 use ego_types::version::Version;
+use crate::cash_flow::CashFlow;
 
 use crate::order::{Order, OrderStatus};
 use crate::tenant::Tenant;
@@ -174,6 +175,10 @@ impl EgoStore {
         }
     }
 
+    pub fn wallet_order_list_all(&self) -> Vec<Order> {
+        self.orders.values().cloned().collect()
+    }
+
     pub fn wallet_order_new(
         &mut self,
         wallet_id: &Principal,
@@ -188,6 +193,15 @@ impl EgoStore {
                 let order = wallet.order_new(store_id, amount, order_id);
                 self.orders.insert(order.memo, order.clone());
                 Ok(order)
+            }
+        }
+    }
+
+    pub fn wallet_cycle_list(& self, wallet_id: &Principal) -> Result<Vec<CashFlow>, EgoError> {
+        match self.wallets.get(wallet_id) {
+            None => Err(EgoStoreErr::WalletNotExists.into()),
+            Some(wallet) => {
+                Ok(wallet.cash_flowes.clone())
             }
         }
     }

@@ -4,12 +4,12 @@ use ego_ledger_mod::service::EgoLedgerService;
 use ic_cdk::export::candid::{CandidType, Deserialize};
 use ic_cdk::storage;
 use ic_cdk_macros::*;
-use ic_ledger_types::MAINNET_LEDGER_CANISTER_ID;
+use ic_ledger_types::{MAINNET_LEDGER_CANISTER_ID};
 use serde::Serialize;
 use ego_ledger_mod::c2c::ego_cron::{EgoCron, TEgoCron};
-use ego_ledger_mod::c2c::ego_log::EgoLog;
 use ego_ledger_mod::c2c::ego_store::EgoStore;
-use ego_ledger_mod::c2c::ic_ledger::IcLedger;
+use ego_ledger_mod::c2c::ic_ledger::{IcLedger};
+use ego_ledger_mod::payment::Payment;
 
 use ego_ledger_mod::state::{EGO_LEDGER};
 use ego_ledger_mod::types::{
@@ -18,6 +18,7 @@ use ego_ledger_mod::types::{
 use ego_types::ego_error::EgoError;
 
 use ego_macros::inject_balance_get;
+use ego_macros::inject_ego_log;
 use ego_users::inject_ego_users;
 use ego_registry::inject_ego_registry;
 
@@ -25,6 +26,7 @@ use ego_registry::inject_ego_registry;
 inject_balance_get!();
 inject_ego_users!();
 inject_ego_registry!();
+inject_ego_log!();
 
 #[derive(Clone, Debug, CandidType, Deserialize)]
 pub struct InitArg {
@@ -92,7 +94,8 @@ fn on_canister_added(name: &str, canister_id: Principal) {
 #[update(name = "ledger_payment_add", guard = "user_guard")]
 #[candid_method(update, rename = "ledger_payment_add")]
 fn ledger_payment_add(req: LedgerPaymentAddRequest) -> Result<(), EgoError> {
-    ic_cdk::println!("ego-ledger: ledger_payment_add");
+    ego_log(&format!("ego-ledger: ledger_payment_add from:{} to:{} memo:{:?}", req.from, req.to, req.memo));
+
     EgoLedgerService::ledger_payment_add(req.from, req.to, req.amount, req.memo);
     Ok(())
 }
@@ -101,27 +104,38 @@ fn ledger_payment_add(req: LedgerPaymentAddRequest) -> Result<(), EgoError> {
 #[update(name = "ledger_main_init", guard = "owner_guard")]
 #[candid_method(update, rename = "ledger_main_init")]
 fn ledger_main_init(req: LedgerMainInitRequest) -> Result<(), EgoError> {
-    ic_cdk::println!("ego-ledger: ledger_main_init");
+    ego_log("ego-ledger: ledger_main_init");
     EgoLedgerService::ledger_main_init(req.start);
     Ok(())
+}
+
+#[update(name = "ledger_payment_list", guard = "owner_guard")]
+#[candid_method(update, rename = "ledger_payment_list")]
+fn ledger_payment_list() -> Result<Vec<Payment>, EgoError> {
+    ego_log("ego-ledger: ledger_payment_list");
+
+    let payments = EGO_LEDGER.with(|ego_ledger| ego_ledger.borrow().payments.values().cloned().collect());
+
+    Ok(payments)
 }
 
 /********************  notify  ********************/
 #[update(name = "message_main_notify", guard = "user_guard")]
 #[candid_method(update, rename = "message_main_notify")]
 async fn message_main_notify() -> Result<(), EgoError> {
-    ic_cdk::println!("ego-ledger: message_main_notify");
-
+    ego_log("ego-ledger: message_main_notify");
 
     let ego_store_id = REGISTRY.with(|r| r.borrow().canister_get_one("ego_store")).unwrap();
     let ego_store = EgoStore::new(ego_store_id);
 
-    let ego_log_id = REGISTRY.with(|r| r.borrow().canister_get_one("ego_log")).unwrap();
-    let ego_log = EgoLog::new(ego_log_id);
-
     let ic_ledger = IcLedger::new(MAINNET_LEDGER_CANISTER_ID);
 
-    EgoLedgerService::ledger_payment_match(ego_store, ego_log, ic_ledger).await?;
+    match get_ego_log(){
+        None => {}
+        Some(ego_log) => {
+            EgoLedgerService::ledger_payment_match(ego_store, ic_ledger, ego_log).await?;
+        }
+    }
 
     Ok(())
 }

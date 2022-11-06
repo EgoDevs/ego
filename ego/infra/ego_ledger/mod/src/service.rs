@@ -2,7 +2,7 @@ use crate::payment::{Payment, PaymentStatus};
 use crate::state::{EGO_LEDGER};
 use ego_types::ego_error::EgoError;
 use ic_ledger_types::{AccountIdentifier, BlockIndex, Memo, Operation, Tokens, Transaction};
-use crate::c2c::ego_log::TEgoLog;
+use ego_macros::ego_log::TEgoLogCanister;
 use crate::c2c::ego_store::TEgoStore;
 use crate::c2c::ic_ledger::TIcLedger;
 
@@ -25,7 +25,7 @@ impl EgoLedgerService {
         })
     }
 
-    pub async fn ledger_payment_match<S: TEgoStore, L: TEgoLog, IL: TIcLedger>(ego_store: S, ego_log: L, ic_ledger: IL) -> Result<(), EgoError> {
+    pub async fn ledger_payment_match<S: TEgoStore, IL: TIcLedger, L: TEgoLogCanister>(ego_store: S, ic_ledger: IL, ego_log: L) -> Result<(), EgoError> {
         ego_log.canister_log_add("1.query blocks");
         let start = EGO_LEDGER.with(|ego_ledger| ego_ledger.borrow().start);
 
@@ -44,6 +44,7 @@ impl EgoLedgerService {
                             amount,
                             fee: _,
                         } => {
+                            ego_log.canister_log_add(&format!("from:{}, to:{}, amount:{}, memo:{:?}", from, to, amount, trx.memo));
                             e_l.block_confirm(from, to, amount);
                         }
                         _ => {}
@@ -56,6 +57,7 @@ impl EgoLedgerService {
         ego_log.canister_log_add("3.notify ego_store");
         EGO_LEDGER.with(|ego_ledger| {
             for (_to, payment) in ego_ledger.borrow_mut().payments.iter_mut() {
+
                 ego_store.wallet_order_notify(payment.memo);
                 payment.status = PaymentStatus::NOTIFIED;
             }

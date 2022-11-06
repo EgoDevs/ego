@@ -25,7 +25,7 @@ impl TIcLedger for IcLedger {
   async fn query_blocks(&self, start: BlockIndex) -> Result<Vec<Block>, EgoError>{
     let blocks = match query_blocks(
       self.canister_id,
-      GetBlocksArgs { start, length: 100, },
+      GetBlocksArgs { start, length: 5, },
     ).await
     {
       Ok(t) => {

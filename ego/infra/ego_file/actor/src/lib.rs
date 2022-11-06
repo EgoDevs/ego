@@ -11,6 +11,7 @@ use ego_file_mod::types::{
 
 use ego_file_mod::storage::{Storage, DEFAULT_FILE_SIZE, HEADER_SIZE, WASM_PAGE_SIZE};
 use ego_macros::inject_balance_get;
+use ego_macros::inject_ego_log;
 use ego_types::ego_error::EgoError;
 use ego_users::inject_ego_users;
 use ego_registry::inject_ego_registry;
@@ -19,6 +20,7 @@ use ic_cdk::api::stable::{stable64_grow, stable64_read, stable64_write};
 inject_balance_get!();
 inject_ego_users!();
 inject_ego_registry!();
+inject_ego_log!();
 
 #[derive(Clone, Debug, CandidType, Deserialize)]
 pub struct InitArg {
@@ -75,7 +77,7 @@ fn on_canister_added(name: &str, canister_id: Principal) {
 #[update(name = "file_main_write", guard = "user_guard")]
 #[candid_method(update, rename = "file_main_write")]
 fn file_main_write(req: FileMainWriteRequest) -> Result<FileMainWriteResponse, EgoError> {
-    ic_cdk::println!("ego-file: file_main_write");
+    ego_log("ego-file: file_main_write");
 
     let ret = EgoFileService::file_main_write(&req.fid, &req.hash, req.data)?;
     Ok(FileMainWriteResponse { ret })
@@ -84,7 +86,7 @@ fn file_main_write(req: FileMainWriteRequest) -> Result<FileMainWriteResponse, E
 #[query(name = "file_main_read", guard = "user_guard")]
 #[candid_method(query, rename = "file_main_read")]
 fn file_main_read(req: FileMainReadRequest) -> Result<FileMainReadResponse, EgoError> {
-    ic_cdk::println!("ego-file: file_main_read");
+    ego_log("ego-file: file_main_read");
 
     let data = EgoFileService::file_main_read(&req.fid)?;
     Ok(FileMainReadResponse { data })
@@ -101,7 +103,7 @@ struct PersistState {
 #[update(name = "state_persist")]
 #[candid_method(update, rename = "state_persist")]
 fn state_persist() -> Result<bool, EgoError> {
-    ic_cdk::println!("ego-file: state_persist");
+    ego_log("ego-file: state_persist");
 
     let storage = STORAGE.with(|s| s.borrow().clone());
     let user = users_pre_upgrade();
@@ -111,7 +113,7 @@ fn state_persist() -> Result<bool, EgoError> {
 
     let data = Encode!(&state).unwrap();
 
-    ic_cdk::println!("==> data length is: {}", data.len());
+    ego_log(&format!("==> data length is: {}", data.len()));
 
     if data.len() > DEFAULT_FILE_SIZE as usize {
         Err(EgoFileError::UnknownError("state too large".to_string()).into())
@@ -126,14 +128,14 @@ fn state_persist() -> Result<bool, EgoError> {
 #[update(name = "state_restore")]
 #[candid_method(update, rename = "state_restore")]
 fn state_restore() -> Result<bool, EgoError> {
-    ic_cdk::println!("ego-file: state_restore");
+    ego_log("ego-file: state_restore");
 
     // read file
     let mut buf = vec![0; DEFAULT_FILE_SIZE as usize];
     stable64_read(0, &mut buf); // file length
     let len = u64::from_le_bytes(buf[0..8].try_into().unwrap()) as usize;
 
-    ic_cdk::println!("==> data length is: {}", len);
+    ego_log(&format!("==> data length is: {}", len));
 
     let data = &buf[8..8 + len];
     let state = Decode!(data, PersistState).unwrap();

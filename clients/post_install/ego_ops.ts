@@ -61,43 +61,50 @@ export const opsPostInstall = async () => {
   console.log(`=== post install script of ego_ops starts: ===\n`);
 
   console.log(`1. canister_registers\n`);
-  await canister_registers();
+  // await canister_registers();
 
   console.log(`2. canister_relation_update\n`);
-  await opsOperator.canister_relation_update();
+  // await opsOperator.canister_relation_update("ego_dev");
+  // await opsOperator.canister_relation_update("ego_file");
+  // await opsOperator.canister_relation_update("ego_store");
+  // await opsOperator.canister_relation_update("ego_tenant");
+  // await opsOperator.canister_relation_update("ego_cron");
+  // await opsOperator.canister_relation_update("ego_ledger");
+  await opsOperator.canister_relation_update("ego_log");
+  await opsOperator.canister_relation_update("ego_ops");
 
-  console.log(`3. canister_main_track\n`);
-  await opsOperator.canister_main_track();
+  // console.log(`3. canister_main_track\n`);
+  // await opsOperator.canister_main_track();
 
-  console.log(`4. release ego_assets canister\n`);
-  await admin_app_create(
-    'ego_assets',
-    'ego_assets',
-    version,
-    { System: null },
-    { DEDICATED: null },
-    astrox_wasm,
-  );
+  // console.log(`4. release ego_assets canister\n`);
+  // await admin_app_create(
+  //   'ego_assets',
+  //   'ego_assets',
+  //   version,
+  //   { System: null },
+  //   { DEDICATED: null },
+  //   astrox_wasm,
+  // );
 
-  console.log(`5. release astrox_controller canister\n`);
-  await admin_app_create(
-    'astrox_controller',
-    'astrox_controller',
-    version,
-    { System: null },
-    { DEDICATED: null },
-    astrox_wasm,
-  );
+  // console.log(`5. release astrox_controller canister\n`);
+  // await admin_app_create(
+  //   'astrox_controller',
+  //   'astrox_controller',
+  //   version,
+  //   { System: null },
+  //   { DEDICATED: null },
+  //   astrox_wasm,
+  // );
 
-  console.log(`6. release omni_wallet canister\n`);
-  await admin_app_create(
-    'omni_wallet',
-    'omni_wallet',
-    version,
-    { Vault: null },
-    { DEDICATED: null },
-    omni_wallet,
-  );
+  // console.log(`6. release omni_wallet canister\n`);
+  // await admin_app_create(
+  //   'omni_wallet',
+  //   'omni_wallet',
+  //   version,
+  //   { Vault: null },
+  //   { DEDICATED: null },
+  //   omni_wallet,
+  // );
 };
 
 const canister_registers = async () => {
@@ -128,7 +135,6 @@ async function canister_register(canister_name: string) {
     getCanisterId(canister_name)!,
   );
   let canister_operator = await actor;
-
   let canister_id = Principal.fromText(getCanisterId(canister_name)!);
 
   console.log(`==> a. add ego_ops as ${canister_name} owner\n`);

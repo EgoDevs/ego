@@ -16,6 +16,9 @@ pub trait CanisterTrait {
 
     // get canisters under the specified name
     fn canister_get_one(&self, name: &str) -> Option<Principal>;
+
+    // list all the register canisters
+    fn canister_list_all(&self) -> BTreeMap<String, Vec<Principal>>;
 }
 
 #[derive(CandidType, Serialize, Deserialize, Clone, Debug)]
@@ -51,11 +54,19 @@ impl CanisterTrait for Registry {
     }
 
     fn canister_get_one(&self, name: &str) -> Option<Principal> {
-        let canisters = self.canisters.get(name).unwrap();
-        if canisters.is_empty() {
-            None
-        } else {
-            Some(canisters.get(0).unwrap().clone())
+        match self.canisters.get(name) {
+            None => None,
+            Some(canisters) => {
+                if canisters.is_empty() {
+                    None
+                } else {
+                    Some(canisters.get(0).unwrap().clone())
+                }
+            }
         }
+    }
+
+    fn canister_list_all(&self) -> BTreeMap<String, Vec<Principal>> {
+        self.canisters.clone()
     }
 }

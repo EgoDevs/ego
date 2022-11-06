@@ -7,6 +7,7 @@ use ego_types::ego_error::EgoError;
 use crate::c2c::ego_ledger::TEgoLedger;
 
 use crate::c2c::ego_tenant::TEgoTenant;
+use crate::cash_flow::CashFlow;
 use crate::order::Order;
 use crate::state::EGO_STORE;
 use crate::types::{EgoStoreErr, QueryParam};
@@ -247,6 +248,10 @@ impl EgoStoreService {
         EGO_STORE.with(|ego_store| ego_store.borrow().wallet_order_list(&wallet_id))
     }
 
+    pub fn wallet_order_list_all() -> Vec<Order> {
+        EGO_STORE.with(|ego_store| ego_store.borrow().wallet_order_list_all())
+    }
+
     pub fn wallet_order_new<L: TEgoLedger>(
         ego_ledger: L,
         wallet_id: Principal,
@@ -260,6 +265,15 @@ impl EgoStoreService {
         })?;
         ego_ledger.ledger_payment_add(&order);
         Ok(order)
+    }
+
+    pub fn wallet_cycle_list(wallet_id: Principal) -> Result<Vec<CashFlow>, EgoError> {
+        let cash_flows = EGO_STORE.with(|ego_store| {
+            ego_store
+              .borrow()
+              .wallet_cycle_list(&wallet_id)
+        })?;
+        Ok(cash_flows)
     }
 
     pub fn wallet_order_notify(memo: Memo, operator: Principal, ts: u64) -> Result<bool, EgoError> {
