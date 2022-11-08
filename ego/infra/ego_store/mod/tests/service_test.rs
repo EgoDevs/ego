@@ -443,7 +443,7 @@ async fn wallet_canister_track_failed(){
   // no ego tenant installed
   let canister_track = EgoStoreService::wallet_canister_track(ego_tenant, wallet_id, TEST_APP_ID.to_string()).await;
   assert!(canister_track.is_err());
-  assert_eq!(3003, canister_track.unwrap_err().code);
+  assert_eq!(3003, canister_track.as_ref().unwrap_err().code);
   println!("{:?}", canister_track);
 
 }

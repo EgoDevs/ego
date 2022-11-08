@@ -1,3 +1,4 @@
+use ego_store_mod::c2c::ego_ledger::TEgoLedger;
 use ic_cdk::export::Principal;
 use ic_ledger_types::Memo;
 
@@ -5,6 +6,7 @@ use ego_store_mod::order::{Order, OrderStatus};
 use ego_store_mod::service::EgoStoreService;
 use ego_store_mod::state::EGO_STORE;
 use ego_store_mod::wallet::Wallet;
+use mockall::mock;
 
 static LEDGER_ID: &str = "22k5f-nqaaa-aaaad-qaigq-cai";
 static STORE_ID: &str = "22cl3-kqaaa-aaaaf-add7q-cai";
@@ -12,6 +14,14 @@ static EXISTS_WALLET_ID: &str = "amybd-zyaaa-aaaah-qc4hq-cai";
 static EXISTS_USER_ID: &str = "225da-yaaaa-aaaah-qahrq-cai";
 static EXISTS_TENANT_ID: &str = "22ayq-aiaaa-aaaai-qgmma-cai";
 
+
+mock!{
+  Ledger{}
+
+  impl TEgoLedger for Ledger{
+    fn ledger_payment_add(&self, order: &Order);
+  }
+}
 
 pub fn set_up() {
   let tenant_principal = Principal::from_text(EXISTS_TENANT_ID.to_string()).unwrap();
@@ -46,7 +56,8 @@ fn wallet_order_new() {
   assert_eq!(1, result.unwrap().len());
 
   // create order
-  let result = EgoStoreService::wallet_order_new(exist_wallet_id, store_id, 1.2f32);
+  let ego_ledger = MockLedger::new();
+  let result = EgoStoreService::wallet_order_new(ego_ledger,exist_wallet_id, store_id, 1.2);
   assert!(result.is_ok());
   assert_eq!(1, result.unwrap().memo.0);
 
