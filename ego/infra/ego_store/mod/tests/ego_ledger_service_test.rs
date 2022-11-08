@@ -56,7 +56,11 @@ fn wallet_order_new() {
   assert_eq!(1, result.unwrap().len());
 
   // create order
-  let ego_ledger = MockLedger::new();
+  let mut ego_ledger = MockLedger::new();
+  ego_ledger 
+    .expect_ledger_payment_add()
+    .returning(|_| ());
+
   let result = EgoStoreService::wallet_order_new(ego_ledger,exist_wallet_id, store_id, 1.2);
   assert!(result.is_ok());
   assert_eq!(1, result.unwrap().memo.0);
