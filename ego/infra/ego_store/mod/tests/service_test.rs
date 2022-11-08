@@ -436,5 +436,16 @@ fn wallet_tenant_get_failed_wallet_not_exists() {
   assert_eq!(EXISTS_TENANT_ID, result.unwrap().to_string())
 }
 
+#[tokio::test]
+async fn wallet_canister_track_failed(){
+  let ego_tenant = MockTenant::new();
+  let wallet_id = Principal::from_text(TEST_WALLET_ID).unwrap();
+  // no ego tenant installed
+  let canister_track = EgoStoreService::wallet_canister_track(ego_tenant, wallet_id, TEST_APP_ID.to_string()).await;
+  assert!(canister_track.is_err());
+  assert_eq!(3003, canister_track.unwrap_err().code);
+  println!("{:?}", canister_track);
+
+}
 
 // TODO: add test case for shared install mode
