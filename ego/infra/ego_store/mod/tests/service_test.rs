@@ -429,7 +429,10 @@ fn wallet_tenant_get_failed_wallet_not_exists() {
 #[tokio::test]
 async fn wallet_canister_track_no_ego_tenant_installed() {
     // set_up();
-    let ego_tenant = MockTenant::new();
+    let mut ego_tenant = MockTenant::new();
+    ego_tenant
+        .expect_canister_main_track()
+        .returning(|_, _, _| Ok(()));
     let wallet_id = Principal::from_text(TEST_WALLET_ID).unwrap();
     // no ego tenant installed
     let canister_track =
@@ -449,7 +452,10 @@ async fn wallet_canister_track_wallet_not_exists() {
     set_up();
 
     let wallet_id = Principal::from_text(TEST_WALLET_ID).unwrap();
-    let ego_tenant = MockTenant::new();
+    let mut ego_tenant = MockTenant::new();
+    ego_tenant
+        .expect_canister_main_track()
+        .returning(|_, _, _| Ok(()));
     // ego-store wallet not exists
     let canister_track =
         EgoStoreService::wallet_canister_track(ego_tenant, wallet_id, TEST_APP_ID.to_string())
@@ -466,7 +472,10 @@ async fn wallet_canister_track_wallet_not_exists() {
 async fn wallet_canister_track_wallet_app_not_install() {
     set_up();
     let wallet_id = Principal::from_text(EXISTS_WALLET_ID).unwrap();
-    let ego_tenant = MockTenant::new();
+    let mut ego_tenant = MockTenant::new();
+    ego_tenant
+        .expect_canister_main_track()
+        .returning(|_, _, _| Ok(()));
     //ego-store app not install
     let canister_track =
         EgoStoreService::wallet_canister_track(ego_tenant, wallet_id, TEST_APP_ID.to_string())
@@ -493,6 +502,80 @@ async fn wallet_canister_track_success() {
         EgoStoreService::wallet_canister_track(ego_tenant, wallet_id, EXISTS_APP_ID.to_string())
             .await;
     assert!(canister_track.is_ok());
+}
+
+#[tokio::test]
+async fn wallet_canister_untrack_no_ego_tenant_installed() {
+    let mut ego_tenant = MockTenant::new();
+    ego_tenant
+        .expect_canister_main_untrack()
+        .returning(|_, _, _| Ok(()));
+    let wallet_id = Principal::from_text(TEST_WALLET_ID).unwrap();
+
+    let canister_untrack =
+        EgoStoreService::wallet_canister_untrack(ego_tenant, wallet_id, TEST_APP_ID.to_string())
+            .await;
+    assert!(canister_untrack.is_err());
+    assert_eq!(3003, canister_untrack.as_ref().unwrap_err().code);
+    assert_eq!(
+        "ego-store: no ego tenant installed",
+        canister_untrack.as_ref().unwrap_err().msg
+    );
+}
+
+#[tokio::test]
+async fn wallet_canister_untrack_wallet_not_exists() {
+    set_up();
+    let mut ego_tenant = MockTenant::new();
+    ego_tenant
+        .expect_canister_main_untrack()
+        .returning(|_, _, _| Ok(()));
+    let wallet_id = Principal::from_text(TEST_WALLET_ID).unwrap();
+
+    let canister_untrack =
+        EgoStoreService::wallet_canister_untrack(ego_tenant, wallet_id, TEST_APP_ID.to_string())
+            .await;
+    assert!(canister_untrack.is_err());
+    assert_eq!(3006, canister_untrack.as_ref().unwrap_err().code);
+    assert_eq!(
+        "ego-store: wallet not exists",
+        canister_untrack.as_ref().unwrap_err().msg
+    );
+}
+
+#[tokio::test]
+async fn wallet_canister_untrack_app_not_install() {
+    set_up();
+    let mut ego_tenant = MockTenant::new();
+    ego_tenant
+        .expect_canister_main_untrack()
+        .returning(|_, _, _| Ok(()));
+    let wallet_id = Principal::from_text(EXISTS_WALLET_ID).unwrap();
+
+    let canister_untrack =
+        EgoStoreService::wallet_canister_untrack(ego_tenant, wallet_id, TEST_APP_ID.to_string())
+            .await;
+    assert!(canister_untrack.is_err());
+    assert_eq!(3010, canister_untrack.as_ref().unwrap_err().code);
+    assert_eq!(
+        "ego-store: app not install",
+        canister_untrack.as_ref().unwrap_err().msg
+    );
+}
+
+#[tokio::test]
+async fn wallet_canister_untrack() {
+    set_up();
+    let mut ego_tenant = MockTenant::new();
+    ego_tenant
+        .expect_canister_main_untrack()
+        .returning(|_, _, _| Ok(()));
+    let wallet_id = Principal::from_text(EXISTS_WALLET_ID).unwrap();
+
+    let canister_untrack =
+        EgoStoreService::wallet_canister_untrack(ego_tenant, wallet_id, EXISTS_APP_ID.to_string())
+            .await;
+    assert!(canister_untrack.is_ok());
 }
 
 // TODO: add test case for shared install mode
