@@ -5,7 +5,7 @@ use ego_dev_mod::c2c::ego_store::TEgoStore;
 use ego_dev_mod::developer::Developer;
 use ego_dev_mod::file::File;
 use ego_dev_mod::service::EgoDevService;
-use ego_dev_mod::state::{EGO_DEV};
+use ego_dev_mod::state::EGO_DEV;
 use ego_types::app::{Category, DeployMode};
 use ego_types::ego_error::EgoError;
 use ego_types::version::Version;
@@ -427,9 +427,7 @@ async fn app_version_release() {
     let version = Version::new(1, 0, 1);
 
     let mut ego_store = MockStore::new();
-    ego_store
-        .expect_app_main_release()
-        .returning(|_, _| ());
+    ego_store.expect_app_main_release().returning(|_, _| ());
 
     // approve version
     let result = EgoDevService::app_version_approve(EXIST_APP_ID.to_string(), version);
@@ -799,8 +797,7 @@ async fn app_version_release_fail() {
 
     // app not exists
     let mut ego_store = MockStore::new();
-    let _result = ego_store
-        .expect_app_main_release();
+    let _result = ego_store.expect_app_main_release();
     let version_release = EgoDevService::app_version_release(
         caller_test,
         TEST_APP_ID.to_string(),
@@ -813,8 +810,7 @@ async fn app_version_release_fail() {
 
     // test caller unauthorized
     let mut ego_store = MockStore::new();
-    let _result = ego_store
-        .expect_app_main_release();
+    let _result = ego_store.expect_app_main_release();
     let caller_unauthorized = EgoDevService::app_version_release(
         caller_test,
         EXIST_APP_ID.to_string(),
