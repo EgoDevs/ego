@@ -10,10 +10,11 @@ use mockall::mock;
 
 static LEDGER_ID: &str = "22k5f-nqaaa-aaaad-qaigq-cai";
 static STORE_ID: &str = "22cl3-kqaaa-aaaaf-add7q-cai";
+static TEST_STORE_ID: &str = "c5jhr-faaaa-aaaaf-acebq-cai";
 static EXISTS_WALLET_ID: &str = "amybd-zyaaa-aaaah-qc4hq-cai";
 static EXISTS_USER_ID: &str = "225da-yaaaa-aaaah-qahrq-cai";
 static EXISTS_TENANT_ID: &str = "22ayq-aiaaa-aaaai-qgmma-cai";
-
+static TEST_WALLET_ID: &str = "63y6j-siaaa-aaaaf-augja-cai";
 
 mock!{
   Ledger{}
@@ -103,3 +104,31 @@ fn wallet_order_notify() {
     assert_eq!((1.2f32 * 1000000f32) as u128, ego_store.borrow().wallets.get(&exist_wallet_id).unwrap().cycles);
   });
 }
+
+
+#[test]
+fn wallet_order_list_wallet_not_exists(){
+  // set_up();
+  let test_wallet_id = Principal::from_text(TEST_WALLET_ID).unwrap();
+
+  //ego store wallet not exists
+  let result = EgoStoreService::wallet_order_list(test_wallet_id);
+  assert!(result.is_err());
+  assert_eq!(3006, result.as_ref().unwrap_err().code);
+  assert_eq!("ego-store: wallet not exists", result.as_ref().unwrap_err().msg);
+}
+
+#[test]
+fn wallet_order_new_wallet_not_exists(){
+    // set_up();
+    let mut ego_ledger = MockLedger::new();
+    ego_ledger
+      .expect_ledger_payment_add()
+      .returning(|_| ());
+    let wallet_id = Principal::from_text(EXISTS_WALLET_ID).unwrap();
+    let store_id = Principal::from_text(STORE_ID).unwrap();
+  
+    let result = EgoStoreService::wallet_order_new(ego_ledger, wallet_id, store_id, 1.5f32).unwrap();
+    // println!("result: {:?}", result);
+}
+
