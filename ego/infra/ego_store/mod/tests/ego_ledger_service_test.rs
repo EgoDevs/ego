@@ -128,8 +128,9 @@ fn wallet_order_new_wallet_not_exists(){
     let wallet_id = Principal::from_text(EXISTS_WALLET_ID).unwrap();
     let store_id = Principal::from_text(STORE_ID).unwrap();
     // wallet not exists
-    let result = EgoStoreService::wallet_order_new(ego_ledger, wallet_id, store_id, 1.5f32).unwrap();
-    println!("result: {:?}", result);
+    let result = EgoStoreService::wallet_order_new(ego_ledger, wallet_id, store_id, 1.5f32);
+    assert!(result.is_err());
+    assert_eq!(3006,result.as_ref().unwrap_err().code);
 }
 
 #[test]
