@@ -75,6 +75,16 @@ fn canister_main_track() {
   assert!(ret.is_ok())
 }
 
+#[test]
+fn canister_main_untrack(){
+  set_up();
+  let wallet_principal = Principal::from_text(TEST_WALLET_ID.to_string()).unwrap();
+  let canister_principal = Principal::from_text(TEST_CANISTER_ID.to_string()).unwrap();
+
+  let result = EgoTenantService::canister_main_untrack(wallet_principal, canister_principal);
+  assert!(result.is_ok());
+}
+
 #[tokio::test]
 async fn canister_cycles_check_first_time() {
   set_up();
