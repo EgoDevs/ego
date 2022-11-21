@@ -2,7 +2,7 @@ use async_trait::async_trait;
 use ic_cdk::export::Principal;
 use mockall::mock;
 use ego_ledger_mod::service::EgoLedgerService;
-use ego_ledger_mod::c2c::ego_log::TEgoLog;
+use ego_macros::ego_log::TEgoLogCanister;
 use ego_ledger_mod::c2c::ic_ledger::TIcLedger;
 use ego_ledger_mod::c2c::ego_store::TEgoStore;
 use ic_ledger_types::{AccountIdentifier, Block, BlockIndex, Memo, Subaccount, Timestamp, Tokens, Transaction};
@@ -48,7 +48,7 @@ mock! {
 mock! {
   Log {}
 
-  impl TEgoLog for Log {
+  impl TEgoLogCanister for Log {
     fn canister_log_add(&self, message: &str);
   }
 }
@@ -154,7 +154,7 @@ async fn ledger_payment_match() {
 
   EGO_LEDGER.with(|ego_ledger| assert_eq!(1, ego_ledger.borrow().payments.len()));
 
-  match EgoLedgerService::ledger_payment_match(ego_store, ego_log, ic_ledger).await{
+  match EgoLedgerService::ledger_payment_match(ego_store, ic_ledger, ego_log).await{
     Ok(_) => {}
     Err(_) => {}
   };
