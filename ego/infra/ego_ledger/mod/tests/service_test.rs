@@ -160,5 +160,29 @@ async fn ledger_payment_match() {
   };
 
   EGO_LEDGER.with(|ego_ledger| assert_eq!(0, ego_ledger.borrow().payments.len()));
+}
 
+#[tokio::test]
+async fn ledger_payment_match_ic_ledger_error() {
+  set_up();
+
+  let mut ego_store = MockStore::new();
+  let mut ego_log = MockLog::new();
+  let mut ic_ledger = MockLedger::new();
+
+  ego_log.expect_canister_log_add().returning(|_msg| ());
+
+  ic_ledger.expect_query_blocks().returning(|_block| Err(EgoError::from("ic ledger error".to_string())));
+
+  ego_store.expect_wallet_order_notify().returning(|_memo| ());
+
+  EGO_LEDGER.with(|ego_ledger| assert_eq!(1, ego_ledger.borrow().payments.len()));
+
+  match EgoLedgerService::ledger_payment_match(ego_store, ic_ledger, ego_log).await{
+    Ok(_) => {}
+    Err(e) => {
+      assert_eq!(255, e.code);}
+  };
+
+  EGO_LEDGER.with(|ego_ledger| assert_eq!(1, ego_ledger.borrow().payments.len()));
 }
