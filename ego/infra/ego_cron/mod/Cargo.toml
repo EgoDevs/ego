@@ -22,3 +22,7 @@ serde_cbor = "0.11.2"
 serde_with = "1.12.0"
 ego_types = { path = "../../../lib/ego_types"}
 ic-cron = "0.7"
+
+[dev-dependencies]
+mockall = "0.11.2"
+tokio = {version="1.21.0", features=["full"]}
