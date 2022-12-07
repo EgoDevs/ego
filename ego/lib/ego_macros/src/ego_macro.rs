@@ -20,14 +20,18 @@ macro_rules! inject_ego_macros {
         use ego_macros::ego_log::{TEgoLogCanister, EgoLogCanister};
 
         pub fn ego_log(message: &str) {
-            ic_cdk::println!("ego-log: message: {}", message.clone());
-            match REGISTRY.with(|r| r.borrow().canister_get_one("ego_log")) {
-                None => {},
-                Some(ego_log_id) => {
-                    let ego_log = EgoLogCanister::new(ego_log_id);
-                    ego_log.canister_log_add(message);
-                }
-            };
+            // for development
+            ic_cdk::println!("{}", message.to_string());
+
+            // for production
+            // ic_cdk::println!("ego-log: message: {}", message.clone());
+            // match REGISTRY.with(|r| r.borrow().canister_get_one("ego_log")) {
+            //     None => {},
+            //     Some(ego_log_id) => {
+            //         let ego_log = EgoLogCanister::new(ego_log_id);
+            //         ego_log.canister_log_add(message);
+            //     }
+            // };
         }
 
         pub fn get_ego_log() -> Option<EgoLogCanister> {

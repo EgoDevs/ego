@@ -267,7 +267,7 @@ pub async fn canister_owner_set(
             error!(
                 error_code = code,
                 error_message = msg.as_str(),
-                "Error calling canister_owner_set"
+                "Error calling role_owner_set"
             );
             return Err(EgoError { code, msg });
         }

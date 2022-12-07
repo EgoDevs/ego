@@ -1,5 +1,6 @@
 use crate::version::Version;
-use candid::{CandidType, Principal};
+use candid::{CandidType};
+use ic_cdk::export::Principal;
 use ic_cdk::export::candid::Deserialize;
 use serde::Serialize;
 use std::fmt;

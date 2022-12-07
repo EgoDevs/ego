@@ -23,7 +23,6 @@
     "format:idl": "prettier --write clients/idls/**/*.ts",
 
     "ego:deploy:local": "pnpm ego:pre && pnpm ego:bootstrap && pnpm ego:build && pnpm ego:install && pnpm ego:post_install:project ego_ops",
-    "ego:setup:local": "pnpm ego:post_install:project ego_ops",
 
     "ego:create:live": "cross-env NODE_ENV=production node ./dist/deployer.js --create",
     "ego:install:live": "cross-env NODE_ENV=production node ./dist/deployer.js --install",

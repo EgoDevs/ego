@@ -374,8 +374,6 @@ impl EgoStoreService {
             backend_canister,
         );
 
-
-
         Ok(user_app)
     }
 }
