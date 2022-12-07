@@ -356,6 +356,13 @@ impl EgoStoreService {
                 let backend_canister_id = ego_tenant
                     .app_main_install(ego_tenant_id, user_id, user_id, app.backend.as_ref().unwrap())
                     .await?;
+
+                let _result = EGO_STORE.with(|ego_store| {
+                    ego_store
+                      .borrow_mut()
+                      .wallet_main_register(backend_canister_id, user_id)
+                });
+
                 Some(Canister::new(backend_canister_id, CanisterType::BACKEND))
             }
         };
@@ -366,6 +373,8 @@ impl EgoStoreService {
             frontend_canister,
             backend_canister,
         );
+
+
 
         Ok(user_app)
     }

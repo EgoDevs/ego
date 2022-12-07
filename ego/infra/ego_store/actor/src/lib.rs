@@ -383,7 +383,7 @@ pub fn admin_wallet_order_list() -> Result<Vec<Order>, EgoError> {
 /********************  methods for wallet provider  ********************/
 #[update(name = "wallet_main_new")]
 #[candid_method(update, rename = "wallet_main_new")]
-pub async fn wallet_main_new(req: WalletMainNewRequest) -> Result<WalletMainNewResponse, EgoError> {
+pub async fn wallet_main_new(user_id: Principal) -> Result<WalletMainNewResponse, EgoError> {
     ego_log("ego_store: wallet_main_new");
 
     let wallet_provider = caller();
@@ -399,7 +399,7 @@ pub async fn wallet_main_new(req: WalletMainNewRequest) -> Result<WalletMainNewR
 
     let ego_tenant = EgoTenant::new();
     let user_app =
-        EgoStoreService::wallet_controller_install(ego_tenant, req.user_id, app_id).await?;
+        EgoStoreService::wallet_controller_install(ego_tenant, user_id, app_id).await?;
 
     Ok(WalletMainNewResponse { user_app })
 }
