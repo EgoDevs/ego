@@ -18,15 +18,16 @@ use ego_ledger_mod::types::{
 use ego_types::ego_error::EgoError;
 
 use ego_macros::inject_balance_get;
-use ego_macros::inject_ego_log;
-use ego_users::inject_ego_users;
-use ego_registry::inject_ego_registry;
+use ego_macros::inject_ego_macros;
 
+use astrox_macros::inject_canister_registry;
+use astrox_macros::inject_canister_users;
+
+inject_canister_users!();
+inject_canister_registry!();
 
 inject_balance_get!();
-inject_ego_users!();
-inject_ego_registry!();
-inject_ego_log!();
+inject_ego_macros!();
 
 #[derive(Clone, Debug, CandidType, Deserialize)]
 pub struct InitArg {
@@ -40,7 +41,7 @@ pub fn init(arg: InitArg) {
     ic_cdk::println!("ego-ledger: init, caller is {}", caller.clone());
 
     ic_cdk::println!("==> add caller as the owner");
-    users_init(caller.clone());
+    owner_add(caller.clone());
 }
 
 #[derive(CandidType, Deserialize, Serialize)]
@@ -78,9 +79,9 @@ fn post_upgrade() {
 /********************  methods for ego_registry   ********************/
 fn on_canister_added(name: &str, canister_id: Principal) {
     let _ = match name {
-        "ego_store" => role_user_add(canister_id).unwrap(),
+        "ego_store" => user_add(canister_id),
         "ego_cron" => {
-            role_user_add(canister_id).unwrap();
+            user_add(canister_id);
 
             let ego_cron = EgoCron::new(canister_id);
             ego_cron.task_main_add("message_main_notify");

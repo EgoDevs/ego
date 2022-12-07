@@ -10,14 +10,16 @@ use ego_log_mod::state::EGO_LOG;
 use ic_cdk_macros::*;
 
 use ego_macros::inject_balance_get;
-use ego_macros::inject_ego_log;
-use ego_users::inject_ego_users;
-use ego_registry::inject_ego_registry;
+use ego_macros::inject_ego_macros;
+
+use astrox_macros::inject_canister_registry;
+use astrox_macros::inject_canister_users;
+
+inject_canister_users!();
+inject_canister_registry!();
 
 inject_balance_get!();
-inject_ego_users!();
-inject_ego_registry!();
-inject_ego_log!();
+inject_ego_macros!();
 
 #[derive(Clone, Debug, CandidType, Deserialize)]
 pub struct InitArg {
@@ -31,7 +33,7 @@ pub fn init(arg: InitArg) {
     ic_cdk::println!("ego-log: init, caller is {}", caller.clone());
 
     ic_cdk::println!("==> add caller as the owner");
-    users_init(caller.clone());
+    owner_add(caller.clone());
 }
 
 #[derive(CandidType, Deserialize, Serialize)]
@@ -65,7 +67,7 @@ fn post_upgrade() {
 /********************  methods for ego_registry   ********************/
 fn on_canister_added(name: &str, canister_id: Principal) {
     let _ = match name {
-        _ => role_user_add(canister_id).unwrap()
+        _ => user_add(canister_id)
     };
 }
 

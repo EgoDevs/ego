@@ -26,14 +26,16 @@ use ic_cdk::export::candid::{CandidType, Deserialize};
 use serde::Serialize;
 
 use ego_macros::inject_balance_get;
-use ego_macros::inject_ego_log;
-use ego_users::inject_ego_users;
-use ego_registry::inject_ego_registry;
+use ego_macros::inject_ego_macros;
+
+use astrox_macros::inject_canister_registry;
+use astrox_macros::inject_canister_users;
+
+inject_canister_users!();
+inject_canister_registry!();
 
 inject_balance_get!();
-inject_ego_users!();
-inject_ego_registry!();
-inject_ego_log!();
+inject_ego_macros!();
 
 #[derive(Clone, Debug, CandidType, Deserialize)]
 pub struct InitArg {
@@ -47,7 +49,7 @@ pub fn init(arg: InitArg) {
     ic_cdk::println!("ego-dev: init, caller is {}", caller.clone());
 
     ic_cdk::println!("==> add caller as the owner");
-    users_init(caller.clone());
+    owner_add(caller.clone());
 
     ic_cdk::println!("==> caller register as an developer");
     match EgoDevService::developer_main_register(caller.clone(), "admin".to_string()) {
@@ -96,7 +98,7 @@ fn on_canister_added(name: &str, canister_id: Principal) {
         "ego_file" => {
            EgoDevService::admin_ego_file_add(canister_id);
         },
-        "ego_store" => role_user_add(canister_id).unwrap(),
+        "ego_store" => user_add(canister_id),
         _ => {}
     };
 }

@@ -61,15 +61,15 @@ export const opsPostInstall = async () => {
   console.log(`=== post install script of ego_ops starts: ===\n`);
 
   console.log(`1. canister_registers\n`);
-  // await canister_registers();
+  await canister_registers();
 
   console.log(`2. canister_relation_update\n`);
-  // await opsOperator.canister_relation_update("ego_dev");
-  // await opsOperator.canister_relation_update("ego_file");
-  // await opsOperator.canister_relation_update("ego_store");
-  // await opsOperator.canister_relation_update("ego_tenant");
-  // await opsOperator.canister_relation_update("ego_cron");
-  // await opsOperator.canister_relation_update("ego_ledger");
+  await opsOperator.canister_relation_update("ego_dev");
+  await opsOperator.canister_relation_update("ego_file");
+  await opsOperator.canister_relation_update("ego_store");
+  await opsOperator.canister_relation_update("ego_tenant");
+  await opsOperator.canister_relation_update("ego_cron");
+  await opsOperator.canister_relation_update("ego_ledger");
   await opsOperator.canister_relation_update("ego_log");
   await opsOperator.canister_relation_update("ego_ops");
 
@@ -138,7 +138,7 @@ async function canister_register(canister_name: string) {
   let canister_id = Principal.fromText(getCanisterId(canister_name)!);
 
   console.log(`==> a. add ego_ops as ${canister_name} owner\n`);
-  let resp1 = await canister_operator.role_owner_add(ego_ops_id);
+  let resp1 = await canister_operator.ego_owner_add(ego_ops_id);
   console.log(resp1);
 
   console.log(`==> b. register ${canister_name} to ego_ops\n`);

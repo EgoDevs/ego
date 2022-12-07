@@ -1,6 +1,22 @@
 #[macro_export]
-macro_rules! inject_ego_log {
+macro_rules! inject_ego_macros {
     () => {
+        // for user management
+        #[update(name = "ego_owner_add", guard = "owner_guard")]
+        #[candid_method(update, rename = "ego_owner_add")]
+        pub fn ego_owner_add(principal: Principal) -> Result<(), String> {
+            owner_add(principal);
+            Ok(())
+        }
+
+        #[update(name = "ego_user_add", guard = "owner_guard")]
+        #[candid_method(update, rename = "ego_user_add")]
+        pub fn ego_user_add(principal: Principal) -> Result<(), String> {
+            user_add(principal);
+            Ok(())
+        }
+
+        // for log
         use ego_macros::ego_log::{TEgoLogCanister, EgoLogCanister};
 
         pub fn ego_log(message: &str) {

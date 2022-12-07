@@ -6,7 +6,6 @@ use ic_cdk_macros::*;
 use serde::Serialize;
 
 use ego_macros::inject_balance_get;
-use ego_registry::inject_ego_registry;
 use ego_store_mod::c2c::ego_ledger::EgoLedger;
 use ego_store_mod::c2c::ego_tenant::EgoTenant;
 use ego_store_mod::ego_store::EgoStore;
@@ -16,14 +15,17 @@ use ego_store_mod::types::*;
 use ego_types::app::{App, DeployMode};
 use ego_types::app::DeployMode::DEDICATED;
 use ego_types::ego_error::EgoError;
-use ego_users::inject_ego_users;
-use ego_macros::inject_ego_log;
+use ego_macros::inject_ego_macros;
 use ego_store_mod::order::Order;
 
-inject_ego_log!();
+use astrox_macros::inject_canister_registry;
+use astrox_macros::inject_canister_users;
+
+inject_canister_users!();
+inject_canister_registry!();
+
+inject_ego_macros!();
 inject_balance_get!();
-inject_ego_users!();
-inject_ego_registry!();
 
 
 #[derive(Clone, Debug, CandidType, Deserialize)]
@@ -38,7 +40,7 @@ pub fn init(arg: InitArg) {
     ic_cdk::println!("ego_store: init, caller is {}", caller.clone());
 
     ic_cdk::println!("==> add caller as the owner");
-    users_init(caller.clone());
+    owner_add(caller.clone());
 }
 
 #[derive(CandidType, Deserialize, Serialize)]
@@ -75,10 +77,10 @@ fn post_upgrade() {
 fn on_canister_added(name: &str, canister_id: Principal) {
     ego_log(&format!("on_canister_added name: {}, canister_id: {}", name, canister_id));
     let _ = match name {
-        "ego_dev" => role_user_add(canister_id).unwrap(),
-        "ego_ledger" => role_user_add(canister_id).unwrap(),
+        "ego_dev" => user_add(canister_id),
+        "ego_ledger" => user_add(canister_id),
         "ego_tenant" => {
-            role_user_add(canister_id).unwrap();
+            user_add(canister_id);
             EgoStoreService::admin_ego_tenant_add(canister_id);
         },
         _ => {}

@@ -11,16 +11,18 @@ use ego_file_mod::types::{
 
 use ego_file_mod::storage::{Storage, DEFAULT_FILE_SIZE, HEADER_SIZE, WASM_PAGE_SIZE};
 use ego_macros::inject_balance_get;
-use ego_macros::inject_ego_log;
+use ego_macros::inject_ego_macros;
 use ego_types::ego_error::EgoError;
-use ego_users::inject_ego_users;
-use ego_registry::inject_ego_registry;
 use ic_cdk::api::stable::{stable64_grow, stable64_read, stable64_write};
 
+use astrox_macros::inject_canister_registry;
+use astrox_macros::inject_canister_users;
+
+inject_canister_users!();
+inject_canister_registry!();
+
 inject_balance_get!();
-inject_ego_users!();
-inject_ego_registry!();
-inject_ego_log!();
+inject_ego_macros!();
 
 #[derive(Clone, Debug, CandidType, Deserialize)]
 pub struct InitArg {
@@ -43,7 +45,7 @@ pub fn init(arg: InitArg) {
     }
 
     ic_cdk::println!("==> add caller as the owner");
-    users_init(caller.clone());
+    owner_add(caller.clone());
 }
 
 #[pre_upgrade]
@@ -67,8 +69,8 @@ fn post_upgrade() {
 /********************  methods for ego_registry   ********************/
 fn on_canister_added(name: &str, canister_id: Principal) {
     let _ = match name {
-        "ego_dev" => role_user_add(canister_id).unwrap(),
-        "ego_tenant" => role_user_add(canister_id).unwrap(),
+        "ego_dev" => user_add(canister_id),
+        "ego_tenant" => user_add(canister_id),
         _ => {}
     };
 }
