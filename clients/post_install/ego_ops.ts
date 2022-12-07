@@ -33,19 +33,19 @@ const ego_assets_wasm = fs.readFileSync(
   `${[process.cwd()]}` + '/artifacts/ego_assets/ego_assets_opt.wasm',
 );
 
-const astrox_wasm = fs.readFileSync(
-  path.resolve(
-    `${[process.cwd()]}` +
-      '/../astrox_wallet/artifacts/astrox_wallet/astrox_wallet_opt.wasm',
-  ),
-);
-
-const omni_wallet = fs.readFileSync(
-  path.resolve(
-    `${[process.cwd()]}` +
-      '/../app_omni_wallet/artifacts/omni_wallet/omni_wallet_opt.wasm',
-  ),
-);
+// const astrox_wasm = fs.readFileSync(
+//   path.resolve(
+//     `${[process.cwd()]}` +
+//       '/../astrox_wallet/artifacts/astrox_wallet/astrox_wallet_opt.wasm',
+//   ),
+// );
+//
+// const omni_wallet = fs.readFileSync(
+//   path.resolve(
+//     `${[process.cwd()]}` +
+//       '/../app_omni_wallet/artifacts/omni_wallet/omni_wallet_opt.wasm',
+//   ),
+// );
 
 const version = {
   major: 1,
