@@ -13,6 +13,9 @@ fn main() {
     use ic_cdk::export::Principal;
     use std::collections::BTreeMap;
     use ego_store_mod::order::Order;
+    use ego_store_mod::user_app::UserApp;
+    use ego_store_mod::user_app::AppInstalled;
+
 
     candid::export_service!();
     std::print!("{}", __export_service());
