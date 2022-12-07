@@ -20,6 +20,7 @@ use ego_store_mod::order::Order;
 
 use astrox_macros::inject_canister_registry;
 use astrox_macros::inject_canister_users;
+use ego_store_mod::user_app::{AppInstalled, UserApp};
 
 inject_canister_users!();
 inject_canister_registry!();
@@ -146,7 +147,7 @@ pub fn wallet_app_list() -> Result<WalletAppListResponse, EgoError> {
 #[candid_method(update, rename = "wallet_app_install")]
 pub async fn wallet_app_install(
     req: WalletAppInstallRequest,
-) -> Result<WalletAppInstallResponse, EgoError> {
+) -> Result<AppInstalled, EgoError> {
     ego_log("ego_store: wallet_app_install");
 
     ego_log("1 get app to be install");
@@ -166,13 +167,13 @@ pub async fn wallet_app_install(
 
     match result {
         Ok(app_installed) => {
-            Ok(WalletAppInstallResponse{user_app: app_installed})
+            Ok(app_installed)
         }
         Err(_e) => {
             let ego_tenant = EgoTenant::new();
             let user_app =
               EgoStoreService::wallet_app_install(ego_tenant, wallet_id, app).await?;
-            Ok(WalletAppInstallResponse { user_app })
+            Ok(user_app)
         }
     }
 }
@@ -181,7 +182,7 @@ pub async fn wallet_app_install(
 #[candid_method(update, rename = "wallet_app_upgrade")]
 pub async fn wallet_app_upgrade(
     req: WalletAppUpgradeRequest,
-) -> Result<WalletAppUpgradeResponse, EgoError> {
+) -> Result<AppInstalled, EgoError> {
     ego_log("ego_store: wallet_app_upgrade");
 
     ego_log("1 get app to be upgrade");
@@ -207,7 +208,7 @@ pub async fn wallet_app_upgrade(
 
     let user_app =
         EgoStoreService::wallet_app_upgrade(ego_tenant, wallet_id, app).await?;
-    Ok(WalletAppUpgradeResponse { user_app })
+    Ok( user_app )
 }
 
 #[update(name = "wallet_app_remove")]
@@ -383,7 +384,7 @@ pub fn admin_wallet_order_list() -> Result<Vec<Order>, EgoError> {
 /********************  methods for wallet provider  ********************/
 #[update(name = "wallet_main_new")]
 #[candid_method(update, rename = "wallet_main_new")]
-pub async fn wallet_main_new(user_id: Principal) -> Result<WalletMainNewResponse, EgoError> {
+pub async fn wallet_main_new(user_id: Principal) -> Result<UserApp, EgoError> {
     ego_log("ego_store: wallet_main_new");
 
     let wallet_provider = caller();
@@ -401,5 +402,5 @@ pub async fn wallet_main_new(user_id: Principal) -> Result<WalletMainNewResponse
     let user_app =
         EgoStoreService::wallet_controller_install(ego_tenant, user_id, app_id).await?;
 
-    Ok(WalletMainNewResponse { user_app })
+    Ok(user_app)
 }
