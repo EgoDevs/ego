@@ -223,11 +223,6 @@ pub struct AdminWalletProviderAddRequest {
 }
 
 #[derive(CandidType, Deserialize, Serialize)]
-pub struct AdminWalletProviderAddResponse {
-    pub ret: bool,
-}
-
-#[derive(CandidType, Deserialize, Serialize)]
 pub struct AdminWalletCycleRechargeRequest {
     pub wallet_id: Principal,
     pub cycle: u128,

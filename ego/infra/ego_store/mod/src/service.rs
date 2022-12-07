@@ -301,7 +301,7 @@ impl EgoStoreService {
     pub fn admin_wallet_provider_add(
         wallet_provider: &Principal,
         wallet_id: &AppId,
-    ) -> Result<bool, EgoError> {
+    ) {
         EGO_STORE.with(|ego_store| {
             ego_store
                 .borrow_mut()

@@ -349,17 +349,15 @@ pub fn wallet_order_notify(
 #[candid_method(update, rename = "admin_wallet_provider_add")]
 pub fn admin_wallet_provider_add(
     req: AdminWalletProviderAddRequest,
-) -> Result<AdminWalletProviderAddResponse, EgoError> {
+) -> Result<(), EgoError> {
     ego_log("ego_store: admin_wallet_provider_add");
 
     ego_log(&format!("wallet_provider: {}, app_id: {}",
                     req.wallet_provider,
                     req.wallet_app_id));
 
-    match EgoStoreService::admin_wallet_provider_add(&req.wallet_provider, &req.wallet_app_id) {
-        Ok(ret) => Ok(AdminWalletProviderAddResponse { ret }),
-        Err(e) => Err(e),
-    }
+    EgoStoreService::admin_wallet_provider_add(&req.wallet_provider, &req.wallet_app_id);
+    Ok(())
 }
 
 

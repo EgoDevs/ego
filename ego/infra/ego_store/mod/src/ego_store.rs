@@ -270,17 +270,8 @@ impl EgoStore {
         &mut self,
         wallet_provider: &Principal,
         wallet_id: &AppId,
-    ) -> Result<bool, EgoError> {
-        match self.wallet_providers.get(wallet_provider) {
-            Some(_) => Err(EgoStoreErr::WalletProviderExists.into()),
-            None => {
-                self.wallet_providers.insert(
-                    wallet_provider.clone(),
-                    WalletProvider::new(wallet_provider, wallet_id),
-                );
-                Ok(true)
-            }
-        }
+    ) {
+        self.wallet_providers.entry(wallet_provider.clone()).and_modify(|provider| provider.app_id = wallet_id.clone()).or_insert(WalletProvider::new(wallet_provider, wallet_id));
     }
 
     pub fn app_main_release(&mut self, app: EgoStoreApp) -> Result<bool, EgoError> {
