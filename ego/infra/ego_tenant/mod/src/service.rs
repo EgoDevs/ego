@@ -67,12 +67,13 @@ impl EgoTenantService {
         management.canister_code_install(canister_id, data).await?;
 
         // add ego_store_id to app
-        ic_cdk::println!("4 add ego_store_id to canister");
+        ic_cdk::println!("4 register canister");
         management.canister_add(canister_id, "ego_store".to_string(), ego_store_id);
-
-        // add ego_tenant_id to app
-        ic_cdk::println!("5 add ego_tenant_id to canister");
         management.canister_add(canister_id, "ego_tenant".to_string(), ego_tenant_id);
+
+        ic_cdk::println!("5 add ops_user");
+        management.op_user_add(canister_id, ego_store_id);
+        management.op_user_add(canister_id, ego_tenant_id);
 
         ic_cdk::println!("6 change canister controller to wallet");
         management

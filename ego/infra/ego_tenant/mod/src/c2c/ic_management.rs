@@ -45,6 +45,12 @@ pub trait TIcManagement {
         name: String,
         canister_id: Principal,
     );
+
+    fn op_user_add(
+        &self,
+        target_canister_id: Principal,
+        canister_id: Principal,
+    );
 }
 
 #[derive(Clone)]
@@ -107,5 +113,13 @@ impl TIcManagement for IcManagement {
         canister_id: Principal,
     ){
         let _result = api::call::notify(target_canister_id, "canister_add", (name, canister_id,));
+    }
+
+    fn op_user_add(
+        &self,
+        target_canister_id: Principal,
+        canister_id: Principal,
+    ){
+        let _result = api::call::notify(target_canister_id, "role_op_add", (canister_id,));
     }
 }
