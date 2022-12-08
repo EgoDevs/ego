@@ -1,6 +1,7 @@
-use ic_cdk::export::candid::{CandidType, Deserialize};
+use ic_cdk::export::candid::{Deserialize};
 use ic_ledger_types::{AccountIdentifier, Memo, Tokens};
 use serde::Serialize;
+use candid::CandidType;
 
 // type for ego_ledger
 #[derive(CandidType, Deserialize, Serialize)]
