@@ -10,13 +10,13 @@ use ego_types::app::AppId;
 use ego_types::version::Version;
 
 use crate::order::Order;
-use crate::user_app::UserApp;
+use crate::user_app::WalletApp;
 
 #[derive(CandidType, Serialize, Deserialize, Clone, Debug)]
 pub struct Wallet {
     pub tenant_id: Principal,
     pub orders: Vec<Memo>,
-    pub apps: BTreeMap<AppId, UserApp>,
+    pub apps: BTreeMap<AppId, WalletApp>,
     pub cycles: u128,
     pub wallet_id: Principal,
     pub user_id: Principal,
@@ -36,7 +36,7 @@ impl Wallet {
         }
     }
 
-    pub fn app_install(&mut self, app_id: &AppId, user_app: &UserApp) {
+    pub fn app_install(&mut self, app_id: &AppId, user_app: &WalletApp) {
         self.apps.insert(app_id.clone(), user_app.clone());
     }
 

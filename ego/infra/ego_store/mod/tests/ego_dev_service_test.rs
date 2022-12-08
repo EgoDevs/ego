@@ -85,7 +85,7 @@ fn app_main_release_new_app() {
     .unwrap();
     assert_eq!(2, apps.len());
 
-    let app = EgoStoreService::app_main_get(NEW_APP_ID.to_string()).unwrap();
+    let app = EgoStoreService::app_main_get(&NEW_APP_ID.to_string()).unwrap();
     assert_eq!(NEW_APP_NAME.to_string(), app.name);
 }
 
@@ -127,7 +127,7 @@ fn app_main_release_new_app_version() {
     .unwrap();
     assert_eq!(1, apps.len());
 
-    let app = EgoStoreService::app_main_get(EXISTS_APP_ID.to_string()).unwrap();
+    let app = EgoStoreService::app_main_get(&EXISTS_APP_ID.to_string()).unwrap();
     assert_eq!(EXISTS_APP_NAME.to_string(), app.name);
     assert_eq!(version, app.current_version);
 }

@@ -95,10 +95,15 @@ fn on_canister_added(name: &str, canister_id: Principal) {
 #[candid_method(update, rename = "app_main_install")]
 async fn app_main_install(req: AppMainInstallRequest) -> Result<AppMainInstallResponse, EgoError> {
     ego_log("ego_tenant: app_main_install");
+
+    let ego_store_id = REGISTRY.with(|r| r.borrow().canister_get_one("ego_store")).unwrap();
+    let ego_tenant_id = id();
     let management = IcManagement::new();
     let ego_file = EgoFile::new();
 
     let canister_id = EgoTenantService::app_main_install(
+        ego_store_id,
+        ego_tenant_id,
         ego_file,
         management,
         req.wallet_id,

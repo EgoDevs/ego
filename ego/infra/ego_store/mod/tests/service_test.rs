@@ -8,7 +8,7 @@ use ego_store_mod::service::EgoStoreService;
 use ego_store_mod::state::EGO_STORE;
 use ego_store_mod::tenant::Tenant;
 use ego_store_mod::types::QueryParam;
-use ego_store_mod::user_app::UserApp;
+use ego_store_mod::user_app::WalletApp;
 use ego_store_mod::wallet::Wallet;
 use ego_types::app::CanisterType::{ASSET, BACKEND};
 use ego_types::app::{Canister, CanisterType, Category, DeployMode, Wasm};
@@ -131,8 +131,8 @@ pub fn set_up() {
             Principal::from_text(EXISTS_USER_APP_FRONTEND.to_string()).unwrap();
         let backend_principal = Principal::from_text(EXISTS_USER_APP_BACKEND.to_string()).unwrap();
         wallet.apps.insert(
-            EXISTS_APP_ID.to_string(),
-            UserApp::new(
+          EXISTS_APP_ID.to_string(),
+          WalletApp::new(
                 &EXISTS_APP_ID.to_string(),
                 &version,
                 Some(Canister::new(frontend_principal, CanisterType::ASSET)),
@@ -166,7 +166,7 @@ fn app_main_list() {
 fn app_main_get() {
     set_up();
 
-    let app = EgoStoreService::app_main_get(EXISTS_APP_ID.to_string()).unwrap();
+    let app = EgoStoreService::app_main_get(&EXISTS_APP_ID.to_string()).unwrap();
 
     assert_eq!(EXISTS_APP_ID, app.app_id);
 }
@@ -175,7 +175,7 @@ fn app_main_get() {
 fn app_main_get_failed_with_not_exists_wallet() {
     set_up();
 
-    let result = EgoStoreService::app_main_get("not_exists".to_string());
+    let result = EgoStoreService::app_main_get(&"not_exists".to_string());
     assert!(result.is_err());
 }
 
@@ -248,7 +248,7 @@ async fn wallet_app_install_success() {
         .expect_app_main_install()
         .returning(move |_, _, _, _| Ok(backend_principal));
 
-    let app = EgoStoreService::app_main_get(TEST_APP_ID.to_string()).unwrap();
+    let app = EgoStoreService::app_main_get(&TEST_APP_ID.to_string()).unwrap();
     let result = EgoStoreService::wallet_app_install(ego_tenant, wallet_principal, app).await;
     assert!(result.is_ok());
 
@@ -283,7 +283,7 @@ async fn wallet_app_upgrade_not_exists_wallet() {
 
     // install with not exists wallet
     let ego_tenant = MockTenant::new();
-    let app = EgoStoreService::app_main_get(EXISTS_APP_ID.to_string()).unwrap();
+    let app = EgoStoreService::app_main_get(&EXISTS_APP_ID.to_string()).unwrap();
 
     let result = EgoStoreService::wallet_app_upgrade(ego_tenant, wallet_id, app).await;
     assert!(result.is_err());
@@ -303,7 +303,7 @@ async fn wallet_app_upgrade_not_installed_app() {
 
     // upgrade not installed app
     let ego_tenant = MockTenant::new();
-    let app = EgoStoreService::app_main_get(EXISTS_APP_ID.to_string()).unwrap();
+    let app = EgoStoreService::app_main_get(&EXISTS_APP_ID.to_string()).unwrap();
 
     let result = EgoStoreService::wallet_app_upgrade(ego_tenant, wallet_principal, app).await;
     assert!(result.is_err());
@@ -323,7 +323,7 @@ async fn wallet_app_upgrade_success() {
 
     // upgrade installed app
     let mut ego_tenant = MockTenant::new();
-    let app = EgoStoreService::app_main_get(EXISTS_APP_ID.to_string()).unwrap();
+    let app = EgoStoreService::app_main_get(&EXISTS_APP_ID.to_string()).unwrap();
     ego_tenant
         .expect_app_main_upgrade()
         .returning(|_, _, _| Ok(true));

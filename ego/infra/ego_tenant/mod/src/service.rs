@@ -40,6 +40,8 @@ impl EgoTenantService {
     }
 
     pub async fn app_main_install<F: TEgoFile, M: TIcManagement>(
+        ego_store_id: Principal,
+        ego_tenant_id: Principal,
         ego_file: F,
         management: M,
         wallet_id: Principal,
@@ -64,12 +66,20 @@ impl EgoTenantService {
         ic_cdk::println!("3 install code");
         management.canister_code_install(canister_id, data).await?;
 
-        ic_cdk::println!("4 change canister controller to wallet");
+        // add ego_store_id to app
+        ic_cdk::println!("4 add ego_store_id to canister");
+        management.canister_add(canister_id, "ego_store".to_string(), ego_store_id);
+
+        // add ego_tenant_id to app
+        ic_cdk::println!("5 add ego_tenant_id to canister");
+        management.canister_add(canister_id, "ego_tenant".to_string(), ego_tenant_id);
+
+        ic_cdk::println!("6 change canister controller to wallet");
         management
             .canister_controller_set(canister_id, vec![wallet_id, user_id])
             .await?;
 
-        ic_cdk::println!("4 change canister owner to user");
+        ic_cdk::println!("7 change canister owner to user");
         management.canister_owner_set(canister_id, user_id).await?;
 
         Ok(canister_id)

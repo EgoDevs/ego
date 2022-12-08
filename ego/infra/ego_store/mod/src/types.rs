@@ -9,7 +9,7 @@ use ego_types::ego_error::EgoError;
 use crate::cash_flow::CashFlow;
 
 use crate::order::Order;
-use crate::user_app::{AppInstalled, UserApp};
+use crate::user_app::{UserApp, WalletApp};
 
 #[derive(Clone, Debug, CandidType, Deserialize, Serialize)]
 pub enum EgoStoreErr {
@@ -62,36 +62,8 @@ impl From<std::string::String> for EgoStoreErr {
 
 #[derive(CandidType, Deserialize, Serialize)]
 pub struct WalletAppListResponse {
-    pub apps: Vec<AppInstalled>,
+    pub apps: Vec<UserApp>,
 }
-
-#[derive(CandidType, Deserialize, Serialize)]
-pub struct WalletAppInstallRequest {
-    pub app_id: AppId,
-}
-
-#[derive(CandidType, Deserialize, Serialize)]
-pub struct WalletAppInstallResponse {
-    pub user_app: AppInstalled,
-}
-
-#[derive(CandidType, Deserialize, Serialize)]
-pub struct WalletAppUpgradeRequest {
-    pub app_id: AppId,
-}
-
-#[derive(CandidType, Deserialize, Serialize)]
-pub struct WalletAppUpgradeResponse {
-    pub user_app: AppInstalled,
-}
-
-#[derive(CandidType, Deserialize, Serialize)]
-pub struct WalletAppRemoveRequest {
-    pub app_id: AppId,
-}
-
-#[derive(CandidType, Deserialize, Serialize)]
-pub struct WalletAppRemoveResponse {}
 
 #[derive(CandidType, Deserialize, Serialize)]
 pub enum QueryParam {
@@ -106,16 +78,6 @@ pub struct AppMainListRequest {
 #[derive(CandidType, Deserialize, Serialize)]
 pub struct AppMainListResponse {
     pub apps: Vec<App>,
-}
-
-#[derive(CandidType, Deserialize, Serialize)]
-pub struct AppMainGetRequest {
-    pub app_id: AppId,
-}
-
-#[derive(CandidType, Deserialize, Serialize)]
-pub struct AppMainGetResponse {
-    pub app: App,
 }
 
 #[derive(CandidType, Deserialize, Serialize)]
@@ -193,7 +155,7 @@ pub struct WalletMainNewRequest {
 
 #[derive(CandidType, Deserialize, Serialize)]
 pub struct WalletMainNewResponse {
-    pub user_app: UserApp,
+    pub user_app: WalletApp,
 }
 
 #[derive(CandidType, Deserialize, Serialize)]

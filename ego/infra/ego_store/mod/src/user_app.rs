@@ -6,21 +6,21 @@ use ego_types::app::{AppId, Canister, Category};
 use ego_types::version::Version;
 
 #[derive(CandidType, Serialize, Deserialize, Clone, Debug)]
-pub struct UserApp {
+pub struct WalletApp {
     pub app_id: AppId,
     pub current_version: Version,
     pub frontend: Option<Canister>,
     pub backend: Option<Canister>,
 }
 
-impl UserApp {
+impl WalletApp {
     pub fn new(
         app_id: &AppId,
         current_version: &Version,
         frontend: Option<Canister>,
         backend: Option<Canister>,
     ) -> Self {
-        UserApp {
+        WalletApp {
             app_id: app_id.clone(),
             current_version: current_version.clone(),
             frontend,
@@ -30,7 +30,7 @@ impl UserApp {
 }
 
 #[derive(CandidType, Serialize, Deserialize, Clone, Debug)]
-pub struct AppInstalled {
+pub struct UserApp {
     pub app_id: AppId,
     pub name: String,
     pub category: Category,
@@ -41,9 +41,9 @@ pub struct AppInstalled {
     pub backend: Option<Canister>,
 }
 
-impl AppInstalled {
-    pub fn new(user_app: &UserApp, app: &EgoStoreApp) -> Self {
-        AppInstalled {
+impl UserApp {
+    pub fn new(user_app: &WalletApp, app: &EgoStoreApp) -> Self {
+        UserApp {
             app_id: user_app.app_id.clone(),
             name: app.name.clone(),
             category: app.category.clone(),

@@ -12,7 +12,7 @@ use ego_store_mod::ego_store::EgoStore;
 use ego_store_mod::service::*;
 use ego_store_mod::state::EGO_STORE;
 use ego_store_mod::types::*;
-use ego_types::app::{App, DeployMode};
+use ego_types::app::{App, AppId, DeployMode};
 use ego_types::app::DeployMode::DEDICATED;
 use ego_types::ego_error::EgoError;
 use ego_macros::inject_ego_macros;
@@ -20,7 +20,7 @@ use ego_store_mod::order::Order;
 
 use astrox_macros::inject_canister_registry;
 use astrox_macros::inject_canister_users;
-use ego_store_mod::user_app::{AppInstalled, UserApp};
+use ego_store_mod::user_app::{UserApp, WalletApp};
 
 inject_canister_users!();
 inject_canister_registry!();
@@ -101,12 +101,10 @@ pub fn app_main_list(request: AppMainListRequest) -> Result<AppMainListResponse,
 
 #[query(name = "app_main_get")]
 #[candid_method(query, rename = "app_main_get")]
-pub fn app_main_get(request: AppMainGetRequest) -> Result<AppMainGetResponse, EgoError> {
+pub fn app_main_get(app_id: AppId) -> Result<App, EgoError> {
     ego_log("ego_store: app_main_get");
-    match EgoStoreService::app_main_get(request.app_id) {
-        Ok(app) => Ok(AppMainGetResponse {
-            app: App::from(app),
-        }),
+    match EgoStoreService::app_main_get(&app_id) {
+        Ok(app) => Ok(App::from(app)),
         Err(e) => Err(e),
     }
 }
@@ -146,12 +144,12 @@ pub fn wallet_app_list() -> Result<WalletAppListResponse, EgoError> {
 #[update(name = "wallet_app_install")]
 #[candid_method(update, rename = "wallet_app_install")]
 pub async fn wallet_app_install(
-    req: WalletAppInstallRequest,
-) -> Result<AppInstalled, EgoError> {
+    app_id: AppId,
+) -> Result<UserApp, EgoError> {
     ego_log("ego_store: wallet_app_install");
 
     ego_log("1 get app to be install");
-    let app = EGO_STORE.with(|ego_store| ego_store.borrow().app_main_get(&req.app_id).clone())?;
+    let app = EGO_STORE.with(|ego_store| ego_store.borrow().app_main_get(&app_id).clone())?;
 
     ego_log("2 get wallet_id");
     let wallet_id = match app.deploy_mode {
@@ -163,7 +161,7 @@ pub async fn wallet_app_install(
         }
     };
 
-    let result = EgoStoreService::wallet_app_get(&wallet_id, req.app_id.clone());
+    let result = EgoStoreService::wallet_app_get(&wallet_id, app_id.clone());
 
     match result {
         Ok(app_installed) => {
@@ -180,13 +178,11 @@ pub async fn wallet_app_install(
 
 #[update(name = "wallet_app_upgrade")]
 #[candid_method(update, rename = "wallet_app_upgrade")]
-pub async fn wallet_app_upgrade(
-    req: WalletAppUpgradeRequest,
-) -> Result<AppInstalled, EgoError> {
+pub async fn wallet_app_upgrade(app_id: AppId) -> Result<UserApp, EgoError> {
     ego_log("ego_store: wallet_app_upgrade");
 
     ego_log("1 get app to be upgrade");
-    let app = EGO_STORE.with(|ego_store| ego_store.borrow().app_main_get(&req.app_id).clone())?;
+    let app = EGO_STORE.with(|ego_store| ego_store.borrow().app_main_get(&app_id).clone())?;
 
     ego_log("2 get wallet_id");
     let wallet_id = match app.deploy_mode {
@@ -213,10 +209,10 @@ pub async fn wallet_app_upgrade(
 
 #[update(name = "wallet_app_remove")]
 #[candid_method(update, rename = "wallet_app_remove")]
-pub fn wallet_app_remove(req: WalletAppRemoveRequest) -> Result<WalletAppRemoveResponse, EgoError> {
+pub fn wallet_app_remove(app_id: AppId) -> Result<(), EgoError> {
     ego_log("ego_store: wallet_app_remove");
-    match EgoStoreService::wallet_app_remove(ic_cdk::caller(), req.app_id) {
-        Ok(_) => Ok(WalletAppRemoveResponse {}),
+    match EgoStoreService::wallet_app_remove(ic_cdk::caller(), app_id) {
+        Ok(_) => Ok(()),
         Err(e) => Err(e),
     }
 }
@@ -384,7 +380,7 @@ pub fn admin_wallet_order_list() -> Result<Vec<Order>, EgoError> {
 /********************  methods for wallet provider  ********************/
 #[update(name = "wallet_main_new")]
 #[candid_method(update, rename = "wallet_main_new")]
-pub async fn wallet_main_new(user_id: Principal) -> Result<UserApp, EgoError> {
+pub async fn wallet_main_new(user_id: Principal) -> Result<WalletApp, EgoError> {
     ego_log("ego_store: wallet_main_new");
 
     let wallet_provider = caller();

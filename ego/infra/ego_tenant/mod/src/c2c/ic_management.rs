@@ -1,6 +1,7 @@
 use ic_cdk::export::Principal;
 
 use async_trait::async_trait;
+use ic_cdk::api;
 use ego_types::ego_error::EgoError;
 use ego_utils::ic_management::{
     canister_code_install, canister_code_upgrade, canister_controller_set, canister_cycle_top_up,
@@ -37,6 +38,13 @@ pub trait TIcManagement {
         canister_id: Principal,
         cycles_to_use: Cycles,
     ) -> Result<(), EgoError>;
+
+    fn canister_add(
+        &self,
+        target_canister_id: Principal,
+        name: String,
+        canister_id: Principal,
+    );
 }
 
 #[derive(Clone)]
@@ -90,5 +98,14 @@ impl TIcManagement for IcManagement {
         cycles_to_use: Cycles,
     ) -> Result<(), EgoError> {
         canister_cycle_top_up(canister_id, cycles_to_use).await
+    }
+
+    fn canister_add(
+        &self,
+        target_canister_id: Principal,
+        name: String,
+        canister_id: Principal,
+    ){
+        let _result = api::call::notify(target_canister_id, "canister_add", (name, canister_id,));
     }
 }
