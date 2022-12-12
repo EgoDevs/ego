@@ -22,5 +22,5 @@ serde_bytes = "0.11"
 ego_cron_mod = {path = "../mod"}
 ego_types = { path = "../../../lib/ego_types"}
 ego_macros = { path = "../../../lib/ego_macros" }
-astrox_macros = "0.2.1"
+astrox_macros = "0.2.4"
 ic-cron = "0.7"

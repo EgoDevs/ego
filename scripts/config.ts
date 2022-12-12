@@ -99,7 +99,7 @@ export const dfxConfigTemplate = {
   },
   networks: {
     local: {
-      bind: '127.0.0.1:8000',
+      bind: '127.0.0.1:8080',
       type: 'ephemeral',
     },
     mainnet: {

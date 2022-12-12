@@ -1,9 +1,9 @@
-use crate::c2c::ego_canister::TEgoCanister;
 use ego_types::app::{CanisterType, Wasm};
 use ego_types::ego_error::EgoError;
 use ego_utils::consts::CREATE_CANISTER_CYCLES_FEE;
 use ic_cdk::export::Principal;
 use std::ops::{Div, Mul};
+use ego_lib::ego_canister::TEgoCanister;
 
 use crate::c2c::ego_file::TEgoFile;
 use crate::c2c::ego_store::TEgoStore;
@@ -39,11 +39,12 @@ impl EgoTenantService {
         })
     }
 
-    pub async fn app_main_install<F: TEgoFile, M: TIcManagement>(
+    pub async fn app_main_install<F: TEgoFile, M: TIcManagement, EC: TEgoCanister>(
         ego_store_id: Principal,
         ego_tenant_id: Principal,
         ego_file: F,
         management: M,
+        ego_canister: EC,
         wallet_id: Principal,
         user_id: Principal,
         wasm: Wasm,
@@ -68,20 +69,18 @@ impl EgoTenantService {
 
         // add ego_store_id to app
         ic_cdk::println!("4 register canister");
-        management.canister_add(canister_id, "ego_store".to_string(), ego_store_id);
-        management.canister_add(canister_id, "ego_tenant".to_string(), ego_tenant_id);
+        ego_canister.ego_canister_add(canister_id, "ego_store".to_string(), ego_store_id);
+        ego_canister.ego_canister_add(canister_id, "ego_tenant".to_string(), ego_tenant_id);
 
         ic_cdk::println!("5 add ops_user");
-        management.op_user_add(canister_id, ego_store_id);
-        management.op_user_add(canister_id, ego_tenant_id);
+        ego_canister.ego_op_add(canister_id, ego_store_id);
+        ego_canister.ego_op_add(canister_id, ego_tenant_id);
 
         ic_cdk::println!("6 change canister controller to wallet");
-        management
-            .canister_controller_set(canister_id, vec![wallet_id, user_id])
-            .await?;
+        ego_canister.ego_controller_set(canister_id, vec![wallet_id, user_id]);
 
         ic_cdk::println!("7 change canister owner to user");
-        management.canister_owner_set(canister_id, user_id).await?;
+        ego_canister.ego_owner_set(canister_id, vec![wallet_id, user_id]);
 
         Ok(canister_id)
     }

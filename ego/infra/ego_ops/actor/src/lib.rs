@@ -95,63 +95,63 @@ pub fn canister_relation_update(name: String) {
         // ego_dev
         match name.as_str() {
             "ego_dev" => {
-                ego_canister.canister_add(&ego_dev_id, "ego_log".to_string(), &ego_log_id);
+                ego_canister.ego_canister_add(&ego_dev_id, "ego_log".to_string(), &ego_log_id);
                 for ego_file_id in ego_file_ids.iter() {
-                    ego_canister.canister_add(&ego_dev_id, "ego_file".to_string(), ego_file_id);
+                    ego_canister.ego_canister_add(&ego_dev_id, "ego_file".to_string(), ego_file_id);
                 }
                 ego_canister
-                  .canister_add(&ego_dev_id, "ego_store".to_string(), &ego_store_id);
+                  .ego_canister_add(&ego_dev_id, "ego_store".to_string(), &ego_store_id);
             },
             "ego_file" => {
                 for ego_file_id in ego_file_ids.iter() {
-                    ego_canister.canister_add(ego_file_id, "ego_log".to_string(), &ego_log_id);
-                    ego_canister.canister_add(ego_file_id, "ego_dev".to_string(), &ego_dev_id);
+                    ego_canister.ego_canister_add(ego_file_id, "ego_log".to_string(), &ego_log_id);
+                    ego_canister.ego_canister_add(ego_file_id, "ego_dev".to_string(), &ego_dev_id);
                     for ego_tenant_id in ego_tenant_ids.iter() {
-                        ego_canister.canister_add(ego_file_id, "ego_tenant".to_string(), ego_tenant_id);
+                        ego_canister.ego_canister_add(ego_file_id, "ego_tenant".to_string(), ego_tenant_id);
                     }
                 }
             },
             "ego_store" => {
-                ego_canister.canister_add(&ego_store_id, "ego_log".to_string(), &ego_log_id);
-                ego_canister.canister_add(&ego_store_id, "ego_dev".to_string(), &ego_dev_id);
-                ego_canister.canister_add(&ego_store_id, "ego_ledger".to_string(), &ego_ledger_id);
+                ego_canister.ego_canister_add(&ego_store_id, "ego_log".to_string(), &ego_log_id);
+                ego_canister.ego_canister_add(&ego_store_id, "ego_dev".to_string(), &ego_dev_id);
+                ego_canister.ego_canister_add(&ego_store_id, "ego_ledger".to_string(), &ego_ledger_id);
                 for ego_tenant_id in ego_tenant_ids.iter() {
-                    ego_canister.canister_add(&ego_store_id, "ego_tenant".to_string(), ego_tenant_id);
+                    ego_canister.ego_canister_add(&ego_store_id, "ego_tenant".to_string(), ego_tenant_id);
                 }
             },
             "ego_tenant" => {
                 for ego_tenant_id in ego_tenant_ids.iter() {
-                    ego_canister.canister_add(ego_tenant_id, "ego_log".to_string(), &ego_log_id);
-                    ego_canister.canister_add(ego_tenant_id, "ego_store".to_string(), &ego_store_id);
-                    ego_canister.canister_add(ego_tenant_id, "ego_cron".to_string(), &ego_cron_id);
+                    ego_canister.ego_canister_add(ego_tenant_id, "ego_log".to_string(), &ego_log_id);
+                    ego_canister.ego_canister_add(ego_tenant_id, "ego_store".to_string(), &ego_store_id);
+                    ego_canister.ego_canister_add(ego_tenant_id, "ego_cron".to_string(), &ego_cron_id);
                 }
             },
             "ego_cron" => {
-                ego_canister.canister_add(&ego_cron_id, "ego_log".to_string(), &ego_log_id);
-                ego_canister.canister_add(&ego_cron_id, "ego_ledger".to_string(), &ego_ledger_id);
+                ego_canister.ego_canister_add(&ego_cron_id, "ego_log".to_string(), &ego_log_id);
+                ego_canister.ego_canister_add(&ego_cron_id, "ego_ledger".to_string(), &ego_ledger_id);
                 for ego_tenant_id in ego_tenant_ids.iter() {
-                    ego_canister.canister_add(&ego_cron_id, "ego_tenant".to_string(), ego_tenant_id);
+                    ego_canister.ego_canister_add(&ego_cron_id, "ego_tenant".to_string(), ego_tenant_id);
                 }
             },
             "ego_ledger" => {
-                ego_canister.canister_add(&ego_ledger_id, "ego_log".to_string(), &ego_log_id);
-                ego_canister.canister_add(&ego_ledger_id, "ego_cron".to_string(), &ego_cron_id);
-                ego_canister.canister_add(&ego_ledger_id, "ego_store".to_string(), &ego_store_id);
+                ego_canister.ego_canister_add(&ego_ledger_id, "ego_log".to_string(), &ego_log_id);
+                ego_canister.ego_canister_add(&ego_ledger_id, "ego_cron".to_string(), &ego_cron_id);
+                ego_canister.ego_canister_add(&ego_ledger_id, "ego_store".to_string(), &ego_store_id);
             },
             "ego_log" => {
-                ego_canister.canister_add(&ego_log_id, "ego_cron".to_string(), &ego_cron_id);
-                ego_canister.canister_add(&ego_log_id, "ego_dev".to_string(), &ego_dev_id);
+                ego_canister.ego_canister_add(&ego_log_id, "ego_cron".to_string(), &ego_cron_id);
+                ego_canister.ego_canister_add(&ego_log_id, "ego_dev".to_string(), &ego_dev_id);
 
                 for ego_file_id in ego_file_ids.iter() {
-                    ego_canister.canister_add(&ego_log_id, "ego_file".to_string(), ego_file_id);
+                    ego_canister.ego_canister_add(&ego_log_id, "ego_file".to_string(), ego_file_id);
                 }
 
-                ego_canister.canister_add(&ego_log_id, "ego_ledger".to_string(), &ego_ledger_id);
-                ego_canister.canister_add(&ego_log_id, "ego_ops".to_string(), &id());
-                ego_canister.canister_add(&ego_log_id, "ego_store".to_string(), &ego_store_id);
+                ego_canister.ego_canister_add(&ego_log_id, "ego_ledger".to_string(), &ego_ledger_id);
+                ego_canister.ego_canister_add(&ego_log_id, "ego_ops".to_string(), &id());
+                ego_canister.ego_canister_add(&ego_log_id, "ego_store".to_string(), &ego_store_id);
 
                 for ego_tenant_id in ego_tenant_ids.iter() {
-                    ego_canister.canister_add(&ego_log_id, "ego_tenant".to_string(), ego_tenant_id);
+                    ego_canister.ego_canister_add(&ego_log_id, "ego_tenant".to_string(), ego_tenant_id);
                 }
             },
             "ego_ops" => {

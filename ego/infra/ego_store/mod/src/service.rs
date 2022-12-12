@@ -329,6 +329,7 @@ impl EgoStoreService {
 
     pub async fn wallet_controller_install<T: TEgoTenant>(
         ego_tenant: T,
+        wallet_provider: Principal,
         user_id: Principal,
         app_id: AppId,
     ) -> Result<WalletApp, EgoError> {
@@ -343,7 +344,7 @@ impl EgoStoreService {
             false => None,
             true => {
                 let frontend_canister_id = ego_tenant
-                    .app_main_install(ego_tenant_id, user_id, user_id, app.frontend.as_ref().unwrap())
+                    .app_main_install(ego_tenant_id, wallet_provider, user_id, app.frontend.as_ref().unwrap())
                     .await?;
                 Some(Canister::new(frontend_canister_id, CanisterType::ASSET))
             }
@@ -354,7 +355,7 @@ impl EgoStoreService {
             false => None,
             true => {
                 let backend_canister_id = ego_tenant
-                    .app_main_install(ego_tenant_id, user_id, user_id, app.backend.as_ref().unwrap())
+                    .app_main_install(ego_tenant_id, wallet_provider, user_id, app.backend.as_ref().unwrap())
                     .await?;
 
                 // register wallet

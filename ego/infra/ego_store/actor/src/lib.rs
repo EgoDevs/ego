@@ -1,7 +1,7 @@
 use candid::candid_method;
 use ic_cdk::api::time;
 use ic_cdk::export::candid::{CandidType, Deserialize};
-use ic_cdk::{api, storage};
+use ic_cdk::{storage};
 use ic_cdk_macros::*;
 use serde::Serialize;
 
@@ -396,11 +396,7 @@ pub async fn wallet_main_new(user_id: Principal) -> Result<WalletApp, EgoError> 
 
     let ego_tenant = EgoTenant::new();
     let user_app =
-        EgoStoreService::wallet_controller_install(ego_tenant, user_id, app_id).await?;
-
-    let target_canister_id = user_app.backend.as_ref().unwrap().canister_id;
-
-    let _result = api::call::notify(target_canister_id, "canister_add", ("provider", wallet_provider.clone(),));
+        EgoStoreService::wallet_controller_install(ego_tenant, wallet_provider, user_id, app_id).await?;
 
     Ok(user_app)
 }

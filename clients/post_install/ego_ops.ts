@@ -142,7 +142,7 @@ async function canister_register(canister_name: string) {
   console.log(resp1);
 
   console.log(`==> b. register ${canister_name} to ego_ops\n`);
-  let resp2 = await opsOperator.canister_add(canister_name, canister_id);
+  let resp2 = await opsOperator.ego_canister_add(canister_name, canister_id);
   console.log(resp2);
 }
 

@@ -27,6 +27,6 @@ serde_bytes = "0.11"
 serde_cbor = "0.11"
 serde_with = "2.1.0"
 ego_tenant_mod = { path = "../mod" }
-astrox_macros = "0.2.1"
+astrox_macros = "0.2.4"
 ego_types = { path = "../../../lib/ego_types"}
 ego_macros = { path = "../../../lib/ego_macros" }

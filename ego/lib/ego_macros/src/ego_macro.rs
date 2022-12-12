@@ -16,6 +16,20 @@ macro_rules! inject_ego_macros {
             Ok(())
         }
 
+        // for canister management
+        #[update(name = "ego_canister_add", guard = "op_guard")]
+        #[candid_method(update, rename = "ego_canister_add")]
+        pub fn ego_canister_add(name: String, canister_id: Principal) -> Result<(), String> {
+            canister_add(name, canister_id);
+            Ok(())
+        }
+
+        #[update(name = "ego_canister_list", guard = "op_guard")]
+        #[candid_method(update, rename = "ego_canister_list")]
+        pub fn ego_canister_list() -> Result<BTreeMap<String, Vec<Principal>>, String> {
+            Ok(canister_list())
+        }
+
         // for log
         use ego_macros::ego_log::{TEgoLogCanister, EgoLogCanister};
 

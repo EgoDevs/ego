@@ -2,14 +2,18 @@ use async_trait::async_trait;
 use ic_cdk::export::Principal;
 use ic_ledger_types::Memo;
 use mockall::mock;
+use ego_store_mod::app::EgoStoreApp;
 
 use ego_store_mod::order::Order;
 use ego_store_mod::service::EgoStoreService;
 use ego_store_mod::state::EGO_STORE;
 use ego_store_mod::wallet::Wallet;
-use ego_types::app::Wasm;
+use ego_types::app::{Category, DeployMode, Wasm};
 use ego_types::ego_error::EgoError;
 use ego_store_mod::c2c::ego_tenant::TEgoTenant;
+use ego_store_mod::tenant::Tenant;
+use ego_types::app::CanisterType::BACKEND;
+use ego_types::version::Version;
 
 mock! {
   Tenant {}
@@ -44,21 +48,49 @@ mock! {
   }
 }
 
-
+static FILE_CANISTER_ID: &str = "amybd-zyaaa-aaaah-qc4hq-cai";
 static WALLET_PROVIDER_ID: &str = "2265i-mqaaa-aaaad-qbsga-cai";
 static WALLET_APP_ID: &str = "app_exists";
 static EXISTS_WALLET_ID: &str = "23vqh-waaaa-aaaai-qhcya-cai";
 static TENANT_ID: &str = "2avdy-paaaa-aaaaf-abcga-cai";
 static STORE_ID: &str = "22cl3-kqaaa-aaaaf-add7q-cai";
-static EXISTS_USER_ID: &str = "225da-yaaaa-aaaah-qahrq-cai";
+static EXISTS_USER_ID: &str = "o2ivq-5dsz3-nba5d-pwbk2-hdd3i-vybeq-qfz35-rqg27-lyesf-xghzc-3ae";
 
 pub fn set_up() {
   let tenant_principal = Principal::from_text(TENANT_ID.to_string()).unwrap();
   let wallet_principal = Principal::from_text(EXISTS_WALLET_ID.to_string()).unwrap();
   let user_principal = Principal::from_text(EXISTS_USER_ID.to_string()).unwrap();
   let store_principal = Principal::from_text(STORE_ID.to_string()).unwrap();
+  let file_canister = Principal::from_text(FILE_CANISTER_ID.to_string()).unwrap();
 
   EGO_STORE.with(|ego_store| {
+    // add tenant
+    ego_store
+      .borrow_mut()
+      .tenants
+      .insert(tenant_principal, Tenant::new(tenant_principal));
+
+    // add exists app
+    let version = Version::new(1, 0, 1);
+
+    let backend = Wasm::new(WALLET_APP_ID.to_string(), version, BACKEND, file_canister);
+    let app = EgoStoreApp::new(
+      WALLET_APP_ID.to_string(),
+      "".to_string(),
+      Category::Vault,
+      "".to_string(),
+      "".to_string(),
+      version,
+      None,
+      Some(backend),
+      1.2f32,
+      DeployMode::DEDICATED,
+    );
+    ego_store
+      .borrow_mut()
+      .apps
+      .insert(WALLET_APP_ID.to_string(), app);
+
     // add wallet
     let mut wallet = Wallet::new(tenant_principal, wallet_principal, user_principal);
 
@@ -154,5 +186,22 @@ fn admin_ego_tenant_add() {
 
 #[tokio::test]
 async fn wallet_controller_install() {
+  set_up();
+
+  let wallet_provider_principal = Principal::from_text(WALLET_PROVIDER_ID.to_string()).unwrap();
+  let user_principal = Principal::from_text(EXISTS_USER_ID.to_string()).unwrap();
+
+  let wallet_principal = Principal::from_text(EXISTS_WALLET_ID.to_string()).unwrap();
+
+
   let mut ego_tenant = MockTenant::new();
+  ego_tenant.expect_app_main_install().returning(move |_, w_id, u_id, _| {
+    assert_eq!(wallet_provider_principal, w_id);
+    assert_eq!(user_principal, u_id);
+    Ok(wallet_principal)
+  });
+  let result = EgoStoreService::wallet_controller_install(ego_tenant, wallet_provider_principal,  user_principal, WALLET_APP_ID.to_string()).await;
+  assert!(result.is_ok());
+  let c_id = result.unwrap().backend.as_ref().unwrap().canister_id;
+  assert_eq!(wallet_principal, c_id);
 }

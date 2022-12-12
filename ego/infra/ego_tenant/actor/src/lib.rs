@@ -6,6 +6,7 @@ use ego_tenant_mod::c2c::ic_management::IcManagement;
 use ego_tenant_mod::ego_tenant::EgoTenant;
 use ego_tenant_mod::service::EgoTenantService;
 use ego_tenant_mod::state::EGO_TENANT;
+use ego_tenant_mod::ego_lib::ego_canister::{EgoCanister};
 use ego_tenant_mod::types::{
     AppMainInstallRequest, AppMainInstallResponse, AppMainUpgradeRequest, AppMainUpgradeResponse,
     CanisterMainTrackRequest, CanisterMainUnTrackRequest,
@@ -16,7 +17,6 @@ use ic_cdk::export::candid::{CandidType, Deserialize};
 use ic_cdk::storage;
 use ic_cdk_macros::*;
 use serde::Serialize;
-use ego_tenant_mod::c2c::ego_canister::EgoCanister;
 use ego_tenant_mod::c2c::ego_cron::{EgoCron, TEgoCron};
 use ego_macros::inject_ego_macros;
 
@@ -100,12 +100,14 @@ async fn app_main_install(req: AppMainInstallRequest) -> Result<AppMainInstallRe
     let ego_tenant_id = id();
     let management = IcManagement::new();
     let ego_file = EgoFile::new();
+    let ego_canister = EgoCanister::new();
 
     let canister_id = EgoTenantService::app_main_install(
         ego_store_id,
         ego_tenant_id,
         ego_file,
         management,
+        ego_canister,
         req.wallet_id,
         req.user_id,
         req.wasm,
