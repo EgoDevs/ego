@@ -4,7 +4,7 @@ use async_trait::async_trait;
 use ego_types::ego_error::EgoError;
 use ego_utils::ic_management::{
     canister_code_install, canister_code_upgrade, canister_cycle_top_up,
-    canister_main_create, Cycles,
+    canister_main_create, canister_controller_set, Cycles,
 };
 
 #[async_trait]
@@ -27,6 +27,12 @@ pub trait TIcManagement {
         &self,
         canister_id: Principal,
         cycles_to_use: Cycles,
+    ) -> Result<(), EgoError>;
+
+    async fn canister_controller_set(
+        &self,
+        canister_id: Principal,
+        principals: Vec<Principal>,
     ) -> Result<(), EgoError>;
 }
 
@@ -67,5 +73,13 @@ impl TIcManagement for IcManagement {
         cycles_to_use: Cycles,
     ) -> Result<(), EgoError> {
         canister_cycle_top_up(canister_id, cycles_to_use).await
+    }
+
+    async fn canister_controller_set(
+        &self,
+        canister_id: Principal,
+        principals: Vec<Principal>,
+    ) -> Result<(), EgoError>{
+        canister_controller_set(canister_id, principals).await
     }
 }

@@ -100,9 +100,13 @@ async fn controllers_update(
     )
     .await
     {
-        Ok(x) => x,
+        Ok(x) => {
+            ic_cdk::println!("call controllers_update success");
+            x
+        },
         Err((code, msg)) => {
             let code = code as u16;
+            ic_cdk::println!("Error calling controllers_update code:{}, msg:{}", code, msg);
             error!(
                 error_code = code,
                 error_message = msg.as_str(),
