@@ -49,6 +49,12 @@ mock! {
         canister_id: Principal,
         cycles_to_use: Cycles,
     ) -> Result<(), EgoError>;
+
+    async fn canister_controller_set(
+      &self,
+      canister_id: Principal,
+      principals: Vec<Principal>,
+    ) -> Result<(), EgoError>;
   }
 }
 
@@ -67,8 +73,12 @@ mock! {
   #[async_trait]
   impl TEgoCanister for Canister {
     fn ego_owner_set(&self, target_canister_id: Principal, principals: Vec<Principal>);
+    fn ego_owner_add(&self, target_canister_id: Principal, principal: Principal);
+    fn ego_owner_remove(&self, target_canister_id: Principal, principal: Principal);
 
     fn ego_user_set(&self, target_canister_id: Principal, user_ids: Vec<Principal>);
+    fn ego_user_add(&self, target_canister_id: Principal, principal: Principal);
+    fn ego_user_remove(&self, target_canister_id: Principal, principal: Principal);
 
     fn ego_op_add(&self, target_canister_id: Principal, user_id: Principal);
 
@@ -120,6 +130,10 @@ async fn app_main_install() {
       Ok(())
     });
 
+  mock_management
+    .expect_canister_controller_set()
+    .returning(move |_canister_id, _principal| Ok(()));
+    
   mock_ego_canister
     .expect_ego_controller_set()
     .returning(move |canister_id, user_ids| {
