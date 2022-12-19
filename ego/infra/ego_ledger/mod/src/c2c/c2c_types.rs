@@ -5,5 +5,5 @@ use serde::Serialize;
 // type for ego_store
 #[derive(CandidType, Deserialize, Serialize)]
 pub struct WalletOrderNotifyRequest {
-    pub memo: Memo,
+  pub memo: Memo,
 }

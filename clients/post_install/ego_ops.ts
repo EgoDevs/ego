@@ -33,20 +33,6 @@ const ego_assets_wasm = fs.readFileSync(
   `${[process.cwd()]}` + '/artifacts/ego_assets/ego_assets_opt.wasm',
 );
 
-// const astrox_wasm = fs.readFileSync(
-//   path.resolve(
-//     `${[process.cwd()]}` +
-//       '/../astrox_wallet/artifacts/astrox_wallet/astrox_wallet_opt.wasm',
-//   ),
-// );
-//
-// const omni_wallet = fs.readFileSync(
-//   path.resolve(
-//     `${[process.cwd()]}` +
-//       '/../app_omni_wallet/artifacts/omni_wallet/omni_wallet_opt.wasm',
-//   ),
-// );
-
 const version = {
   major: 1,
   minor: 0,
@@ -68,43 +54,11 @@ export const opsPostInstall = async () => {
   await opsOperator.canister_relation_update("ego_file");
   await opsOperator.canister_relation_update("ego_store");
   await opsOperator.canister_relation_update("ego_tenant");
-  await opsOperator.canister_relation_update("ego_cron");
   await opsOperator.canister_relation_update("ego_ledger");
-  await opsOperator.canister_relation_update("ego_log");
   await opsOperator.canister_relation_update("ego_ops");
 
-  // console.log(`3. canister_main_track\n`);
-  // await opsOperator.canister_main_track();
-
-  // console.log(`4. release ego_assets canister\n`);
-  // await admin_app_create(
-  //   'ego_assets',
-  //   'ego_assets',
-  //   version,
-  //   { System: null },
-  //   { DEDICATED: null },
-  //   astrox_wasm,
-  // );
-
-  // console.log(`5. release astrox_controller canister\n`);
-  // await admin_app_create(
-  //   'astrox_controller',
-  //   'astrox_controller',
-  //   version,
-  //   { System: null },
-  //   { DEDICATED: null },
-  //   astrox_wasm,
-  // );
-
-  // console.log(`6. release omni_wallet canister\n`);
-  // await admin_app_create(
-  //   'omni_wallet',
-  //   'omni_wallet',
-  //   version,
-  //   { Vault: null },
-  //   { DEDICATED: null },
-  //   omni_wallet,
-  // );
+  console.log(`3. canister_main_track\n`);
+  await opsOperator.canister_main_track();
 };
 
 const canister_registers = async () => {
@@ -112,9 +66,7 @@ const canister_registers = async () => {
   await canister_register('ego_file');
   await canister_register('ego_store');
   await canister_register('ego_tenant');
-  await canister_register('ego_cron');
   await canister_register('ego_ledger');
-  await canister_register('ego_log');
 };
 
 async function getOperator<T>(canisterName: string): Promise<ActorSubclass<T>> {
@@ -145,34 +97,3 @@ async function canister_register(canister_name: string) {
   let resp2 = await opsOperator.ego_canister_add(canister_name, canister_id);
   console.log(resp2);
 }
-
-const admin_app_create = async (
-  app_id: string,
-  name: string,
-  version: any,
-  category: Category,
-  deploy_mode: DeployMode,
-  backend_data: ArrayLike<number>,
-  frontend_canister_id?: Principal,
-) => {
-  let opsOperator = await getOperator<EgoOpsService>('ego_ops');
-
-  const backend_hash = crypto
-    .createHash('md5')
-    .update(backend_data as BinaryLike)
-    .digest('hex');
-
-  let resp1 = await opsOperator.admin_app_create({
-    app_id,
-    name,
-    version,
-    logo: '',
-    description: '',
-    category,
-    backend_data: Array.from(new Uint8Array(backend_data)),
-    backend_hash,
-    frontend: frontend_canister_id ? [frontend_canister_id] : [],
-    deploy_mode,
-  });
-  console.log(resp1);
-};

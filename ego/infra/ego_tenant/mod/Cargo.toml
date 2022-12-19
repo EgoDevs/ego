@@ -17,12 +17,12 @@ serde_bytes = "0.11"
 tracing = "0.1.29"
 async-trait = "0.1.57"
 num-traits = "0.2.15"
-ego_types = { path = "../../../lib/ego_types"}
-ego_utils = { path = "../../../lib/ego_utils"}
-ego_file_mod = { path = "../../ego_file/mod"}
-ego_cron_mod = { path = "../../ego_cron/mod" }
-ego_lib = "0.2.9"
+ego_types = { path = "../../../lib/ego_types" }
+ego_utils = { path = "../../../lib/ego_utils" }
+ego_lib = "0.2.11"
+astrox_macros = "0.2.10"
+ego_macros = { path = "../../../lib/ego_macros" }
 
 [dev-dependencies]
 mockall = "0.11.2"
-tokio = {version="1.21.0", features=["full"]}
+tokio = { version = "1.21.0", features = ["full"] }

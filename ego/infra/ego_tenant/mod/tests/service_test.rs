@@ -1,4 +1,5 @@
 use async_trait::async_trait;
+use ego_lib::ego_canister::TEgoCanister;
 use ic_cdk::export::Principal;
 use mockall::mock;
 
@@ -10,7 +11,6 @@ use ego_types::app::CanisterType::BACKEND;
 use ego_types::ego_error::EgoError;
 use ego_types::version::Version;
 use ego_utils::ic_management::Cycles;
-use ego_lib::ego_canister::TEgoCanister;
 
 static STORE_CANISTER_ID: &str = "qhbym-qaaaa-aaaaa-aaafq-cai";
 static TENANT_CANISTER_ID: &str = "rdmx6-jaaaa-aaaaa-aaadq-cai";
@@ -44,10 +44,16 @@ mock! {
         wasm_module: Vec<u8>,
     ) -> Result<(), EgoError>;
 
-    async fn canister_cycle_top_up(
+    fn canister_cycle_top_up(
         &self,
         canister_id: Principal,
         cycles_to_use: Cycles,
+    );
+
+    async fn canister_controller_set(
+        &self,
+        canister_id: Principal,
+        principals: Vec<Principal>,
     ) -> Result<(), EgoError>;
 
     async fn canister_controller_set(
@@ -129,6 +135,11 @@ async fn app_main_install() {
       assert_eq!(&canister_id, &created_canister_id);
       Ok(())
     });
+  mock_management
+    .expect_canister_controller_set()
+    .returning(|_, _| {
+      Ok(())
+    });
 
   mock_management
     .expect_canister_controller_set()
@@ -157,6 +168,7 @@ async fn app_main_install() {
   });
 
   mock_ego_canister.expect_ego_canister_add().returning(|_, _, _| ());
+
 
   match EgoTenantService::app_main_install(
     store_canister_id,

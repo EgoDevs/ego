@@ -1,7 +1,9 @@
+use async_trait::async_trait;
 use ic_cdk::export::Principal;
 use ic_ledger_types::{Block, BlockIndex, GetBlocksArgs, query_blocks};
-use async_trait::async_trait;
+
 use ego_types::ego_error::EgoError;
+
 use crate::state::EGO_LEDGER;
 use crate::types::EgoLedgerErr;
 
@@ -11,21 +13,21 @@ pub trait TIcLedger {
 }
 
 pub struct IcLedger {
-  pub canister_id: Principal
+  pub canister_id: Principal,
 }
 
 impl IcLedger {
   pub fn new(canister_id: Principal) -> Self {
-    IcLedger {canister_id}
+    IcLedger { canister_id }
   }
 }
 
 #[async_trait]
 impl TIcLedger for IcLedger {
-  async fn query_blocks(&self, start: BlockIndex) -> Result<Vec<Block>, EgoError>{
+  async fn query_blocks(&self, start: BlockIndex) -> Result<Vec<Block>, EgoError> {
     let blocks = match query_blocks(
       self.canister_id,
-      GetBlocksArgs { start, length: 5, },
+      GetBlocksArgs { start, length: 5 },
     ).await
     {
       Ok(t) => {

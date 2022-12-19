@@ -1,60 +1,57 @@
+use ic_cdk::api;
 use ic_cdk::export::Principal;
 
-use ego_tenant_mod::types::{
-    CanisterMainTrackRequest, CanisterMainUnTrackRequest
-};
-
-use ic_cdk::api;
+use crate::c2c::c2c_types::{CanisterMainTrackRequest, CanisterMainUnTrackRequest};
 
 pub trait TEgoTenant {
-    fn canister_main_track(
-        &self,
-        ego_tenant_id: Principal,
-        wallet_id: Principal,
-        canister_id: Principal,
-    ) ;
-    fn canister_main_untrack(
-        &self,
-        ego_tenant_id: Principal,
-        wallet_id: Principal,
-        canister_id: Principal,
-    ) ;
+  fn canister_main_track(
+    &self,
+    ego_tenant_id: Principal,
+    wallet_id: Principal,
+    canister_id: Principal,
+  );
+  fn canister_main_untrack(
+    &self,
+    ego_tenant_id: Principal,
+    wallet_id: Principal,
+    canister_id: Principal,
+  );
 }
 
 pub struct EgoTenant {}
 
 impl EgoTenant {
-    pub fn new() -> Self {
-        EgoTenant {}
-    }
+  pub fn new() -> Self {
+    EgoTenant {}
+  }
 }
 
 impl TEgoTenant for EgoTenant {
-    fn canister_main_track(
-        &self,
-        ego_tenant_id: Principal,
-        wallet_id: Principal,
-        canister_id: Principal,
-    )  {
-        let req = CanisterMainTrackRequest {
-            wallet_id,
-            canister_id,
-        };
+  fn canister_main_track(
+    &self,
+    ego_tenant_id: Principal,
+    wallet_id: Principal,
+    canister_id: Principal,
+  ) {
+    let req = CanisterMainTrackRequest {
+      wallet_id,
+      canister_id,
+    };
 
-        let _result = api::call::notify(ego_tenant_id, "canister_main_track", (req,));
-    }
+    let _result = api::call::notify(ego_tenant_id, "canister_main_track", (req, ));
+  }
 
-    fn canister_main_untrack(
-        &self,
-        ego_tenant_id: Principal,
-        wallet_id: Principal,
-        canister_id: Principal,
-    )  {
-        let req = CanisterMainUnTrackRequest {
-            wallet_id,
-            canister_id,
-        };
+  fn canister_main_untrack(
+    &self,
+    ego_tenant_id: Principal,
+    wallet_id: Principal,
+    canister_id: Principal,
+  ) {
+    let req = CanisterMainUnTrackRequest {
+      wallet_id,
+      canister_id,
+    };
 
-        let _result = api::call::notify(ego_tenant_id, "canister_main_untrack", (req,));
-    }
+    let _result = api::call::notify(ego_tenant_id, "canister_main_untrack", (req, ));
+  }
 }

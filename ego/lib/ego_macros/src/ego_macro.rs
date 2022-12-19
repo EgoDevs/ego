@@ -9,11 +9,44 @@ macro_rules! inject_ego_macros {
             Ok(())
         }
 
+        #[inline(always)]
+        pub fn owner_guard() -> Result<(), String> {
+            let caller = caller();
+            let ret = is_owner(caller);
+            if ret {
+                Ok(())
+            } else {
+                trap(&format!("{} unauthorized", caller));
+            }
+        }
+
         #[update(name = "ego_user_add", guard = "owner_guard")]
         #[candid_method(update, rename = "ego_user_add")]
         pub fn ego_user_add(principal: Principal) -> Result<(), String> {
             user_add(principal);
             Ok(())
+        }
+
+        #[inline(always)]
+        pub fn user_guard() -> Result<(), String> {
+            let caller = caller();
+            let ret = USER.with(|b| b.borrow().is_user(caller));
+            if ret {
+                Ok(())
+            } else {
+                trap(&format!("{} unauthorized", caller));
+            }
+        }
+
+        #[inline(always)]
+        pub fn op_guard() -> Result<(), String> {
+            let caller = caller();
+            let ret = USER.with(|b| b.borrow().is_op(caller));
+            if ret {
+                Ok(())
+            } else {
+                trap(&format!("{} unauthorized", caller));
+            }
         }
 
         // for canister management
@@ -24,15 +57,31 @@ macro_rules! inject_ego_macros {
             Ok(())
         }
 
-        #[update(name = "ego_canister_list", guard = "op_guard")]
-        #[candid_method(update, rename = "ego_canister_list")]
+        #[query(name = "ego_canister_list", guard = "op_guard")]
+        #[candid_method(query, rename = "ego_canister_list")]
         pub fn ego_canister_list() -> Result<BTreeMap<String, Vec<Principal>>, String> {
             Ok(canister_list())
         }
 
         // for log
-        use ego_macros::ego_log::{TEgoLogCanister, EgoLogCanister};
+        #[query(name = "ego_log_list", guard = "op_guard")]
+        #[candid_method(query, rename = "ego_log_list")]
+        pub fn ego_log_list(after_ts: u64) -> Result<Vec<LogEntry>, String> {
+            Ok(log_list_after(after_ts))
+        }
 
+        // balance
+        #[query(name = "balance_get")]
+        #[candid_method(update, rename = "balance_get")]
+        pub fn balance_get() -> u128 {
+            ic_cdk::api::canister_balance128()
+        }
+    };
+}
+
+#[macro_export]
+macro_rules! inject_log {
+    () => {
         pub fn ego_log(message: &str) {
             // for development
             ic_cdk::println!("{}", message.to_string());
@@ -47,16 +96,5 @@ macro_rules! inject_ego_macros {
             //     }
             // };
         }
-
-        pub fn get_ego_log() -> Option<EgoLogCanister> {
-            match REGISTRY.with(|r| r.borrow().canister_get_one("ego_log")) {
-                None => {
-                    None
-                },
-                Some(ego_log_id) => {
-                    Some(EgoLogCanister::new(ego_log_id))
-                }
-            }
-        }
-    };
+    }
 }

@@ -2,14 +2,12 @@ import { getActor } from '@/settings/agent';
 import { _SERVICE as EgoDevService } from '@/idls/ego_dev';
 import {_SERVICE as EgoStoreService, Category} from '@/idls/ego_store';
 import {_SERVICE as EgoOpsService, AdminWalletProviderAddRequest} from '@/idls/ego_ops';
-import { _SERVICE as EgoLogService } from '@/idls/ego_log';
-import { _SERVICE as EgoCronService } from '@/idls/ego_cron';
+
 import { _SERVICE as EgoLedgerService } from '@/idls/ego_ledger';
 import { identity } from '@/settings/identity';
 import { idlFactory as EgoDevIdlFactory} from '@/idls/ego_dev.idl';
 import { idlFactory as EgoStoreIdlFactory } from '@/idls/ego_store.idl';
-import { idlFactory as EgoLogIdlFactory } from '@/idls/ego_log.idl';
-import { idlFactory as EgoCronIdlFactory } from '@/idls/ego_cron.idl';
+
 import { idlFactory as EgoOpsIdlFactory } from '@/idls/ego_ops.idl';
 import { idlFactory as EgoOLedgerIdlFactory } from '@/idls/ego_ledger.idl';
 import { getCanisterId } from '@/settings/utils';
@@ -34,17 +32,6 @@ export const egoOpsDeployerActor = getActor<EgoOpsService>(
   getCanisterId('ego_ops')!,
 );
 
-export const egoLogDeployerActor = getActor<EgoLogService>(
-  identity,
-  EgoLogIdlFactory,
-  getCanisterId('ego_log')!,
-);
-
-export const egoCronDeployerActor = getActor<EgoCronService>(
-  identity,
-  EgoCronIdlFactory,
-  getCanisterId('ego_cron')!,
-);
 
 export const egoLedgerDeployerActor = getActor<EgoLedgerService>(
   identity,
@@ -106,21 +93,7 @@ describe('scripts', () => {
   });
 
   test('get_log', async () => {
-    const deployer = await egoLogDeployerActor;
 
-    console.log(`\t\t list last 30min logs\n`);
-    let logs = await deployer.canister_log_get(BigInt((Date.now() - 1000 * 60 * 30) * 1000000), BigInt(Date.now() * 1000000)) // use nanoseconds
-    logs.forEach(log => {
-      console.log(`canister_id: ${log.canister_id}, message: ${log.log}, ts: ${log.created_at}`)
-    })
-  })
-
-  // manually trigger ego_cron
-  test('trigger_cron', async () => {
-    const deployer = await egoCronDeployerActor;
-
-    console.log(`\t\t trigger cron tick\n`);
-    await deployer.task_main_check();
   })
 
   // manually create an order
@@ -153,10 +126,10 @@ describe('scripts', () => {
 
   // list canister of ego_store
   test('canister_list', async () => {
-    const deployer = await egoLedgerDeployerActor;
+    const deployer = await egoStoreDeployerActor;
 
     console.log(`\t\t list ego_store registered canister\n`);
-    let resp = await deployer.canister_list();
+    let resp = await deployer.ego_canister_list();
     let canisters = resp.Ok
     canisters.forEach(entry => {
       let [name, canister_ids] = entry

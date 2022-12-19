@@ -48,10 +48,16 @@ mock! {
         wasm_module: Vec<u8>,
     ) -> Result<(), EgoError>;
 
-    async fn canister_cycle_top_up(
+    fn canister_cycle_top_up(
         &self,
         canister_id: Principal,
         cycles_to_use: Cycles,
+    ) ;
+
+    async fn canister_controller_set(
+        &self,
+        canister_id: Principal,
+        principals: Vec<Principal>,
     ) -> Result<(), EgoError>;
 
     async fn canister_controller_set(
@@ -295,7 +301,6 @@ async fn canister_cycles_check_second_time_none_zero_cycle_consumption() {
     .returning(move |canister_id, cycle| {
       assert_eq!(canister_principal, canister_id);
       assert_eq!(180000000000, cycle);
-      Ok(())
     });
 
   let _result = EgoTenantService::canister_cycles_check(

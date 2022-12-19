@@ -2,17 +2,17 @@ use async_trait::async_trait;
 use ic_cdk::export::Principal;
 use ic_ledger_types::Memo;
 use mockall::mock;
-use ego_store_mod::app::EgoStoreApp;
 
+use ego_store_mod::app::EgoStoreApp;
+use ego_store_mod::c2c::ego_tenant::TEgoTenant;
 use ego_store_mod::order::Order;
 use ego_store_mod::service::EgoStoreService;
 use ego_store_mod::state::EGO_STORE;
+use ego_store_mod::tenant::Tenant;
 use ego_store_mod::wallet::Wallet;
 use ego_types::app::{Category, DeployMode, Wasm};
-use ego_types::ego_error::EgoError;
-use ego_store_mod::c2c::ego_tenant::TEgoTenant;
-use ego_store_mod::tenant::Tenant;
 use ego_types::app::CanisterType::BACKEND;
+use ego_types::ego_error::EgoError;
 use ego_types::version::Version;
 
 mock! {
@@ -200,7 +200,7 @@ async fn wallet_controller_install() {
     assert_eq!(user_principal, u_id);
     Ok(wallet_principal)
   });
-  let result = EgoStoreService::wallet_controller_install(ego_tenant, wallet_provider_principal,  user_principal, WALLET_APP_ID.to_string()).await;
+  let result = EgoStoreService::wallet_controller_install(ego_tenant, wallet_provider_principal, user_principal, WALLET_APP_ID.to_string()).await;
   assert!(result.is_ok());
   let c_id = result.unwrap().backend.as_ref().unwrap().canister_id;
   assert_eq!(wallet_principal, c_id);

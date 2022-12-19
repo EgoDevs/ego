@@ -7,12 +7,13 @@ fn main() {}
 #[allow(dead_code)]
 #[cfg(not(any(target_arch = "wasm32", test)))]
 fn main() {
-    use crate::lib::InitArg;
-    use ego_tenant_mod::types::*;
-    use ego_types::ego_error::EgoError;
-    use ic_cdk::export::Principal;
-    use std::collections::BTreeMap;
+  use crate::lib::InitArg;
+  use ego_tenant_mod::types::*;
+  use ego_tenant_mod::service::LogEntry;
+  use ego_types::ego_error::EgoError;
+  use ic_cdk::export::Principal;
+  use std::collections::BTreeMap;
 
-    candid::export_service!();
-    std::print!("{}", __export_service());
+  candid::export_service!();
+  std::print!("{}", __export_service());
 }

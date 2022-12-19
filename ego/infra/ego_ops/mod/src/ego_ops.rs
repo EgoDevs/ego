@@ -2,14 +2,10 @@ use ic_cdk::export::candid::{CandidType, Deserialize};
 use serde::Serialize;
 
 #[derive(CandidType, Deserialize, Serialize, Clone, Debug)]
-pub struct EgoOps {
-
-}
+pub struct EgoOps {}
 
 impl EgoOps {
-    pub fn new() -> Self {
-        EgoOps {
-
-        }
-    }
+  pub fn new() -> Self {
+    EgoOps {}
+  }
 }

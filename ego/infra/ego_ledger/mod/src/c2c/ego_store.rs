@@ -1,26 +1,27 @@
-use crate::c2c::c2c_types::WalletOrderNotifyRequest;
 use ic_cdk::api;
 use ic_cdk::export::Principal;
 use ic_ledger_types::Memo;
 
+use crate::c2c::c2c_types::WalletOrderNotifyRequest;
+
 pub trait TEgoStore {
-    fn wallet_order_notify(&self, memo: Memo);
+  fn wallet_order_notify(&self, memo: Memo);
 }
 
 pub struct EgoStore {
-    pub canister_id: Principal
+  pub canister_id: Principal,
 }
 
 impl EgoStore {
-    pub fn new(canister_id: Principal) -> Self {
-        EgoStore {canister_id}
-    }
+  pub fn new(canister_id: Principal) -> Self {
+    EgoStore { canister_id }
+  }
 }
 
 impl TEgoStore for EgoStore {
-    fn wallet_order_notify(&self, memo: Memo)  {
-        let req = WalletOrderNotifyRequest { memo };
+  fn wallet_order_notify(&self, memo: Memo) {
+    let req = WalletOrderNotifyRequest { memo };
 
-        let _result = api::call::notify(self.canister_id, "wallet_order_notify", (req,));
-    }
+    let _result = api::call::notify(self.canister_id, "wallet_order_notify", (req, ));
+  }
 }

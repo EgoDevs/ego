@@ -45,13 +45,6 @@ export const infraConfig: Configs = [
   },
   {
     category: 'infra',
-    package: 'ego_cron',
-    bin_name: 'ego-cron',
-    config: './configs/ego_cron.json',
-    post_install_sequence: 100
-  },
-  {
-    category: 'infra',
     package: 'ego_store',
     bin_name: 'ego-store',
     config: './configs/ego_store.json',
@@ -77,13 +70,6 @@ export const infraConfig: Configs = [
     package: 'ego_ledger',
     bin_name: 'ego-ledger',
     config: './configs/ego_ledger.json',
-    post_install_sequence: 100,
-  },
-  {
-    category: 'infra',
-    package: 'ego_log',
-    bin_name: 'ego-log',
-    config: './configs/ego_log.json',
     post_install_sequence: 100,
   },
 ];
