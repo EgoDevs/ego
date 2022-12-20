@@ -11,12 +11,12 @@ macro_rules! inject_ego_macros {
 
         #[inline(always)]
         pub fn owner_guard() -> Result<(), String> {
-            let caller = caller();
+            let caller = ic_cdk::api::caller();
             let ret = is_owner(caller);
             if ret {
                 Ok(())
             } else {
-                trap(&format!("{} unauthorized", caller));
+                ic_cdk::api::trap(&format!("{} unauthorized", caller));
             }
         }
 
@@ -29,12 +29,12 @@ macro_rules! inject_ego_macros {
 
         #[inline(always)]
         pub fn user_guard() -> Result<(), String> {
-            let caller = caller();
+            let caller = ic_cdk::api::caller();
             let ret = USER.with(|b| b.borrow().is_user(caller));
             if ret {
                 Ok(())
             } else {
-                trap(&format!("{} unauthorized", caller));
+                ic_cdk::api::trap(&format!("{} unauthorized", caller));
             }
         }
 
@@ -45,7 +45,7 @@ macro_rules! inject_ego_macros {
             if ret {
                 Ok(())
             } else {
-                trap(&format!("{} unauthorized", caller));
+                ic_cdk::api::trap(&format!("{} unauthorized", caller));
             }
         }
 
@@ -83,18 +83,9 @@ macro_rules! inject_ego_macros {
 macro_rules! inject_log {
     () => {
         pub fn ego_log(message: &str) {
-            // for development
             ic_cdk::println!("{}", message.to_string());
 
-            // for production
-            // ic_cdk::println!("ego-log: message: {}", message.clone());
-            // match REGISTRY.with(|r| r.borrow().canister_get_one("ego_log")) {
-            //     None => {},
-            //     Some(ego_log_id) => {
-            //         let ego_log = EgoLogCanister::new(ego_log_id);
-            //         ego_log.canister_log_add(message);
-            //     }
-            // };
+            log_add(ic_cdk::api::time(), message.to_string());
         }
     }
 }

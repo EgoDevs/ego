@@ -19,7 +19,7 @@ async-trait = "0.1.57"
 num-traits = "0.2.15"
 ego_types = { path = "../../../lib/ego_types" }
 ego_utils = { path = "../../../lib/ego_utils" }
-ego_lib = "0.2.11"
+ego_lib = "0.2.12"
 astrox_macros = "0.2.10"
 ego_macros = { path = "../../../lib/ego_macros" }
 
