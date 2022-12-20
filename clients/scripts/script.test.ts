@@ -93,7 +93,11 @@ describe('scripts', () => {
   });
 
   test('get_log', async () => {
+    const deployer = await egoOpsDeployerActor;
 
+    console.log(`\t\t create an order\n`);
+    let logs = await deployer.ego_log_list(BigInt(Date.now() - 3600 * 24));
+    console.log(logs)
   })
 
   // manually create an order
