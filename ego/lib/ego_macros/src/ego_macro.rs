@@ -85,7 +85,12 @@ macro_rules! inject_log {
         pub fn ego_log(message: &str) {
             ic_cdk::println!("{}", message.to_string());
 
-            log_add(ic_cdk::api::time(), message.to_string());
+            {
+                // TODO: need a way to call time()
+                // log_add(ic_cdk::api::time(), message.to_string());
+                log_add(0, message.to_string());
+            }
+
         }
     }
 }
