@@ -29,7 +29,7 @@ pub struct InitArg {
 pub fn init(arg: InitArg) {
   let caller = arg.init_caller.unwrap_or(caller());
 
-  ic_cdk::println!("==> create stable page for state");
+  ego_log("==> create stable page for state");
   let pages_to_grow = HEADER_SIZE / WASM_PAGE_SIZE;
   let result = stable64_grow(pages_to_grow);
   if result.is_err() {
@@ -39,13 +39,13 @@ pub fn init(arg: InitArg) {
     ))
   }
 
-  ic_cdk::println!("==> add caller as the owner");
+  ego_log("==> add caller as the owner");
   owner_add(caller.clone());
 }
 
 #[pre_upgrade]
 fn pre_upgrade() {
-  ic_cdk::println!("ego-file: pre_upgrade");
+  ego_log("ego-file: pre_upgrade");
   match state_persist() {
     Ok(_) => {}
     Err(_) => {}
@@ -54,7 +54,7 @@ fn pre_upgrade() {
 
 #[post_upgrade]
 fn post_upgrade() {
-  ic_cdk::println!("ego-file: post_upgrade");
+  ego_log("ego-file: post_upgrade");
   match state_restore() {
     Ok(_) => {}
     Err(_) => {}

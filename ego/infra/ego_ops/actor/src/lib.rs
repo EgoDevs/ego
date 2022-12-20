@@ -30,9 +30,9 @@ pub struct InitArg {
 #[candid_method(init)]
 pub fn init(arg: InitArg) {
   let caller = arg.init_caller.unwrap_or(caller());
-  ic_cdk::println!("ego-ops: init, caller is {}", caller.clone());
+  ego_log(format!("ego-ops: init, caller is {}", caller.clone()).as_str());
 
-  ic_cdk::println!("==> add caller as the owner");
+  ego_log("==> add caller as the owner");
   owner_add(caller.clone());
 }
 
@@ -45,7 +45,7 @@ struct PersistState {
 
 #[pre_upgrade]
 fn pre_upgrade() {
-  ic_cdk::println!("ego-ops: pre_upgrade");
+  ego_log("ego-ops: pre_upgrade");
   let ego_ops = EGO_OPS.with(|ego_ops| ego_ops.borrow().clone());
   let user = users_pre_upgrade();
   let registry = registry_pre_upgrade();
@@ -56,7 +56,7 @@ fn pre_upgrade() {
 
 #[post_upgrade]
 fn post_upgrade() {
-  ic_cdk::println!("ego-ops: post_upgrade");
+  ego_log("ego-ops: post_upgrade");
   let (state, ): (PersistState, ) = storage::stable_restore().unwrap();
   EGO_OPS.with(|ego_ops| *ego_ops.borrow_mut() = state.ego_ops);
   users_post_upgrade(state.user);

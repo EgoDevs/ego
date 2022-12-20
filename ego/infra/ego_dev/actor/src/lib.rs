@@ -39,12 +39,12 @@ pub struct InitArg {
 #[candid_method(init)]
 pub fn init(arg: InitArg) {
   let caller = arg.init_caller.unwrap_or(caller());
-  ic_cdk::println!("ego-dev: init, caller is {}", caller.clone());
+  ego_log(format!("ego-dev: init, caller is {}", caller.clone()).as_str());
 
-  ic_cdk::println!("==> add caller as the owner");
+  ego_log("==> add caller as the owner");
   owner_add(caller.clone());
 
-  ic_cdk::println!("==> caller register as an developer");
+  ego_log("==> caller register as an developer");
   match EgoDevService::developer_main_register(caller.clone(), "admin".to_string()) {
     _ => {}
   }
@@ -62,7 +62,7 @@ struct PersistState {
 
 #[pre_upgrade]
 fn pre_upgrade() {
-  ic_cdk::println!("ego-dev: pre_upgrade");
+  ego_log("ego-dev: pre_upgrade");
   let ego_dev = EGO_DEV.with(|ego_dev| ego_dev.borrow().clone());
   let user = users_pre_upgrade();
   let registry = registry_pre_upgrade();
@@ -77,7 +77,7 @@ fn pre_upgrade() {
 
 #[post_upgrade]
 fn post_upgrade() {
-  ic_cdk::println!("ego-dev: post_upgrade");
+  ego_log("ego-dev: post_upgrade");
   let (state, ): (PersistState, ) = storage::stable_restore().unwrap();
   EGO_DEV.with(|ego_dev| *ego_dev.borrow_mut() = state.ego_dev);
 

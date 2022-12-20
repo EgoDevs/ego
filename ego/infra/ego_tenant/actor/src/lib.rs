@@ -37,9 +37,9 @@ pub struct InitArg {
 #[candid_method(init)]
 pub fn init(arg: InitArg) {
   let caller = arg.init_caller.unwrap_or(caller());
-  ic_cdk::println!("ego-tenant: init, caller is {}", caller.clone());
+  ego_log(format!("ego-tenant: init, caller is {}", caller.clone()).as_str());
 
-  ic_cdk::println!("==> add caller as the owner");
+  ego_log("==> add caller as the owner");
   owner_add(caller.clone());
 
   let duration = Duration::new(1800, 0);
@@ -91,7 +91,6 @@ fn post_upgrade() {
 #[candid_method(update, rename = "app_main_install")]
 async fn app_main_install(req: AppMainInstallRequest) -> Result<AppMainInstallResponse, EgoError> {
   ego_log("ego_tenant: app_main_install");
-
 
   let ego_tenant_id = id();
   let management = IcManagement::new();

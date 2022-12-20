@@ -73,13 +73,13 @@ impl EgoStoreService {
     wallet_id: Principal,
     app: EgoStoreApp,
   ) -> Result<UserApp, EgoError> {
-    ic_cdk::println!("3 get ego_tenant_id relative to wallet");
+    ego_log("3 get ego_tenant_id relative to wallet");
     let ego_tenant_id = EGO_STORE.with(|ego_store| ego_store.borrow().wallet_tenant_get(&wallet_id).clone())?;
 
-    ic_cdk::println!("4 get wallet");
+    ego_log("4 get wallet");
     let wallet = EGO_STORE.with(|ego_store| ego_store.borrow().wallet_main_get(wallet_id))?;
 
-    ic_cdk::println!("5 call ego tenant to install frontend");
+    ego_log("5 call ego tenant to install frontend");
     let frontend_canister = match app.frontend.is_some() {
       false => None,
       true => {
@@ -95,7 +95,7 @@ impl EgoStoreService {
       }
     };
 
-    ic_cdk::println!("6 call ego tenant to install backend");
+    ego_log("6 call ego tenant to install backend");
     let backend_canister = match app.backend.is_some() {
       false => None,
       true => {
@@ -132,17 +132,17 @@ impl EgoStoreService {
     wallet_id: Principal,
     app: EgoStoreApp,
   ) -> Result<UserApp, EgoError> {
-    ic_cdk::println!("3 get previous installed user app");
+    ego_log("3 get previous installed user app");
     let user_app =
       EGO_STORE.with(|ego_store| ego_store.borrow().user_app_get(&wallet_id, &app.app_id))?;
 
-    ic_cdk::println!("4 get ego tenant id relative to wallet");
+    ego_log("4 get ego tenant id relative to wallet");
     let ego_tenant_id =
       EGO_STORE.with(|ego_store| ego_store.borrow().wallet_tenant_get(&wallet_id).clone())?;
 
 
     // TODO: 假设不同版本里面的app wasm一致，例如：不存在原来有前端后来没有了的情况
-    ic_cdk::println!("4 call ego tenant to upgrade frontend");
+    ego_log("4 call ego tenant to upgrade frontend");
     if app.frontend.is_some() {
       ego_tenant
         .app_main_upgrade(
@@ -153,7 +153,7 @@ impl EgoStoreService {
         .await?;
     }
 
-    ic_cdk::println!("5 call ego tenant to upgrade backend");
+    ego_log("5 call ego tenant to upgrade backend");
     if app.backend.is_some() {
       ego_tenant
         .app_main_upgrade(
@@ -196,14 +196,14 @@ impl EgoStoreService {
     wallet_id: Principal,
     app_id: AppId,
   ) -> Result<(), EgoError> {
-    ic_cdk::println!("1 get ego tenant id");
+    ego_log("1 get ego tenant id");
     let ego_tenant_id = EGO_STORE.with(|ego_store| ego_store.borrow_mut().tenant_get())?;
 
-    ic_cdk::println!("2 get user app");
+    ego_log("2 get user app");
     let user_app =
       EGO_STORE.with(|ego_store| ego_store.borrow().wallet_app_get(&wallet_id, app_id))?;
 
-    ic_cdk::println!("3 track frontend");
+    ego_log("3 track frontend");
     if user_app.frontend.is_some() {
       ego_tenant
         .canister_main_track(
@@ -214,7 +214,7 @@ impl EgoStoreService {
         .await?;
     }
 
-    ic_cdk::println!("4 track backend");
+    ego_log("4 track backend");
     if user_app.backend.is_some() {
       ego_tenant
         .canister_main_track(
@@ -233,14 +233,14 @@ impl EgoStoreService {
     wallet_id: Principal,
     app_id: AppId,
   ) -> Result<(), EgoError> {
-    ic_cdk::println!("1 get ego tenant id");
+    ego_log("1 get ego tenant id");
     let ego_tenant_id = EGO_STORE.with(|ego_store| ego_store.borrow_mut().tenant_get())?;
 
-    ic_cdk::println!("2 get user app");
+    ego_log("2 get user app");
     let user_app =
       EGO_STORE.with(|ego_store| ego_store.borrow().wallet_app_get(&wallet_id, app_id))?;
 
-    ic_cdk::println!("3 untrack frontend");
+    ego_log("3 untrack frontend");
     if user_app.frontend.is_some() {
       ego_tenant
         .canister_main_untrack(
@@ -251,7 +251,7 @@ impl EgoStoreService {
         .await?;
     }
 
-    ic_cdk::println!("4 untrack backend");
+    ego_log("4 untrack backend");
     if user_app.backend.is_some() {
       ego_tenant
         .canister_main_untrack(
@@ -354,13 +354,13 @@ impl EgoStoreService {
     user_id: Principal,
     app_id: AppId,
   ) -> Result<WalletApp, EgoError> {
-    ic_cdk::println!("1 get ego tenant id");
+    ego_log("1 get ego tenant id");
     let ego_tenant_id = EGO_STORE.with(|ego_store| ego_store.borrow_mut().tenant_get())?;
 
-    ic_cdk::println!("2 get app to be install");
+    ego_log("2 get app to be install");
     let app = EGO_STORE.with(|ego_store| ego_store.borrow().app_main_get(&app_id).clone())?;
 
-    ic_cdk::println!("3 call ego tenant to install frontend");
+    ego_log("3 call ego tenant to install frontend");
     let frontend_canister = match app.frontend.is_some() {
       false => None,
       true => {
@@ -371,7 +371,7 @@ impl EgoStoreService {
       }
     };
 
-    ic_cdk::println!("4 call ego tenant to install backend");
+    ego_log("4 call ego tenant to install backend");
     let backend_canister = match app.backend.is_some() {
       false => None,
       true => {
@@ -380,7 +380,7 @@ impl EgoStoreService {
           .await?;
 
         // register wallet
-        ic_cdk::println!("5 register wallet to ego_store");
+        ego_log("5 register wallet to ego_store");
         let _result = EGO_STORE.with(|ego_store| {
           ego_store
             .borrow_mut()

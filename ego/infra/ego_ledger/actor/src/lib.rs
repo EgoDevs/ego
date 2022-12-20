@@ -33,9 +33,9 @@ pub struct InitArg {
 #[candid_method(init)]
 pub fn init(arg: InitArg) {
   let caller = arg.init_caller.unwrap_or(caller());
-  ic_cdk::println!("ego-ledger: init, caller is {}", caller.clone());
+  ego_log(format!("ego-ledger: init, caller is {}", caller.clone()).as_str());
 
-  ic_cdk::println!("==> add caller as the owner");
+  ego_log("==> add caller as the owner");
   owner_add(caller.clone());
 
   let duration = Duration::new(60, 0);
@@ -53,7 +53,7 @@ struct PersistState {
 
 #[pre_upgrade]
 fn pre_upgrade() {
-  ic_cdk::println!("ego-ledger: pre_upgrade");
+  ego_log("ego-ledger: pre_upgrade");
   let ego_ledger = EGO_LEDGER.with(|ego_ledger| ego_ledger.borrow().clone());
   let user = users_pre_upgrade();
   let registry = registry_pre_upgrade();
@@ -68,7 +68,7 @@ fn pre_upgrade() {
 
 #[post_upgrade]
 fn post_upgrade() {
-  ic_cdk::println!("ego-ledger: post_upgrade");
+  ego_log("ego-ledger: post_upgrade");
   let (state, ): (PersistState, ) = storage::stable_restore().unwrap();
   EGO_LEDGER.with(|ego_ledger| *ego_ledger.borrow_mut() = state.ego_ledger);
 
@@ -85,7 +85,7 @@ fn post_upgrade() {
 #[update(name = "ledger_payment_add", guard = "user_guard")]
 #[candid_method(update, rename = "ledger_payment_add")]
 fn ledger_payment_add(req: LedgerPaymentAddRequest) -> Result<(), EgoError> {
-  ego_log(&format!("ego-ledger: ledger_payment_add from:{} to:{} memo:{:?}", req.from, req.to, req.memo));
+  ego_log(format!("ego-ledger: ledger_payment_add from:{} to:{} memo:{:?}", req.from, req.to, req.memo).as_str());
 
   EgoLedgerService::ledger_payment_add(req.from, req.to, req.amount, req.memo);
   Ok(())

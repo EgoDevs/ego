@@ -155,30 +155,6 @@ impl EgoDevService {
     app_id: AppId,
     version: Version,
   ) -> Result<AppVersion, EgoError> {
-    // let frontend_canister_id =
-    //   EGO_DEV.with(|ego_dev| match ego_dev.borrow_mut().app_get(&app_id) {
-    //     Some(app) => {
-    //       if caller != app.developer_id {
-    //         Err(EgoError::from(EgoDevErr::UnAuthorized))
-    //       } else {
-    //         match app.get_version(version) {
-    //           Some(app_version) => Ok(app_version.get_frontend_address()),
-    //           None => Err(EgoError::from(EgoDevErr::VersionNotExists)),
-    //         }
-    //       }
-    //     }
-    //     None => Err(EgoError::from(EgoDevErr::AppNotExists)),
-    //   })?;
-    //
-    // ic_cdk::println!(
-    //   "1. check is it has frontend address {}",
-    //   frontend_canister_id.is_some()
-    // );
-    // if frontend_canister_id.is_some() {
-    //   // upgrade_to_ego_assets(&frontend_canister_id.unwrap()).await?;
-    //   // drain_authorize(frontend_canister_id.unwrap()).await?;
-    // }
-
     EGO_DEV.with(
       |ego_dev| match ego_dev.borrow_mut().developer_app_get_mut(&caller, &app_id) {
         Ok(app) => app.version_submit(version),
