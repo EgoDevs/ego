@@ -17,7 +17,7 @@ use ego_tenant_mod::ego_lib::ego_canister::EgoCanister;
 use ego_tenant_mod::ego_macros::inject_ego_macros;
 use ego_tenant_mod::ego_tenant::EgoTenant;
 use ego_tenant_mod::service::{EgoTenantService, Registry, User};
-use ego_tenant_mod::service::{canister_add, canister_list, is_owner, log_list_after, LogEntry, owner_add, registry_post_upgrade, registry_pre_upgrade, USER, user_add, users_post_upgrade, users_pre_upgrade};
+use ego_tenant_mod::service::{canister_add, canister_list, is_owner, log_list, owner_add, registry_post_upgrade, registry_pre_upgrade, USER, user_add, users_post_upgrade, users_pre_upgrade};
 use ego_tenant_mod::service::ego_log;
 use ego_tenant_mod::state::EGO_TENANT;
 use ego_tenant_mod::types::{

@@ -15,7 +15,7 @@ use ego_ledger_mod::c2c::ic_ledger::IcLedger;
 use ego_ledger_mod::ego_ledger::EgoLedger;
 use ego_ledger_mod::ego_macros::inject_ego_macros;
 use ego_ledger_mod::payment::Payment;
-use ego_ledger_mod::service::{canister_add, canister_get_one, canister_list, ego_log, EgoLedgerService, is_owner, log_list_after, LogEntry, owner_add, Registry, registry_post_upgrade, registry_pre_upgrade, User, USER, user_add, users_post_upgrade, users_pre_upgrade};
+use ego_ledger_mod::service::{canister_add, canister_get_one, canister_list, ego_log, EgoLedgerService, is_owner, log_list, owner_add, Registry, registry_post_upgrade, registry_pre_upgrade, User, USER, user_add, users_post_upgrade, users_pre_upgrade};
 use ego_ledger_mod::state::EGO_LEDGER;
 use ego_ledger_mod::types::{
   LedgerMainInitRequest, LedgerPaymentAddRequest,

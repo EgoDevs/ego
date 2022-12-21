@@ -144,7 +144,7 @@ async fn app_main_install() {
   mock_management
     .expect_canister_controller_set()
     .returning(move |_canister_id, _principal| Ok(()));
-    
+
   mock_ego_canister
     .expect_ego_controller_set()
     .returning(move |canister_id, user_ids| {

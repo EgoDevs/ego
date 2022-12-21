@@ -16,7 +16,6 @@ fn main() {
   use ego_store_mod::user_app::WalletApp;
   use ego_store_mod::user_app::UserApp;
   use ego_types::app::{AppId, App};
-  use ego_store_mod::service::LogEntry;
 
   candid::export_service!();
   std::print!("{}", __export_service());

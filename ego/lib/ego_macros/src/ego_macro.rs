@@ -66,8 +66,8 @@ macro_rules! inject_ego_macros {
         // for log
         #[query(name = "ego_log_list", guard = "op_guard")]
         #[candid_method(query, rename = "ego_log_list")]
-        pub fn ego_log_list(after_ts: u64) -> Result<Vec<LogEntry>, String> {
-            Ok(log_list_after(after_ts))
+        pub fn ego_log_list(amount: usize) -> Result<Vec<String>, String> {
+            Ok(log_list(amount))
         }
 
         // balance
@@ -84,13 +84,7 @@ macro_rules! inject_log {
     () => {
         pub fn ego_log(message: &str) {
             ic_cdk::println!("{}", message.to_string());
-
-            {
-                // TODO: need a way to call time()
-                // log_add(ic_cdk::api::time(), message.to_string());
-                log_add(0, message.to_string());
-            }
-
+            log_add(message.to_string());
         }
     }
 }

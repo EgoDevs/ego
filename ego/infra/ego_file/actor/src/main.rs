@@ -9,7 +9,6 @@ fn main() {}
 fn main() {
   use crate::lib::InitArg;
   use ego_file_mod::types::*;
-  use ego_file_mod::service::LogEntry;
   use ego_types::ego_error::EgoError;
   use ic_cdk::export::Principal;
   use std::collections::BTreeMap;

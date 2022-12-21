@@ -14,7 +14,7 @@ use ego_ops_mod::c2c::ego_tenant::{EgoTenant, TEgoTenant};
 use ego_ops_mod::ego_macros::inject_ego_macros;
 use ego_ops_mod::ego_ops::EgoOps;
 use ego_ops_mod::service::{ego_log, EgoOpsService, Registry, REGISTRY, User};
-use ego_ops_mod::service::{canister_add, canister_list, is_owner, log_list_after, LogEntry, owner_add, registry_post_upgrade, registry_pre_upgrade, USER, user_add, users_post_upgrade, users_pre_upgrade};
+use ego_ops_mod::service::{canister_add, canister_list, is_owner, log_list, owner_add, registry_post_upgrade, registry_pre_upgrade, USER, user_add, users_post_upgrade, users_pre_upgrade};
 use ego_ops_mod::state::EGO_OPS;
 use ego_ops_mod::types::{AdminAppCreateRequest, AdminWalletCycleRechargeRequest, AdminWalletProviderAddRequest};
 use ego_types::ego_error::EgoError;

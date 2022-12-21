@@ -8,7 +8,7 @@ use ic_cdk::export::Principal;
 use ic_cdk_macros::*;
 
 use ego_file_mod::ego_macros::inject_ego_macros;
-use ego_file_mod::service::{canister_add, canister_list, ego_log, EgoFileService, is_owner, log_list_after, LogEntry, owner_add, Registry, registry_post_upgrade, registry_pre_upgrade, User, USER, user_add, users_post_upgrade, users_pre_upgrade};
+use ego_file_mod::service::{canister_add, canister_list, ego_log, EgoFileService, is_owner, log_list, owner_add, Registry, registry_post_upgrade, registry_pre_upgrade, User, USER, user_add, users_post_upgrade, users_pre_upgrade};
 use ego_file_mod::state::STORAGE;
 use ego_file_mod::storage::{DEFAULT_FILE_SIZE, HEADER_SIZE, Storage, WASM_PAGE_SIZE};
 use ego_file_mod::types::{

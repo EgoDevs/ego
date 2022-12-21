@@ -21,7 +21,7 @@ ic-ledger-types = "0.2.0"
 async-trait = "0.1.57"
 ego_types = { path = "../../../lib/ego_types" }
 ego_macros = { path = "../../../lib/ego_macros" }
-astrox_macros = "0.2.10"
+astrox_macros = "0.2.11"
 
 [dev-dependencies]
 mockall = "0.11.2"
