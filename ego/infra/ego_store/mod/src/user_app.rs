@@ -40,6 +40,7 @@ pub struct UserApp {
   pub current_version: Version,
   pub frontend: Option<Canister>,
   pub backend: Option<Canister>,
+  pub latest_version: Version,
 }
 
 impl UserApp {
@@ -53,6 +54,7 @@ impl UserApp {
       current_version: user_app.current_version.clone(),
       frontend: user_app.frontend.clone(),
       backend: user_app.backend.clone(),
+      latest_version: app.current_version.clone()
     }
   }
 }
