@@ -60,11 +60,6 @@ mock! {
         principals: Vec<Principal>,
     ) -> Result<(), EgoError>;
 
-    async fn canister_controller_set(
-      &self,
-      canister_id: Principal,
-      principals: Vec<Principal>,
-    ) -> Result<(), EgoError>;
   }
 }
 
@@ -73,7 +68,13 @@ mock! {
 
   #[async_trait]
   impl TEgoStore for Store {
-    async fn wallet_cycle_charge(&self, wallet_id: Principal, cycle: u128, comment: String) -> Result<bool, EgoError>;
+    async fn wallet_cycle_charge(
+      &self,
+      canister_id: Principal,
+      wallet_id: Principal,
+      cycle: u128,
+      comment: String,
+    ) -> Result<bool, EgoError>;
   }
 }
 
@@ -95,7 +96,7 @@ mock! {
     fn ego_canister_add(&self, target_canister_id: Principal, name: String, principal: Principal);
 
     fn ego_controller_set(&self, target_canister_id: Principal, principals: Vec<Principal>);
-    fn ego_controller_add(&self, target_canister_id: Principal, principal: Principal);
+    async fn ego_controller_add(&self, target_canister_id: Principal, principal: Principal) -> Result<(), String>;
     fn ego_controller_remove(&self, target_canister_id: Principal, principal: Principal);
 
     async fn balance_get(&self, target_canister_id: Principal) -> Result<u128, String>;
@@ -290,7 +291,7 @@ async fn canister_cycles_check_second_time_none_zero_cycle_consumption() {
 
   ego_store
     .expect_wallet_cycle_charge()
-    .returning(move |wallet_id, cycle, _comment| {
+    .returning(move |_canister_id,wallet_id, cycle, _comment| {
       assert_eq!(wallet_principal, wallet_id);
       assert_eq!(180000000000, cycle);
       Ok(true)
