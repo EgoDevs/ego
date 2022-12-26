@@ -57,4 +57,13 @@ impl UserApp {
       latest_version: app.current_version.clone()
     }
   }
+
+  pub fn wallet_app(&self) -> WalletApp {
+    WalletApp {
+      app_id: self.app_id.clone(),
+      current_version: self.current_version.clone(),
+      frontend: self.frontend.clone(),
+      backend: self.backend.clone(),
+    }
+  }
 }
