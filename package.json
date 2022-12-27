@@ -21,9 +21,7 @@
     "format": "prettier --write {scripts,clients}/**/*.{js,ts,less,json}",
     "format:json": "prettier --write artifacts/**/*.json",
     "format:idl": "prettier --write clients/idls/**/*.ts",
-
     "ego:deploy:local": "pnpm ego:pre && pnpm ego:bootstrap && pnpm ego:build && pnpm ego:install && pnpm ego:post_install:project ego_ops",
-
     "ego:create:live": "cross-env NODE_ENV=production node ./dist/deployer.js --create",
     "ego:install:live": "cross-env NODE_ENV=production node ./dist/deployer.js --install",
     "ego:reinstall:live": "cross-env NODE_ENV=production node ./dist/deployer.js --reinstall",
@@ -31,9 +29,7 @@
     "ego:script:live": "cross-env NODE_ENV=production NODE_OPTIONS=--experimental-vm-modules jest --verbose --testPathIgnorePatterns=/post_install/ --testPathPattern=/scripts/ -t",
     "ego:post_install:project:live": "cross-env NODE_ENV=production NODE_OPTIONS=--experimental-vm-modules jest --verbose -t",
     "ego:deploy": "pnpm ego:pre && pnpm ego:bootstrap && pnpm ego:build && pnpm ego:install && pnpm ego:post_install:project ego_ops",
-    "ego:deploy:live": "pnpm ego:create:live && pnpm ego:install:live && pnpm ego:post_install:project:live ego_ops",
-    "ego:silo": "pnpm ego:post_install:project silo",
-    "ego:silo:live": "pnpm ego:post_install:project:live silo"
+    "ego:deploy:live": "pnpm ego:create:live && pnpm ego:install:live && pnpm ego:post_install:project:live ego_ops"
   },
   "author": "devs@astrox",
   "license": "ISC",

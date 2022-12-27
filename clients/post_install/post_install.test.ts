@@ -3,7 +3,6 @@
 
 import { assetsStorageInstall } from './assets_storage';
 import { opsPostInstall } from './ego_ops';
-import { storePostInstall } from './ego_store';
 
 /// use `post_` prefix in each describe to allow jest to specify each tests
 /// for single project post install , please add below and use templates like `post_bucket`
@@ -29,11 +28,5 @@ describe('post_assets', () => {
 describe('post_ops', () => {
   test('ego_ops post install', async () => {
     await opsPostInstall();
-  });
-});
-
-describe('silo', () => {
-  test('silo post install', async () => {
-    await storePostInstall();
   });
 });
