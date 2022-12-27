@@ -5,11 +5,13 @@ use mockall::mock;
 
 use ego_tenant_mod::c2c::ego_store::TEgoStore;
 use ego_tenant_mod::c2c::ic_management::TIcManagement;
-use ego_tenant_mod::service::EgoTenantService;
+use ego_tenant_mod::service::{canister_add, EgoTenantService};
 use ego_tenant_mod::state::EGO_TENANT;
 use ego_tenant_mod::task::Task;
 use ego_types::ego_error::EgoError;
 use ego_utils::ic_management::Cycles;
+
+static STORE_CANISTER_ID: &str = "qhbym-qaaaa-aaaaa-aaafq-cai";
 
 static EXISTS_WALLET_ID: &str = "22fyd-yaaaa-aaaaf-aml4q-cai";
 static EXISTS_CANISTER_ID: &str = "223xb-saaaa-aaaaf-arlqa-cai";
@@ -18,6 +20,9 @@ static TEST_WALLET_ID: &str = "22aq5-waaaa-aaaaf-aobwq-cai";
 static TEST_CANISTER_ID: &str = "224jh-lqaaa-aaaad-qaxda-cai";
 
 pub fn set_up() {
+  let store_canister_id = Principal::from_text(STORE_CANISTER_ID.to_string()).unwrap();
+  canister_add("ego_store".to_string(), store_canister_id);
+
   let wallet_principal = Principal::from_text(EXISTS_WALLET_ID.to_string()).unwrap();
   let canister_principal = Principal::from_text(EXISTS_CANISTER_ID.to_string()).unwrap();
 

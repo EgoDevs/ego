@@ -5,14 +5,14 @@ use mockall::mock;
 
 use ego_tenant_mod::c2c::ego_file::TEgoFile;
 use ego_tenant_mod::c2c::ic_management::TIcManagement;
-use ego_tenant_mod::service::EgoTenantService;
+use ego_tenant_mod::service::{canister_add, EgoTenantService, REGISTRY};
 use ego_types::app::CanisterType::BACKEND;
 use ego_types::app::{Wasm, WasmId};
 use ego_types::ego_error::EgoError;
 use ego_types::version::Version;
 use ego_utils::ic_management::Cycles;
 
-// static STORE_CANISTER_ID: &str = "qhbym-qaaaa-aaaaa-aaafq-cai";
+static STORE_CANISTER_ID: &str = "qhbym-qaaaa-aaaaa-aaafq-cai";
 static TENANT_CANISTER_ID: &str = "rdmx6-jaaaa-aaaaa-aaadq-cai";
 static FILE_CANISTER_ID: &str = "amybd-zyaaa-aaaah-qc4hq-cai";
 
@@ -23,7 +23,10 @@ static EXISTS_CANISTER_ID: &str = "223xb-saaaa-aaaaf-arlqa-cai";
 static TEST_WALLET_ID: &str = "wtb37-uyaaa-aaaai-qa3zq-cai";
 static EXISTS_APP_ID: &str = "app_test";
 
-pub fn set_up() {}
+pub fn set_up() {
+  let store_canister_id = Principal::from_text(STORE_CANISTER_ID.to_string()).unwrap();
+  canister_add("ego_store".to_string(), store_canister_id);
+}
 
 mock! {
   Management {}
@@ -96,7 +99,8 @@ mock! {
 async fn app_main_install() {
     set_up();
 
-    // let store_canister_id = Principal::from_text(STORE_CANISTER_ID.to_string()).unwrap();
+
+
     let tenant_canister_id = Principal::from_text(TENANT_CANISTER_ID.to_string()).unwrap();
     let wallet_principal = Principal::from_text(EXISTS_WALLET_ID.to_string()).unwrap();
     let user_principal = Principal::from_text(EXISTS_USER_ID.to_string()).unwrap();
