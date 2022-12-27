@@ -8,6 +8,7 @@ import { Principal } from '@dfinity/principal';
 import fs from 'fs';
 import path from 'path';
 import { isProduction } from '@/settings/env';
+import { admin_app_create } from './ego_ops';
 
 async function getStoreActor<T>(
   canisterName: string,
@@ -24,15 +25,59 @@ export const egoStoreCanisterId = Principal.fromText(
   getCanisterId('ego_store')!,
 );
 
+const astrox_controller_wasm = fs.readFileSync(
+  path.resolve(
+    `${[process.cwd()]}` +
+      '../../MePlus/artifacts/astrox_controller/astrox_controller_opt.wasm',
+  ),
+);
+
+const astrox_controller_version = {
+  major: 1,
+  minor: 0,
+  patch: 0,
+};
+
+const omni_wallet_wasm = fs.readFileSync(
+  path.resolve(
+    `${[process.cwd()]}` +
+      '../../MePlus/artifacts/omni_wallet/omni_wallet_opt.wasm',
+  ),
+);
+
+const omni_wallet_version = {
+  major: 1,
+  minor: 0,
+  patch: 0,
+};
+
 export const storePostInstall = async () => {
+  await admin_app_create(
+    'astrox_controller',
+    'astrox_controller',
+    astrox_controller_version,
+    { System: null },
+    { DEDICATED: null },
+    astrox_controller_wasm,
+  );
+
+  console.log(`4. release omni_wallet canister\n`);
+  await admin_app_create(
+    'omni_wallet',
+    'omni_wallet',
+    omni_wallet_version,
+    { Vault: null },
+    { DEDICATED: null },
+    omni_wallet_wasm,
+  );
+
   if (!isProduction) {
     const actor = await getStoreActor<EgoStoreService>('ego_store');
     const jsonFile = JSON.parse(
       fs
         .readFileSync(
           path.resolve(
-            `${[process.cwd()]}` +
-              '../../../me_v1/.dfx/local/canister_ids.json',
+            `${[process.cwd()]}` + '../../me_v1/.dfx/local/canister_ids.json',
           ),
         )
         .toString(),
@@ -47,9 +92,7 @@ export const storePostInstall = async () => {
     const jsonFile = JSON.parse(
       fs
         .readFileSync(
-          path.resolve(
-            `${[process.cwd()]}` + '../../../me_v1/canister_ids.json',
-          ),
+          path.resolve(`${[process.cwd()]}` + '../../me_v1/canister_ids.json'),
         )
         .toString(),
     );

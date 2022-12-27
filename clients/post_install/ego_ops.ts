@@ -50,12 +50,12 @@ export const opsPostInstall = async () => {
   await canister_registers();
 
   console.log(`2. canister_relation_update\n`);
-  await opsOperator.canister_relation_update("ego_dev");
-  await opsOperator.canister_relation_update("ego_file");
-  await opsOperator.canister_relation_update("ego_store");
-  await opsOperator.canister_relation_update("ego_tenant");
-  await opsOperator.canister_relation_update("ego_ledger");
-  await opsOperator.canister_relation_update("ego_ops");
+  await opsOperator.canister_relation_update('ego_dev');
+  await opsOperator.canister_relation_update('ego_file');
+  await opsOperator.canister_relation_update('ego_store');
+  await opsOperator.canister_relation_update('ego_tenant');
+  await opsOperator.canister_relation_update('ego_ledger');
+  await opsOperator.canister_relation_update('ego_ops');
 
   console.log(`3. canister_main_track\n`);
   await opsOperator.canister_main_track();
@@ -97,3 +97,34 @@ async function canister_register(canister_name: string) {
   let resp2 = await opsOperator.ego_canister_add(canister_name, canister_id);
   console.log(resp2);
 }
+
+export const admin_app_create = async (
+  app_id: string,
+  name: string,
+  version: any,
+  category: Category,
+  deploy_mode: DeployMode,
+  backend_data: ArrayLike<number>,
+  frontend_canister_id?: Principal,
+) => {
+  let opsOperator = await getOperator<EgoOpsService>('ego_ops');
+
+  const backend_hash = crypto
+    .createHash('md5')
+    .update(backend_data as BinaryLike)
+    .digest('hex');
+
+  let resp1 = await opsOperator.admin_app_create({
+    app_id,
+    name,
+    version,
+    logo: '',
+    description: '',
+    category,
+    backend_data: Array.from(new Uint8Array(backend_data)),
+    backend_hash,
+    frontend: frontend_canister_id ? [frontend_canister_id] : [],
+    deploy_mode,
+  });
+  console.log(resp1);
+};
