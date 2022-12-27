@@ -1,6 +1,9 @@
 use std::collections::BTreeMap;
 
+use astrox_macros::registry::Registry;
+use astrox_macros::user::User;
 use candid::candid_method;
+use ego_lib::{inject_ego_controller, inject_ego_log, inject_ego_registry, inject_ego_user};
 use ic_cdk::{caller, storage};
 use ic_cdk::api::time;
 use ic_cdk::export::candid::{CandidType, Deserialize};
@@ -10,11 +13,10 @@ use serde::Serialize;
 
 use ego_store_mod::c2c::ego_ledger::EgoLedger;
 use ego_store_mod::c2c::ego_tenant::EgoTenant;
-use ego_store_mod::ego_macros::inject_ego_macros;
 use ego_store_mod::ego_store::EgoStore;
 use ego_store_mod::order::Order;
 use ego_store_mod::service::*;
-use ego_store_mod::service::Registry;
+use ego_store_mod::service::{canister_add, canister_get_one, is_op, is_owner, is_user, log_add, log_list, op_add, owner_add, owner_remove, owners_set, registry_post_upgrade, registry_pre_upgrade, user_add, user_remove, users_post_upgrade, users_pre_upgrade, users_set};
 use ego_store_mod::state::EGO_STORE;
 use ego_store_mod::types::*;
 use ego_store_mod::user_app::{UserApp, WalletApp};
@@ -22,7 +24,11 @@ use ego_types::app::{App, AppId, DeployMode};
 use ego_types::app::DeployMode::DEDICATED;
 use ego_types::ego_error::EgoError;
 
-inject_ego_macros!();
+inject_ego_user!();
+inject_ego_registry!();
+inject_ego_controller!();
+inject_ego_log!();
+
 
 
 
@@ -35,40 +41,53 @@ pub struct InitArg {
 #[candid_method(init)]
 pub fn init(arg: InitArg) {
   let caller = arg.init_caller.unwrap_or(caller());
-  ego_log(format!("ego_store: init, caller is {}", caller.clone()).as_str());
+  log_add(format!("ego_store: init, caller is {}", caller.clone()).as_str());
 
-  ego_log("==> add caller as the owner");
+  log_add("==> add caller as the owner");
   owner_add(caller.clone());
 }
 
 #[derive(CandidType, Deserialize, Serialize)]
 struct PersistState {
   pub ego_store: EgoStore,
-  pub user: User,
-  pub registry: Registry,
+  users: Option<User>,
+  registry: Option<Registry>,
 }
 
 #[pre_upgrade]
 fn pre_upgrade() {
-  ego_log("ego_store: pre_upgrade");
+  log_add("ego_store: pre_upgrade");
 
   let ego_store = EGO_STORE.with(|ego_store| ego_store.borrow().clone());
-  let user = users_pre_upgrade();
-  let registry = registry_pre_upgrade();
 
-  let state = PersistState { ego_store, user, registry };
+  let state = PersistState {
+    ego_store,
+    users: Some(users_pre_upgrade()),
+    registry: Some(registry_pre_upgrade()),
+  };
   storage::stable_save((state, )).unwrap();
 }
 
 #[post_upgrade]
 fn post_upgrade() {
-  ego_log("ego_store: post_upgrade");
+  log_add("ego_store: post_upgrade");
 
   let (state, ): (PersistState, ) = storage::stable_restore().unwrap();
   EGO_STORE.with(|ego_store| *ego_store.borrow_mut() = state.ego_store);
 
-  users_post_upgrade(state.user);
-  registry_post_upgrade(state.registry)
+  match state.users {
+    None => {}
+    Some(users) => {
+      users_post_upgrade(users);
+    }
+  }
+
+  match state.registry {
+    None => {}
+    Some(registry) => {
+      registry_post_upgrade(registry);
+    }
+  }
 }
 
 
@@ -76,7 +95,7 @@ fn post_upgrade() {
 #[query(name = "app_main_list")]
 #[candid_method(query, rename = "app_main_list")]
 pub fn app_main_list(request: AppMainListRequest) -> Result<AppMainListResponse, EgoError> {
-  ego_log("ego_store: app_main_list");
+  log_add("ego_store: app_main_list");
   match EgoStoreService::app_main_list(request.query_param) {
     Ok(apps) => Ok(AppMainListResponse { apps }),
     Err(e) => Err(e),
@@ -86,7 +105,7 @@ pub fn app_main_list(request: AppMainListRequest) -> Result<AppMainListResponse,
 #[query(name = "app_main_get")]
 #[candid_method(query, rename = "app_main_get")]
 pub fn app_main_get(app_id: AppId) -> Result<App, EgoError> {
-  ego_log("ego_store: app_main_get");
+  log_add("ego_store: app_main_get");
   match EgoStoreService::app_main_get(&app_id) {
     Ok(app) => Ok(App::from(app)),
     Err(e) => Err(e),
@@ -98,7 +117,7 @@ pub fn app_main_get(app_id: AppId) -> Result<App, EgoError> {
 pub fn wallet_main_register(
   req: WalletMainRegisterRequest,
 ) -> Result<WalletMainRegisterResponse, EgoError> {
-  ego_log("ego_store: wallet_main_register");
+  log_add("ego_store: wallet_main_register");
   let tenant_id = EgoStoreService::wallet_main_register(ic_cdk::caller(), req.user_id)?;
 
   Ok(WalletMainRegisterResponse { tenant_id })
@@ -107,7 +126,7 @@ pub fn wallet_main_register(
 #[query(name = "wallet_tenant_get")]
 #[candid_method(query, rename = "wallet_tenant_get")]
 pub fn wallet_tenant_get() -> Result<WalletTenantGetResponse, EgoError> {
-  ego_log("ego_store: wallet_tenant_get");
+  log_add("ego_store: wallet_tenant_get");
   match EgoStoreService::wallet_tenant_get(ic_cdk::caller()) {
     Ok(tenant_id) => Ok(WalletTenantGetResponse { tenant_id }),
     Err(e) => Err(e),
@@ -117,7 +136,7 @@ pub fn wallet_tenant_get() -> Result<WalletTenantGetResponse, EgoError> {
 #[query(name = "wallet_app_list")]
 #[candid_method(query, rename = "wallet_app_list")]
 pub fn wallet_app_list() -> Result<WalletAppListResponse, EgoError> {
-  ego_log("ego_store: wallet_app_list");
+  log_add("ego_store: wallet_app_list");
   let wallet_id = ic_cdk::caller();
   match EgoStoreService::wallet_app_list(&wallet_id) {
     Ok(apps) => Ok(WalletAppListResponse { apps }),
@@ -130,12 +149,12 @@ pub fn wallet_app_list() -> Result<WalletAppListResponse, EgoError> {
 pub async fn wallet_app_install(
   app_id: AppId,
 ) -> Result<UserApp, EgoError> {
-  ego_log("ego_store: wallet_app_install");
+  log_add("ego_store: wallet_app_install");
 
-  ego_log("1 get app to be install");
+  log_add("1 get app to be install");
   let app = EGO_STORE.with(|ego_store| ego_store.borrow().app_main_get(&app_id).clone())?;
 
-  ego_log("2 get wallet_id");
+  log_add("2 get wallet_id");
   let wallet_id = match app.deploy_mode {
     DeployMode::SHARED => {
       canister_get_one("ego_ops").unwrap()
@@ -163,12 +182,12 @@ pub async fn wallet_app_install(
 #[update(name = "wallet_app_upgrade")]
 #[candid_method(update, rename = "wallet_app_upgrade")]
 pub async fn wallet_app_upgrade(app_id: AppId) -> Result<UserApp, EgoError> {
-  ego_log("ego_store: wallet_app_upgrade");
+  log_add("ego_store: wallet_app_upgrade");
 
-  ego_log("1 get app to be upgrade");
+  log_add("1 get app to be upgrade");
   let app = EGO_STORE.with(|ego_store| ego_store.borrow().app_main_get(&app_id).clone())?;
 
-  ego_log("2 get wallet_id");
+  log_add("2 get wallet_id");
   let wallet_id = match app.deploy_mode {
     DeployMode::SHARED => {
       let ops_wallet_id = REGISTRY.with(|registry| registry.borrow().canister_get_one("ego_ops")).unwrap();
@@ -194,7 +213,7 @@ pub async fn wallet_app_upgrade(app_id: AppId) -> Result<UserApp, EgoError> {
 #[update(name = "wallet_app_remove")]
 #[candid_method(update, rename = "wallet_app_remove")]
 pub fn wallet_app_remove(app_id: AppId) -> Result<(), EgoError> {
-  ego_log("ego_store: wallet_app_remove");
+  log_add("ego_store: wallet_app_remove");
   match EgoStoreService::wallet_app_remove(ic_cdk::caller(), app_id) {
     Ok(_) => Ok(()),
     Err(e) => Err(e),
@@ -204,7 +223,7 @@ pub fn wallet_app_remove(app_id: AppId) -> Result<(), EgoError> {
 #[update(name = "wallet_canister_track", guard = "user_guard")]
 #[candid_method(update, rename = "wallet_canister_track")]
 pub async fn wallet_canister_track(req: WalletCanisterTrackRequest) -> Result<(), EgoError> {
-  ego_log("ego_store: canister_main_track");
+  log_add("ego_store: canister_main_track");
 
   let ego_tenant = EgoTenant::new();
   let wallet_id = caller();
@@ -216,7 +235,7 @@ pub async fn wallet_canister_track(req: WalletCanisterTrackRequest) -> Result<()
 #[update(name = "wallet_canister_untrack", guard = "user_guard")]
 #[candid_method(update, rename = "wallet_canister_untrack")]
 pub async fn wallet_canister_untrack(req: WalletCanisterUnTrackRequest) -> Result<(), EgoError> {
-  ego_log("ego_store: canister_main_untrack");
+  log_add("ego_store: canister_main_untrack");
 
   let ego_tenant = EgoTenant::new();
   let wallet_id = caller();
@@ -228,7 +247,7 @@ pub async fn wallet_canister_untrack(req: WalletCanisterUnTrackRequest) -> Resul
 #[update(name = "wallet_order_list")]
 #[candid_method(update, rename = "wallet_order_list")]
 pub fn wallet_order_list() -> Result<WalletOrderListResponse, EgoError> {
-  ego_log("ego_store: wallet_order_list");
+  log_add("ego_store: wallet_order_list");
 
   match EgoStoreService::wallet_order_list(ic_cdk::caller()) {
     Ok(orders) => Ok(WalletOrderListResponse { orders }),
@@ -241,7 +260,7 @@ pub fn wallet_order_list() -> Result<WalletOrderListResponse, EgoError> {
 pub async fn wallet_order_new(
   request: WalletOrderNewRequest,
 ) -> Result<WalletOrderNewResponse, EgoError> {
-  ego_log("ego_store: wallet_order_new");
+  log_add("ego_store: wallet_order_new");
 
   let ego_ledger_id = REGISTRY.with(|r| r.borrow().canister_get_one("ego_ledger")).unwrap();
   let ego_ledger = EgoLedger::new(ego_ledger_id);
@@ -249,7 +268,7 @@ pub async fn wallet_order_new(
   match EgoStoreService::wallet_order_new(ego_ledger, ic_cdk::caller(), ic_cdk::id(), request.amount) {
     Ok(order) => Ok(WalletOrderNewResponse { memo: order.memo }),
     Err(e) => {
-      ego_log(&format!("ego_store: wallet_order_new {:?}", e));
+      log_add(&format!("ego_store: wallet_order_new {:?}", e));
       Err(e)
     }
   }
@@ -258,14 +277,14 @@ pub async fn wallet_order_new(
 #[update(name = "wallet_cycle_list")]
 #[candid_method(update, rename = "wallet_cycle_list")]
 pub async fn wallet_cycle_list() -> Result<WalletCycleListResponse, EgoError> {
-  ego_log("ego_store: wallet_cycle_list");
+  log_add("ego_store: wallet_cycle_list");
 
   let wallet_id = caller();
 
   match EgoStoreService::wallet_cycle_list(wallet_id) {
     Ok(cash_flows) => Ok(WalletCycleListResponse { cash_flows }),
     Err(e) => {
-      ego_log(&format!("ego_store: wallet_cycle_list {:?}", e));
+      log_add(&format!("ego_store: wallet_cycle_list {:?}", e));
       Err(e)
     }
   }
@@ -277,7 +296,7 @@ pub async fn wallet_cycle_list() -> Result<WalletCycleListResponse, EgoError> {
 pub fn wallet_cycle_charge(
   request: WalletCycleChargeRequest,
 ) -> Result<WalletCycleChargeResponse, EgoError> {
-  ego_log("ego_store: wallet_cycle_charge");
+  log_add("ego_store: wallet_cycle_charge");
 
   // the tenant id or something else
   let operator = caller();
@@ -300,7 +319,7 @@ pub fn wallet_cycle_charge(
 pub async fn app_main_release(
   request: AppMainReleaseRequest,
 ) -> Result<AppMainReleaseResponse, EgoError> {
-  ego_log("ego_store: app_main_release");
+  log_add("ego_store: app_main_release");
 
   match EgoStoreService::app_main_release(request.app) {
     Ok(ret) => Ok(AppMainReleaseResponse { ret }),
@@ -314,7 +333,7 @@ pub async fn app_main_release(
 pub fn wallet_order_notify(
   request: WalletOrderNotifyRequest,
 ) -> Result<WalletOrderNotifyResponse, EgoError> {
-  ego_log("ego_store: wallet_order_notify");
+  log_add("ego_store: wallet_order_notify");
 
   // the ego_ledger id
   let operator = caller();
@@ -331,9 +350,9 @@ pub fn wallet_order_notify(
 pub fn admin_wallet_provider_add(
   req: AdminWalletProviderAddRequest,
 ) -> Result<(), EgoError> {
-  ego_log("ego_store: admin_wallet_provider_add");
+  log_add("ego_store: admin_wallet_provider_add");
 
-  ego_log(&format!("wallet_provider: {}, app_id: {}",
+  log_add(&format!("wallet_provider: {}, app_id: {}",
                    req.wallet_provider,
                    req.wallet_app_id));
 
@@ -345,7 +364,7 @@ pub fn admin_wallet_provider_add(
 #[update(name = "admin_wallet_cycle_recharge", guard = "owner_guard")]
 #[candid_method(update, rename = "admin_wallet_cycle_recharge")]
 pub fn admin_wallet_cycle_recharge(req: AdminWalletCycleRechargeRequest) -> Result<bool, EgoError> {
-  ego_log("ego_store: admin_wallet_cycle_recharge");
+  log_add("ego_store: admin_wallet_cycle_recharge");
 
   // the ego_ops id
   let operator = caller();
@@ -356,7 +375,7 @@ pub fn admin_wallet_cycle_recharge(req: AdminWalletCycleRechargeRequest) -> Resu
 #[update(name = "admin_wallet_order_list", guard = "owner_guard")]
 #[candid_method(update, rename = "admin_wallet_order_list")]
 pub fn admin_wallet_order_list() -> Result<Vec<Order>, EgoError> {
-  ego_log("ego_store: admin_wallet_order_list");
+  log_add("ego_store: admin_wallet_order_list");
 
   Ok(EgoStoreService::wallet_order_list_all())
 }
@@ -365,11 +384,11 @@ pub fn admin_wallet_order_list() -> Result<Vec<Order>, EgoError> {
 #[update(name = "wallet_main_new")]
 #[candid_method(update, rename = "wallet_main_new")]
 pub async fn wallet_main_new(user_id: Principal) -> Result<WalletApp, EgoError> {
-  ego_log("ego_store: wallet_main_new");
+  log_add("ego_store: wallet_main_new");
 
   let wallet_provider = caller();
 
-  ego_log(&format!("wallet_provider is {}", wallet_provider));
+  log_add(&format!("wallet_provider is {}", wallet_provider));
 
   let app_id = EGO_STORE.with(|ego_store| {
     match ego_store.borrow().wallet_providers.get(&wallet_provider) {

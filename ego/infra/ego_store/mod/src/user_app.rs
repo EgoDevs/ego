@@ -54,7 +54,7 @@ impl UserApp {
       current_version: user_app.current_version.clone(),
       frontend: user_app.frontend.clone(),
       backend: user_app.backend.clone(),
-      latest_version: app.current_version.clone()
+      latest_version: app.current_version.clone(),
     }
   }
 

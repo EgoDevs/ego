@@ -4,7 +4,6 @@ use astrox_macros::{inject_canister_log, inject_canister_registry};
 use astrox_macros::inject_canister_users;
 use ego_lib::ego_canister::TEgoCanister;
 
-use ego_macros::inject_log;
 use ego_types::app::{CanisterType, Wasm};
 use ego_types::ego_error::EgoError;
 use ego_utils::consts::CREATE_CANISTER_CYCLES_FEE;
@@ -20,10 +19,9 @@ pub struct EgoTenantService {}
 
 pub const HALF_HOUR: u64 = 1000 * 60 * 30; // 0.1T cycles
 
-inject_log!();
-inject_canister_users!();
-inject_canister_registry!();
 inject_canister_log!();
+inject_canister_registry!();
+inject_canister_users!();
 
 /********************  methods for ego_registry   ********************/
 fn on_canister_added(name: &str, canister_id: Principal) {
@@ -72,32 +70,32 @@ impl EgoTenantService {
       return Err(EgoTenantErr::SystemError("not implemented".to_string()).into());
     }
 
-    ego_log("1 create canister");
+    log_add("1 create canister");
     let canister_id = management
       .canister_main_create(CREATE_CANISTER_CYCLES_FEE)
       .await?;
 
-    ego_log("2 load wasm data");
+    log_add("2 load wasm data");
     let data = ego_file
       .file_main_read(wasm.canister_id, wasm.fid())
       .await?;
 
-    ego_log("3 install code");
+    log_add("3 install code");
     management.canister_code_install(canister_id, data).await?;
 
     // add ego_store_id to app
-    ego_log("4 register canister");
+    log_add("4 register canister");
     ego_canister.ego_canister_add(canister_id, "ego_store".to_string(), ego_store_id);
     ego_canister.ego_canister_add(canister_id, "ego_tenant".to_string(), ego_tenant_id);
 
-    ego_log("5 add ops_user");
+    log_add("5 add ops_user");
     ego_canister.ego_op_add(canister_id, ego_store_id);
     ego_canister.ego_op_add(canister_id, ego_tenant_id);
 
-    ego_log("6 set canister controller to [wallet, user, self]");
+    log_add("6 set canister controller to [wallet, user, self]");
     let _result = management.canister_controller_set(canister_id, vec![wallet_id, user_id, canister_id]).await?;
 
-    ego_log("7 change canister owner to [wallet, user]");
+    log_add("7 change canister owner to [wallet, user]");
     ego_canister.ego_owner_set(canister_id, vec![wallet_id, user_id]);
 
     Ok(canister_id)
@@ -115,12 +113,12 @@ impl EgoTenantService {
       return Err(EgoTenantErr::SystemError("not implemented".to_string()).into());
     }
 
-    ego_log("1 load wasm data");
+    log_add("1 load wasm data");
     let data = ego_file
       .file_main_read(wasm.canister_id, wasm.fid())
       .await?;
 
-    ego_log("2 install code");
+    log_add("2 install code");
     management.canister_code_upgrade(canister_id, data).await?;
 
     Ok(true)
@@ -140,7 +138,7 @@ impl EgoTenantService {
     let mut current_cycle = cycle;
     let mut next_time = sentinel + HALF_HOUR;
 
-    ego_log(format!("last_cycle: {}, current_cycle: {}", task.last_cycle, current_cycle).as_str());
+    log_add(format!("last_cycle: {}, current_cycle: {}", task.last_cycle, current_cycle).as_str());
     if task.last_cycle == 0 {
       // for the first time checking, we will check it again after 30 minutes
     } else if task.last_cycle <= current_cycle {

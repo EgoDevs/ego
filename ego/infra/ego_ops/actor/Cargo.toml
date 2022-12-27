@@ -22,5 +22,6 @@ serde_bytes = "0.11"
 ego_ops_mod = { path = "../mod" }
 
 ego_types = { path = "../../../lib/ego_types" }
-ego_macros = { path = "../../../lib/ego_macros" }
 md5 = "0.7.0"
+astrox_macros = "0.2.13"
+ego_lib = "0.2.19"

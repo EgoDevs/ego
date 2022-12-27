@@ -23,3 +23,5 @@ serde_bytes = "0.11"
 ic-ledger-types = "0.2.0"
 ego_ledger_mod = { path = "../mod" }
 ego_types = { path = "../../../lib/ego_types" }
+astrox_macros = "0.2.13"
+ego_lib = "0.2.19"

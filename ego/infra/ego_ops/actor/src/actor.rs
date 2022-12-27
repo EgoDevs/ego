@@ -1,6 +1,9 @@
 use std::collections::BTreeMap;
 
+use astrox_macros::registry::Registry;
+use astrox_macros::user::User;
 use candid::candid_method;
+use ego_lib::{inject_ego_controller, inject_ego_log, inject_ego_registry, inject_ego_user};
 use ic_cdk::{caller, id, storage};
 use ic_cdk::export::candid::{CandidType, Deserialize};
 use ic_cdk::export::Principal;
@@ -11,15 +14,17 @@ use ego_ops_mod::c2c::ego_canister::{EgoCanister, TEgoCanister};
 use ego_ops_mod::c2c::ego_dev::EgoDev;
 use ego_ops_mod::c2c::ego_store::{EgoStore, TEgoStore};
 use ego_ops_mod::c2c::ego_tenant::{EgoTenant, TEgoTenant};
-use ego_ops_mod::ego_macros::inject_ego_macros;
 use ego_ops_mod::ego_ops::EgoOps;
-use ego_ops_mod::service::{ego_log, EgoOpsService, Registry, REGISTRY, User};
-use ego_ops_mod::service::{canister_add, canister_list, is_owner, log_list, owner_add, registry_post_upgrade, registry_pre_upgrade, USER, user_add, users_post_upgrade, users_pre_upgrade};
+use ego_ops_mod::service::{EgoOpsService, REGISTRY};
+use ego_ops_mod::service::{canister_add, canister_get_one, is_op, is_owner, is_user, log_add, log_list, op_add, owner_add, owner_remove, owners_set, registry_post_upgrade, registry_pre_upgrade, user_add, user_remove, users_post_upgrade, users_pre_upgrade, users_set};
 use ego_ops_mod::state::EGO_OPS;
 use ego_ops_mod::types::{AdminAppCreateRequest, AdminWalletCycleRechargeRequest, AdminWalletProviderAddRequest};
 use ego_types::ego_error::EgoError;
 
-inject_ego_macros!();
+inject_ego_user!();
+inject_ego_registry!();
+inject_ego_controller!();
+inject_ego_log!();
 
 #[derive(Clone, Debug, CandidType, Deserialize)]
 pub struct InitArg {
@@ -30,37 +35,51 @@ pub struct InitArg {
 #[candid_method(init)]
 pub fn init(arg: InitArg) {
   let caller = arg.init_caller.unwrap_or(caller());
-  ego_log(format!("ego-ops: init, caller is {}", caller.clone()).as_str());
+  log_add(format!("ego-ops: init, caller is {}", caller.clone()).as_str());
 
-  ego_log("==> add caller as the owner");
+  log_add("==> add caller as the owner");
   owner_add(caller.clone());
 }
 
 #[derive(CandidType, Deserialize, Serialize)]
 struct PersistState {
   pub ego_ops: EgoOps,
-  pub user: User,
-  pub registry: Registry,
+  users: Option<User>,
+  registry: Option<Registry>,
 }
 
 #[pre_upgrade]
 fn pre_upgrade() {
-  ego_log("ego-ops: pre_upgrade");
+  log_add("ego-ops: pre_upgrade");
   let ego_ops = EGO_OPS.with(|ego_ops| ego_ops.borrow().clone());
-  let user = users_pre_upgrade();
-  let registry = registry_pre_upgrade();
 
-  let state = PersistState { ego_ops, user, registry };
+  let state = PersistState {
+    ego_ops,
+    users: Some(users_pre_upgrade()),
+    registry: Some(registry_pre_upgrade()),
+  };
   storage::stable_save((state, )).unwrap();
 }
 
 #[post_upgrade]
 fn post_upgrade() {
-  ego_log("ego-ops: post_upgrade");
+  log_add("ego-ops: post_upgrade");
   let (state, ): (PersistState, ) = storage::stable_restore().unwrap();
   EGO_OPS.with(|ego_ops| *ego_ops.borrow_mut() = state.ego_ops);
-  users_post_upgrade(state.user);
-  registry_post_upgrade(state.registry);
+
+  match state.users {
+    None => {}
+    Some(users) => {
+      users_post_upgrade(users);
+    }
+  }
+
+  match state.registry {
+    None => {}
+    Some(registry) => {
+      registry_post_upgrade(registry);
+    }
+  }
 }
 
 
@@ -68,7 +87,7 @@ fn post_upgrade() {
 #[update(name = "canister_relation_update", guard = "owner_guard")]
 #[candid_method(update, rename = "canister_relation_update")]
 pub fn canister_relation_update(name: String) {
-  ego_log(&format!("ego-ops: canister_relation_update {}", name));
+  log_add(&format!("ego-ops: canister_relation_update {}", name));
 
   REGISTRY.with(|register| {
     let ego_canister = EgoCanister::new();
@@ -125,7 +144,7 @@ pub fn canister_relation_update(name: String) {
 #[update(name = "canister_main_track", guard = "owner_guard")]
 #[candid_method(update, rename = "canister_main_track")]
 pub fn canister_main_track() {
-  ego_log("ego-ops: canister_main_track");
+  log_add("ego-ops: canister_main_track");
 
   let wallet_id = id();
   let ego_tenant = EgoTenant::new();
@@ -134,37 +153,37 @@ pub fn canister_main_track() {
     let tracker_ego_tenant_id = register.borrow().canister_get_one("ego_tenant").unwrap();
 
     // ego_dev
-    ego_log("1 track ego_dev");
+    log_add("1 track ego_dev");
     let ego_dev_id = register.borrow().canister_get_one("ego_dev").unwrap();
     ego_tenant.canister_main_track(tracker_ego_tenant_id, wallet_id, ego_dev_id);
 
     // ego_file
-    ego_log("2 track ego_file");
+    log_add("2 track ego_file");
     for ego_file_id in register.borrow().canister_get_all("ego_file") {
       ego_tenant.canister_main_track(tracker_ego_tenant_id, wallet_id, ego_file_id);
     }
 
     // ego_store
-    ego_log("3 track ego_store");
+    log_add("3 track ego_store");
     let ego_store_id = register.borrow().canister_get_one("ego_store").unwrap();
     ego_tenant
       .canister_main_track(tracker_ego_tenant_id, wallet_id, ego_store_id);
 
     // ego_tenant
-    ego_log("4 track ego_tenant");
+    log_add("4 track ego_tenant");
     for ego_tenant_id in register.borrow().canister_get_all("ego_tenant") {
       ego_tenant
         .canister_main_track(tracker_ego_tenant_id, wallet_id, ego_tenant_id);
     }
 
     // ego_ledger
-    ego_log("6 track ego_ledger");
+    log_add("6 track ego_ledger");
     let ego_ledger_id = register.borrow().canister_get_one("ego_ledger").unwrap();
     ego_tenant
       .canister_main_track(tracker_ego_tenant_id, wallet_id, ego_ledger_id);
 
     // ego_ops
-    ego_log("7 track ego_ops");
+    log_add("7 track ego_ops");
     ego_tenant
       .canister_main_track(tracker_ego_tenant_id, wallet_id, wallet_id);
   });
@@ -175,7 +194,7 @@ pub fn canister_main_track() {
 pub fn admin_app_create(
   req: AdminAppCreateRequest,
 ) -> Result<(), EgoError> {
-  ego_log("ego-ops: admin_app_create");
+  log_add("ego-ops: admin_app_create");
 
   let ego_dev = EgoDev::new();
   let ego_dev_id = REGISTRY.with(|r| r.borrow().canister_get_one("ego_dev")).unwrap();
@@ -201,7 +220,7 @@ pub fn admin_app_create(
 #[update(name = "admin_wallet_provider_add", guard = "owner_guard")]
 #[candid_method(update, rename = "admin_wallet_provider_add")]
 pub fn admin_wallet_provider_add(req: AdminWalletProviderAddRequest) -> Result<(), EgoError> {
-  ego_log("ego_ops: admin_wallet_provider_add");
+  log_add("ego_ops: admin_wallet_provider_add");
 
   let ego_store_id = REGISTRY.with(|r| r.borrow().canister_get_one("ego_store")).unwrap();
   let ego_store = EgoStore::new(ego_store_id);
@@ -217,7 +236,7 @@ pub fn admin_wallet_provider_add(req: AdminWalletProviderAddRequest) -> Result<(
 pub fn admin_wallet_cycle_recharge(
   req: AdminWalletCycleRechargeRequest,
 ) -> Result<(), EgoError> {
-  ego_log("ego_ops: admin_wallet_cycle_recharge");
+  log_add("ego_ops: admin_wallet_cycle_recharge");
 
   let ego_store_id = REGISTRY.with(|r| r.borrow().canister_get_one("ego_store")).unwrap();
   let ego_store = EgoStore::new(ego_store_id);
@@ -233,7 +252,7 @@ pub fn admin_wallet_cycle_recharge(
 pub fn admin_wallet_order_new(
   amount: f32,
 ) -> Result<(), EgoError> {
-  ego_log("ego_ops: admin_wallet_order_new");
+  log_add("ego_ops: admin_wallet_order_new");
 
   let ego_store_id = REGISTRY.with(|r| r.borrow().canister_get_one("ego_store")).unwrap();
   let ego_store = EgoStore::new(ego_store_id);

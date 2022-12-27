@@ -1,5 +1,3 @@
-pub use ego_macros;
-
 pub mod app;
 pub mod c2c;
 pub mod cash_flow;

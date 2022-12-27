@@ -1,3 +1,5 @@
+use astrox_macros::app_info::AppInfo;
+use astrox_macros::ego_types::{App, AppId};
 use async_trait::async_trait;
 use ego_lib::ego_canister::TEgoCanister;
 use ic_cdk::export::Principal;
@@ -105,6 +107,11 @@ mock! {
     fn ego_controller_remove(&self, target_canister_id: Principal, principal: Principal);
 
     async fn balance_get(&self, target_canister_id: Principal) -> Result<u128, String>;
+
+    // app info
+    fn app_info_update(&self, target_canister_id: Principal, app_id: AppId, version: astrox_macros::ego_types::Version);
+    async fn app_info_get(&self, target_canister_id: Principal) -> Result<AppInfo, String>;
+    async fn app_version_check(&self, target_canister_id: Principal) -> Result<App, String>;
   }
 }
 
@@ -296,7 +303,7 @@ async fn canister_cycles_check_second_time_none_zero_cycle_consumption() {
 
   ego_store
     .expect_wallet_cycle_charge()
-    .returning(move |_canister_id,wallet_id, cycle, _comment| {
+    .returning(move |_canister_id, wallet_id, cycle, _comment| {
       assert_eq!(wallet_principal, wallet_id);
       assert_eq!(180000000000, cycle);
       Ok(true)

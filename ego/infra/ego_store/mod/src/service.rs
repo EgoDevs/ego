@@ -2,7 +2,6 @@ use astrox_macros::{inject_canister_log, inject_canister_registry};
 use astrox_macros::inject_canister_users;
 use ic_ledger_types::Memo;
 
-use ego_macros::inject_log;
 use ego_types::app::{App, AppId, Canister, CanisterType};
 use ego_types::ego_error::EgoError;
 
@@ -15,14 +14,13 @@ use crate::state::EGO_STORE;
 use crate::types::{EgoStoreErr, QueryParam};
 use crate::user_app::{UserApp, WalletApp};
 
-inject_log!();
 inject_canister_users!();
 inject_canister_registry!();
 inject_canister_log!();
 
 /********************  methods for ego_registry   ********************/
 fn on_canister_added(name: &str, canister_id: Principal) {
-  ego_log(&format!("on_canister_added name: {}, canister_id: {}", name, canister_id));
+  log_add(&format!("on_canister_added name: {}, canister_id: {}", name, canister_id));
   let _ = match name {
     "ego_dev" => user_add(canister_id),
     "ego_ledger" => user_add(canister_id),
@@ -73,13 +71,13 @@ impl EgoStoreService {
     wallet_id: Principal,
     app: EgoStoreApp,
   ) -> Result<UserApp, EgoError> {
-    ego_log("3 get ego_tenant_id relative to wallet");
+    log_add("3 get ego_tenant_id relative to wallet");
     let ego_tenant_id = EGO_STORE.with(|ego_store| ego_store.borrow().wallet_tenant_get(&wallet_id).clone())?;
 
-    ego_log("4 get wallet");
+    log_add("4 get wallet");
     let wallet = EGO_STORE.with(|ego_store| ego_store.borrow().wallet_main_get(wallet_id))?;
 
-    ego_log("5 call ego tenant to install frontend");
+    log_add("5 call ego tenant to install frontend");
     let frontend_canister = match app.frontend.is_some() {
       false => None,
       true => {
@@ -95,7 +93,7 @@ impl EgoStoreService {
       }
     };
 
-    ego_log("6 call ego tenant to install backend");
+    log_add("6 call ego tenant to install backend");
     let backend_canister = match app.backend.is_some() {
       false => None,
       true => {
@@ -132,17 +130,17 @@ impl EgoStoreService {
     wallet_id: Principal,
     app: EgoStoreApp,
   ) -> Result<UserApp, EgoError> {
-    ego_log("3 get previous installed user app");
+    log_add("3 get previous installed user app");
     let user_app =
       EGO_STORE.with(|ego_store| ego_store.borrow().user_app_get(&wallet_id, &app.app_id))?;
 
-    ego_log("4 get ego tenant id relative to wallet");
+    log_add("4 get ego tenant id relative to wallet");
     let ego_tenant_id =
       EGO_STORE.with(|ego_store| ego_store.borrow().wallet_tenant_get(&wallet_id).clone())?;
 
 
     // TODO: 假设不同版本里面的app wasm一致，例如：不存在原来有前端后来没有了的情况
-    ego_log("4 call ego tenant to upgrade frontend");
+    log_add("4 call ego tenant to upgrade frontend");
     if app.frontend.is_some() {
       ego_tenant
         .app_main_upgrade(
@@ -153,7 +151,7 @@ impl EgoStoreService {
         .await?;
     }
 
-    ego_log("5 call ego tenant to upgrade backend");
+    log_add("5 call ego tenant to upgrade backend");
     if app.backend.is_some() {
       ego_tenant
         .app_main_upgrade(
@@ -196,14 +194,14 @@ impl EgoStoreService {
     wallet_id: Principal,
     app_id: AppId,
   ) -> Result<(), EgoError> {
-    ego_log("1 get ego tenant id");
+    log_add("1 get ego tenant id");
     let ego_tenant_id = EGO_STORE.with(|ego_store| ego_store.borrow_mut().tenant_get())?;
 
-    ego_log("2 get user app");
+    log_add("2 get user app");
     let user_app =
       EGO_STORE.with(|ego_store| ego_store.borrow().wallet_app_get(&wallet_id, app_id))?;
 
-    ego_log("3 track frontend");
+    log_add("3 track frontend");
     if user_app.frontend.is_some() {
       ego_tenant
         .canister_main_track(
@@ -214,7 +212,7 @@ impl EgoStoreService {
         .await?;
     }
 
-    ego_log("4 track backend");
+    log_add("4 track backend");
     if user_app.backend.is_some() {
       ego_tenant
         .canister_main_track(
@@ -233,14 +231,14 @@ impl EgoStoreService {
     wallet_id: Principal,
     app_id: AppId,
   ) -> Result<(), EgoError> {
-    ego_log("1 get ego tenant id");
+    log_add("1 get ego tenant id");
     let ego_tenant_id = EGO_STORE.with(|ego_store| ego_store.borrow_mut().tenant_get())?;
 
-    ego_log("2 get user app");
+    log_add("2 get user app");
     let user_app =
       EGO_STORE.with(|ego_store| ego_store.borrow().wallet_app_get(&wallet_id, app_id))?;
 
-    ego_log("3 untrack frontend");
+    log_add("3 untrack frontend");
     if user_app.frontend.is_some() {
       ego_tenant
         .canister_main_untrack(
@@ -251,7 +249,7 @@ impl EgoStoreService {
         .await?;
     }
 
-    ego_log("4 untrack backend");
+    log_add("4 untrack backend");
     if user_app.backend.is_some() {
       ego_tenant
         .canister_main_untrack(
@@ -354,13 +352,13 @@ impl EgoStoreService {
     user_id: Principal,
     app_id: AppId,
   ) -> Result<WalletApp, EgoError> {
-    ego_log("1 get ego tenant id");
+    log_add("1 get ego tenant id");
     let ego_tenant_id = EGO_STORE.with(|ego_store| ego_store.borrow_mut().tenant_get())?;
 
-    ego_log("2 get app to be install");
+    log_add("2 get app to be install");
     let app = EGO_STORE.with(|ego_store| ego_store.borrow().app_main_get(&app_id).clone())?;
 
-    ego_log("3 call ego tenant to install frontend");
+    log_add("3 call ego tenant to install frontend");
     let frontend_canister = match app.frontend.is_some() {
       false => None,
       true => {
@@ -371,7 +369,7 @@ impl EgoStoreService {
       }
     };
 
-    ego_log("4 call ego tenant to install backend");
+    log_add("4 call ego tenant to install backend");
     let backend_canister = match app.backend.is_some() {
       false => None,
       true => {
@@ -380,7 +378,7 @@ impl EgoStoreService {
           .await?;
 
         // register wallet
-        ego_log("5 register wallet to ego_store");
+        log_add("5 register wallet to ego_store");
         let _result = EGO_STORE.with(|ego_store| {
           ego_store
             .borrow_mut()

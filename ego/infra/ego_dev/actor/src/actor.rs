@@ -1,6 +1,9 @@
 use std::collections::BTreeMap;
 
+use astrox_macros::registry::Registry;
+use astrox_macros::user::User;
 use candid::candid_method;
+use ego_lib::{inject_ego_controller, inject_ego_log, inject_ego_registry, inject_ego_user};
 use ic_cdk::{api, caller, storage, trap};
 use ic_cdk::export::candid::{CandidType, Deserialize};
 use ic_cdk::export::Principal;
@@ -10,8 +13,8 @@ use serde::Serialize;
 use ego_dev_mod::c2c::ego_file::EgoFile;
 use ego_dev_mod::c2c::ego_store::EgoStore;
 use ego_dev_mod::ego_dev::EgoDev;
-use ego_dev_mod::ego_macros::inject_ego_macros;
 use ego_dev_mod::service::*;
+use ego_dev_mod::service::{canister_add, canister_get_one, is_op, is_owner, is_user, log_add, log_list, op_add, owner_add, owner_remove, owners_set, registry_post_upgrade, registry_pre_upgrade, user_add, user_remove, users_post_upgrade, users_pre_upgrade, users_set};
 use ego_dev_mod::state::EGO_DEV;
 use ego_dev_mod::types::{
   AdminAppCreateRequest, AdminAppCreateResponse, AppMainGetRequest, AppMainGetResponse,
@@ -28,7 +31,10 @@ use ego_dev_mod::types::{
 use ego_types::app::DeployMode;
 use ego_types::ego_error::EgoError;
 
-inject_ego_macros!();
+inject_ego_user!();
+inject_ego_registry!();
+inject_ego_controller!();
+inject_ego_log!();
 
 #[derive(Clone, Debug, CandidType, Deserialize)]
 pub struct InitArg {
@@ -39,12 +45,12 @@ pub struct InitArg {
 #[candid_method(init)]
 pub fn init(arg: InitArg) {
   let caller = arg.init_caller.unwrap_or(caller());
-  ego_log(format!("ego-dev: init, caller is {}", caller.clone()).as_str());
+  log_add(format!("ego-dev: init, caller is {}", caller.clone()).as_str());
 
-  ego_log("==> add caller as the owner");
+  log_add("==> add caller as the owner");
   owner_add(caller.clone());
 
-  ego_log("==> caller register as an developer");
+  log_add("==> caller register as an developer");
   match EgoDevService::developer_main_register(caller.clone(), "admin".to_string()) {
     _ => {}
   }
@@ -56,33 +62,42 @@ pub fn init(arg: InitArg) {
 #[derive(CandidType, Deserialize, Serialize)]
 struct PersistState {
   pub ego_dev: EgoDev,
-  pub user: User,
-  pub registry: Registry,
+  users: Option<User>,
+  registry: Option<Registry>,
 }
 
 #[pre_upgrade]
 fn pre_upgrade() {
-  ego_log("ego-dev: pre_upgrade");
+  log_add("ego-dev: pre_upgrade");
   let ego_dev = EGO_DEV.with(|ego_dev| ego_dev.borrow().clone());
-  let user = users_pre_upgrade();
-  let registry = registry_pre_upgrade();
 
   let state = PersistState {
     ego_dev,
-    user,
-    registry,
+    users: Some(users_pre_upgrade()),
+    registry: Some(registry_pre_upgrade()),
   };
   storage::stable_save((state, )).unwrap();
 }
 
 #[post_upgrade]
 fn post_upgrade() {
-  ego_log("ego-dev: post_upgrade");
+  log_add("ego-dev: post_upgrade");
   let (state, ): (PersistState, ) = storage::stable_restore().unwrap();
   EGO_DEV.with(|ego_dev| *ego_dev.borrow_mut() = state.ego_dev);
 
-  users_post_upgrade(state.user);
-  registry_post_upgrade(state.registry);
+  match state.users {
+    None => {}
+    Some(users) => {
+      users_post_upgrade(users);
+    }
+  }
+
+  match state.registry {
+    None => {}
+    Some(registry) => {
+      registry_post_upgrade(registry);
+    }
+  }
 }
 
 
@@ -94,7 +109,7 @@ fn post_upgrade() {
 pub async fn developer_main_register(
   request: DeveloperMainRegisterRequest,
 ) -> Result<DeveloperMainRegisterResponse, EgoError> {
-  ego_log("ego-dev: developer_main_register");
+  log_add("ego-dev: developer_main_register");
   let developer = EgoDevService::developer_main_register(ic_cdk::caller(), request.name)?;
   Ok(DeveloperMainRegisterResponse { developer })
 }
@@ -105,7 +120,7 @@ pub async fn developer_main_register(
 #[query(name = "developer_main_get")]
 #[candid_method(query, rename = "developer_main_get")]
 pub fn developer_main_get() -> Result<DeveloperMainGetResponse, EgoError> {
-  ego_log("ego-dev: developer_main_get");
+  log_add("ego-dev: developer_main_get");
   let developer = EgoDevService::developer_main_get(ic_cdk::caller())?;
   Ok(DeveloperMainGetResponse { developer })
 }
@@ -114,7 +129,7 @@ pub fn developer_main_get() -> Result<DeveloperMainGetResponse, EgoError> {
 #[query(name = "developer_app_list", guard = "developer_guard")]
 #[candid_method(query, rename = "developer_app_list")]
 pub fn developer_app_list() -> Result<DeveloperAppListResponse, EgoError> {
-  ego_log("ego-dev: developer_app_list");
+  log_add("ego-dev: developer_app_list");
   let apps = EgoDevService::developer_app_list(ic_cdk::caller())?;
   Ok(DeveloperAppListResponse { apps })
 }
@@ -123,7 +138,7 @@ pub fn developer_app_list() -> Result<DeveloperAppListResponse, EgoError> {
 #[query(name = "developer_app_get", guard = "developer_guard")]
 #[candid_method(query, rename = "developer_app_get")]
 pub fn developer_app_get(request: AppMainGetRequest) -> Result<AppMainGetResponse, EgoError> {
-  ego_log("ego-dev: developer_app_get");
+  log_add("ego-dev: developer_app_get");
   let app = EgoDevService::developer_app_get(ic_cdk::caller(), request.app_id)?;
   Ok(AppMainGetResponse { app })
 }
@@ -134,7 +149,7 @@ pub fn developer_app_get(request: AppMainGetRequest) -> Result<AppMainGetRespons
 #[update(name = "developer_app_new", guard = "developer_guard")]
 #[candid_method(update, rename = "developer_app_new")]
 pub fn developer_app_new(request: AppMainNewRequest) -> Result<AppMainNewResponse, EgoError> {
-  ego_log("ego-dev: developer_app_new");
+  log_add("ego-dev: developer_app_new");
 
   let app = EgoDevService::developer_app_new(
     ic_cdk::caller(),
@@ -153,7 +168,7 @@ pub fn developer_app_new(request: AppMainNewRequest) -> Result<AppMainNewRespons
 #[update(name = "app_version_new", guard = "developer_guard")]
 #[candid_method(update, rename = "app_version_new")]
 pub fn app_version_new(request: AppVersionNewRequest) -> Result<AppVersionNewResponse, EgoError> {
-  ego_log("ego-dev: new_app_version");
+  log_add("ego-dev: new_app_version");
 
   let app_version =
     EgoDevService::app_version_new(ic_cdk::caller(), request.app_id, request.version)?;
@@ -165,7 +180,7 @@ pub fn app_version_new(request: AppVersionNewRequest) -> Result<AppVersionNewRes
 async fn app_version_upload_wasm(
   request: AppVersionUploadWasmRequest,
 ) -> Result<AppVersionUploadWasmResponse, EgoError> {
-  ego_log("ego-dev: app_version_upload_wasm");
+  log_add("ego-dev: app_version_upload_wasm");
 
   let ret = EgoDevService::app_version_upload_wasm(
     EgoFile::new(),
@@ -184,7 +199,7 @@ async fn app_version_upload_wasm(
 pub fn app_version_set_frontend_address(
   request: AppVersionSetFrontendAddressRequest,
 ) -> Result<AppVersionSetFrontendAddressResponse, EgoError> {
-  ego_log(&format!(
+  log_add(&format!(
     "ego-dev: app_version_set_frontend_address: {}",
     request.canister_id)
   );
@@ -203,7 +218,7 @@ pub fn app_version_set_frontend_address(
 pub fn app_version_submit(
   request: AppVersionSubmitRequest,
 ) -> Result<AppVersionSubmitResponse, EgoError> {
-  ego_log("ego-dev: app_version_submit");
+  log_add("ego-dev: app_version_submit");
   let app_version =
     EgoDevService::app_version_submit(ic_cdk::caller(), request.app_id, request.version)?;
   Ok(AppVersionSubmitResponse { app_version })
@@ -215,7 +230,7 @@ pub fn app_version_submit(
 pub fn app_version_revoke(
   request: AppVersionRevokeRequest,
 ) -> Result<AppVersionRevokeResponse, EgoError> {
-  ego_log("ego-dev: app_version_revoke");
+  log_add("ego-dev: app_version_revoke");
   let app_version =
     EgoDevService::app_version_revoke(ic_cdk::caller(), request.app_id, request.version)?;
   Ok(AppVersionRevokeResponse { app_version })
@@ -227,10 +242,10 @@ pub fn app_version_revoke(
 pub async fn app_version_release(
   request: AppVersionReleaseRequest,
 ) -> Result<AppVersionReleaseResponse, EgoError> {
-  ego_log("ego-dev: app_version_release");
+  log_add("ego-dev: app_version_release");
   let caller = caller();
 
-  let ego_store_id = REGISTRY.with(|r| r.borrow().canister_get_one("ego_store")).unwrap();
+  let ego_store_id = canister_get_one("ego_store").unwrap();
   let ego_store = EgoStore::new(ego_store_id);
   let app_version = EgoDevService::app_version_release(caller, request.app_id.clone(), request.version, ego_store)?;
   Ok(AppVersionReleaseResponse { app_version })
@@ -241,7 +256,7 @@ pub async fn app_version_release(
 #[query(name = "app_version_wait_for_audit", guard = "auditor_guard")]
 #[candid_method(query, rename = "app_version_wait_for_audit")]
 pub fn app_version_wait_for_audit() -> Result<AppVersionWaitForAuditResponse, EgoError> {
-  ego_log("ego-dev: app_version_wait_for_audit");
+  log_add("ego-dev: app_version_wait_for_audit");
 
   let wait_for_audit_apps = EgoDevService::app_version_wait_for_audit();
   Ok(AppVersionWaitForAuditResponse {
@@ -255,7 +270,7 @@ pub fn app_version_wait_for_audit() -> Result<AppVersionWaitForAuditResponse, Eg
 pub fn app_version_approve(
   request: AppVersionApproveRequest,
 ) -> Result<AppVersionApproveResponse, EgoError> {
-  ego_log("ego-dev: app_version_approve");
+  log_add("ego-dev: app_version_approve");
   let app_version = EgoDevService::app_version_approve(request.app_id, request.version)?;
   Ok(AppVersionApproveResponse { app_version })
 }
@@ -266,7 +281,7 @@ pub fn app_version_approve(
 pub fn app_version_reject(
   request: AppVersionRejectRequest,
 ) -> Result<AppVersionRejectResponse, EgoError> {
-  ego_log("ego-dev: app_version_reject");
+  log_add("ego-dev: app_version_reject");
   let app_version = EgoDevService::app_version_reject(request.app_id, request.version)?;
   Ok(AppVersionRejectResponse { app_version })
 }
@@ -275,7 +290,7 @@ pub fn app_version_reject(
 #[query(name = "user_main_list", guard = "manager_guard")]
 #[candid_method(query, rename = "user_main_list")]
 pub fn user_main_list(request: UserMainListRequest) -> Result<UserMainListResponse, EgoError> {
-  ego_log("ego-dev: user_main_list");
+  log_add("ego-dev: user_main_list");
   let users = EgoDevService::user_main_list(request.name);
   Ok(UserMainListResponse { users })
 }
@@ -283,7 +298,7 @@ pub fn user_main_list(request: UserMainListRequest) -> Result<UserMainListRespon
 #[update(name = "user_role_set", guard = "manager_guard")]
 #[candid_method(update, rename = "user_role_set")]
 pub fn user_role_set(request: UserRoleSetRequest) -> Result<UserRoleSetResponse, EgoError> {
-  ego_log("ego-dev: user_role_set");
+  log_add("ego-dev: user_role_set");
   let ret =
     EgoDevService::user_role_set(request.user_id, request.is_app_auditor, request.is_manager)?;
   Ok(UserRoleSetResponse { ret })
@@ -298,14 +313,14 @@ pub fn user_role_set(request: UserRoleSetRequest) -> Result<UserRoleSetResponse,
 pub async fn admin_app_create(
   request: AdminAppCreateRequest,
 ) -> Result<AdminAppCreateResponse, EgoError> {
-  ego_log("ego-dev: admin_app_create");
+  log_add("ego-dev: admin_app_create");
 
   let caller = ic_cdk::caller();
 
-  ego_log("1. developer_main_register");
+  log_add("1. developer_main_register");
   EgoDevService::developer_main_register(caller, "astrox".to_string())?;
 
-  ego_log("2. developer_app_new");
+  log_add("2. developer_app_new");
   EgoDevService::developer_app_new(
     caller,
     request.app_id.clone(),
@@ -317,10 +332,10 @@ pub async fn admin_app_create(
     request.deploy_mode,
   )?;
 
-  ego_log("3. app_version_new");
+  log_add("3. app_version_new");
   EgoDevService::app_version_new(caller, request.app_id.clone(), request.version)?;
 
-  ego_log("4. app_version_upload_wasm");
+  log_add("4. app_version_upload_wasm");
   EgoDevService::app_version_upload_wasm(
     EgoFile::new(),
     ic_cdk::caller(),
@@ -332,7 +347,7 @@ pub async fn admin_app_create(
     .await?;
 
   if request.frontend.is_some() {
-    ego_log("5. app_version_set_frontend_address");
+    log_add("5. app_version_set_frontend_address");
     EgoDevService::app_version_set_frontend_address(
       caller,
       request.app_id.clone(),
@@ -342,7 +357,7 @@ pub async fn admin_app_create(
   }
 
 
-  ego_log("6. app_version_release");
+  log_add("6. app_version_release");
   let ego_store_id = REGISTRY.with(|r| r.borrow().canister_get_one("ego_store")).unwrap();
   let ego_store = EgoStore::new(ego_store_id);
 

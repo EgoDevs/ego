@@ -11,7 +11,6 @@ use ego_ledger_mod::c2c::ic_ledger::TIcLedger;
 use ego_ledger_mod::payment::Payment;
 use ego_ledger_mod::service::EgoLedgerService;
 use ego_ledger_mod::state::EGO_LEDGER;
-use ego_macros::ego_log::TEgoLogCanister;
 use ego_types::ego_error::EgoError;
 
 static FROM_ACCOUNT: &str = "22fyd-yaaaa-aaaaf-aml4q-cai";
@@ -49,14 +48,6 @@ mock! {
 
   impl TEgoStore for Store {
     fn wallet_order_notify(&self, memo: Memo);
-  }
-}
-
-mock! {
-  Log {}
-
-  impl TEgoLogCanister for Log {
-    fn canister_log_add(&self, message: &str);
   }
 }
 
@@ -111,10 +102,7 @@ async fn ledger_payment_match() {
   set_up();
 
   let mut ego_store = MockStore::new();
-  let mut ego_log = MockLog::new();
   let mut ic_ledger = MockLedger::new();
-
-  ego_log.expect_canister_log_add().returning(|_msg| ());
 
   ic_ledger.expect_query_blocks().returning(|_idx| {
     let from_canister = Principal::from_text(FROM_ACCOUNT.to_string()).unwrap();
@@ -159,7 +147,7 @@ async fn ledger_payment_match() {
 
   EGO_LEDGER.with(|ego_ledger| assert_eq!(1, ego_ledger.borrow().payments.len()));
 
-  match EgoLedgerService::ledger_payment_match(ego_store, ic_ledger, ego_log).await {
+  match EgoLedgerService::ledger_payment_match(ego_store, ic_ledger).await {
     Ok(_) => {}
     Err(_) => {}
   };
@@ -172,10 +160,7 @@ async fn ledger_payment_match_ic_ledger_error() {
   set_up();
 
   let mut ego_store = MockStore::new();
-  let mut ego_log = MockLog::new();
   let mut ic_ledger = MockLedger::new();
-
-  ego_log.expect_canister_log_add().returning(|_msg| ());
 
   ic_ledger
     .expect_query_blocks()
@@ -185,7 +170,7 @@ async fn ledger_payment_match_ic_ledger_error() {
 
   EGO_LEDGER.with(|ego_ledger| assert_eq!(1, ego_ledger.borrow().payments.len()));
 
-  match EgoLedgerService::ledger_payment_match(ego_store, ic_ledger, ego_log).await {
+  match EgoLedgerService::ledger_payment_match(ego_store, ic_ledger).await {
     Ok(_) => {}
     Err(e) => {
       assert_eq!(255, e.code);

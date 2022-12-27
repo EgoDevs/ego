@@ -2,7 +2,6 @@ use astrox_macros::{inject_canister_log, inject_canister_registry};
 use astrox_macros::inject_canister_users;
 use ic_ledger_types::{AccountIdentifier, BlockIndex, Memo, Operation, Tokens, Transaction};
 
-use ego_macros::inject_log;
 use ego_types::ego_error::EgoError;
 
 use crate::c2c::ego_store::TEgoStore;
@@ -10,10 +9,9 @@ use crate::c2c::ic_ledger::TIcLedger;
 use crate::payment::{Payment, PaymentStatus};
 use crate::state::EGO_LEDGER;
 
-inject_log!();
-inject_canister_users!();
-inject_canister_registry!();
 inject_canister_log!();
+inject_canister_registry!();
+inject_canister_users!();
 
 /********************  methods for ego_registry   ********************/
 fn on_canister_added(name: &str, canister_id: Principal) {
@@ -43,12 +41,12 @@ impl EgoLedgerService {
   }
 
   pub async fn ledger_payment_match<S: TEgoStore, IL: TIcLedger>(ego_store: S, ic_ledger: IL) -> Result<(), EgoError> {
-    ego_log("1.query blocks");
+    log_add("1.query blocks");
     let start = EGO_LEDGER.with(|ego_ledger| ego_ledger.borrow().start);
 
     let blocks = ic_ledger.query_blocks(start).await?;
 
-    ego_log("2.add block to confirmed");
+    log_add("2.add block to confirmed");
     EGO_LEDGER.with(|ego_ledger| {
       let mut e_l = ego_ledger.borrow_mut();
       for block in blocks {
@@ -61,7 +59,7 @@ impl EgoLedgerService {
               amount,
               fee: _,
             } => {
-              ego_log(format!("3.from:{}, to:{}, amount:{}, memo:{:?}", from, to, amount, trx.memo).as_str());
+              log_add(format!("3.from:{}, to:{}, amount:{}, memo:{:?}", from, to, amount, trx.memo).as_str());
               e_l.block_confirm(from, to, amount);
             }
             _ => {}
@@ -70,7 +68,7 @@ impl EgoLedgerService {
       }
     });
 
-    ego_log("4.notify ego_store");
+    log_add("4.notify ego_store");
     EGO_LEDGER.with(|ego_ledger| {
       for (_to, payment) in ego_ledger.borrow_mut().payments.iter_mut() {
         ego_store.wallet_order_notify(payment.memo);
@@ -78,7 +76,7 @@ impl EgoLedgerService {
       }
     });
 
-    ego_log("5.remove notified successes memos");
+    log_add("5.remove notified successes memos");
     EGO_LEDGER.with(|ego_ledger| {
       ego_ledger.borrow_mut().payments.retain(|_to, payment| payment.status != PaymentStatus::NOTIFIED)
     });

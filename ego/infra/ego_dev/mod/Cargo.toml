@@ -23,8 +23,8 @@ async-trait = "0.1.57"
 ego_types = { path = "../../../lib/ego_types" }
 rand = "0.8.5"
 getrandom = { version = "0.2.7", features = ["js"] }
-astrox_macros = "0.2.11"
-ego_macros = { path = "../../../lib/ego_macros" }
+astrox_macros = "0.2.13"
+ego_lib = "0.2.19"
 
 [dev-dependencies]
 mockall = "0.11.2"

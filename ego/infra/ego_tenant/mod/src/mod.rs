@@ -1,7 +1,3 @@
-pub use ego_lib;
-
-pub use ego_macros;
-
 pub mod c2c;
 pub mod ego_tenant;
 pub mod service;

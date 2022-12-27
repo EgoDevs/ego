@@ -1,14 +1,17 @@
 use std::collections::BTreeMap;
 
+use astrox_macros::registry::Registry;
+use astrox_macros::user::User;
 use candid::{candid_method, Decode, Encode};
+use ego_lib::{inject_ego_controller, inject_ego_log, inject_ego_registry, inject_ego_user};
 use ic_cdk::{caller, trap};
 use ic_cdk::api::stable::{stable64_grow, stable64_read, stable64_write};
 use ic_cdk::export::candid::{CandidType, Deserialize};
 use ic_cdk::export::Principal;
 use ic_cdk_macros::*;
 
-use ego_file_mod::ego_macros::inject_ego_macros;
-use ego_file_mod::service::{canister_add, canister_list, ego_log, EgoFileService, is_owner, log_list, owner_add, Registry, registry_post_upgrade, registry_pre_upgrade, User, USER, user_add, users_post_upgrade, users_pre_upgrade};
+use ego_file_mod::service::EgoFileService;
+use ego_file_mod::service::{canister_add, canister_get_one, is_op, is_owner, is_user, log_add, log_list, op_add, owner_add, owner_remove, owners_set, registry_post_upgrade, registry_pre_upgrade, user_add, user_remove, users_post_upgrade, users_pre_upgrade, users_set};
 use ego_file_mod::state::STORAGE;
 use ego_file_mod::storage::{DEFAULT_FILE_SIZE, HEADER_SIZE, Storage, WASM_PAGE_SIZE};
 use ego_file_mod::types::{
@@ -17,7 +20,10 @@ use ego_file_mod::types::{
 };
 use ego_types::ego_error::EgoError;
 
-inject_ego_macros!();
+inject_ego_user!();
+inject_ego_registry!();
+inject_ego_controller!();
+inject_ego_log!();
 
 #[derive(Clone, Debug, CandidType, Deserialize)]
 pub struct InitArg {
@@ -29,7 +35,7 @@ pub struct InitArg {
 pub fn init(arg: InitArg) {
   let caller = arg.init_caller.unwrap_or(caller());
 
-  ego_log("==> create stable page for state");
+  log_add("==> create stable page for state");
   let pages_to_grow = HEADER_SIZE / WASM_PAGE_SIZE;
   let result = stable64_grow(pages_to_grow);
   if result.is_err() {
@@ -39,13 +45,13 @@ pub fn init(arg: InitArg) {
     ))
   }
 
-  ego_log("==> add caller as the owner");
+  log_add("==> add caller as the owner");
   owner_add(caller.clone());
 }
 
 #[pre_upgrade]
 fn pre_upgrade() {
-  ego_log("ego-file: pre_upgrade");
+  log_add("ego-file: pre_upgrade");
   match state_persist() {
     Ok(_) => {}
     Err(_) => {}
@@ -54,7 +60,7 @@ fn pre_upgrade() {
 
 #[post_upgrade]
 fn post_upgrade() {
-  ego_log("ego-file: post_upgrade");
+  log_add("ego-file: post_upgrade");
   match state_restore() {
     Ok(_) => {}
     Err(_) => {}
@@ -66,7 +72,7 @@ fn post_upgrade() {
 #[update(name = "file_main_write", guard = "user_guard")]
 #[candid_method(update, rename = "file_main_write")]
 fn file_main_write(req: FileMainWriteRequest) -> Result<FileMainWriteResponse, EgoError> {
-  ego_log("ego-file: file_main_write");
+  log_add("ego-file: file_main_write");
 
   let ret = EgoFileService::file_main_write(&req.fid, &req.hash, req.data)?;
   Ok(FileMainWriteResponse { ret })
@@ -75,7 +81,7 @@ fn file_main_write(req: FileMainWriteRequest) -> Result<FileMainWriteResponse, E
 #[query(name = "file_main_read", guard = "user_guard")]
 #[candid_method(query, rename = "file_main_read")]
 fn file_main_read(req: FileMainReadRequest) -> Result<FileMainReadResponse, EgoError> {
-  ego_log("ego-file: file_main_read");
+  log_add("ego-file: file_main_read");
 
   let data = EgoFileService::file_main_read(&req.fid)?;
   Ok(FileMainReadResponse { data })
@@ -84,25 +90,27 @@ fn file_main_read(req: FileMainReadRequest) -> Result<FileMainReadResponse, EgoE
 #[derive(CandidType, Deserialize)]
 struct PersistState {
   pub storage: Storage,
-  pub user: User,
-  pub registry: Registry,
+  users: Option<User>,
+  registry: Option<Registry>,
 }
 
 /********************  persist method ********************/
 #[update(name = "state_persist")]
 #[candid_method(update, rename = "state_persist")]
 fn state_persist() -> Result<bool, EgoError> {
-  ego_log("ego-file: state_persist");
+  log_add("ego-file: state_persist");
 
   let storage = STORAGE.with(|s| s.borrow().clone());
-  let user = users_pre_upgrade();
-  let registry = registry_pre_upgrade();
 
-  let state = PersistState { storage, user, registry };
+  let state = PersistState {
+    storage,
+    users: Some(users_pre_upgrade()),
+    registry: Some(registry_pre_upgrade()),
+  };
 
   let data = Encode!(&state).unwrap();
 
-  ego_log(&format!("==> data length is: {}", data.len()));
+  log_add(&format!("==> data length is: {}", data.len()));
 
   if data.len() > DEFAULT_FILE_SIZE as usize {
     Err(EgoFileError::UnknownError("state too large".to_string()).into())
@@ -117,21 +125,32 @@ fn state_persist() -> Result<bool, EgoError> {
 #[update(name = "state_restore")]
 #[candid_method(update, rename = "state_restore")]
 fn state_restore() -> Result<bool, EgoError> {
-  ego_log("ego-file: state_restore");
+  log_add("ego-file: state_restore");
 
   // read file
   let mut buf = vec![0; DEFAULT_FILE_SIZE as usize];
   stable64_read(0, &mut buf); // file length
   let len = u64::from_le_bytes(buf[0..8].try_into().unwrap()) as usize;
 
-  ego_log(&format!("==> data length is: {}", len));
+  log_add(&format!("==> data length is: {}", len));
 
   let data = &buf[8..8 + len];
   let state = Decode!(data, PersistState).unwrap();
 
   STORAGE.with(|s| *s.borrow_mut() = state.storage);
-  users_post_upgrade(state.user);
-  registry_post_upgrade(state.registry);
+  match state.users {
+    None => {}
+    Some(users) => {
+      users_post_upgrade(users);
+    }
+  }
+
+  match state.registry {
+    None => {}
+    Some(registry) => {
+      registry_post_upgrade(registry);
+    }
+  }
 
   Ok(true)
 }

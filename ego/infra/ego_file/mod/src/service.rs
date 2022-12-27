@@ -1,16 +1,14 @@
-use astrox_macros::{inject_canister_log, inject_canister_registry};
-use astrox_macros::inject_canister_users;
+use astrox_macros::{inject_canister_log, inject_canister_registry, inject_canister_users};
 
-use ego_macros::inject_log;
 use ego_types::app::FileId;
 use ego_types::ego_error::EgoError;
 
 use crate::state::STORAGE;
 
-inject_log!();
-inject_canister_users!();
-inject_canister_registry!();
 inject_canister_log!();
+inject_canister_registry!();
+inject_canister_users!();
+
 
 /********************  methods for ego_registry   ********************/
 fn on_canister_added(name: &str, canister_id: Principal) {
