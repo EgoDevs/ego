@@ -92,8 +92,8 @@ fn post_upgrade() {
 
 
 /********************  methods for wallet   ********************/
-#[query(name = "app_main_list")]
-#[candid_method(query, rename = "app_main_list")]
+#[update(name = "app_main_list")]
+#[candid_method(update, rename = "app_main_list")]
 pub fn app_main_list(request: AppMainListRequest) -> Result<AppMainListResponse, EgoError> {
   log_add("ego_store: app_main_list");
   match EgoStoreService::app_main_list(request.query_param) {
@@ -102,8 +102,8 @@ pub fn app_main_list(request: AppMainListRequest) -> Result<AppMainListResponse,
   }
 }
 
-#[query(name = "app_main_get")]
-#[candid_method(query, rename = "app_main_get")]
+#[update(name = "app_main_get")]
+#[candid_method(update, rename = "app_main_get")]
 pub fn app_main_get(app_id: AppId) -> Result<App, EgoError> {
   log_add("ego_store: app_main_get");
   match EgoStoreService::app_main_get(&app_id) {
@@ -123,8 +123,8 @@ pub fn wallet_main_register(
   Ok(WalletMainRegisterResponse { tenant_id })
 }
 
-#[query(name = "wallet_tenant_get")]
-#[candid_method(query, rename = "wallet_tenant_get")]
+#[update(name = "wallet_tenant_get")]
+#[candid_method(update, rename = "wallet_tenant_get")]
 pub fn wallet_tenant_get() -> Result<WalletTenantGetResponse, EgoError> {
   log_add("ego_store: wallet_tenant_get");
   match EgoStoreService::wallet_tenant_get(ic_cdk::caller()) {
@@ -133,8 +133,8 @@ pub fn wallet_tenant_get() -> Result<WalletTenantGetResponse, EgoError> {
   }
 }
 
-#[query(name = "wallet_app_list")]
-#[candid_method(query, rename = "wallet_app_list")]
+#[update(name = "wallet_app_list")]
+#[candid_method(update, rename = "wallet_app_list")]
 pub fn wallet_app_list() -> Result<WalletAppListResponse, EgoError> {
   log_add("ego_store: wallet_app_list");
   let wallet_id = ic_cdk::caller();
