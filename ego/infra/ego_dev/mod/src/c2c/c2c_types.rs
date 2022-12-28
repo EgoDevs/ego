@@ -2,7 +2,7 @@ use ic_cdk::export::candid::{CandidType, Deserialize};
 use serde::Serialize;
 
 use ego_types::app::{AppId, Category, DeployMode, Wasm};
-use ego_types::version::Version;
+use ego_types::app::Version;
 
 // type for ego_store
 #[derive(Clone, Debug, CandidType, Deserialize, Serialize)]

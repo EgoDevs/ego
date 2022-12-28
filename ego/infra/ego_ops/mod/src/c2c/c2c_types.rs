@@ -3,7 +3,7 @@ use ic_cdk::export::Principal;
 use serde::Serialize;
 
 use ego_types::app::{AppId, Category, DeployMode};
-use ego_types::version::Version;
+use ego_types::app::Version;
 
 // type for ego_dev
 #[derive(CandidType, Deserialize, Serialize)]

@@ -4,7 +4,7 @@ use ic_cdk::api::call::RejectionCode;
 use ic_cdk::export::Principal;
 
 use ego_types::app::WasmId;
-use ego_types::ego_error::EgoError;
+use ego_types::app::EgoError;
 
 use crate::c2c::c2c_types::{FileMainReadRequest, FileMainReadResponse};
 

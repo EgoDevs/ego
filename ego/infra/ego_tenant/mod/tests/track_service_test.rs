@@ -1,5 +1,5 @@
-use astrox_macros::app_info::AppInfo;
-use astrox_macros::ego_types::{App, AppId};
+use ego_types::app_info::AppInfo;
+use ego_types::app::{App, AppId, Version};
 use async_trait::async_trait;
 use ego_lib::ego_canister::TEgoCanister;
 use ic_cdk::export::Principal;
@@ -7,10 +7,11 @@ use mockall::mock;
 
 use ego_tenant_mod::c2c::ego_store::TEgoStore;
 use ego_tenant_mod::c2c::ic_management::TIcManagement;
-use ego_tenant_mod::service::{canister_add, EgoTenantService};
+use ego_tenant_mod::service::EgoTenantService;
+use ego_tenant_mod::state::{canister_add};
 use ego_tenant_mod::state::EGO_TENANT;
 use ego_tenant_mod::task::Task;
-use ego_types::ego_error::EgoError;
+use ego_types::app::EgoError;
 use ego_utils::ic_management::Cycles;
 
 static STORE_CANISTER_ID: &str = "qhbym-qaaaa-aaaaa-aaafq-cai";
@@ -109,7 +110,7 @@ mock! {
     async fn balance_get(&self, target_canister_id: Principal) -> Result<u128, String>;
 
     // app info
-    fn app_info_update(&self, target_canister_id: Principal, app_id: AppId, version: astrox_macros::ego_types::Version);
+    fn app_info_update(&self, target_canister_id: Principal, app_id: AppId, version: Version);
     async fn app_info_get(&self, target_canister_id: Principal) -> Result<AppInfo, String>;
     async fn app_version_check(&self, target_canister_id: Principal) -> Result<App, String>;
   }

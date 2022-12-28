@@ -11,7 +11,7 @@ use ego_ledger_mod::c2c::ic_ledger::TIcLedger;
 use ego_ledger_mod::payment::Payment;
 use ego_ledger_mod::service::EgoLedgerService;
 use ego_ledger_mod::state::EGO_LEDGER;
-use ego_types::ego_error::EgoError;
+use ego_types::app::EgoError;
 
 static FROM_ACCOUNT: &str = "22fyd-yaaaa-aaaaf-aml4q-cai";
 static EGO_STORE_ID: &str = "225da-yaaaa-aaaah-qahrq-cai";

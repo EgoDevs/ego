@@ -15,8 +15,9 @@ serde = "1.0.136"
 async-trait = "0.1.57"
 md5 = "0.7.0"
 ego_types = { path = "../../../lib/ego_types" }
-astrox_macros = "0.2.13"
-ego_lib = "0.2.19"
+ego_macros = { path = "../../../lib/ego_macros" }
+ego_lib = { path = "../../../lib/ego_lib"}
+
 
 [dev-dependencies]
 mockall = "0.11.2"

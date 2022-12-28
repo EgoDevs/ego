@@ -3,8 +3,8 @@ use ic_cdk::export::Principal;
 use serde::Serialize;
 
 use ego_types::app::{AppId, Category, DeployMode, FileId};
-use ego_types::ego_error::EgoError;
-use ego_types::version::Version;
+use ego_types::app::EgoError;
+use ego_types::app::Version;
 
 use crate::app::*;
 use crate::developer::Developer;

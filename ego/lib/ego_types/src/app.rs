@@ -1,15 +1,142 @@
 use std::fmt;
+use std::str::FromStr;
 
-use candid::CandidType;
-use ic_cdk::export::candid::Deserialize;
+use ic_cdk::api::call::RejectionCode;
+use ic_cdk::export::candid::{CandidType, Deserialize};
 use ic_cdk::export::Principal;
 use serde::Serialize;
 
-use crate::version::Version;
+#[derive(Clone, Debug, CandidType, Deserialize, Serialize)]
+pub struct EgoError {
+  pub code: u16,
+  pub msg: String,
+}
+
+impl EgoError {
+  pub fn new(code: u16, msg: &str) -> Self {
+    EgoError {
+      code,
+      msg: msg.to_string(),
+    }
+  }
+}
+
+impl From<std::string::String> for EgoError {
+  fn from(msg: String) -> Self {
+    EgoError { code: 255, msg }
+  }
+}
+
+impl From<(RejectionCode, std::string::String)> for EgoError {
+  fn from((code, msg): (RejectionCode, String)) -> Self {
+    EgoError {
+      code: code as u16,
+      msg,
+    }
+  }
+}
+
+
+#[derive(CandidType, Deserialize, Serialize)]
+pub enum QueryParam {
+  ByCategory { category: Category },
+}
+
+#[derive(CandidType, Deserialize, Serialize)]
+pub struct AppMainListRequest {
+  pub query_param: QueryParam,
+}
+
+#[derive(CandidType, Deserialize, Serialize)]
+pub struct AppMainListResponse {
+  pub apps: Vec<App>,
+}
+
+
+#[derive(CandidType, Deserialize, Serialize)]
+pub struct WalletAppListResponse {
+  pub apps: Vec<UserApp>,
+}
+
+#[derive(CandidType, Deserialize, Serialize)]
+pub struct WalletAppInstallRequest {
+  pub app_id: AppId,
+}
+
+
+#[derive(CandidType, Deserialize, Serialize)]
+pub struct WalletAppRemoveRequest {
+  pub app_id: AppId,
+}
+
+#[derive(CandidType, Deserialize, Serialize)]
+pub struct WalletOrderNewRequest {
+  pub amount: f32,
+}
+
+#[derive(CandidType, Deserialize, Serialize)]
+pub struct WalletOrderNewResponse {
+  pub memo: Memo,
+}
+
+#[derive(CandidType, Serialize, Deserialize, Clone, Copy, Debug)]
+pub struct Memo(pub u64);
 
 pub type AppId = String;
 pub type WasmId = String;
 pub type FileId = String;
+
+#[derive(CandidType, Serialize, Deserialize, Clone, Copy, Debug, Default, Ord, PartialOrd, Eq, PartialEq)]
+pub struct Version {
+  pub major: u32,
+  pub minor: u32,
+  pub patch: u32,
+}
+
+impl Version {
+  pub fn new(major: u32, minor: u32, patch: u32) -> Version {
+    Version {
+      major,
+      minor,
+      patch,
+    }
+  }
+
+  pub fn min() -> Version {
+    Version {
+      major: 0,
+      minor: 0,
+      patch: 0,
+    }
+  }
+}
+
+impl FromStr for Version {
+  type Err = String;
+
+  fn from_str(s: &str) -> Result<Self, Self::Err> {
+    let parts: Vec<_> = s.split('.').collect();
+    if parts.len() != 3 {
+      return Err(format!("Unable to parse version: {}", s));
+    }
+
+    let major = u32::from_str(parts[0]).map_err(|e| e.to_string())?;
+    let minor = u32::from_str(parts[1]).map_err(|e| e.to_string())?;
+    let patch = u32::from_str(parts[2]).map_err(|e| e.to_string())?;
+
+    Ok(Version {
+      major,
+      minor,
+      patch,
+    })
+  }
+}
+
+impl ToString for Version {
+  fn to_string(&self) -> String {
+    format!("{}.{}.{}", self.major, self.minor, self.patch)
+  }
+}
 
 #[derive(Clone, Debug, CandidType, Deserialize, Serialize, PartialEq)]
 pub enum Category {
@@ -59,16 +186,6 @@ impl App {
   }
 }
 
-#[derive(CandidType, Serialize, Deserialize, Clone, Debug)]
-pub struct Wasm {
-  pub app_id: AppId,
-  pub version: Version,
-  pub canister_type: CanisterType,
-  /// when canister_type is ASSET, this will be the shared frontend canister id
-  /// when canister_type is BACKEND, this will be the ego_file canister id used to store the wasm datas
-  pub canister_id: Principal,
-}
-
 #[derive(CandidType, Serialize, Deserialize, Clone, Debug, Eq, PartialEq)]
 pub enum CanisterType {
   BACKEND,
@@ -80,6 +197,103 @@ impl fmt::Display for CanisterType {
     write!(f, "{:?}", self)
   }
 }
+
+
+#[derive(CandidType, Serialize, Deserialize, Clone, Debug)]
+pub struct WalletApp {
+  pub app_id: AppId,
+  pub current_version: Version,
+  pub frontend: Option<Canister>,
+  pub backend: Option<Canister>,
+}
+
+
+impl WalletApp {
+  pub fn new(
+    app_id: &AppId,
+    current_version: &Version,
+    frontend: Option<Canister>,
+    backend: Option<Canister>,
+  ) -> Self {
+    WalletApp {
+      app_id: app_id.clone(),
+      current_version: current_version.clone(),
+      frontend,
+      backend,
+    }
+  }
+}
+
+#[derive(CandidType, Serialize, Deserialize, Clone, Debug)]
+pub struct Canister {
+  pub canister_id: Principal,
+  pub canister_type: CanisterType,
+}
+
+impl Canister {
+  pub fn new(canister_id: Principal, canister_type: CanisterType) -> Self {
+    Canister {
+      canister_id,
+      canister_type,
+    }
+  }
+}
+
+#[derive(CandidType, Serialize, Deserialize, Clone, Debug)]
+pub struct UserApp {
+  pub app_id: AppId,
+  pub name: String,
+  pub category: Category,
+  pub logo: String,
+  pub description: String,
+  pub current_version: Version,
+  pub frontend: Option<Canister>,
+  pub backend: Option<Canister>,
+  pub latest_version: Version,
+}
+
+impl UserApp {
+  pub fn new(user_app: &WalletApp, app: &App) -> Self {
+    UserApp {
+      app_id: app.app_id.clone(),
+      name: app.name.clone(),
+      category: app.category.clone(),
+      logo: app.logo.clone(),
+      description: app.description.clone(),
+      latest_version: app.current_version.clone(),
+      current_version: user_app.current_version.clone(),
+      frontend: user_app.frontend.clone(),
+      backend: user_app.backend.clone(),
+    }
+  }
+
+  pub fn wallet_app(&self) -> WalletApp {
+    WalletApp {
+      app_id: self.app_id.clone(),
+      current_version: self.current_version.clone(),
+      frontend: self.frontend.clone(),
+      backend: self.backend.clone(),
+    }
+  }
+}
+
+
+#[derive(CandidType, Serialize, Deserialize, Clone, Debug)]
+pub enum DeployMode {
+  SHARED,
+  DEDICATED,
+}
+
+#[derive(CandidType, Serialize, Deserialize, Clone, Debug)]
+pub struct Wasm {
+  pub app_id: AppId,
+  pub version: Version,
+  pub canister_type: CanisterType,
+  /// when canister_type is ASSET, this will be the shared frontend canister id
+  /// when canister_type is BACKEND, this will be the ego_file canister id used to store the wasm datas
+  pub canister_id: Principal,
+}
+
 
 impl Wasm {
   pub fn new(
@@ -118,27 +332,4 @@ impl Wasm {
 fn get_md5(data: &Vec<u8>) -> String {
   let digest = md5::compute(data);
   return format!("{:?}", digest);
-}
-
-#[derive(CandidType, Serialize, Deserialize, Clone, Debug)]
-pub struct Canister {
-  pub canister_id: Principal,
-  pub canister_type: CanisterType,
-}
-
-impl Canister {
-  pub fn new(canister_id: Principal, canister_type: CanisterType) -> Self {
-    Canister {
-      canister_id,
-      canister_type,
-    }
-  }
-}
-
-#[derive(
-CandidType, Serialize, Deserialize, Clone, Copy, Debug, Ord, PartialOrd, Eq, PartialEq,
-)]
-pub enum DeployMode {
-  SHARED,
-  DEDICATED,
 }

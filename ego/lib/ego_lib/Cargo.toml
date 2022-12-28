@@ -1,0 +1,20 @@
+[package]
+name = "ego_lib"
+version = "0.3.0"
+edition = "2021"
+license = "MIT"
+description = "lib for calling ego store, ego canister"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[lib]
+path = "src/lib.rs"
+
+[dependencies]
+candid = "0.8.4"
+ic-cdk = "0.6.8"
+serde = "1.0"
+serde_bytes = "0.11"
+async-trait = "0.1.57"
+tracing = "0.1.29"
+ego_types = "0.1.1"

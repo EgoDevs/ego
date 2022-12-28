@@ -7,7 +7,7 @@ use ic_cdk::export::Principal;
 use serde::Serialize;
 
 use ego_types::app::{AppId, Category, DeployMode};
-use ego_types::ego_error::EgoError;
+use ego_types::app::EgoError;
 
 use crate::app::EgoDevApp;
 use crate::developer::Developer;

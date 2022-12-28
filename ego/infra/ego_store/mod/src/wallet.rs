@@ -5,12 +5,11 @@ use ic_cdk::export::Principal;
 use ic_ledger_types::Memo;
 use serde::Serialize;
 
-use ego_types::app::AppId;
-use ego_types::version::Version;
+use ego_types::app::{AppId, WalletApp};
+use ego_types::app::Version;
 
 use crate::cash_flow::{CashFlow, CashFlowType};
 use crate::order::Order;
-use crate::user_app::WalletApp;
 
 #[derive(CandidType, Serialize, Deserialize, Clone, Debug)]
 pub struct Wallet {

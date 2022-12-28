@@ -2,7 +2,7 @@ use async_trait::async_trait;
 use ic_cdk::export::Principal;
 use ic_ledger_types::{Block, BlockIndex, GetBlocksArgs, query_blocks};
 
-use ego_types::ego_error::EgoError;
+use ego_types::app::EgoError;
 
 use crate::state::EGO_LEDGER;
 use crate::types::EgoLedgerErr;

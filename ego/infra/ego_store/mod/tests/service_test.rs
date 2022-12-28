@@ -8,12 +8,11 @@ use ego_store_mod::service::EgoStoreService;
 use ego_store_mod::state::EGO_STORE;
 use ego_store_mod::tenant::Tenant;
 use ego_store_mod::types::QueryParam;
-use ego_store_mod::user_app::WalletApp;
 use ego_store_mod::wallet::Wallet;
-use ego_types::app::{Canister, CanisterType, Category, DeployMode, Wasm};
+use ego_types::app::{Canister, CanisterType, Category, DeployMode, WalletApp, Wasm};
 use ego_types::app::CanisterType::{ASSET, BACKEND};
-use ego_types::ego_error::EgoError;
-use ego_types::version::Version;
+use ego_types::app::EgoError;
+use ego_types::app::Version;
 
 static FILE_CANISTER_ID: &str = "amybd-zyaaa-aaaah-qc4hq-cai";
 

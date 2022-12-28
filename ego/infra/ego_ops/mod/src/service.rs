@@ -1,20 +1,8 @@
-use astrox_macros::{inject_canister_log, inject_canister_registry};
-use astrox_macros::inject_canister_users;
-
-use ego_types::app::{AppId, Category, DeployMode};
-use ego_types::ego_error::EgoError;
-use ego_types::version::Version;
+use ic_cdk::export::Principal;
+use ego_types::app::{AppId, Category, DeployMode, EgoError, Version};
 
 use crate::c2c::ego_dev::TEgoDev;
 
-inject_canister_log!();
-inject_canister_users!();
-inject_canister_registry!();
-
-/********************  methods for ego_registry   ********************/
-fn on_canister_added(name: &str, canister_id: Principal) {
-  log_add(&format!("on_canister_added name: {}, canister_id: {}", name, canister_id));
-}
 
 pub struct EgoOpsService {}
 

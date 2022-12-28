@@ -1,7 +1,7 @@
 use ic_cdk::export::candid::{CandidType, Deserialize};
 
 use ego_types::app::FileId;
-use ego_types::ego_error::EgoError;
+use ego_types::app::EgoError;
 
 #[derive(CandidType, Deserialize, Clone, Debug)]
 pub struct FileMainWriteRequest {

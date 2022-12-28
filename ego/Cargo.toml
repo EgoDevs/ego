@@ -17,6 +17,7 @@ members = [
     "lib/ego_utils",
     "lib/ego_types",
     "lib/ego_macros",
+    "lib/ego_lib"
 ]
 
 [profile.release]

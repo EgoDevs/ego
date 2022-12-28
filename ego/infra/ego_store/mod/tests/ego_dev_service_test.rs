@@ -6,7 +6,7 @@ use ego_store_mod::state::EGO_STORE;
 use ego_store_mod::types::QueryParam;
 use ego_types::app::{Category, DeployMode, Wasm};
 use ego_types::app::CanisterType::BACKEND;
-use ego_types::version::Version;
+use ego_types::app::Version;
 
 static FILE_CANISTER_ID: &str = "amybd-zyaaa-aaaah-qc4hq-cai";
 

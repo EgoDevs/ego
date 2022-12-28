@@ -7,7 +7,7 @@ use ic_cdk::api::{
 use ic_cdk::export::candid::{CandidType, Deserialize};
 
 use ego_types::app::FileId;
-use ego_types::ego_error::EgoError;
+use ego_types::app::EgoError;
 
 use crate::file::File;
 use crate::types::EgoFileError;

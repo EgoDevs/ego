@@ -1,9 +1,9 @@
 use std::collections::BTreeMap;
 
-use astrox_macros::registry::Registry;
-use astrox_macros::user::User;
+use ego_types::registry::Registry;
+use ego_types::user::User;
 use candid::candid_method;
-use ego_lib::{inject_ego_controller, inject_ego_log, inject_ego_registry, inject_ego_user};
+use ego_macros::{inject_ego_controller, inject_ego_log, inject_ego_registry, inject_ego_user};
 use ic_cdk::{api, caller, storage, trap};
 use ic_cdk::export::candid::{CandidType, Deserialize};
 use ic_cdk::export::Principal;
@@ -14,7 +14,7 @@ use ego_dev_mod::c2c::ego_file::EgoFile;
 use ego_dev_mod::c2c::ego_store::EgoStore;
 use ego_dev_mod::ego_dev::EgoDev;
 use ego_dev_mod::service::*;
-use ego_dev_mod::service::{canister_add, canister_get_one, is_op, is_owner, is_user, log_add, log_list, op_add, owner_add, owner_remove, owners_set, registry_post_upgrade, registry_pre_upgrade, user_add, user_remove, users_post_upgrade, users_pre_upgrade, users_set};
+use ego_dev_mod::state::{canister_add, canister_get_one, is_op, is_owner, is_user, log_add, log_list, op_add, owner_add, owner_remove, owners_set, registry_post_upgrade, registry_pre_upgrade, user_add, user_remove, users_post_upgrade, users_pre_upgrade, users_set};
 use ego_dev_mod::state::EGO_DEV;
 use ego_dev_mod::types::{
   AdminAppCreateRequest, AdminAppCreateResponse, AppMainGetRequest, AppMainGetResponse,
@@ -29,7 +29,7 @@ use ego_dev_mod::types::{
   UserRoleSetResponse,
 };
 use ego_types::app::DeployMode;
-use ego_types::ego_error::EgoError;
+use ego_types::app::EgoError;
 
 inject_ego_user!();
 inject_ego_registry!();
@@ -358,7 +358,7 @@ pub async fn admin_app_create(
 
 
   log_add("6. app_version_release");
-  let ego_store_id = REGISTRY.with(|r| r.borrow().canister_get_one("ego_store")).unwrap();
+  let ego_store_id = canister_get_one("ego_store").unwrap();
   let ego_store = EgoStore::new(ego_store_id);
 
   let app_version = EgoDevService::app_version_release(caller, request.app_id.clone(), request.version, ego_store)?;

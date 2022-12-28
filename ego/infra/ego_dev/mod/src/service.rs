@@ -1,8 +1,7 @@
-use astrox_macros::{inject_canister_log, inject_canister_registry, inject_canister_users};
-
+use ic_cdk::export::Principal;
 use ego_types::app::{AppId, Category, DeployMode};
-use ego_types::ego_error::EgoError;
-use ego_types::version::Version;
+use ego_types::app::EgoError;
+use ego_types::app::Version;
 
 use crate::app::*;
 use crate::c2c::ego_file::TEgoFile;
@@ -11,20 +10,7 @@ use crate::developer::Developer;
 use crate::state::EGO_DEV;
 use crate::types::*;
 
-inject_canister_log!();
-inject_canister_registry!();
-inject_canister_users!();
 
-/********************  methods for ego_registry   ********************/
-fn on_canister_added(name: &str, canister_id: Principal) {
-  let _ = match name {
-    "ego_file" => {
-      EgoDevService::admin_ego_file_add(canister_id);
-    }
-    "ego_store" => user_add(canister_id),
-    _ => {}
-  };
-}
 
 
 pub struct EgoDevService {}

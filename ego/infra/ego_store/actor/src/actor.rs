@@ -1,9 +1,9 @@
 use std::collections::BTreeMap;
 
-use astrox_macros::registry::Registry;
-use astrox_macros::user::User;
+use ego_types::registry::Registry;
+use ego_types::user::User;
 use candid::candid_method;
-use ego_lib::{inject_ego_controller, inject_ego_log, inject_ego_registry, inject_ego_user};
+use ego_macros::{inject_ego_controller, inject_ego_log, inject_ego_registry, inject_ego_user};
 use ic_cdk::{caller, storage};
 use ic_cdk::api::time;
 use ic_cdk::export::candid::{CandidType, Deserialize};
@@ -16,13 +16,13 @@ use ego_store_mod::c2c::ego_tenant::EgoTenant;
 use ego_store_mod::ego_store::EgoStore;
 use ego_store_mod::order::Order;
 use ego_store_mod::service::*;
-use ego_store_mod::service::{canister_add, canister_get_one, is_op, is_owner, is_user, log_add, log_list, op_add, owner_add, owner_remove, owners_set, registry_post_upgrade, registry_pre_upgrade, user_add, user_remove, users_post_upgrade, users_pre_upgrade, users_set};
+use ego_store_mod::state::{canister_add, canister_get_one, is_op, is_owner, is_user, log_add, log_list, op_add, owner_add, owner_remove, owners_set, registry_post_upgrade, registry_pre_upgrade, user_add, user_remove, users_post_upgrade, users_pre_upgrade, users_set};
 use ego_store_mod::state::EGO_STORE;
 use ego_store_mod::types::*;
-use ego_store_mod::user_app::{UserApp, WalletApp};
+use ego_types::app::{UserApp, WalletApp};
 use ego_types::app::{App, AppId, DeployMode};
 use ego_types::app::DeployMode::DEDICATED;
-use ego_types::ego_error::EgoError;
+use ego_types::app::EgoError;
 
 inject_ego_user!();
 inject_ego_registry!();
@@ -190,7 +190,7 @@ pub async fn wallet_app_upgrade(app_id: AppId) -> Result<UserApp, EgoError> {
   log_add("2 get wallet_id");
   let wallet_id = match app.deploy_mode {
     DeployMode::SHARED => {
-      let ops_wallet_id = REGISTRY.with(|registry| registry.borrow().canister_get_one("ego_ops")).unwrap();
+      let ops_wallet_id = canister_get_one("ego_ops").unwrap();
       // for shared mode dapp, only the ego_ops can upgraded
       if ops_wallet_id != caller() {
         Err(EgoStoreErr::UnAuthorized)
@@ -262,7 +262,7 @@ pub async fn wallet_order_new(
 ) -> Result<WalletOrderNewResponse, EgoError> {
   log_add("ego_store: wallet_order_new");
 
-  let ego_ledger_id = REGISTRY.with(|r| r.borrow().canister_get_one("ego_ledger")).unwrap();
+  let ego_ledger_id = canister_get_one("ego_ledger").unwrap();
   let ego_ledger = EgoLedger::new(ego_ledger_id);
 
   match EgoStoreService::wallet_order_new(ego_ledger, ic_cdk::caller(), ic_cdk::id(), request.amount) {

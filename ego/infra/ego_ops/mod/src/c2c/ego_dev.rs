@@ -2,7 +2,7 @@ use ic_cdk::api;
 use ic_cdk::export::Principal;
 
 use ego_types::app::{AppId, Category, DeployMode};
-use ego_types::version::Version;
+use ego_types::app::Version;
 
 use crate::c2c::c2c_types::AdminAppCreateRequest;
 

@@ -3,7 +3,7 @@ use ic_cdk::api;
 use ic_cdk::export::Principal;
 
 use ego_types::app::Wasm;
-use ego_types::ego_error::EgoError;
+use ego_types::app::EgoError;
 
 use crate::c2c::c2c_types::{
   AppMainInstallRequest, AppMainInstallResponse, AppMainUpgradeRequest, AppMainUpgradeResponse,

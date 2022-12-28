@@ -3,7 +3,7 @@ use ic_cdk::export::Principal;
 use serde::Serialize;
 
 use ego_types::app::Wasm;
-use ego_types::ego_error::EgoError;
+use ego_types::app::EgoError;
 
 #[derive(Clone, Debug, CandidType, Deserialize, Serialize)]
 pub enum EgoTenantErr {

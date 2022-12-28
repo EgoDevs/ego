@@ -2,11 +2,14 @@
 name = "ego_macros"
 version = "0.1.0"
 edition = "2021"
+license = "MIT"
+description = "ego's macro to inject function into mod and actor"
 
 [lib]
-path = "src/mod.rs"
+path = "src/lib.rs"
 
 [dependencies]
 candid = "0.8.4"
 ic-cdk = "0.6.8"
 serde = "1.0"
+ego_types = "0.1.1"

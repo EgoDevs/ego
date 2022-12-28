@@ -1,25 +1,14 @@
-use astrox_macros::{inject_canister_log, inject_canister_registry};
-use astrox_macros::inject_canister_users;
+
 use ic_ledger_types::{AccountIdentifier, BlockIndex, Memo, Operation, Tokens, Transaction};
 
-use ego_types::ego_error::EgoError;
+use ego_types::app::EgoError;
 
 use crate::c2c::ego_store::TEgoStore;
 use crate::c2c::ic_ledger::TIcLedger;
 use crate::payment::{Payment, PaymentStatus};
-use crate::state::EGO_LEDGER;
+use crate::state::{EGO_LEDGER, log_add};
 
-inject_canister_log!();
-inject_canister_registry!();
-inject_canister_users!();
 
-/********************  methods for ego_registry   ********************/
-fn on_canister_added(name: &str, canister_id: Principal) {
-  let _ = match name {
-    "ego_store" => user_add(canister_id),
-    _ => {}
-  };
-}
 
 pub struct EgoLedgerService {}
 

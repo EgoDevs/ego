@@ -2,7 +2,7 @@ use ic_cdk::export::candid::{CandidType, Deserialize};
 use ic_ledger_types::{AccountIdentifier, BlockIndex, Memo, Tokens};
 use serde::Serialize;
 
-use ego_types::ego_error::EgoError;
+use ego_types::app::EgoError;
 
 #[derive(Clone, Debug, CandidType, Deserialize, Serialize)]
 pub enum EgoLedgerErr {

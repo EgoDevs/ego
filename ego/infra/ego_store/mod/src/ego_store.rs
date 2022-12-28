@@ -5,16 +5,15 @@ use ic_cdk::export::Principal;
 use ic_ledger_types::Memo;
 use serde::Serialize;
 
-use ego_types::app::{App, AppId};
-use ego_types::ego_error::EgoError;
-use ego_types::version::Version;
+use ego_types::app::{App, AppId, UserApp, WalletApp};
+use ego_types::app::EgoError;
+use ego_types::app::Version;
 
 use crate::app::EgoStoreApp;
 use crate::cash_flow::CashFlow;
 use crate::order::{Order, OrderStatus};
 use crate::tenant::Tenant;
 use crate::types::{EgoStoreErr, QueryParam};
-use crate::user_app::{UserApp, WalletApp};
 use crate::wallet::*;
 use crate::wallet_provider::WalletProvider;
 
@@ -104,8 +103,8 @@ impl EgoStore {
         .apps
         .iter()
         .map(|(app_id, user_app)| {
-          let app = self.apps.get(app_id).unwrap();
-          UserApp::new(user_app, app)
+          let app = App::from(self.apps.get(app_id).unwrap().clone());
+          UserApp::new(user_app, &app)
         })
         .collect()),
     }
@@ -114,15 +113,15 @@ impl EgoStore {
   pub fn wallet_app_get(
     &self,
     wallet_id: &Principal,
-    app_id: AppId,
+    app_id: &AppId,
   ) -> Result<UserApp, EgoError> {
     match self.wallets.get(wallet_id) {
       None => Err(EgoStoreErr::WalletNotExists.into()),
-      Some(wallet) => match wallet.apps.get(&app_id) {
+      Some(wallet) => match wallet.apps.get(app_id) {
         None => Err(EgoStoreErr::AppNotInstall.into()),
         Some(user_app) => {
-          let app = self.apps.get(&app_id).unwrap();
-          Ok(UserApp::new(user_app, app))
+          let app = App::from(self.apps.get(app_id).unwrap().clone());
+          Ok(UserApp::new(user_app, &app))
         }
       },
     }

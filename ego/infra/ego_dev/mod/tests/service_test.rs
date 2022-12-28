@@ -10,8 +10,8 @@ use ego_dev_mod::file::File;
 use ego_dev_mod::service::EgoDevService;
 use ego_dev_mod::state::EGO_DEV;
 use ego_types::app::{Category, DeployMode};
-use ego_types::ego_error::EgoError;
-use ego_types::version::Version;
+use ego_types::app::EgoError;
+use ego_types::app::Version;
 
 mock! {
   File {}

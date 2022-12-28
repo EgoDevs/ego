@@ -9,9 +9,8 @@ fn main() {}
 fn main() {
   use crate::actor::InitArg;
   use ego_ledger_mod::types::*;
-  use ego_types::ego_error::EgoError;
+  use ego_types::app::EgoError;
   use ic_cdk::export::Principal;
-  use std::collections::BTreeMap;
   use ego_ledger_mod::payment::Payment;
 
   candid::export_service!();

@@ -3,8 +3,7 @@ use std::collections::BTreeMap;
 use ic_cdk::export::candid::{CandidType, Deserialize};
 use ic_cdk::export::Principal;
 
-use ego_types::app::{AppId, Category, DeployMode};
-use ego_types::version::Version;
+use ego_types::app::{AppId, Category, DeployMode, Version};
 
 #[derive(CandidType, Deserialize)]
 pub struct CanisterMainListResponse {

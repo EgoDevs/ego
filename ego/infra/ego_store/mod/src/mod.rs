@@ -7,7 +7,6 @@ pub mod service;
 pub mod state;
 pub mod tenant;
 pub mod types;
-pub mod user_app;
 pub mod wallet;
 pub mod wallet_provider;
 

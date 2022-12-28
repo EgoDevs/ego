@@ -3,13 +3,12 @@ use ic_cdk::export::Principal;
 use ic_ledger_types::Memo;
 use serde::Serialize;
 
-use ego_types::app::{App, AppId, Category};
-use ego_types::ego_error::EgoError;
+use ego_types::app::{App, AppId, Category, UserApp, WalletApp};
+use ego_types::app::EgoError;
 
 use crate::app::EgoStoreApp;
 use crate::cash_flow::CashFlow;
 use crate::order::Order;
-use crate::user_app::{UserApp, WalletApp};
 
 #[derive(Clone, Debug, CandidType, Deserialize, Serialize)]
 pub enum EgoStoreErr {

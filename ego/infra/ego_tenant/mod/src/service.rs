@@ -1,35 +1,24 @@
 use std::ops::{Div, Mul};
+use ic_cdk::export::Principal;
 
-use astrox_macros::{inject_canister_log, inject_canister_registry};
-use astrox_macros::inject_canister_users;
+
 use ego_lib::ego_canister::TEgoCanister;
 
 use ego_types::app::{CanisterType, Wasm};
-use ego_types::ego_error::EgoError;
-use ego_utils::consts::CREATE_CANISTER_CYCLES_FEE;
+use ego_types::app::EgoError;
 
 use crate::c2c::ego_file::TEgoFile;
 use crate::c2c::ego_store::TEgoStore;
 use crate::c2c::ic_management::TIcManagement;
-use crate::state::EGO_TENANT;
+use crate::state::{canister_get_one, EGO_TENANT, log_add};
 use crate::task::Task;
 use crate::types::EgoTenantErr;
 
 pub struct EgoTenantService {}
 
-pub const HALF_HOUR: u64 = 1000 * 60 * 30; // 0.1T cycles
+pub const HALF_HOUR: u64 = 1000 * 60 * 30;
+pub const CREATE_CANISTER_CYCLES_FEE: u128 = 200_000_000_000;
 
-inject_canister_log!();
-inject_canister_registry!();
-inject_canister_users!();
-
-/********************  methods for ego_registry   ********************/
-fn on_canister_added(name: &str, canister_id: Principal) {
-  let _ = match name {
-    "ego_store" => user_add(canister_id),
-    _ => {}
-  };
-}
 
 impl EgoTenantService {
   pub fn canister_main_track(
@@ -93,7 +82,7 @@ impl EgoTenantService {
     ego_canister.ego_op_add(canister_id, ego_tenant_id);
 
     log_add("6 set canister controller to [wallet, user, self]");
-    let _result = management.canister_controller_set(canister_id, vec![wallet_id, user_id, canister_id]).await?;
+    ego_canister.ego_controller_set(canister_id, vec![wallet_id, user_id, canister_id]);
 
     log_add("7 change canister owner to [wallet, user]");
     ego_canister.ego_owner_set(canister_id, vec![wallet_id, user_id]);

@@ -12,8 +12,8 @@ use ego_store_mod::tenant::Tenant;
 use ego_store_mod::wallet::Wallet;
 use ego_types::app::{Category, DeployMode, Wasm};
 use ego_types::app::CanisterType::BACKEND;
-use ego_types::ego_error::EgoError;
-use ego_types::version::Version;
+use ego_types::app::EgoError;
+use ego_types::app::Version;
 
 mock! {
   Tenant {}

@@ -1,3 +1,5 @@
 pub mod app;
-pub mod ego_error;
-pub mod version;
+pub mod app_info;
+pub mod log;
+pub mod user;
+pub mod registry;

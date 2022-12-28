@@ -9,9 +9,8 @@ fn main() {}
 fn main() {
   use crate::actor::InitArg;
   use ego_ops_mod::types::*;
-  use ego_types::ego_error::EgoError;
+  use ego_types::app::EgoError;
   use ic_cdk::export::Principal;
-  use std::collections::BTreeMap;
 
   candid::export_service!();
   std::print!("{}", __export_service());

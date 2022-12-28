@@ -1,10 +1,10 @@
 use std::collections::BTreeMap;
 use std::time::Duration;
 
-use astrox_macros::registry::Registry;
-use astrox_macros::user::User;
+use ego_types::registry::Registry;
+use ego_types::user::User;
 use candid::candid_method;
-use ego_lib::{inject_ego_controller, inject_ego_log, inject_ego_registry, inject_ego_user};
+use ego_macros::{inject_ego_controller, inject_ego_log, inject_ego_registry, inject_ego_user};
 use ic_cdk::{api, caller, id, storage};
 use ic_cdk::export::candid::{CandidType, Deserialize};
 use ic_cdk::export::Principal;
@@ -18,12 +18,12 @@ use ego_ledger_mod::c2c::ic_ledger::IcLedger;
 use ego_ledger_mod::ego_ledger::EgoLedger;
 use ego_ledger_mod::payment::Payment;
 use ego_ledger_mod::service::EgoLedgerService;
-use ego_ledger_mod::service::{canister_add, canister_get_one, is_op, is_owner, is_user, log_add, log_list, op_add, owner_add, owner_remove, owners_set, registry_post_upgrade, registry_pre_upgrade, user_add, user_remove, users_post_upgrade, users_pre_upgrade, users_set};
+use ego_ledger_mod::state::{canister_add, canister_get_one, is_op, is_owner, is_user, log_add, log_list, op_add, owner_add, owner_remove, owners_set, registry_post_upgrade, registry_pre_upgrade, user_add, user_remove, users_post_upgrade, users_pre_upgrade, users_set};
 use ego_ledger_mod::state::EGO_LEDGER;
 use ego_ledger_mod::types::{
   LedgerMainInitRequest, LedgerPaymentAddRequest,
 };
-use ego_types::ego_error::EgoError;
+use ego_types::app::EgoError;
 
 inject_ego_user!();
 inject_ego_registry!();

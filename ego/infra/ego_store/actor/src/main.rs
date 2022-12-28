@@ -9,12 +9,11 @@ fn main() {}
 fn main() {
   use crate::actor::InitArg;
   use ego_store_mod::types::*;
-  use ego_types::ego_error::EgoError;
+  use ego_types::app::EgoError;
   use ic_cdk::export::Principal;
-  use std::collections::BTreeMap;
   use ego_store_mod::order::Order;
-  use ego_store_mod::user_app::WalletApp;
-  use ego_store_mod::user_app::UserApp;
+  use ego_types::app::WalletApp;
+  use ego_types::app::UserApp;
   use ego_types::app::{AppId, App};
 
   candid::export_service!();

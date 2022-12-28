@@ -22,6 +22,5 @@ serde_with = "2.1.0"
 md5 = "0.7.0"
 ego_types = { path = "../../../lib/ego_types" }
 ego_macros = { path = "../../../lib/ego_macros" }
-astrox_macros = "0.2.13"
-ego_lib = "0.2.19"
+ego_lib = { path = "../../../lib/ego_lib"}
 
