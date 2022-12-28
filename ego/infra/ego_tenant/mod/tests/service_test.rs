@@ -8,7 +8,7 @@ use mockall::mock;
 use ego_tenant_mod::c2c::ego_file::TEgoFile;
 use ego_tenant_mod::c2c::ic_management::TIcManagement;
 use ego_tenant_mod::service::EgoTenantService;
-use ego_tenant_mod::state::{canister_add, REGISTRY};
+use ego_tenant_mod::state::{canister_add};
 use ego_types::app::{Wasm, WasmId};
 use ego_types::app::CanisterType::BACKEND;
 use ego_types::app::EgoError;
@@ -55,12 +55,6 @@ mock! {
         canister_id: Principal,
         cycles_to_use: Cycles,
     );
-
-    async fn canister_controller_set(
-      &self,
-      canister_id: Principal,
-      principals: Vec<Principal>,
-    ) -> Result<(), EgoError>;
   }
 }
 
@@ -140,13 +134,10 @@ async fn app_main_install() {
         assert_eq!(&canister_id, &created_canister_id);
         Ok(())
       });
-  mock_management
-      .expect_canister_controller_set()
-      .returning(|_, _| Ok(()));
 
-  mock_management
-      .expect_canister_controller_set()
-      .returning(move |_canister_id, _principal| Ok(()));
+  mock_ego_canister
+      .expect_ego_canister_add()
+      .returning(move |_canister_id, _name, _principal| ());
 
   mock_ego_canister
       .expect_ego_controller_set()

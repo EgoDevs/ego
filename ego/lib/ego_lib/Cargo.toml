@@ -17,4 +17,5 @@ serde = "1.0"
 serde_bytes = "0.11"
 async-trait = "0.1.57"
 tracing = "0.1.29"
-ego_types = "0.1.1"
+#ego_types = "0.1.1"
+ego_types = {path = "../ego_types"}
