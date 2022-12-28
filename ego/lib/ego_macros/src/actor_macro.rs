@@ -211,7 +211,7 @@ macro_rules! inject_ego_app_info {
 #[macro_export]
 macro_rules! inject_ego_all {
     () => {
-        use ego_lib::{inject_ego_user, inject_ego_registry, inject_ego_controller, inject_ego_log, inject_ego_app_info};
+        use ego_macros::{inject_ego_user, inject_ego_registry, inject_ego_controller, inject_ego_log, inject_ego_app_info};
         inject_ego_user!();
         inject_ego_registry!();
         inject_ego_controller!();
