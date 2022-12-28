@@ -1,6 +1,6 @@
 [package]
 name = "ego_macros"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2021"
 license = "MIT"
 description = "ego's macro to inject function into mod and actor"

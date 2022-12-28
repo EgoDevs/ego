@@ -164,8 +164,8 @@ macro_rules! inject_ego_app_info {
         }
 
         // for canister info
-        use astrox_macros::app_info::AppInfo;
-        use astrox_macros::ego_types::{AppId, Version};
+        use ego_types::app_info::AppInfo;
+        use ego_types::app::{AppId, Version};
         use ego_lib::ego_store::{TEgoStore, EgoStore};
 
         thread_local! {
