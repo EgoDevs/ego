@@ -45,10 +45,11 @@ pub fn init(arg: InitArg) {
   log_add("==> add caller as the owner");
   owner_add(caller.clone());
 
-  let duration = Duration::new(60, 0);
-  set_timer_interval(duration, || {
-    let _result = api::call::notify(id(), "message_main_notify", ());
-  });
+  // remove order check
+  // let duration = Duration::new(60, 0);
+  // set_timer_interval(duration, || {
+  //   let _result = api::call::notify(id(), "message_main_notify", ());
+  // });
 }
 
 #[derive(CandidType, Deserialize, Serialize)]
@@ -91,10 +92,11 @@ fn post_upgrade() {
     }
   }
 
-  let duration = Duration::new(60, 0);
-  set_timer_interval(duration, || {
-    let _result = api::call::notify(id(), "message_main_notify", ());
-  });
+  // remove order check
+  // let duration = Duration::new(60, 0);
+  // set_timer_interval(duration, || {
+  //   let _result = api::call::notify(id(), "message_main_notify", ());
+  // });
 }
 
 /********************  user  ********************/
