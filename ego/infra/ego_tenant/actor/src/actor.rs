@@ -130,7 +130,7 @@ async fn app_main_upgrade(req: AppMainUpgradeRequest) -> Result<bool, EgoError> 
   let ego_canister = EgoCanister::new();
 
   let ret =
-    EgoTenantService::app_main_upgrade(ego_file, management, ego_canister, req.canister_id, req.wasm).await?;
+    EgoTenantService::app_main_upgrade(ego_file, management, ego_canister, req.canister_id, req.wasm, id()).await?;
   Ok(ret)
 }
 

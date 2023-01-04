@@ -95,6 +95,7 @@ impl EgoTenantService {
     ego_canister: EC,
     canister_id: Principal,
     wasm: Wasm,
+    tenant_id: Principal,
   ) -> Result<bool, EgoError> {
     // TODO: checked whether user has add tenant as one of the canister's controller
 
@@ -111,7 +112,7 @@ impl EgoTenantService {
     management.canister_code_upgrade(canister_id, data).await?;
 
     log_add("3 remove [ego_tenant] from canister controller");
-    ego_canister.ego_controller_remove(canister_id, ic_cdk::id());
+    ego_canister.ego_controller_remove(canister_id, tenant_id);
 
     Ok(true)
   }

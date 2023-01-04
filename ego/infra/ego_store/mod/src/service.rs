@@ -11,6 +11,7 @@ use crate::c2c::ego_tenant::TEgoTenant;
 use crate::cash_flow::CashFlow;
 use crate::order::Order;
 use crate::state::{EGO_STORE, log_add};
+use crate::types::EgoStoreErr;
 
 pub struct EgoStoreService {}
 
@@ -81,13 +82,14 @@ impl EgoStoreService {
     });
 
     log_add("6 set app info");
-    ego_canister.app_info_update(canister_id, wallet_id, ego_store_app.app.app_id, ego_store_app.app.current_version).await?;
+    ego_canister.ego_app_info_update(canister_id, Some(wallet_id), ego_store_app.app.app_id, ego_store_app.app.current_version);
 
     Ok(user_app)
   }
 
-  pub async fn wallet_app_upgrade<T: TEgoTenant>(
+  pub async fn wallet_app_upgrade<T: TEgoTenant, EC: TEgoCanister>(
     ego_tenant: T,
+    ego_canister: EC,
     wallet_id: &Principal,
     canister_id: &Principal,
   ) -> Result<(), EgoError> {
@@ -98,10 +100,10 @@ impl EgoStoreService {
     log_add("2 get app to be upgrade");
     let ego_store_app = EGO_STORE.with(|ego_store| ego_store.borrow().app_main_get(&user_app.app.app_id).clone())?;
 
+
     log_add("3 get ego tenant id relative to wallet");
     let ego_tenant_id =
       EGO_STORE.with(|ego_store| ego_store.borrow().wallet_tenant_get(&wallet_id).clone())?;
-
 
     log_add("4 call ego tenant to upgrade backend");
     ego_tenant
@@ -112,12 +114,14 @@ impl EgoStoreService {
       )
       .await?;
 
-
     EGO_STORE.with(|ego_store| {
       ego_store
         .borrow_mut()
         .wallet_app_upgrade(&wallet_id, &user_app, &ego_store_app);
     });
+
+    log_add("5 set app info");
+    ego_canister.ego_app_info_update(canister_id.clone(), None, ego_store_app.app.app_id, ego_store_app.app.current_version);
 
     Ok(())
   }
@@ -304,7 +308,7 @@ impl EgoStoreService {
     });
 
     log_add("6 set app info");
-    ego_canister.app_info_update(canister_id, canister_id, ego_store_app.app.app_id, ego_store_app.app.current_version).await?;
+    ego_canister.ego_app_info_update(canister_id, Some(canister_id), ego_store_app.app.app_id, ego_store_app.app.current_version);
 
     Ok(user_app)
   }

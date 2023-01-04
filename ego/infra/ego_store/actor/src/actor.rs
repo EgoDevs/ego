@@ -19,9 +19,9 @@ use ego_store_mod::service::*;
 use ego_store_mod::state::{canister_add, canister_get_one, is_op, is_owner, is_user, log_add, log_list, op_add, owner_add, owner_remove, owners_set, registry_post_upgrade, registry_pre_upgrade, user_add, user_remove, users_post_upgrade, users_pre_upgrade, users_set};
 use ego_store_mod::state::EGO_STORE;
 use ego_store_mod::types::*;
-use ego_types::app::UserApp;
 use ego_types::app::{App, AppId};
 use ego_types::app::EgoError;
+use ego_types::app::UserApp;
 use ego_types::registry::Registry;
 use ego_types::user::User;
 
@@ -185,10 +185,11 @@ pub async fn wallet_app_install(
 pub async fn wallet_app_upgrade(wallet_id: Principal) -> Result<(), EgoError> {
   let canister_id = caller();
   let ego_tenant = EgoTenant::new();
+  let ego_canister = EgoCanister::new();
 
   log_add(format!("ego_store: wallet_app_upgrade wallet_id: {}, canister_id: {}", wallet_id, canister_id).as_str());
 
-  EgoStoreService::wallet_app_upgrade(ego_tenant, &wallet_id, &canister_id).await?;
+  EgoStoreService::wallet_app_upgrade(ego_tenant, ego_canister, &wallet_id, &canister_id).await?;
   Ok(())
 }
 

@@ -74,9 +74,9 @@ mock! {
     async fn balance_get(&self, target_canister_id: Principal) -> Result<u128, String>;
 
     // app info
-    async fn app_info_update(&self, target_canister_id: Principal, wallet_id: Principal, app_id: AppId, version: Version) -> Result<(), String>;
-    async fn app_info_get(&self, target_canister_id: Principal) -> Result<AppInfo, String>;
-    async fn app_version_check(&self, target_canister_id: Principal) -> Result<App, String>;
+    fn ego_app_info_update(&self, target_canister_id: Principal, wallet_id: Option<Principal>, app_id: AppId, version: Version);
+    async fn ego_app_info_get(&self, target_canister_id: Principal) -> Result<AppInfo, String>;
+    async fn ego_app_version_check(&self, target_canister_id: Principal) -> Result<App, String>;
 
     // canister upgrade
     fn ego_canister_upgrade(&self, target_canister_id: Principal);
@@ -238,8 +238,8 @@ async fn wallet_controller_install() {
   });
 
   let mut ego_canister = MockCanister::new();
-  ego_canister.expect_app_info_update().returning(|_, _, _, _| {
-    Ok(())
+  ego_canister.expect_ego_app_info_update().returning(|_, _, _, _| {
+    ()
   });
 
   let result = EgoStoreService::wallet_controller_install(ego_tenant, ego_canister, wallet_provider_principal, user_principal, WALLET_APP_ID.to_string()).await;

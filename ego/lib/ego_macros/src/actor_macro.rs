@@ -158,67 +158,47 @@ macro_rules! inject_app_info_api {
         use ego_types::app::{AppId, Version};
         use ego_lib::ego_store::{TEgoStore, EgoStore};
 
-        thread_local! {
-          pub static CANISTER_INFO: std::cell::RefCell<AppInfo> = std::cell::RefCell::new(AppInfo::default());
-        }
-
-        #[update(name = "app_info_update", guard = "op_guard")]
-        #[candid_method(update, rename = "app_info_update")]
-        pub fn app_info_update(wallet_id: Principal, app_id: AppId, version: Version) -> Result<(), String> {
+        #[update(name = "ego_app_info_update", guard = "op_guard")]
+        #[candid_method(update, rename = "ego_app_info_update")]
+        pub fn ego_app_info_update(wallet_id: Option<Principal>, app_id: AppId, version: Version) -> Result<(), String> {
             log_add(format!("app_info_update {}", app_id.clone()).as_str());
 
-            CANISTER_INFO.with(|c_i| {
-                c_i.borrow_mut().wallet_id = Some(wallet_id);
-                c_i.borrow_mut().app_id = app_id;
-                c_i.borrow_mut().current_version = version;
-                c_i.borrow_mut().latest_version = version;
-            });
+            app_info_update(wallet_id, app_id, version);
+
             Ok(())
         }
 
-        #[query(name = "app_info_get", guard = "op_guard")]
-        #[candid_method(query, rename = "app_info_get")]
-        pub fn app_info_get() -> Result<AppInfo, String>  {
-            let app_info = CANISTER_INFO.with(|c_i| {
-                c_i.borrow_mut().clone()
-            });
-            Ok(app_info)
+        #[query(name = "ego_app_info_get", guard = "op_guard")]
+        #[candid_method(query, rename = "ego_app_info_get")]
+        pub fn ego_app_info_get() -> Result<AppInfo, String>  {
+            Ok(app_info_get())
         }
 
-        #[update(name = "app_version_check", guard = "op_guard")]
-        #[candid_method(update, rename = "app_version_check")]
-        pub async fn app_version_check() -> Result<AppInfo, String> {
-            let app_id = CANISTER_INFO.with(|c_i| {
-                c_i.borrow().app_id.clone()
-            });
+        #[update(name = "ego_app_version_check", guard = "op_guard")]
+        #[candid_method(update, rename = "ego_app_version_check")]
+        pub async fn ego_app_version_check() -> Result<AppInfo, String> {
+            let app_info = app_info_get();
 
-            log_add(format!("app_version_check {}", app_id.clone()).as_str());
+            log_add(format!("app_version_check {}", app_info.app_id).as_str());
 
             let ego_store_id = canister_get_one("ego_store").unwrap();
             let ego_store = EgoStore::new(ego_store_id);
 
-            let app = match ego_store.app_main_get(app_id).await{
+            let app = match ego_store.app_main_get(app_info.app_id).await{
               Ok(app) => Ok(app),
               Err(e) => Err(e.msg)
             }?;
 
-            CANISTER_INFO.with(|c_i| {
-                c_i.borrow_mut().latest_version = app.current_version;
-            });
+            app_info_update(app_info.wallet_id, app.app_id, app.current_version);
 
-            let app_info = CANISTER_INFO.with(|c_i| {
-                c_i.borrow_mut().clone()
-            });
-            Ok(app_info)
+            Ok(app_info_get())
         }
 
         // canister app upgrade
         #[update(name = "ego_canister_upgrade", guard = "owner_guard")]
         #[candid_method(update, rename = "ego_canister_upgrade")]
         pub async fn ego_canister_upgrade() -> Result<(), String> {
-            let wallet_id = CANISTER_INFO.with(|c_i| {
-                c_i.borrow().wallet_id.unwrap().clone()
-            });
+            let app_info = app_info_get();
 
             log_add("ego_canister_upgrade");
 
@@ -233,7 +213,7 @@ macro_rules! inject_app_info_api {
             let ego_store_id = canister_get_one("ego_store").unwrap();
             let ego_store = EgoStore::new(ego_store_id);
 
-            ego_store.wallet_app_upgrade(wallet_id);
+            ego_store.wallet_app_upgrade(app_info.wallet_id.unwrap());
 
             Ok(())
         }

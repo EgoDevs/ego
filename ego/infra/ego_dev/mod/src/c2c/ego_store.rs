@@ -10,7 +10,7 @@ pub trait TEgoStore {
   fn app_main_release(
     &self,
     app: EgoDevApp,
-    app_version: AppVersion
+    app_version: AppVersion,
   );
 }
 
@@ -30,7 +30,7 @@ impl TEgoStore for EgoStore {
     &self,
     ego_dev_app: EgoDevApp,
     released_version: AppVersion,
-  )  {
+  ) {
     let ego_store_app = EgoStoreApp {
       app: ego_dev_app.app.clone(),
       wasm: released_version.wasm.unwrap(),

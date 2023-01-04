@@ -8,16 +8,20 @@ macro_rules! inject_app_info {
         use ego_types::app_info::AppInfo;
         use ego_types::app::{AppId, Version};
 
-        pub fn app_info_get(version: Version) -> AppInfo {
+        pub fn app_info_get() -> AppInfo {
             APP_INFO.with(|info| {
                 info.borrow().clone()
             })
         }
 
-        pub fn app_info_update(app_id: AppId, version: Version)  {
+        pub fn app_info_update(wallet_id: Option<Principal>, app_id: AppId, version: Version)  {
             APP_INFO.with(|info| {
+                if wallet_id.is_some() {
+                    info.borrow_mut().wallet_id = wallet_id;
+                }
                 info.borrow_mut().app_id = app_id;
                 info.borrow_mut().current_version = version;
+                info.borrow_mut().latest_version = version;
             });
         }
 

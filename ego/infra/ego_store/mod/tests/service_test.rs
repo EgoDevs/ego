@@ -93,9 +93,9 @@ mock! {
     async fn balance_get(&self, target_canister_id: Principal) -> Result<u128, String>;
 
     // app info
-    async fn app_info_update(&self, target_canister_id: Principal, wallet_id: Principal, app_id: AppId, version: Version) -> Result<(), String>;
-    async fn app_info_get(&self, target_canister_id: Principal) -> Result<AppInfo, String>;
-    async fn app_version_check(&self, target_canister_id: Principal) -> Result<App, String>;
+    fn ego_app_info_update(&self, target_canister_id: Principal, wallet_id: Option<Principal>, app_id: AppId, version: Version);
+    async fn ego_app_info_get(&self, target_canister_id: Principal) -> Result<AppInfo, String>;
+    async fn ego_app_version_check(&self, target_canister_id: Principal) -> Result<App, String>;
 
     // canister upgrade
     fn ego_canister_upgrade(&self, target_canister_id: Principal);
@@ -278,8 +278,8 @@ async fn wallet_app_install_success() {
     .returning(move |_, _, _, _| Ok(backend_principal));
 
   let mut ego_canister = MockCanister::new();
-  ego_canister.expect_app_info_update().returning(|_, _, _, _| {
-    Ok(())
+  ego_canister.expect_ego_app_info_update().returning(|_, _, _, _| {
+    ()
   });
 
   let ego_store_app = EgoStoreService::app_main_get(&TEST_APP_ID.to_string()).unwrap();
@@ -314,9 +314,10 @@ async fn wallet_app_upgrade_not_exists_wallet() {
 
   // install with not exists wallet
   let ego_tenant = MockTenant::new();
+  let ego_canister = MockCanister::new();
   let backend_principal = Principal::from_text(EXISTS_USER_APP_BACKEND.to_string()).unwrap();
 
-  let result = EgoStoreService::wallet_app_upgrade(ego_tenant, &wallet_id, &backend_principal).await;
+  let result = EgoStoreService::wallet_app_upgrade(ego_tenant, ego_canister, &wallet_id, &backend_principal).await;
   assert!(result.is_err());
   assert_eq!(3006, result.unwrap_err().code);
 }
@@ -335,7 +336,8 @@ async fn wallet_app_upgrade_not_installed_app() {
 
   // upgrade not installed app
   let ego_tenant = MockTenant::new();
-  let result = EgoStoreService::wallet_app_upgrade(ego_tenant, &wallet_principal, &backend_principal).await;
+  let ego_canister = MockCanister::new();
+  let result = EgoStoreService::wallet_app_upgrade(ego_tenant, ego_canister, &wallet_principal, &backend_principal).await;
   assert!(result.is_err());
   assert_eq!(3010, result.unwrap_err().code);
 }
@@ -358,7 +360,11 @@ async fn wallet_app_upgrade_success() {
   ego_tenant
     .expect_app_main_upgrade()
     .returning(|_, _, _| Ok(true));
-  let result = EgoStoreService::wallet_app_upgrade(ego_tenant, &exist_wallet_id, &backend_principal).await;
+  let mut ego_canister = MockCanister::new();
+  ego_canister.expect_ego_app_info_update().returning(|_, _, _, _| {
+    ()
+  });
+  let result = EgoStoreService::wallet_app_upgrade(ego_tenant, ego_canister, &exist_wallet_id, &backend_principal).await;
   assert!(result.is_ok());
 
   // get app list after upgrade

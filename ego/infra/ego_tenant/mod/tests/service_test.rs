@@ -91,9 +91,12 @@ mock! {
     async fn balance_get(&self, target_canister_id: Principal) -> Result<u128, String>;
 
     // app info
-    fn app_info_update(&self, target_canister_id: Principal, wallet_id: Principal, app_id: AppId, version: Version);
-    async fn app_info_get(&self, target_canister_id: Principal) -> Result<AppInfo, String>;
-    async fn app_version_check(&self, target_canister_id: Principal) -> Result<App, String>;
+    fn ego_app_info_update(&self, target_canister_id: Principal, wallet_id: Option<Principal>, app_id: AppId, version: Version);
+    async fn ego_app_info_get(&self, target_canister_id: Principal) -> Result<AppInfo, String>;
+    async fn ego_app_version_check(&self, target_canister_id: Principal) -> Result<App, String>;
+
+    // canister upgrade
+    fn ego_canister_upgrade(&self, target_canister_id: Principal);
   }
 }
 
@@ -387,6 +390,7 @@ async fn app_main_upgrade() {
   let backend = Wasm::new(EXISTS_APP_ID.to_string(), version, BACKEND, file_canister);
 
   let exists_canister_id = Principal::from_text(EXISTS_CANISTER_ID.to_string()).unwrap();
+  let tenant_id = Principal::from_text(TENANT_CANISTER_ID.to_string()).unwrap();
   let fake_wasm_module = vec![1, 0, 1, 0, 0, 1, 0, 1];
 
   mock_ego_file
@@ -404,11 +408,16 @@ async fn app_main_upgrade() {
     .expect_ego_controller_set()
     .returning(|_canister_id, _user_ids| ());
 
+  let mut ego_canister = MockCanister::new();
+  ego_canister.expect_ego_controller_remove().returning(|_, _| ());
+
   match EgoTenantService::app_main_upgrade(
     mock_ego_file,
     mock_management,
+    ego_canister,
     exists_canister_id,
     backend,
+    tenant_id,
   )
     .await
   {
@@ -437,6 +446,7 @@ async fn app_main_upgrade_ego_file_failed() {
   };
   let backend = Wasm::new(EXISTS_APP_ID.to_string(), version, BACKEND, file_canister);
   let exists_canister_id = Principal::from_text(EXISTS_CANISTER_ID.to_string()).unwrap();
+  let tenant_id = Principal::from_text(TENANT_CANISTER_ID.to_string()).unwrap();
 
   mock_ego_file
     .expect_file_main_read()
@@ -448,11 +458,16 @@ async fn app_main_upgrade_ego_file_failed() {
       Ok(())
     });
 
+  let mut ego_canister = MockCanister::new();
+  ego_canister.expect_ego_controller_remove().returning(|_, _| ());
+
   match EgoTenantService::app_main_upgrade(
     mock_ego_file,
     mock_management,
+    ego_canister,
     exists_canister_id,
     backend,
+    tenant_id,
   )
     .await
   {
@@ -480,6 +495,8 @@ async fn app_main_upgrade_ego_management_failed() {
   let backend = Wasm::new(EXISTS_APP_ID.to_string(), version, BACKEND, file_canister);
   let fake_wasm_module = vec![1, 0, 1, 0, 0, 1, 0, 1];
   let exist_canister_id = Principal::from_text(EXISTS_CANISTER_ID.to_string()).unwrap();
+  let tenant_id = Principal::from_text(TENANT_CANISTER_ID.to_string()).unwrap();
+
   mock_ego_file
     .expect_file_main_read()
     .returning(move |_canister_id, _fid| Ok(fake_wasm_module.clone()));
@@ -489,11 +506,16 @@ async fn app_main_upgrade_ego_management_failed() {
       Err(EgoError::from("management error".to_string()))
     });
 
+  let mut ego_canister = MockCanister::new();
+  ego_canister.expect_ego_controller_remove().returning(|_, _| ());
+
   match EgoTenantService::app_main_upgrade(
     mock_ego_file,
     mock_management,
+    ego_canister,
     exist_canister_id,
     backend,
+    tenant_id,
   )
     .await
   {
