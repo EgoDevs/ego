@@ -22,4 +22,4 @@ serde_bytes = "0.11"
 ego_file_mod = { path = "../mod" }
 ego_types = { path = "../../../lib/ego_types" }
 ego_macros = { path = "../../../lib/ego_macros" }
-ego_lib = { path = "../../../lib/ego_lib"}
+ego_lib = { path = "../../../lib/ego_lib" }

@@ -6,10 +6,10 @@ use ego_dev_mod::app::{AppVersion, AppVersionStatus, EgoDevApp};
 use ego_dev_mod::c2c::ego_file::TEgoFile;
 use ego_dev_mod::c2c::ego_store::TEgoStore;
 use ego_dev_mod::developer::Developer;
-use ego_dev_mod::file::File;
+use ego_dev_mod::ego_file::EgoFile;
 use ego_dev_mod::service::EgoDevService;
 use ego_dev_mod::state::EGO_DEV;
-use ego_types::app::{Category, DeployMode};
+use ego_types::app::Category;
 use ego_types::app::EgoError;
 use ego_types::app::Version;
 
@@ -67,7 +67,7 @@ pub fn set_up() {
     ego_dev
       .borrow_mut()
       .ego_files
-      .push(File::new(file_canister));
+      .push(EgoFile::new(file_canister));
 
     // registered developer
     let developer = Developer::new(developer_principal, DEVELOPER_NAME.to_string());
@@ -93,7 +93,6 @@ pub fn set_up() {
       APP_DESCRIPTION.to_string(),
       Category::Vault,
       0f32,
-      DeployMode::DEDICATED,
     );
     let mut app_version = AppVersion::new(EXIST_APP_ID.to_string(), file_canister, version);
     app_version.status = AppVersionStatus::SUBMITTED;
@@ -106,7 +105,7 @@ pub fn set_up() {
       .insert(EXIST_APP_ID.to_string(), app);
 
     // relesed app
-    let mut app = EgoDevApp::new(
+    let mut ego_dev_app = EgoDevApp::new(
       developer_principal,
       RELEASED_APP_ID.to_string(),
       RELEASED_APP_NAME.to_string(),
@@ -114,17 +113,16 @@ pub fn set_up() {
       APP_DESCRIPTION.to_string(),
       Category::Vault,
       0f32,
-      DeployMode::DEDICATED,
     );
     let mut app_version = AppVersion::new(RELEASED_APP_ID.to_string(), file_canister, version);
     app_version.status = AppVersionStatus::RELEASED;
-    app.versions.push(app_version);
+    ego_dev_app.versions.push(app_version);
 
-    app.release_version = Some(version);
+    ego_dev_app.app.current_version = version;
     ego_dev
       .borrow_mut()
       .apps
-      .insert(RELEASED_APP_ID.to_string(), app);
+      .insert(RELEASED_APP_ID.to_string(), ego_dev_app);
   });
 }
 
@@ -145,12 +143,12 @@ fn developer_main_register_success() {
   let caller = Principal::from_text(TEST_PRINCIPAL_ID.to_string()).unwrap();
   let developer = EgoDevService::developer_main_register(caller, "user_1".to_string()).unwrap();
 
-  assert_eq!(caller, developer.user_id);
+  assert_eq!(caller, developer.developer_id);
   assert_eq!("user_1", developer.name);
 
   // register with the same principal id will not change the previous user name
   let developer = EgoDevService::developer_main_register(caller, "user_2".to_string()).unwrap();
-  assert_eq!(caller, developer.user_id);
+  assert_eq!(caller, developer.developer_id);
   assert_eq!("user_1", developer.name);
 }
 
@@ -190,7 +188,7 @@ fn developer_main_get_success() {
   let result = EgoDevService::developer_main_get(caller);
   let developer = result.unwrap();
 
-  assert_eq!(caller, developer.user_id);
+  assert_eq!(caller, developer.developer_id);
 }
 
 #[test]
@@ -206,7 +204,6 @@ fn developer_app_new_fail_with_exists_app_id() {
     APP_DESCRIPTION.to_string(),
     Category::Vault,
     0f32,
-    DeployMode::DEDICATED,
   );
 
   assert_eq!(1001, result.unwrap_err().code);
@@ -225,7 +222,6 @@ fn developer_app_new_fail_with_none_register_developer() {
     APP_DESCRIPTION.to_string(),
     Category::Vault,
     0f32,
-    DeployMode::DEDICATED,
   );
   assert!(result.is_err());
 
@@ -254,18 +250,17 @@ fn developer_app_new_success() {
     APP_DESCRIPTION.to_string(),
     Category::Vault,
     0f32,
-    DeployMode::DEDICATED,
   );
 
   assert!(result.is_ok());
 
-  let app = result.unwrap();
-  assert_eq!(TEST_APP_ID, app.app_id);
+  let ego_dev_app = result.unwrap();
+  assert_eq!(TEST_APP_ID, ego_dev_app.app.app_id);
   // test_app has been added successfully by developer
   let get_new_app_list = EgoDevService::developer_app_list(caller);
   let list_result = get_new_app_list.unwrap();
   let app = &list_result[0];
-  assert_eq!(TEST_APP_ID, app.app_id);
+  assert_eq!(TEST_APP_ID, app.app.app_id);
 }
 
 #[test]
@@ -286,7 +281,6 @@ fn app_version_new_success() {
     APP_DESCRIPTION.to_string(),
     Category::Vault,
     0f32,
-    DeployMode::DEDICATED,
   );
   assert!(result.is_ok());
 
@@ -316,7 +310,6 @@ fn app_version_submit_process() {
     APP_DESCRIPTION.to_string(),
     Category::Vault,
     0f32,
-    DeployMode::DEDICATED,
   );
   assert!(result.is_ok());
 
@@ -618,7 +611,7 @@ fn app_get_success() {
 
   assert!(get_app.is_ok());
   let get_app = get_app.unwrap();
-  assert_eq!(EXIST_APP_ID, get_app.app_id);
+  assert_eq!(EXIST_APP_ID, get_app.app.app_id);
   assert_eq!(caller, get_app.developer_id);
 }
 

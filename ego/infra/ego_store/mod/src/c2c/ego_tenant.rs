@@ -2,12 +2,11 @@ use async_trait::async_trait;
 use ic_cdk::api;
 use ic_cdk::export::Principal;
 
-use ego_types::app::Wasm;
 use ego_types::app::EgoError;
+use ego_types::app::Wasm;
 
 use crate::c2c::c2c_types::{
-  AppMainInstallRequest, AppMainInstallResponse, AppMainUpgradeRequest, AppMainUpgradeResponse,
-  CanisterMainTrackRequest, CanisterMainUnTrackRequest,
+  AppMainInstallRequest, AppMainUpgradeRequest,
 };
 
 #[async_trait]
@@ -25,18 +24,18 @@ pub trait TEgoTenant {
     canister_id: Principal,
     wasm: &Wasm,
   ) -> Result<bool, EgoError>;
-  async fn canister_main_track(
+  fn canister_main_track(
     &self,
     ego_tenant_id: Principal,
-    wallet_id: Principal,
-    canister_id: Principal,
-  ) -> Result<(), EgoError>;
-  async fn canister_main_untrack(
+    wallet_id: &Principal,
+    canister_id: &Principal,
+  );
+  fn canister_main_untrack(
     &self,
     ego_tenant_id: Principal,
-    wallet_id: Principal,
-    canister_id: Principal,
-  ) -> Result<(), EgoError>;
+    wallet_id: &Principal,
+    canister_id: &Principal,
+  );
 }
 
 pub struct EgoTenant {}
@@ -63,11 +62,11 @@ impl TEgoTenant for EgoTenant {
     };
 
     let call_result = api::call::call(ego_tenant_id, "app_main_install", (req, )).await
-      as Result<(Result<AppMainInstallResponse, EgoError>, ), _>;
+      as Result<(Result<Principal, EgoError>, ), _>;
 
     match call_result {
       Ok(resp) => match resp.0 {
-        Ok(resp) => Ok(resp.canister_id),
+        Ok(canister_id) => Ok(canister_id),
         Err(e) => Err(e),
       },
       Err((code, msg)) => {
@@ -86,11 +85,11 @@ impl TEgoTenant for EgoTenant {
     let req = AppMainUpgradeRequest { canister_id, wasm: wasm.clone() };
 
     let call_result = api::call::call(ego_tenant_id, "app_main_upgrade", (req, )).await
-      as Result<(Result<AppMainUpgradeResponse, EgoError>, ), _>;
+      as Result<(Result<bool, EgoError>, ), _>;
 
     match call_result {
       Ok(resp) => match resp.0 {
-        Ok(resp) => Ok(resp.ret),
+        Ok(ret) => Ok(ret),
         Err(e) => Err(e),
       },
       Err((code, msg)) => {
@@ -100,55 +99,21 @@ impl TEgoTenant for EgoTenant {
     }
   }
 
-  async fn canister_main_track(
+  fn canister_main_track(
     &self,
     ego_tenant_id: Principal,
-    wallet_id: Principal,
-    canister_id: Principal,
-  ) -> Result<(), EgoError> {
-    let req = CanisterMainTrackRequest {
-      wallet_id,
-      canister_id,
-    };
-
-    let call_result = api::call::call(ego_tenant_id, "canister_main_track", (req, )).await
-      as Result<(Result<(), EgoError>, ), _>;
-
-    match call_result {
-      Ok(resp) => match resp.0 {
-        Ok(resp) => Ok(resp),
-        Err(e) => Err(e),
-      },
-      Err((code, msg)) => {
-        let code = code as u16;
-        Err(EgoError { code, msg })
-      }
-    }
+    wallet_id: &Principal,
+    canister_id: &Principal,
+  ) {
+    let _result = api::call::notify(ego_tenant_id, "canister_main_track", (wallet_id, canister_id, ));
   }
 
-  async fn canister_main_untrack(
+  fn canister_main_untrack(
     &self,
     ego_tenant_id: Principal,
-    wallet_id: Principal,
-    canister_id: Principal,
-  ) -> Result<(), EgoError> {
-    let req = CanisterMainUnTrackRequest {
-      wallet_id,
-      canister_id,
-    };
-
-    let call_result = api::call::call(ego_tenant_id, "canister_main_untrack", (req, )).await
-      as Result<(Result<(), EgoError>, ), _>;
-
-    match call_result {
-      Ok(resp) => match resp.0 {
-        Ok(resp) => Ok(resp),
-        Err(e) => Err(e),
-      },
-      Err((code, msg)) => {
-        let code = code as u16;
-        Err(EgoError { code, msg })
-      }
-    }
+    wallet_id: &Principal,
+    canister_id: &Principal,
+  ) {
+    let _result = api::call::notify(ego_tenant_id, "canister_main_untrack", (wallet_id, canister_id, ));
   }
 }

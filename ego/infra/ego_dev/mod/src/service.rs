@@ -1,5 +1,6 @@
 use ic_cdk::export::Principal;
-use ego_types::app::{AppId, Category, DeployMode};
+
+use ego_types::app::{AppId, Category};
 use ego_types::app::EgoError;
 use ego_types::app::Version;
 
@@ -9,9 +10,6 @@ use crate::c2c::ego_store::TEgoStore;
 use crate::developer::Developer;
 use crate::state::EGO_DEV;
 use crate::types::*;
-
-
-
 
 pub struct EgoDevService {}
 
@@ -50,7 +48,6 @@ impl EgoDevService {
     description: String,
     category: Category,
     price: f32,
-    deploy_mode: DeployMode,
   ) -> Result<EgoDevApp, EgoError> {
     EGO_DEV.with(|ego_dev| {
       ego_dev.borrow_mut().developer_app_new(
@@ -61,7 +58,6 @@ impl EgoDevService {
         description,
         category,
         price,
-        deploy_mode,
       )
     })
   }

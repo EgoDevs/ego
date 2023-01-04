@@ -2,7 +2,7 @@ use ic_cdk::export::candid::{CandidType, Deserialize};
 use ic_cdk::export::Principal;
 use serde::Serialize;
 
-use ego_types::app::{AppId, Category, DeployMode};
+use ego_types::app::{AppId, Category};
 use ego_types::app::Version;
 
 // type for ego_dev
@@ -16,8 +16,6 @@ pub struct AdminAppCreateRequest {
   pub version: Version,
   pub backend_data: Vec<u8>,
   pub backend_data_hash: String,
-  pub frontend: Option<Principal>,
-  pub deploy_mode: DeployMode,
 }
 
 // type for ego_store

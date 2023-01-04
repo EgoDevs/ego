@@ -1,12 +1,11 @@
 use std::cell::RefCell;
 
-use crate::ego_store::EgoStore;
+use ego_macros::inject_ego_data;
 
-use ego_macros::{inject_canister_log, inject_canister_registry, inject_canister_users};
+use crate::ego_store::EgoStore;
 use crate::service::EgoStoreService;
-inject_canister_log!();
-inject_canister_registry!();
-inject_canister_users!();
+
+inject_ego_data!();
 
 
 /********************  methods for ego_registry   ********************/

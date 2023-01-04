@@ -1,4 +1,3 @@
-
 use ic_ledger_types::{AccountIdentifier, BlockIndex, Memo, Operation, Tokens, Transaction};
 
 use ego_types::app::EgoError;
@@ -7,8 +6,6 @@ use crate::c2c::ego_store::TEgoStore;
 use crate::c2c::ic_ledger::TIcLedger;
 use crate::payment::{Payment, PaymentStatus};
 use crate::state::{EGO_LEDGER, log_add};
-
-
 
 pub struct EgoLedgerService {}
 

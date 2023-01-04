@@ -19,7 +19,7 @@ async-trait = "0.1.57"
 num-traits = "0.2.15"
 ego_types = { path = "../../../lib/ego_types" }
 ego_macros = { path = "../../../lib/ego_macros" }
-ego_lib = { path = "../../../lib/ego_lib"}
+ego_lib = { path = "../../../lib/ego_lib" }
 ego_utils = { path = "../../../lib/ego_utils" }
 
 [dev-dependencies]

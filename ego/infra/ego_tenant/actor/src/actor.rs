@@ -1,11 +1,7 @@
 use std::collections::BTreeMap;
 use std::time::Duration;
 
-use ego_types::registry::Registry;
-use ego_types::user::User;
 use candid::candid_method;
-use ego_macros::{inject_ego_controller, inject_ego_log, inject_ego_registry, inject_ego_user};
-use ego_lib::ego_canister::EgoCanister;
 use ic_cdk::{api, caller, id, storage};
 use ic_cdk::api::time;
 use ic_cdk::export::candid::{CandidType, Deserialize};
@@ -14,6 +10,8 @@ use ic_cdk::timer::set_timer_interval;
 use ic_cdk_macros::*;
 use serde::Serialize;
 
+use ego_lib::ego_canister::EgoCanister;
+use ego_macros::inject_ego_api;
 use ego_tenant_mod::c2c::ego_file::EgoFile;
 use ego_tenant_mod::c2c::ego_store::EgoStore;
 use ego_tenant_mod::c2c::ic_management::IcManagement;
@@ -22,15 +20,13 @@ use ego_tenant_mod::service::EgoTenantService;
 use ego_tenant_mod::state::{canister_add, is_op, is_owner, is_user, log_add, log_list, op_add, owner_add, owner_remove, owners_set, registry_post_upgrade, registry_pre_upgrade, user_add, user_remove, users_post_upgrade, users_pre_upgrade, users_set};
 use ego_tenant_mod::state::EGO_TENANT;
 use ego_tenant_mod::types::{
-  AppMainInstallRequest, AppMainInstallResponse, AppMainUpgradeRequest, AppMainUpgradeResponse,
-  CanisterMainTrackRequest, CanisterMainUnTrackRequest,
+  AppMainInstallRequest, AppMainUpgradeRequest,
 };
 use ego_types::app::EgoError;
+use ego_types::registry::Registry;
+use ego_types::user::User;
 
-inject_ego_user!();
-inject_ego_registry!();
-inject_ego_controller!();
-inject_ego_log!();
+inject_ego_api!();
 
 
 #[derive(Clone, Debug, CandidType, Deserialize)]
@@ -103,7 +99,7 @@ fn post_upgrade() {
 /********************  methods for ego_store   ********************/
 #[update(name = "app_main_install", guard = "user_guard")]
 #[candid_method(update, rename = "app_main_install")]
-async fn app_main_install(req: AppMainInstallRequest) -> Result<AppMainInstallResponse, EgoError> {
+async fn app_main_install(req: AppMainInstallRequest) -> Result<Principal, EgoError> {
   log_add("ego_tenant: app_main_install");
 
   let ego_tenant_id = id();
@@ -121,36 +117,38 @@ async fn app_main_install(req: AppMainInstallRequest) -> Result<AppMainInstallRe
     req.wasm,
   )
     .await?;
-  Ok(AppMainInstallResponse { canister_id })
+  Ok(canister_id)
 }
 
 #[update(name = "app_main_upgrade", guard = "user_guard")]
 #[candid_method(update, rename = "app_main_upgrade")]
-async fn app_main_upgrade(req: AppMainUpgradeRequest) -> Result<AppMainUpgradeResponse, EgoError> {
+async fn app_main_upgrade(req: AppMainUpgradeRequest) -> Result<bool, EgoError> {
   log_add("ego_tenant: app_main_upgrade");
   let management = IcManagement::new();
   let ego_file = EgoFile::new();
 
+  let ego_canister = EgoCanister::new();
+
   let ret =
-    EgoTenantService::app_main_upgrade(ego_file, management, req.canister_id, req.wasm).await?;
-  Ok(AppMainUpgradeResponse { ret })
+    EgoTenantService::app_main_upgrade(ego_file, management, ego_canister, req.canister_id, req.wasm).await?;
+  Ok(ret)
 }
 
 #[update(name = "canister_main_track", guard = "user_guard")]
 #[candid_method(update, rename = "canister_main_track")]
-fn canister_main_track(req: CanisterMainTrackRequest) -> Result<(), EgoError> {
+fn canister_main_track(wallet_id: Principal, canister_id: Principal) -> Result<(), EgoError> {
   log_add("ego_tenant: canister_main_track");
 
-  EgoTenantService::canister_main_track(req.wallet_id, req.canister_id)?;
+  EgoTenantService::canister_main_track(wallet_id, canister_id)?;
   Ok(())
 }
 
 #[update(name = "canister_main_untrack", guard = "user_guard")]
 #[candid_method(update, rename = "canister_main_untrack")]
-fn canister_main_untrack(req: CanisterMainUnTrackRequest) -> Result<(), EgoError> {
+fn canister_main_untrack(wallet_id: Principal, canister_id: Principal) -> Result<(), EgoError> {
   log_add("ego_tenant: canister_main_untrack");
 
-  EgoTenantService::canister_main_untrack(req.wallet_id, req.canister_id)?;
+  EgoTenantService::canister_main_untrack(wallet_id, canister_id)?;
   Ok(())
 }
 

@@ -9,7 +9,9 @@ fn main() {}
 fn main() {
   use crate::actor::InitArg;
   use ego_dev_mod::types::*;
-  use ego_types::app::EgoError;
+  use ego_dev_mod::app::*;
+  use ego_dev_mod::developer::*;
+  use ego_types::app::*;
   use ic_cdk::export::Principal;
 
   candid::export_service!();

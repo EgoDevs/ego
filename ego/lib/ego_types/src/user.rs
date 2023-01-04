@@ -38,7 +38,7 @@ impl User {
   }
 
   pub fn owners(&self) -> Option<BTreeMap<Principal, String>> {
-    self.role_users(OWNER).clone().map(|e|e)
+    self.role_users(OWNER).clone().map(|e| e)
   }
 
   pub fn owner_add(&mut self, name: String, user_id: Principal) {
@@ -58,7 +58,7 @@ impl User {
   }
 
   pub fn users(&self) -> Option<BTreeMap<Principal, String>> {
-    self.role_users(USER).clone().map(|e|e)
+    self.role_users(USER).clone().map(|e| e)
   }
 
   pub fn user_add(&mut self, name: String, user_id: Principal) {
@@ -78,7 +78,7 @@ impl User {
   }
 
   pub fn ops(&self) -> Option<BTreeMap<Principal, String>> {
-    self.role_users(OP).clone().map(|e|e)
+    self.role_users(OP).clone().map(|e| e)
   }
 
   pub fn op_add(&mut self, name: String, user_id: Principal) {

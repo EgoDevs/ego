@@ -3,10 +3,8 @@ use ic_cdk::api;
 use ic_cdk::api::call::RejectionCode;
 use ic_cdk::export::Principal;
 
-use ego_types::app::WasmId;
 use ego_types::app::EgoError;
-
-use crate::c2c::c2c_types::{FileMainReadRequest, FileMainReadResponse};
+use ego_types::app::WasmId;
 
 #[async_trait]
 pub trait TEgoFile {
@@ -32,14 +30,12 @@ impl TEgoFile for EgoFile {
     canister_id: Principal,
     fid: WasmId,
   ) -> Result<Vec<u8>, EgoError> {
-    let req = FileMainReadRequest { fid };
-
-    let call_result = api::call::call(canister_id, "file_main_read", (req, )).await
-      as Result<(Result<FileMainReadResponse, EgoError>, ), (RejectionCode, String)>;
+    let call_result = api::call::call(canister_id, "file_main_read", (fid, )).await
+      as Result<(Result<Vec<u8>, EgoError>, ), (RejectionCode, String)>;
 
     match call_result {
       Ok(resp) => match resp.0 {
-        Ok(resp) => Ok(resp.data),
+        Ok(data) => Ok(data),
         Err(e) => Err(e),
       },
       Err((code, msg)) => {

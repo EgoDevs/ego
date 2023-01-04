@@ -5,10 +5,7 @@ import { getCanisterId, hasOwnProperty } from '@/settings/utils';
 import { admins, developers, operators } from '@/fixtures/identities';
 import { getActor } from '@/settings/agent';
 import { ActorSubclass } from '@dfinity/agent';
-import {
-    _SERVICE, DeveloperMainGetResponse, EgoError,
-    Result_6
-} from '@/idls/ego_dev';
+import {_SERVICE, EgoError, Result_6} from '@/idls/ego_dev';
 import { Principal } from '@dfinity/principal';
 import { Ed25519KeyIdentity } from '@dfinity/identity';
 import { idlFactory } from '@/idls/ego_dev.idl';
@@ -209,23 +206,19 @@ describe('app developer', () => {
     let app_version = random_version();
 
     test('register developer', async () => {
-        let resp1 = await app_developers[0].developer_main_register({
-            name: 'developer 1',
-        });
-        let developer = (resp1 as { Ok: DeveloperMainGetResponse }).Ok.developer;
+        let resp1 = await app_developers[0].developer_main_register('developer 1');
+        let developer = resp1.Ok.developer;
 
         expect(developer.user_id.toString()).toBe(developers[0].principal)
         expect(developer.name).toBe('developer 1')
 
-        resp1 = await app_developers[1].developer_main_register({
-            name: 'developer 2',
-        });
-        developer = (resp1 as { Ok: DeveloperMainGetResponse }).Ok.developer;
+        let resp2 = await app_developers[1].developer_main_register('developer 2');
+        developer = resp2.Ok.developer;
         expect(developer.user_id.toString()).toBe(developers[1].principal)
         expect(developer.name).toBe('developer 2')
 
-        let resp = await app_developers[0].developer_main_get();
-        developer = (resp as { Ok: DeveloperMainGetResponse }).Ok.developer;
+        let resp3 = await app_developers[0].developer_main_get();
+        developer = resp3.Ok.developer;
         expect(developer.user_id.toString()).toBe(developers[0].principal)
         expect(developer.name).toBe('developer 1')
     });

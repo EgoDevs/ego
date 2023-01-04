@@ -9,10 +9,10 @@ fn main() {}
 fn main() {
   use crate::actor::InitArg;
   use ego_store_mod::types::*;
+  use ego_store_mod::app::EgoStoreApp;
   use ego_types::app::EgoError;
   use ic_cdk::export::Principal;
   use ego_store_mod::order::Order;
-  use ego_types::app::WalletApp;
   use ego_types::app::UserApp;
   use ego_types::app::{AppId, App};
 

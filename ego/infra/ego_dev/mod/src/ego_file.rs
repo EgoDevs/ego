@@ -5,34 +5,34 @@ use ic_cdk::export::Principal;
 use serde::Serialize;
 
 #[derive(CandidType, Serialize, Deserialize, Clone, Debug)]
-pub struct File {
+pub struct EgoFile {
   pub wasm_count: u16,
   pub canister_id: Principal,
 }
 
-impl Eq for File {}
+impl Eq for EgoFile {}
 
-impl PartialEq<Self> for File {
+impl PartialEq<Self> for EgoFile {
   fn eq(&self, other: &Self) -> bool {
     self.canister_id == other.canister_id
   }
 }
 
-impl PartialOrd<Self> for File {
+impl PartialOrd<Self> for EgoFile {
   fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
     Some(self.wasm_count.cmp(&other.wasm_count))
   }
 }
 
-impl Ord for File {
+impl Ord for EgoFile {
   fn cmp(&self, other: &Self) -> Ordering {
     self.wasm_count.cmp(&other.wasm_count)
   }
 }
 
-impl File {
+impl EgoFile {
   pub fn new(canister_id: Principal) -> Self {
-    File {
+    EgoFile {
       canister_id,
       wasm_count: 0,
     }

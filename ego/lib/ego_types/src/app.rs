@@ -38,38 +38,6 @@ impl From<(RejectionCode, std::string::String)> for EgoError {
 
 
 #[derive(CandidType, Deserialize, Serialize)]
-pub enum QueryParam {
-  ByCategory { category: Category },
-}
-
-#[derive(CandidType, Deserialize, Serialize)]
-pub struct AppMainListRequest {
-  pub query_param: QueryParam,
-}
-
-#[derive(CandidType, Deserialize, Serialize)]
-pub struct AppMainListResponse {
-  pub apps: Vec<App>,
-}
-
-
-#[derive(CandidType, Deserialize, Serialize)]
-pub struct WalletAppListResponse {
-  pub apps: Vec<UserApp>,
-}
-
-#[derive(CandidType, Deserialize, Serialize)]
-pub struct WalletAppInstallRequest {
-  pub app_id: AppId,
-}
-
-
-#[derive(CandidType, Deserialize, Serialize)]
-pub struct WalletAppRemoveRequest {
-  pub app_id: AppId,
-}
-
-#[derive(CandidType, Deserialize, Serialize)]
 pub struct WalletOrderNewRequest {
   pub amount: f32,
 }
@@ -200,31 +168,6 @@ impl fmt::Display for CanisterType {
 
 
 #[derive(CandidType, Serialize, Deserialize, Clone, Debug)]
-pub struct WalletApp {
-  pub app_id: AppId,
-  pub current_version: Version,
-  pub frontend: Option<Canister>,
-  pub backend: Option<Canister>,
-}
-
-
-impl WalletApp {
-  pub fn new(
-    app_id: &AppId,
-    current_version: &Version,
-    frontend: Option<Canister>,
-    backend: Option<Canister>,
-  ) -> Self {
-    WalletApp {
-      app_id: app_id.clone(),
-      current_version: current_version.clone(),
-      frontend,
-      backend,
-    }
-  }
-}
-
-#[derive(CandidType, Serialize, Deserialize, Clone, Debug)]
 pub struct Canister {
   pub canister_id: Principal,
   pub canister_type: CanisterType,
@@ -241,48 +184,21 @@ impl Canister {
 
 #[derive(CandidType, Serialize, Deserialize, Clone, Debug)]
 pub struct UserApp {
-  pub app_id: AppId,
-  pub name: String,
-  pub category: Category,
-  pub logo: String,
-  pub description: String,
-  pub current_version: Version,
-  pub frontend: Option<Canister>,
-  pub backend: Option<Canister>,
+  pub app: App,
+  pub canister: Canister,
   pub latest_version: Version,
 }
 
 impl UserApp {
-  pub fn new(user_app: &WalletApp, app: &App) -> Self {
+  pub fn new(app: &App, canister: Canister) -> Self {
     UserApp {
-      app_id: app.app_id.clone(),
-      name: app.name.clone(),
-      category: app.category.clone(),
-      logo: app.logo.clone(),
-      description: app.description.clone(),
+      app: app.clone(),
       latest_version: app.current_version.clone(),
-      current_version: user_app.current_version.clone(),
-      frontend: user_app.frontend.clone(),
-      backend: user_app.backend.clone(),
-    }
-  }
-
-  pub fn wallet_app(&self) -> WalletApp {
-    WalletApp {
-      app_id: self.app_id.clone(),
-      current_version: self.current_version.clone(),
-      frontend: self.frontend.clone(),
-      backend: self.backend.clone(),
+      canister,
     }
   }
 }
 
-
-#[derive(CandidType, Serialize, Deserialize, Clone, Debug)]
-pub enum DeployMode {
-  SHARED,
-  DEDICATED,
-}
 
 #[derive(CandidType, Serialize, Deserialize, Clone, Debug)]
 pub struct Wasm {

@@ -1,7 +1,7 @@
 use ic_cdk::api;
 use ic_cdk::export::Principal;
 
-use ego_types::app::{AppId, Category, DeployMode};
+use ego_types::app::{AppId, Category};
 use ego_types::app::Version;
 
 use crate::c2c::c2c_types::AdminAppCreateRequest;
@@ -18,8 +18,6 @@ pub trait TEgoDev {
     description: String,
     backend_data: Vec<u8>,
     backend_data_hash: String,
-    frontend: Option<Principal>,
-    deploy_mode: DeployMode,
   );
 }
 
@@ -43,8 +41,6 @@ impl TEgoDev for EgoDev {
     description: String,
     backend_data: Vec<u8>,
     backend_data_hash: String,
-    frontend: Option<Principal>,
-    deploy_mode: DeployMode,
   ) {
     let req = AdminAppCreateRequest {
       app_id,
@@ -55,8 +51,6 @@ impl TEgoDev for EgoDev {
       description,
       backend_data,
       backend_data_hash,
-      frontend,
-      deploy_mode,
     };
 
     let _result = api::call::notify(canister_id, "admin_app_create", (req, ));

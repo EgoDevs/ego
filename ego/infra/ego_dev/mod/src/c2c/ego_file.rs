@@ -1,20 +1,18 @@
 use async_trait::async_trait;
 use ic_cdk::api;
+use ic_cdk::api::call::RejectionCode;
 use ic_cdk::export::Principal;
+use tracing::error;
 
-use ego_types::app::FileId;
 use ego_types::app::EgoError;
-
-use crate::c2c::c2c_types::{FileMainWriteRequest, FileMainWriteResponse};
+use ego_types::app::FileId;
 
 #[async_trait]
 pub trait TEgoFile {
   async fn file_main_write(
     &self,
     canister_id: Principal,
-    fid: FileId,
-    hash: String,
-    data: Vec<u8>,
+    fid: FileId, hash: String, data: Vec<u8>,
   ) -> Result<bool, EgoError>;
 }
 
@@ -35,14 +33,19 @@ impl TEgoFile for EgoFile {
     hash: String,
     data: Vec<u8>,
   ) -> Result<bool, EgoError> {
-    let req = FileMainWriteRequest { fid, hash, data };
+    let call_result = api::call::call(canister_id, "file_main_write", (fid, hash, data, )).await
+      as Result<(Result<bool, EgoError>, ), (RejectionCode, String)>;
 
-    let call_result = api::call::call(canister_id, "file_main_write", (req, )).await
-      as Result<(Result<FileMainWriteResponse, EgoError>, ), _>;
-
-    match call_result.unwrap().0 {
-      Ok(resp) => Ok(resp.ret),
-      Err(e) => Err(e),
+    match call_result {
+      Ok(resp) => match resp.0 {
+        Ok(resp) => Ok(resp),
+        Err(e) => Err(e),
+      },
+      Err((code, msg)) => {
+        let code = code as u16;
+        error!(error_code = code, error_message = msg.as_str(), "Error calling file_main_write");
+        Err(EgoError { code, msg })
+      }
     }
   }
 }

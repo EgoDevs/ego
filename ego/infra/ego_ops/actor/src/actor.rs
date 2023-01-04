@@ -1,30 +1,27 @@
 use std::collections::BTreeMap;
 
-use ego_types::registry::Registry;
-use ego_types::user::User;
 use candid::candid_method;
-use ego_macros::{inject_ego_controller, inject_ego_log, inject_ego_registry, inject_ego_user};
 use ic_cdk::{caller, id, storage};
 use ic_cdk::export::candid::{CandidType, Deserialize};
 use ic_cdk::export::Principal;
 use ic_cdk_macros::*;
 use serde::Serialize;
 
-use ego_ops_mod::c2c::ego_canister::{EgoCanister, TEgoCanister};
+use ego_lib::ego_canister::{EgoCanister, TEgoCanister};
+use ego_macros::inject_ego_api;
 use ego_ops_mod::c2c::ego_dev::EgoDev;
 use ego_ops_mod::c2c::ego_store::{EgoStore, TEgoStore};
 use ego_ops_mod::c2c::ego_tenant::{EgoTenant, TEgoTenant};
 use ego_ops_mod::ego_ops::EgoOps;
-use ego_ops_mod::service::{EgoOpsService};
+use ego_ops_mod::service::EgoOpsService;
 use ego_ops_mod::state::{canister_add, canister_get_all, canister_get_one, is_op, is_owner, is_user, log_add, log_list, op_add, owner_add, owner_remove, owners_set, registry_post_upgrade, registry_pre_upgrade, user_add, user_remove, users_post_upgrade, users_pre_upgrade, users_set};
 use ego_ops_mod::state::EGO_OPS;
 use ego_ops_mod::types::{AdminAppCreateRequest, AdminWalletCycleRechargeRequest, AdminWalletProviderAddRequest};
 use ego_types::app::EgoError;
+use ego_types::registry::Registry;
+use ego_types::user::User;
 
-inject_ego_user!();
-inject_ego_registry!();
-inject_ego_controller!();
-inject_ego_log!();
+inject_ego_api!();
 
 #[derive(Clone, Debug, CandidType, Deserialize)]
 pub struct InitArg {
@@ -103,33 +100,33 @@ pub fn canister_relation_update(name: String) {
   match name.as_str() {
     "ego_dev" => {
       for ego_file_id in ego_file_ids.iter() {
-        ego_canister.ego_canister_add(&ego_dev_id, "ego_file".to_string(), ego_file_id);
+        ego_canister.ego_canister_add(ego_dev_id, "ego_file".to_string(), ego_file_id.clone());
       }
       ego_canister
-        .ego_canister_add(&ego_dev_id, "ego_store".to_string(), &ego_store_id);
+        .ego_canister_add(ego_dev_id, "ego_store".to_string(), ego_store_id);
     }
     "ego_file" => {
       for ego_file_id in ego_file_ids.iter() {
-        ego_canister.ego_canister_add(ego_file_id, "ego_dev".to_string(), &ego_dev_id);
+        ego_canister.ego_canister_add(ego_file_id.clone(), "ego_dev".to_string(), ego_dev_id);
         for ego_tenant_id in ego_tenant_ids.iter() {
-          ego_canister.ego_canister_add(ego_file_id, "ego_tenant".to_string(), ego_tenant_id);
+          ego_canister.ego_canister_add(ego_file_id.clone(), "ego_tenant".to_string(), ego_tenant_id.clone());
         }
       }
     }
     "ego_store" => {
-      ego_canister.ego_canister_add(&ego_store_id, "ego_dev".to_string(), &ego_dev_id);
-      ego_canister.ego_canister_add(&ego_store_id, "ego_ledger".to_string(), &ego_ledger_id);
+      ego_canister.ego_canister_add(ego_store_id, "ego_dev".to_string(), ego_dev_id);
+      ego_canister.ego_canister_add(ego_store_id, "ego_ledger".to_string(), ego_ledger_id);
       for ego_tenant_id in ego_tenant_ids.iter() {
-        ego_canister.ego_canister_add(&ego_store_id, "ego_tenant".to_string(), ego_tenant_id);
+        ego_canister.ego_canister_add(ego_store_id, "ego_tenant".to_string(), ego_tenant_id.clone());
       }
     }
     "ego_tenant" => {
       for ego_tenant_id in ego_tenant_ids.iter() {
-        ego_canister.ego_canister_add(ego_tenant_id, "ego_store".to_string(), &ego_store_id);
+        ego_canister.ego_canister_add(ego_tenant_id.clone(), "ego_store".to_string(), ego_store_id);
       }
     }
     "ego_ledger" => {
-      ego_canister.ego_canister_add(&ego_ledger_id, "ego_store".to_string(), &ego_store_id);
+      ego_canister.ego_canister_add(ego_ledger_id, "ego_store".to_string(), ego_store_id);
     }
     "ego_ops" => {
       let ego_store = EgoStore::new(ego_store_id);
@@ -147,44 +144,50 @@ pub fn canister_main_track() {
   let wallet_id = id();
   let ego_tenant = EgoTenant::new();
 
+  let ego_canister = EgoCanister::new();
 
-    let tracker_ego_tenant_id = canister_get_one("ego_tenant").unwrap();
 
-    // ego_dev
-    log_add("1 track ego_dev");
-    let ego_dev_id = canister_get_one("ego_dev").unwrap();
-    ego_tenant.canister_main_track(tracker_ego_tenant_id, wallet_id, ego_dev_id);
+  let tracker_ego_tenant_id = canister_get_one("ego_tenant").unwrap();
 
-    // ego_file
-    log_add("2 track ego_file");
-    for ego_file_id in canister_get_all("ego_file") {
-      ego_tenant.canister_main_track(tracker_ego_tenant_id, wallet_id, ego_file_id);
-    }
+  // ego_dev
+  log_add("1 track ego_dev");
+  let ego_dev_id = canister_get_one("ego_dev").unwrap();
+  ego_canister.ego_op_add(ego_dev_id, tracker_ego_tenant_id);
+  ego_tenant.canister_main_track(tracker_ego_tenant_id, wallet_id, ego_dev_id);
 
-    // ego_store
-    log_add("3 track ego_store");
-    let ego_store_id = canister_get_one("ego_store").unwrap();
-    ego_tenant
-      .canister_main_track(tracker_ego_tenant_id, wallet_id, ego_store_id);
+  // ego_file
+  log_add("2 track ego_file");
+  for ego_file_id in canister_get_all("ego_file") {
+    ego_canister.ego_op_add(ego_file_id, tracker_ego_tenant_id);
+    ego_tenant.canister_main_track(tracker_ego_tenant_id, wallet_id, ego_file_id);
+  }
 
-    // ego_tenant
-    log_add("4 track ego_tenant");
-    for ego_tenant_id in canister_get_all("ego_tenant") {
-      ego_tenant
-        .canister_main_track(tracker_ego_tenant_id, wallet_id, ego_tenant_id);
-    }
+  // ego_store
+  log_add("3 track ego_store");
+  let ego_store_id = canister_get_one("ego_store").unwrap();
+  ego_canister.ego_op_add(ego_store_id, tracker_ego_tenant_id);
+  ego_tenant
+    .canister_main_track(tracker_ego_tenant_id, wallet_id, ego_store_id);
 
-    // ego_ledger
-    log_add("6 track ego_ledger");
-    let ego_ledger_id = canister_get_one("ego_ledger").unwrap();
-    ego_tenant
-      .canister_main_track(tracker_ego_tenant_id, wallet_id, ego_ledger_id);
+  // ego_tenant
+  // log_add("4 track ego_tenant");
+  // for ego_tenant_id in canister_get_all("ego_tenant") {
+  //   ego_tenant
+  //     .canister_main_track(tracker_ego_tenant_id, wallet_id, ego_tenant_id);
+  // }
 
-    // ego_ops
-    log_add("7 track ego_ops");
-    ego_tenant
-      .canister_main_track(tracker_ego_tenant_id, wallet_id, wallet_id);
+  // ego_ledger
+  log_add("4 track ego_ledger");
+  let ego_ledger_id = canister_get_one("ego_ledger").unwrap();
+  ego_canister.ego_op_add(ego_ledger_id, tracker_ego_tenant_id);
+  ego_tenant
+    .canister_main_track(tracker_ego_tenant_id, wallet_id, ego_ledger_id);
 
+  // ego_ops
+  log_add("5 track ego_ops");
+  op_add(tracker_ego_tenant_id);
+  ego_tenant
+    .canister_main_track(tracker_ego_tenant_id, wallet_id, wallet_id);
 }
 
 #[update(name = "admin_app_create", guard = "owner_guard")]
@@ -208,9 +211,7 @@ pub fn admin_app_create(
     req.logo,
     req.description,
     req.backend_data,
-    req.backend_hash,
-    req.frontend,
-    req.deploy_mode,
+    req.backend_data_hash,
   )?;
   Ok(())
 }

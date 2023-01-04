@@ -1,34 +1,6 @@
 use ic_cdk::export::candid::{CandidType, Deserialize};
 
-use ego_types::app::FileId;
 use ego_types::app::EgoError;
-
-#[derive(CandidType, Deserialize, Clone, Debug)]
-pub struct FileMainWriteRequest {
-  pub fid: FileId,
-  pub hash: String,
-  pub data: Vec<u8>,
-}
-
-#[derive(CandidType, Deserialize, Clone, Debug)]
-pub struct FileMainWriteResponse {
-  pub ret: bool,
-}
-
-#[derive(CandidType, Deserialize, Clone, Debug)]
-pub struct FileMainReadRequest {
-  pub fid: FileId,
-}
-
-#[derive(CandidType, Deserialize, Clone, Debug)]
-pub struct FileMainReadResponse {
-  pub data: Vec<u8>,
-}
-
-#[derive(CandidType, Deserialize, Clone, Debug)]
-pub struct FileCountResponse {
-  pub count: u64,
-}
 
 #[derive(CandidType, Deserialize, Clone, Debug)]
 pub enum EgoFileError {

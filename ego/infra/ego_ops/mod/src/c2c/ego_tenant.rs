@@ -1,8 +1,6 @@
 use ic_cdk::api;
 use ic_cdk::export::Principal;
 
-use crate::c2c::c2c_types::{CanisterMainTrackRequest, CanisterMainUnTrackRequest};
-
 pub trait TEgoTenant {
   fn canister_main_track(
     &self,
@@ -33,12 +31,7 @@ impl TEgoTenant for EgoTenant {
     wallet_id: Principal,
     canister_id: Principal,
   ) {
-    let req = CanisterMainTrackRequest {
-      wallet_id,
-      canister_id,
-    };
-
-    let _result = api::call::notify(ego_tenant_id, "canister_main_track", (req, ));
+    let _result = api::call::notify(ego_tenant_id, "canister_main_track", (wallet_id, canister_id, ));
   }
 
   fn canister_main_untrack(
@@ -47,11 +40,6 @@ impl TEgoTenant for EgoTenant {
     wallet_id: Principal,
     canister_id: Principal,
   ) {
-    let req = CanisterMainUnTrackRequest {
-      wallet_id,
-      canister_id,
-    };
-
-    let _result = api::call::notify(ego_tenant_id, "canister_main_untrack", (req, ));
+    let _result = api::call::notify(ego_tenant_id, "canister_main_untrack", (wallet_id, canister_id, ));
   }
 }

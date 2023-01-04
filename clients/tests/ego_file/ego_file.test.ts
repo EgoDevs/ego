@@ -33,16 +33,10 @@ describe('file operation', () => {
   test('file_main_write and file_main_read', async () => {
     let file_canister = await file_actor;
 
-    let response1 = await file_canister.file_main_write({
-      fid: file_id,
-      hash: fileMd5,
-      data: Array.from(app_1_wasm),
-    });
+    let response1 = await file_canister.file_main_write(file_id, fileMd5, Array.from(app_1_wasm));
     console.log(`file_main_write response: `, response1);
 
-    let response2 = await file_canister.file_main_read({
-      fid: file_id,
-    });
+    let response2 = await file_canister.file_main_read(file_id);
 
     let data = response2.Ok.data;
 
@@ -60,9 +54,7 @@ describe('file operation', () => {
     let response4 = await file_canister.state_restore();
     console.log("state_restore: ", response4)
 
-    let response5 = await file_canister.file_main_read({
-      fid: file_id,
-    });
+    let response5 = await file_canister.file_main_read(file_id);
 
     let data5 = response5.Ok.data;
 

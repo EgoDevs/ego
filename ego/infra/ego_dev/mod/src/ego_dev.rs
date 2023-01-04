@@ -6,12 +6,12 @@ use ic_cdk::export::candid::{CandidType, Deserialize};
 use ic_cdk::export::Principal;
 use serde::Serialize;
 
-use ego_types::app::{AppId, Category, DeployMode};
+use ego_types::app::{AppId, Category};
 use ego_types::app::EgoError;
 
 use crate::app::EgoDevApp;
 use crate::developer::Developer;
-use crate::file::File;
+use crate::ego_file::EgoFile;
 use crate::types::EgoDevErr;
 
 #[derive(CandidType, Deserialize, Serialize, Debug, Clone)]
@@ -23,7 +23,7 @@ pub struct EgoDev {
   pub developers: BTreeMap<Principal, Developer>,
 
   /// ego_file canisters
-  pub ego_files: Vec<File>,
+  pub ego_files: Vec<EgoFile>,
 }
 
 impl EgoDev {
@@ -84,7 +84,6 @@ impl EgoDev {
     description: String,
     category: Category,
     price: f32,
-    deploy_mode: DeployMode,
   ) -> Result<EgoDevApp, EgoError> {
     if self.apps.contains_key(&app_id) {
       let app = self.apps.get(&app_id).unwrap();
@@ -105,7 +104,6 @@ impl EgoDev {
         description,
         category,
         price,
-        deploy_mode,
       );
       self.apps.insert(app_id.clone(), app.clone());
 
@@ -181,7 +179,7 @@ impl EgoDev {
   }
 
   pub fn admin_file_add(&mut self, file_id: Principal) {
-    let file = File::new(file_id);
+    let file = EgoFile::new(file_id);
     if !self.ego_files.contains(&file) {
       self.ego_files.push(file);
     }

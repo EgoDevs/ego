@@ -1,9 +1,8 @@
 use std::ops::{Div, Mul};
+
 use ic_cdk::export::Principal;
 
-
 use ego_lib::ego_canister::TEgoCanister;
-
 use ego_types::app::{CanisterType, Wasm};
 use ego_types::app::EgoError;
 
@@ -73,29 +72,27 @@ impl EgoTenantService {
     management.canister_code_install(canister_id, data).await?;
 
     // add ego_store_id to app
-    log_add("4 register canister");
+    log_add("4 add [ego_store, ego_tenant] to canister");
     ego_canister.ego_canister_add(canister_id, "ego_store".to_string(), ego_store_id);
     ego_canister.ego_canister_add(canister_id, "ego_tenant".to_string(), ego_tenant_id);
 
-    log_add("5 set app info");
-    ego_canister.app_info_update(canister_id, wasm.app_id, wasm.version);
-
-    log_add("6 add ops_user");
+    log_add("5 add [ego_store, ego_tenant] as ops_user");
     ego_canister.ego_op_add(canister_id, ego_store_id);
     ego_canister.ego_op_add(canister_id, ego_tenant_id);
 
-    log_add("7 set canister controller to [wallet, user, self]");
+    log_add("6 set canister controller to [wallet, user, self]");
     ego_canister.ego_controller_set(canister_id, vec![wallet_id, user_id, canister_id]);
 
-    log_add("8 change canister owner to [wallet, user]");
+    log_add("7 change canister owner to [wallet, user]");
     ego_canister.ego_owner_set(canister_id, vec![wallet_id, user_id]);
 
     Ok(canister_id)
   }
 
-  pub async fn app_main_upgrade<F: TEgoFile, M: TIcManagement>(
+  pub async fn app_main_upgrade<F: TEgoFile, M: TIcManagement, EC: TEgoCanister>(
     ego_file: F,
     management: M,
+    ego_canister: EC,
     canister_id: Principal,
     wasm: Wasm,
   ) -> Result<bool, EgoError> {
@@ -113,19 +110,22 @@ impl EgoTenantService {
     log_add("2 install code");
     management.canister_code_upgrade(canister_id, data).await?;
 
+    log_add("3 remove [ego_tenant] from canister controller");
+    ego_canister.ego_controller_remove(canister_id, ic_cdk::id());
+
     Ok(true)
   }
 
   pub async fn canister_cycles_check<M: TIcManagement, S: TEgoStore, EC: TEgoCanister>(
     management: M,
     ego_store: S,
-    canister: EC,
+    ego_canister: EC,
     sentinel: u64,
     task: Task,
   ) -> Result<(), EgoError> {
     let ego_store_id = canister_get_one("ego_store").unwrap();
 
-    let cycle = canister.balance_get(task.canister_id).await?;
+    let cycle = ego_canister.balance_get(task.canister_id).await?;
 
     let mut current_cycle = cycle;
     let mut next_time = sentinel + HALF_HOUR;

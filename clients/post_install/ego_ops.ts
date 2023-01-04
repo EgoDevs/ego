@@ -11,7 +11,6 @@ import { idlFactory } from '@/idls/ego_ops.idl';
 import { identity } from '@/settings/identity';
 import { Principal } from '@dfinity/principal';
 import { ActorSubclass } from '@dfinity/agent';
-import { DeployMode } from '@/idls/ego_dev';
 
 const ego_file_wasm = fs.readFileSync(
   `${[process.cwd()]}` + '/artifacts/ego_file/ego_file_opt.wasm',
@@ -97,34 +96,3 @@ async function canister_register(canister_name: string) {
   let resp2 = await opsOperator.ego_canister_add(canister_name, canister_id);
   console.log(resp2);
 }
-
-export const admin_app_create = async (
-  app_id: string,
-  name: string,
-  version: any,
-  category: Category,
-  deploy_mode: DeployMode,
-  backend_data: ArrayLike<number>,
-  frontend_canister_id?: Principal,
-) => {
-  let opsOperator = await getOperator<EgoOpsService>('ego_ops');
-
-  const backend_hash = crypto
-    .createHash('md5')
-    .update(backend_data as BinaryLike)
-    .digest('hex');
-
-  let resp1 = await opsOperator.admin_app_create({
-    app_id,
-    name,
-    version,
-    logo: '',
-    description: '',
-    category,
-    backend_data: Array.from(new Uint8Array(backend_data)),
-    backend_hash,
-    frontend: frontend_canister_id ? [frontend_canister_id] : [],
-    deploy_mode,
-  });
-  console.log(resp1);
-};

@@ -14,16 +14,3 @@ pub struct WalletCycleChargeRequest {
 pub struct WalletCycleChargeResponse {
   pub ret: bool,
 }
-
-// type for ego_file
-pub type FileId = String;
-
-#[derive(CandidType, Deserialize, Clone, Debug)]
-pub struct FileMainReadRequest {
-  pub fid: FileId,
-}
-
-#[derive(CandidType, Deserialize, Clone, Debug)]
-pub struct FileMainReadResponse {
-  pub data: Vec<u8>,
-}

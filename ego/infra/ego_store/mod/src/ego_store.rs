@@ -5,15 +5,14 @@ use ic_cdk::export::Principal;
 use ic_ledger_types::Memo;
 use serde::Serialize;
 
-use ego_types::app::{App, AppId, UserApp, WalletApp};
+use ego_types::app::{App, AppId, UserApp};
 use ego_types::app::EgoError;
-use ego_types::app::Version;
 
 use crate::app::EgoStoreApp;
 use crate::cash_flow::CashFlow;
 use crate::order::{Order, OrderStatus};
 use crate::tenant::Tenant;
-use crate::types::{EgoStoreErr, QueryParam};
+use crate::types::EgoStoreErr;
 use crate::wallet::*;
 use crate::wallet_provider::WalletProvider;
 
@@ -40,20 +39,14 @@ impl EgoStore {
     }
   }
 
-  pub fn app_main_list(&self, query_param: &QueryParam) -> Result<Vec<App>, EgoError> {
-    match query_param {
-      QueryParam::ByCategory { category } => Ok(self
-        .apps
-        .iter()
-        .filter_map(|(_app_id, app)| {
-          if app.category == *category {
-            Some(App::from(app.clone()))
-          } else {
-            None
-          }
-        })
-        .collect()),
-    }
+  pub fn app_main_list(&self) -> Result<Vec<App>, EgoError> {
+    Ok(self
+      .apps
+      .iter()
+      .map(|(_app_id, ego_store_app)| {
+        ego_store_app.app.clone()
+      })
+      .collect())
   }
 
   pub fn app_main_get(&self, app_id: &AppId) -> Result<EgoStoreApp, EgoError> {
@@ -102,9 +95,11 @@ impl EgoStore {
       Some(wallet) => Ok(wallet
         .apps
         .iter()
-        .map(|(app_id, user_app)| {
-          let app = App::from(self.apps.get(app_id).unwrap().clone());
-          UserApp::new(user_app, &app)
+        .map(|(_canister_id, user_app)| {
+          let app = &self.apps.get(&user_app.app.app_id).unwrap().app;
+          let mut ret_user_app = user_app.clone();
+          ret_user_app.latest_version = app.current_version;
+          ret_user_app
         })
         .collect()),
     }
@@ -113,15 +108,17 @@ impl EgoStore {
   pub fn wallet_app_get(
     &self,
     wallet_id: &Principal,
-    app_id: &AppId,
+    canister_id: &Principal,
   ) -> Result<UserApp, EgoError> {
     match self.wallets.get(wallet_id) {
       None => Err(EgoStoreErr::WalletNotExists.into()),
-      Some(wallet) => match wallet.apps.get(app_id) {
+      Some(wallet) => match wallet.apps.get(canister_id) {
         None => Err(EgoStoreErr::AppNotInstall.into()),
         Some(user_app) => {
-          let app = App::from(self.apps.get(app_id).unwrap().clone());
-          Ok(UserApp::new(user_app, &app))
+          let app = &self.apps.get(&user_app.app.app_id).unwrap().app;
+          let mut ret_user_app = user_app.clone();
+          ret_user_app.latest_version = app.current_version;
+          Ok(ret_user_app)
         }
       },
     }
@@ -130,36 +127,32 @@ impl EgoStore {
   pub fn wallet_app_install(
     &mut self,
     wallet_id: &Principal,
-    app_id: &AppId,
-    user_app: &WalletApp,
+    user_app: &UserApp,
   ) {
     self.wallets
       .get_mut(wallet_id)
       .unwrap()
-      .app_install(app_id, user_app);
+      .app_install(user_app);
   }
 
-  pub fn wallet_app_upgrade(&mut self, wallet_id: &Principal, app_id: &AppId, version: &Version) {
+  pub fn wallet_app_upgrade(&mut self, wallet_id: &Principal, user_app: &UserApp, ego_store_app: &EgoStoreApp) {
     self.wallets
       .get_mut(wallet_id)
       .unwrap()
-      .app_upgrade(app_id, version);
+      .app_upgrade(user_app, ego_store_app);
   }
 
   pub fn wallet_app_remove(
     &mut self,
     wallet_id: &Principal,
-    app_id: &AppId,
+    canister_id: &Principal,
   ) -> Result<(), EgoError> {
     match self.wallets.get_mut(wallet_id) {
       None => Err(EgoStoreErr::WalletNotExists.into()),
-      Some(wallet) => match self.apps.get(app_id) {
-        None => Err(EgoStoreErr::AppNotExists.into()),
-        Some(_app) => {
-          wallet.app_remove(&app_id);
-          Ok(())
-        }
-      },
+      Some(wallet) => {
+        wallet.app_remove(canister_id);
+        Ok(())
+      }
     }
   }
 
@@ -273,23 +266,13 @@ impl EgoStore {
     self.wallet_providers.entry(wallet_provider.clone()).and_modify(|provider| provider.app_id = wallet_id.clone()).or_insert(WalletProvider::new(wallet_provider, wallet_id));
   }
 
-  pub fn app_main_release(&mut self, app: EgoStoreApp) -> Result<bool, EgoError> {
+  pub fn app_main_release(&mut self, ego_store_app: EgoStoreApp) -> Result<bool, EgoError> {
     self.apps
-      .entry(app.app_id.clone())
-      .and_modify(|exists_app| *exists_app = app.clone())
-      .or_insert(app);
+      .entry(ego_store_app.app.app_id.clone())
+      .and_modify(|exists_app| *exists_app = ego_store_app.clone())
+      .or_insert(ego_store_app);
 
     Ok(true)
-  }
-
-  pub fn user_app_get(&self, wallet_id: &Principal, app_id: &AppId) -> Result<WalletApp, EgoError> {
-    match self.wallets.get(wallet_id) {
-      None => Err(EgoStoreErr::WalletNotExists.into()),
-      Some(wallet) => match wallet.apps.get(app_id) {
-        None => Err(EgoStoreErr::AppNotInstall.into()),
-        Some(user_app) => Ok(user_app.clone()),
-      },
-    }
   }
 
   pub fn tenant_get(&self) -> Result<Principal, EgoError> {

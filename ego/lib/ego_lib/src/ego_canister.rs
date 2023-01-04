@@ -29,9 +29,12 @@ pub trait TEgoCanister {
   async fn balance_get(&self, target_canister_id: Principal) -> Result<u128, String>;
 
   // app info
-  fn app_info_update(&self, target_canister_id: Principal, app_id: AppId, version: Version);
+  async fn app_info_update(&self, target_canister_id: Principal, wallet_id: Principal, app_id: AppId, version: Version) -> Result<(), String>;
   async fn app_info_get(&self, target_canister_id: Principal) -> Result<AppInfo, String>;
   async fn app_version_check(&self, target_canister_id: Principal) -> Result<App, String>;
+
+  // canister upgrade
+  fn ego_canister_upgrade(&self, target_canister_id: Principal);
 }
 
 pub struct EgoCanister {}
@@ -69,7 +72,7 @@ impl TEgoCanister for EgoCanister {
   }
 
   fn ego_op_add(&self, target_canister_id: Principal, user_id: Principal) {
-    let _result = api::call::notify(target_canister_id, "role_op_add", (user_id, ));
+    let _result = api::call::notify(target_canister_id, "ego_op_add", (user_id, ));
   }
 
   fn ego_canister_add(&self, target_canister_id: Principal, name: String, principal: Principal) {
@@ -127,8 +130,23 @@ impl TEgoCanister for EgoCanister {
     }
   }
 
-  fn app_info_update(&self, target_canister_id: Principal, app_id: AppId, version: Version) {
-    let _result = api::call::notify(target_canister_id, "app_info_update", (app_id, version, ));
+  async fn app_info_update(&self, target_canister_id: Principal, wallet_id: Principal, app_id: AppId, version: Version) -> Result<(), String> {
+    // let _result = api::call::notify(target_canister_id, "app_info_update", (wallet_id, app_id, version, ));
+
+    let call_result = api::call::call(target_canister_id, "app_info_update", (wallet_id, app_id, version, )).await
+      as Result<(Result<(), String>, ), (RejectionCode, String)>;
+
+    match call_result {
+      Ok(resp) => {
+        match resp.0 {
+          Ok(_) => Ok(()),
+          Err(msg) => Err(msg)
+        }
+      }
+      Err((_code, msg)) => {
+        Err(msg)
+      }
+    }
   }
 
   async fn app_info_get(&self, target_canister_id: Principal) -> Result<AppInfo, String> {
@@ -147,8 +165,9 @@ impl TEgoCanister for EgoCanister {
       }
     }
   }
+
   async fn app_version_check(&self, target_canister_id: Principal) -> Result<App, String> {
-    let call_result = api::call::call(target_canister_id, "app_info_get", ()).await
+    let call_result = api::call::call(target_canister_id, "app_version_check", ()).await
       as Result<(Result<App, String>, ), (RejectionCode, String)>;
 
     match call_result {
@@ -162,5 +181,9 @@ impl TEgoCanister for EgoCanister {
         Err(msg)
       }
     }
+  }
+
+  fn ego_canister_upgrade(&self, target_canister_id: Principal) {
+    let _result = api::call::notify(target_canister_id, "ego_canister_upgrade", ());
   }
 }

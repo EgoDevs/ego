@@ -83,13 +83,9 @@ describe('scripts', () => {
   test('app_main_list', async () => {
     const deployer = await egoStoreDeployerActor;
 
-    console.log(`\t\t list System app\n`);
-    let resp1 = await deployer.app_main_list({ query_param: { 'ByCategory' : { 'category' : { 'System' : null } } } });
+    console.log(`\t\t list app\n`);
+    let resp1 = await deployer.app_main_list();
     console.log(resp1.Ok.apps);
-
-    console.log(`\t\t list Vault app\n`);
-    let resp2 = await deployer.app_main_list({ query_param: { 'ByCategory' : { 'category' : { 'Vault' : null } } } });
-    console.log(resp2.Ok.apps);
   });
 
   test('get_log', async () => {

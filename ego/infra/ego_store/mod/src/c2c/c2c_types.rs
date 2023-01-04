@@ -23,30 +23,9 @@ pub struct AppMainInstallRequest {
   pub wasm: Wasm,
 }
 
-#[derive(CandidType, Deserialize, Serialize)]
-pub struct AppMainInstallResponse {
-  pub canister_id: Principal,
-}
 
 #[derive(CandidType, Deserialize, Serialize)]
 pub struct AppMainUpgradeRequest {
   pub canister_id: Principal,
   pub wasm: Wasm,
-}
-
-#[derive(CandidType, Deserialize, Serialize)]
-pub struct AppMainUpgradeResponse {
-  pub ret: bool,
-}
-
-#[derive(CandidType, Deserialize, Serialize)]
-pub struct CanisterMainTrackRequest {
-  pub wallet_id: Principal,
-  pub canister_id: Principal,
-}
-
-#[derive(CandidType, Deserialize, Serialize)]
-pub struct CanisterMainUnTrackRequest {
-  pub wallet_id: Principal,
-  pub canister_id: Principal,
 }

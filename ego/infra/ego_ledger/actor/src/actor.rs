@@ -1,10 +1,7 @@
 use std::collections::BTreeMap;
 use std::time::Duration;
 
-use ego_types::registry::Registry;
-use ego_types::user::User;
 use candid::candid_method;
-use ego_macros::{inject_ego_controller, inject_ego_log, inject_ego_registry, inject_ego_user};
 use ic_cdk::{api, caller, id, storage};
 use ic_cdk::export::candid::{CandidType, Deserialize};
 use ic_cdk::export::Principal;
@@ -23,12 +20,12 @@ use ego_ledger_mod::state::EGO_LEDGER;
 use ego_ledger_mod::types::{
   LedgerMainInitRequest, LedgerPaymentAddRequest,
 };
+use ego_macros::inject_ego_api;
 use ego_types::app::EgoError;
+use ego_types::registry::Registry;
+use ego_types::user::User;
 
-inject_ego_user!();
-inject_ego_registry!();
-inject_ego_controller!();
-inject_ego_log!();
+inject_ego_api!();
 
 
 #[derive(Clone, Debug, CandidType, Deserialize)]

@@ -2,7 +2,7 @@ use ic_cdk::export::candid::{CandidType, Deserialize};
 use ic_cdk::export::Principal;
 use serde::Serialize;
 
-use ego_types::app::{AppId, Category, DeployMode, FileId};
+use ego_types::app::{AppId, Category, FileId};
 use ego_types::app::EgoError;
 use ego_types::app::Version;
 
@@ -50,21 +50,6 @@ impl From<EgoDevErr> for EgoError {
   }
 }
 
-#[derive(CandidType, Deserialize, Serialize)]
-pub struct AppMainGetRequest {
-  pub app_id: AppId,
-}
-
-#[derive(CandidType, Deserialize, Serialize)]
-pub struct AppMainGetResponse {
-  pub app: EgoDevApp,
-}
-
-impl AppMainGetResponse {
-  pub fn to_string(&self) -> String {
-    self.app.to_string()
-  }
-}
 
 #[derive(CandidType, Deserialize, Serialize)]
 pub struct AppMainNewRequest {
@@ -76,21 +61,6 @@ pub struct AppMainNewRequest {
   pub price: f32,
 }
 
-#[derive(CandidType, Deserialize, Serialize)]
-pub struct AppMainNewResponse {
-  pub app: EgoDevApp,
-}
-
-#[derive(CandidType, Deserialize, Serialize)]
-pub struct AppVersionNewRequest {
-  pub app_id: AppId,
-  pub version: Version,
-}
-
-#[derive(CandidType, Deserialize, Serialize)]
-pub struct AppVersionNewResponse {
-  pub app_version: AppVersion,
-}
 
 #[derive(CandidType, Deserialize)]
 pub struct AppVersionUploadWasmRequest {
@@ -100,43 +70,11 @@ pub struct AppVersionUploadWasmRequest {
   pub hash: String,
 }
 
-#[derive(CandidType, Deserialize)]
-pub struct AppVersionUploadWasmResponse {
-  pub ret: bool,
-}
-
 #[derive(CandidType, Deserialize, Serialize)]
 pub struct AppVersionSetFrontendAddressRequest {
   pub app_id: AppId,
   pub version: Version,
   pub canister_id: Principal,
-}
-
-#[derive(CandidType, Deserialize, Serialize)]
-pub struct AppVersionSetFrontendAddressResponse {
-  pub ret: bool,
-}
-
-#[derive(CandidType, Deserialize, Serialize)]
-pub struct AppVersionSubmitRequest {
-  pub app_id: AppId,
-  pub version: Version,
-}
-
-#[derive(CandidType, Deserialize, Serialize)]
-pub struct AppVersionSubmitResponse {
-  pub app_version: AppVersion,
-}
-
-#[derive(CandidType, Deserialize, Serialize)]
-pub struct AppVersionRevokeRequest {
-  pub app_id: AppId,
-  pub version: Version,
-}
-
-#[derive(CandidType, Deserialize, Serialize)]
-pub struct AppVersionRevokeResponse {
-  pub app_version: AppVersion,
 }
 
 #[derive(CandidType, Deserialize, Serialize)]
@@ -161,17 +99,6 @@ pub struct AppVersionApproveResponse {
   pub app_version: AppVersion,
 }
 
-#[derive(CandidType, Deserialize, Serialize)]
-pub struct AppVersionRejectRequest {
-  pub app_id: AppId,
-  pub version: Version,
-}
-
-#[derive(CandidType, Deserialize, Serialize)]
-pub struct AppVersionRejectResponse {
-  pub app_version: AppVersion,
-}
-
 /*------------- For Development Used Only ------------------*/
 #[derive(CandidType, Deserialize, Serialize)]
 pub struct FileUploadSuccessRequest {
@@ -180,35 +107,12 @@ pub struct FileUploadSuccessRequest {
   pub fid: FileId,
 }
 
-#[derive(CandidType, Deserialize, Serialize)]
-pub struct RegisterDeveloperRequest {
-  pub name: String,
-}
-
-#[derive(CandidType, Deserialize, Serialize)]
-pub struct RegisterDeveloperResponse {
-  pub user: Developer,
-}
-
-#[derive(CandidType, Deserialize, Serialize)]
-pub struct DeveloperMainRegisterRequest {
-  pub name: String,
-}
-
-#[derive(CandidType, Deserialize, Serialize)]
-pub struct DeveloperMainRegisterResponse {
-  pub developer: Developer,
-}
 
 #[derive(CandidType, Deserialize, Serialize)]
 pub struct DeveloperAppListResponse {
   pub apps: Vec<EgoDevApp>,
 }
 
-#[derive(CandidType, Deserialize, Serialize)]
-pub struct AppVersionWaitForAuditResponse {
-  pub apps: Vec<EgoDevApp>,
-}
 
 #[derive(CandidType, Deserialize, Serialize)]
 pub struct DeveloperMainGetResponse {
@@ -227,10 +131,6 @@ pub struct UserRoleSetResponse {
   pub ret: bool,
 }
 
-#[derive(CandidType, Deserialize, Serialize)]
-pub struct UserMainListRequest {
-  pub name: String,
-}
 
 #[derive(CandidType, Deserialize, Serialize)]
 pub struct UserMainListResponse {
@@ -238,7 +138,7 @@ pub struct UserMainListResponse {
 }
 
 #[derive(CandidType, Deserialize, Serialize)]
-pub struct AdminAppCreateRequest {
+pub struct AdminAppCreateBackendRequest {
   pub app_id: AppId,
   pub name: String,
   pub category: Category,
@@ -247,8 +147,6 @@ pub struct AdminAppCreateRequest {
   pub version: Version,
   pub backend_data: Vec<u8>,
   pub backend_data_hash: String,
-  pub frontend: Option<Principal>,
-  pub deploy_mode: DeployMode,
 }
 
 #[derive(CandidType, Deserialize, Serialize)]

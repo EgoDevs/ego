@@ -1,8 +1,8 @@
 use ic_cdk::export::Principal;
-use ego_types::app::{AppId, Category, DeployMode, EgoError, Version};
+
+use ego_types::app::{AppId, Category, EgoError, Version};
 
 use crate::c2c::ego_dev::TEgoDev;
-
 
 pub struct EgoOpsService {}
 
@@ -17,11 +17,9 @@ impl EgoOpsService {
     logo: String,
     description: String,
     backend_data: Vec<u8>,
-    backend_hash: String,
-    frontend: Option<Principal>,
-    deploy_mode: DeployMode,
+    backend_data_hash: String,
   ) -> Result<bool, EgoError> {
-    if get_md5(&backend_data) == backend_hash {
+    if get_md5(&backend_data) == backend_data_hash {
       ego_dev
         .admin_app_create(
           ego_dev_id,
@@ -32,9 +30,7 @@ impl EgoOpsService {
           logo,
           description,
           backend_data,
-          backend_hash,
-          frontend,
-          deploy_mode,
+          backend_data_hash,
         );
 
       Ok(true)

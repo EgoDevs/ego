@@ -3,7 +3,7 @@ use std::collections::BTreeMap;
 use ic_cdk::export::candid::{CandidType, Deserialize};
 use ic_cdk::export::Principal;
 
-use ego_types::app::{AppId, Category, DeployMode, Version};
+use ego_types::app::{AppId, Category, Version};
 
 #[derive(CandidType, Deserialize)]
 pub struct CanisterMainListResponse {
@@ -19,9 +19,7 @@ pub struct AdminAppCreateRequest {
   pub description: String,
   pub version: Version,
   pub backend_data: Vec<u8>,
-  pub backend_hash: String,
-  pub frontend: Option<Principal>,
-  pub deploy_mode: DeployMode,
+  pub backend_data_hash: String,
 }
 
 

@@ -1,9 +1,6 @@
 use std::collections::BTreeMap;
 
-use ego_types::registry::Registry;
-use ego_types::user::User;
 use candid::{candid_method, Decode, Encode};
-use ego_macros::{inject_ego_controller, inject_ego_log, inject_ego_registry, inject_ego_user};
 use ic_cdk::{caller, trap};
 use ic_cdk::api::stable::{stable64_grow, stable64_read, stable64_write};
 use ic_cdk::export::candid::{CandidType, Deserialize};
@@ -14,16 +11,13 @@ use ego_file_mod::service::EgoFileService;
 use ego_file_mod::state::{canister_add, is_op, is_owner, is_user, log_add, log_list, op_add, owner_add, owner_remove, owners_set, registry_post_upgrade, registry_pre_upgrade, user_add, user_remove, users_post_upgrade, users_pre_upgrade, users_set};
 use ego_file_mod::state::STORAGE;
 use ego_file_mod::storage::{DEFAULT_FILE_SIZE, HEADER_SIZE, Storage, WASM_PAGE_SIZE};
-use ego_file_mod::types::{
-  EgoFileError, FileMainReadRequest, FileMainReadResponse, FileMainWriteRequest,
-  FileMainWriteResponse,
-};
-use ego_types::app::EgoError;
+use ego_file_mod::types::EgoFileError;
+use ego_macros::inject_ego_api;
+use ego_types::app::{EgoError, FileId};
+use ego_types::registry::Registry;
+use ego_types::user::User;
 
-inject_ego_user!();
-inject_ego_registry!();
-inject_ego_controller!();
-inject_ego_log!();
+inject_ego_api!();
 
 #[derive(Clone, Debug, CandidType, Deserialize)]
 pub struct InitArg {
@@ -71,20 +65,20 @@ fn post_upgrade() {
 /********************  file method ********************/
 #[update(name = "file_main_write", guard = "user_guard")]
 #[candid_method(update, rename = "file_main_write")]
-fn file_main_write(req: FileMainWriteRequest) -> Result<FileMainWriteResponse, EgoError> {
+fn file_main_write(fid: FileId, hash: String, data: Vec<u8>) -> Result<bool, EgoError> {
   log_add("ego-file: file_main_write");
 
-  let ret = EgoFileService::file_main_write(&req.fid, &req.hash, req.data)?;
-  Ok(FileMainWriteResponse { ret })
+  let ret = EgoFileService::file_main_write(&fid, &hash, data)?;
+  Ok(ret)
 }
 
 #[query(name = "file_main_read", guard = "user_guard")]
 #[candid_method(query, rename = "file_main_read")]
-fn file_main_read(req: FileMainReadRequest) -> Result<FileMainReadResponse, EgoError> {
+fn file_main_read(fid: FileId) -> Result<Vec<u8>, EgoError> {
   log_add("ego-file: file_main_read");
 
-  let data = EgoFileService::file_main_read(&req.fid)?;
-  Ok(FileMainReadResponse { data })
+  let data = EgoFileService::file_main_read(&fid)?;
+  Ok(data)
 }
 
 #[derive(CandidType, Deserialize)]

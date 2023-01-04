@@ -2,7 +2,7 @@ use ic_cdk::export::candid::{CandidType, Deserialize};
 use ic_cdk::export::Principal;
 use serde::Serialize;
 
-use ego_types::app::{AppId, Category, DeployMode, Wasm};
+use ego_types::app::{App, AppId, Category, Wasm};
 use ego_types::app::CanisterType::{ASSET, BACKEND};
 use ego_types::app::EgoError;
 use ego_types::app::Version;
@@ -12,27 +12,20 @@ use crate::types::EgoDevErr;
 /********************  app  ********************/
 #[derive(CandidType, Serialize, Deserialize, Clone, Debug)]
 pub struct EgoDevApp {
-  pub app_id: AppId,
+  pub app: App,
   pub developer_id: Principal,
-  pub category: Category,
-  pub name: String,
-  pub logo: String,
-  pub description: String,
-  pub release_version: Option<Version>,
-  pub audit_version: Option<Version>,
   pub versions: Vec<AppVersion>,
-  pub price: f32,
-  pub deploy_mode: DeployMode,
+  pub audit_version: Option<Version>,
 }
 
 impl EgoDevApp {
   pub fn to_string(&self) -> String {
     format!(
       "app_id: {:?},user_id:{:?},category:{:?},release_version:{:?},versions:{:?},",
-      self.app_id,
+      self.app.app_id,
       self.developer_id.to_text(),
-      self.category,
-      self.release_version,
+      self.app.category,
+      self.app.current_version,
       self.versions
     )
   }
@@ -47,20 +40,12 @@ impl EgoDevApp {
     description: String,
     category: Category,
     price: f32,
-    deploy_mode: DeployMode,
   ) -> Self {
     EgoDevApp {
-      app_id,
+      app: App::new(app_id, name, category, logo, description, Version::default(), price),
       developer_id: user_id,
-      name,
-      logo,
-      description,
-      category,
-      release_version: None,
       audit_version: None,
       versions: vec![],
-      price,
-      deploy_mode,
     }
   }
 
@@ -85,7 +70,7 @@ impl EgoDevApp {
       Some(_) => Err(EgoDevErr::VersionExists.into()),
       None => {
         let app_version =
-          AppVersion::new(self.app_id.clone(), ego_file_canister_id, version);
+          AppVersion::new(self.app.app_id.clone(), ego_file_canister_id, version);
         self.versions.push(app_version.clone());
         Ok(app_version)
       }
@@ -117,7 +102,7 @@ impl EgoDevApp {
   }
 
   pub fn version_release(&mut self, version: Version) -> Result<AppVersion, EgoError> {
-    self.release_version = Some(version);
+    self.app.current_version = version;
 
     match self.version_get_mut(version) {
       Some(app_ver) => {
@@ -153,7 +138,7 @@ impl EgoDevApp {
   }
 
   pub fn released_version(&self) -> Result<AppVersion, EgoError> {
-    match self.version_get(self.release_version.unwrap()) {
+    match self.version_get(self.app.current_version) {
       Some(app_version) => Ok(app_version.clone()),
       None => Err(EgoDevErr::VersionNotExists.into()),
     }
@@ -167,8 +152,7 @@ pub struct AppVersion {
   pub version: Version,
   pub status: AppVersionStatus,
   pub file_id: Principal,
-  pub frontend: Option<Wasm>,
-  pub backend: Option<Wasm>,
+  pub wasm: Option<Wasm>,
 }
 
 #[derive(
@@ -196,14 +180,13 @@ impl AppVersion {
       version,
       status: AppVersionStatus::NEW,
       file_id: ego_file_canister_id,
-      frontend: None,
-      backend: None,
+      wasm: None,
     }
   }
 
   pub fn frontend_update(&mut self, frontend_id: Principal) -> Wasm {
-    if self.frontend.is_none() {
-      self.frontend = Some(Wasm::new(
+    if self.wasm.is_none() {
+      self.wasm = Some(Wasm::new(
         self.app_id.clone(),
         self.version,
         ASSET,
@@ -211,12 +194,12 @@ impl AppVersion {
       ));
     }
 
-    self.frontend.clone().unwrap()
+    self.wasm.clone().unwrap()
   }
 
   pub fn backend_update(&mut self) -> Wasm {
-    if self.backend.is_none() {
-      self.backend = Some(Wasm::new(
+    if self.wasm.is_none() {
+      self.wasm = Some(Wasm::new(
         self.app_id.clone(),
         self.version,
         BACKEND,
@@ -224,6 +207,6 @@ impl AppVersion {
       ));
     }
 
-    self.backend.clone().unwrap()
+    self.wasm.clone().unwrap()
   }
 }

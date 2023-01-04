@@ -8,9 +8,9 @@ fn main() {}
 #[cfg(not(any(target_arch = "wasm32", test)))]
 fn main() {
   use crate::actor::InitArg;
-  use ego_file_mod::types::*;
   use ego_types::app::EgoError;
   use ic_cdk::export::Principal;
+  use ego_types::app::FileId;
 
   candid::export_service!();
   std::print!("{}", __export_service());

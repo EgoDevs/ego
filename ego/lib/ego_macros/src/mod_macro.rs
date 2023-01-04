@@ -33,7 +33,7 @@ macro_rules! inject_app_info {
 
 
 #[macro_export]
-macro_rules! inject_canister_log {
+macro_rules! inject_ego_data {
     () => {
         thread_local! {
           pub static LOG: RefCell<Log> = RefCell::new(Log::new());
@@ -53,13 +53,7 @@ macro_rules! inject_canister_log {
         pub fn log_clear(remain: usize) {
             LOG.with(|s| s.borrow_mut().log_clear(remain));
         }
-    };
-}
 
-// macro user should implement the on_canister_added method
-#[macro_export]
-macro_rules! inject_canister_registry {
-    () => {
         thread_local! {
           pub static REGISTRY: RefCell<Registry> = RefCell::new(Registry::default());
         }
@@ -99,12 +93,7 @@ macro_rules! inject_canister_registry {
         pub fn registry_post_upgrade(stable_state: Registry) {
             REGISTRY.with(|s| s.replace(stable_state));
         }
-    };
-}
 
-#[macro_export]
-macro_rules! inject_canister_users {
-    () => {
         thread_local! {
           pub static USER: RefCell<User> = RefCell::new(User::default());
         }
@@ -199,17 +188,5 @@ macro_rules! inject_canister_users {
         pub fn users_post_upgrade(stable_state: User) {
             USER.with(|s| s.replace(stable_state));
         }
-    };
-}
-
-#[macro_export]
-macro_rules! inject_canister_all {
-    () => {
-        use ego_macros::{inject_app_info, inject_canister_log, inject_canister_registry, inject_canister_users};
-
-        inject_app_info!();
-        inject_canister_log!();
-        inject_canister_registry!();
-        inject_canister_users!();
     }
 }
