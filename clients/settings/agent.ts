@@ -26,7 +26,7 @@ export async function _createActor<T>(
 ): Promise<CreateActorResult<T>> {
   const agent = new HttpAgent({
     identity,
-    host: host ?? !isProduction ? 'http://localhost:8000' : 'https://ic0.app',
+    host: host ?? !isProduction ? 'http://127.0.0.1:8000' : 'https://ic0.app',
   });
   // Only fetch the root key when we're not in prod
   if (!isProduction) {
