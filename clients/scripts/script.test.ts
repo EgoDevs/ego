@@ -48,8 +48,9 @@ describe('scripts', () => {
 
     for (const user_name of user_names) {
       console.log(`\t\t set role for ${user_name}\n`);
-      let resp1 = await deployer.user_main_list({ name: user_name });
-      for (const user of (resp1 as any).Ok.users) {
+      let resp1 = await deployer.user_main_list( user_name );
+      console.log(`resp1`, resp1);
+      for (const user of (resp1 as any).Ok) {
         let resp = await deployer.user_role_set({
           user_id: user.user_id,
           is_app_auditor: true,
@@ -68,18 +69,6 @@ describe('scripts', () => {
   //   console.log(resp);
   // });
 
-  test('set_wallet_provider', async () => {
-    const deployer = await egoOpsDeployerActor;
-
-    let me_v1_canister_id = Principal.fromText("q4eej-kyaaa-aaaaa-aaaha-cai");
-
-    console.log(me_v1_canister_id);
-
-    console.log(`\t\t set me_v1 wallet provider\n`);
-    let resp1 = await deployer.admin_wallet_provider_add({ wallet_provider: me_v1_canister_id, wallet_app_id: 'astrox_controller' });
-    console.log(resp1);
-  });
-
   test('app_main_list', async () => {
     const deployer = await egoStoreDeployerActor;
 
@@ -92,7 +81,7 @@ describe('scripts', () => {
     const deployer = await egoOpsDeployerActor;
 
     console.log(`\t\t create an order\n`);
-    let logs = await deployer.ego_log_list(BigInt(Date.now() - 3600 * 24));
+    let logs = deployer.ego_log_list(BigInt(26));
     console.log(logs)
   })
 
@@ -124,23 +113,15 @@ describe('scripts', () => {
     await deployer.ledger_main_init({start: BigInt(4789139)});
   })
 
-  // list canister of ego_store
-  test('canister_list', async () => {
-    const deployer = await egoStoreDeployerActor;
+  test('add_ops_owner', async () => {
+    const deployer = await egoOpsDeployerActor;
 
-    console.log(`\t\t list ego_store registered canister\n`);
-    let resp = await deployer.ego_canister_list();
-    let canisters = resp.Ok
-    canisters.forEach(entry => {
-      let [name, canister_ids] = entry
-      console.log(name)
-      canister_ids.forEach(canister_id => {
-        console.log(`\t\t ${canister_id}`)
-      })
-    })
+    let principal = Principal.fromText("replace_this");
+    let resp = await deployer.ego_owner_add(principal);
+    console.log(resp)
   })
 
-  // list canister of ego_store
+  // list payment of ego_ledger
   test('ledger_payment_list', async () => {
     const deployer = await egoLedgerDeployerActor;
 

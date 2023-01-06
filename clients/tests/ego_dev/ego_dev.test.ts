@@ -207,19 +207,20 @@ describe('app developer', () => {
 
     test('register developer', async () => {
         let resp1 = await app_developers[0].developer_main_register('developer 1');
-        let developer = resp1.Ok.developer;
-
-        expect(developer.user_id.toString()).toBe(developers[0].principal)
+        let developer = resp1.Ok;
+        console.log("resp1", resp1);
+        expect(developer.developer_id.toString()).toBe(developers[0].principal)
         expect(developer.name).toBe('developer 1')
 
         let resp2 = await app_developers[1].developer_main_register('developer 2');
-        developer = resp2.Ok.developer;
-        expect(developer.user_id.toString()).toBe(developers[1].principal)
+        developer = resp2.Ok;
+        console.log("resp2", resp2);
+        expect(developer.developer_id.toString()).toBe(developers[1].principal)
         expect(developer.name).toBe('developer 2')
 
         let resp3 = await app_developers[0].developer_main_get();
-        developer = resp3.Ok.developer;
-        expect(developer.user_id.toString()).toBe(developers[0].principal)
+        developer = resp3.Ok;
+        expect(developer.developer_id.toString()).toBe(developers[0].principal)
         expect(developer.name).toBe('developer 1')
     });
 
