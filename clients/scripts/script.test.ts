@@ -113,15 +113,6 @@ describe('scripts', () => {
     await deployer.ledger_main_init({start: BigInt(4789139)});
   })
 
-  test('add_ops_owner', async () => {
-    const deployer = await egoOpsDeployerActor;
-
-    let principal = Principal.fromText("replace_this");
-    let resp = await deployer.ego_owner_add(principal);
-    console.log(resp)
-  })
-
-  // list payment of ego_ledger
   test('ledger_payment_list', async () => {
     const deployer = await egoLedgerDeployerActor;
 
@@ -131,5 +122,13 @@ describe('scripts', () => {
     payments.forEach(payment => {
       console.log(payment)
     })
+  })
+
+  test('add_ops_owner', async () => {
+    const deployer = await egoOpsDeployerActor;
+
+    let principal = Principal.fromText("replace_this");
+    let resp = await deployer.ego_owner_add(principal);
+    console.log(resp)
   })
 });
