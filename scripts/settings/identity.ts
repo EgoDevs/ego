@@ -1,10 +1,6 @@
 import fs from 'fs';
 import path from 'path';
 import { Secp256k1KeyIdentity } from '@dfinity/identity';
-// import bip39 from 'bip39';
-// import BIP32Factory from 'bip32';
-// import { BIP32Interface } from 'bip32';
-// import ecc from 'tiny-secp256k1';
 
 const BIP32Factory = require('bip32');
 const bip39 = require('bip39');
