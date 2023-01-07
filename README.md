@@ -13,6 +13,7 @@ There are at least 3 different roles in EGO.
 - rust
 - nodejs
 - dfx client
+- didc
 
 ```bash
 sh -ci "$(curl -fsSL https://smartcontracts.org/install.sh)"

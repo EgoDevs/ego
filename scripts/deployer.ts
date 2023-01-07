@@ -1,9 +1,6 @@
-import file from 'fs';
+import file, { fstat } from 'fs';
 import shell from 'shelljs';
 import yargs from 'yargs';
-import fs from 'fs';
-import path from 'path';
-import { Secp256k1KeyIdentity } from '@dfinity/identity';
 import { appsConfig, infraConfig, dfxConfigTemplate, Configs } from './config';
 import {
   cycleWalletActor,
@@ -13,48 +10,11 @@ import {
   readEgoDfxJson,
   readWasm,
 } from './manager';
-import { Actor, getManagementCanister } from '@dfinity/agent';
 import { Principal } from '@dfinity/principal';
-import { isProduction } from './env';
-// import curve from 'starkbank-ecdsa';
+import { artifacts, cyclesCreateCanister, isProduction } from './env';
 import { identity } from './settings/identity';
 import { hasOwnProperty } from './settings/utils';
 import { IDL } from '@dfinity/candid';
-
-// const BIP32Factory = require('bip32');
-// const bip39 = require('bip39');
-// const ecc = require('tiny-secp256k1');
-
-// function getIdentityFromPhrase(phrase: string) {
-//   const seed = bip39.mnemonicToSeedSync(phrase);
-
-//   const ICP_PATH = "m/44'/223'/0'";
-//   const path = `${ICP_PATH}/0/0`;
-
-//   const bip32 = BIP32Factory.default(ecc);
-
-//   let node = bip32.fromSeed(seed);
-
-//   let child = node.derivePath(path);
-
-//   return Secp256k1KeyIdentity.fromSecretKey(child.privateKey);
-//   // return seed;
-// }
-
-// const seedPhrase = fs
-//   .readFileSync(
-//     path.join(
-//       process.cwd(),
-//       '/credentials',
-//       !isProduction ? '/internal.txt' : '/production.txt',
-//     ),
-//     {
-//       encoding: 'utf8',
-//     },
-//   )
-//   .toString();
-
-// export const identity = getIdentityFromPhrase(seedPhrase);
 
 interface ThisArgv {
   [x: string]: unknown;
@@ -67,6 +27,7 @@ interface ThisArgv {
   upgrade: boolean | undefined;
   project: string | undefined;
   remove: string | undefined;
+  postPatch: boolean | undefined;
   _: (string | number)[];
   $0: string;
 }
@@ -97,6 +58,11 @@ const argv = yargs
     description: 'upgrade only',
     type: 'boolean',
   })
+  .option('postPatch', {
+    alias: 'post',
+    description: 'postPatch only',
+    type: 'boolean',
+  })
   .option('project', {
     alias: 'p',
     description: 'upgrade only',
@@ -122,7 +88,8 @@ function getEgos(): Configs {
       if (
         (argv as ThisArgv).install ||
         (argv as ThisArgv).reinstall ||
-        (argv as ThisArgv).upgrade
+        (argv as ThisArgv).upgrade ||
+        (argv as ThisArgv).postPatch
       ) {
         egos = [{ ...ego, no_deploy: false }];
       } else {
@@ -143,7 +110,7 @@ function getEgos(): Configs {
 
 function runClean() {
   for (const f of getEgos()) {
-    const dfx_folder = process.cwd() + '/' + 'artifacts' + '/' + f.package;
+    const dfx_folder = process.cwd() + '/' + `${artifacts}` + '/' + f.package;
     // const dfx_sh = dfx_folder + '/dfx.sh';
     shell.exec(`rm -rf ${dfx_folder}`);
   }
@@ -153,28 +120,34 @@ function checkAndArtifacts() {
     let folder_exist = true;
     try {
       folder_exist = file.existsSync(
-        `${process.cwd()}/artifacts/${ego.package}`,
+        `${process.cwd()}/${artifacts}/${ego.package}`,
       );
     } catch (error) {
       folder_exist = false;
     }
 
     if (!folder_exist) {
-      shell.exec(`mkdir ${process.cwd()}/artifacts/${ego.package}`);
+      shell.exec(`mkdir ${process.cwd()}/${artifacts}/${ego.package}`);
+      shell.exec(`mkdir ${process.cwd()}/${artifacts}/${ego.package}/.dfx`);
+      shell.exec(
+        `mkdir ${process.cwd()}/${artifacts}/${ego.package}/.dfx/local`,
+      );
     }
   }
 }
 
 function generateDFXJson() {
   for (const ego of getEgos()) {
-    let shouldSaveName = `${process.cwd()}/artifacts/${ego.package}/dfx.json`;
+    let shouldSaveName = `${process.cwd()}/${artifacts}/${
+      ego.package
+    }/dfx.json`;
     shell.exec(`rm -rf ${shouldSaveName}`);
     const packageItem = {};
 
     packageItem[ego.package] = {
       type: 'custom',
       candid: `${ego.package}.did`,
-      wasm: `${ego.package}_opt.wasm`,
+      wasm: `${ego.package}_opt.wasm.gz`,
       build: [],
     };
     // dfxConfigTemplate.canisters
@@ -189,7 +162,10 @@ async function runCreate() {
   const walletActor = (await cycleWalletActor()).actor;
 
   for (const f of getEgos()) {
-    const dfx_folder = process.cwd() + '/' + 'artifacts' + '/' + f.package;
+    const dfx_folder =
+      process.cwd() + '/' + `${artifacts}` + '/' + f.package + '/.dfx';
+    const dfx_local_json = dfx_folder + '/local/canister_ids.json';
+    const dfx_ic_json = dfx_folder + '/ic/canister_ids.json';
 
     if (!f.no_deploy) {
       let canister_id;
@@ -209,7 +185,7 @@ async function runCreate() {
         ).canister_id;
       } else {
         const walletCreateResult = await walletActor.wallet_create_canister({
-          cycles: BigInt(200_000_000_000),
+          cycles: cyclesCreateCanister,
           settings: {
             freezing_threshold: [],
             controller: [],
@@ -259,6 +235,9 @@ async function runCreate() {
         }
 
         file.writeFileSync(f.config, JSON.stringify(configObject));
+        const json = {};
+        json[f.package] = { local: canister_id.toText() };
+        file.writeFileSync(dfx_local_json, JSON.stringify(json));
       } else {
         const productionId = canister_id.toText();
         console.log(`Creating canister ${f.package}...`);
@@ -289,9 +268,12 @@ async function runCreate() {
 
         file.writeFileSync(f.config, JSON.stringify(configObject));
         file.writeFileSync(
-          `./artifacts/${f.package}/canister_ids.json`,
+          `./${artifacts}/${f.package}/canister_ids.json`,
           JSON.stringify(canister_ids_json),
         );
+        const json = {};
+        json[f.package] = { ic: canister_id.toText() };
+        file.writeFileSync(dfx_ic_json, JSON.stringify(json));
       }
     }
   }
@@ -301,7 +283,7 @@ async function runInstall() {
   const { actor } = await managementActor();
 
   for (const f of getEgos()) {
-    const dfx_folder = process.cwd() + '/' + 'artifacts' + '/' + f.package;
+    const dfx_folder = process.cwd() + '/' + `${artifacts}` + '/' + f.package;
     // const dfx_sh = dfx_folder + '/dfx.sh';
     if (!f.no_deploy) {
       if (f.custom_deploy) {
@@ -393,7 +375,7 @@ async function runInstall() {
 
             const result = await walletActor.wallet_call({
               canister: Principal.fromHex(''),
-              cycles: BigInt(200_000_000_000),
+              cycles: cyclesCreateCanister,
               method_name: 'install_code',
               args,
             });
@@ -418,7 +400,7 @@ async function runReInstall() {
   const { actor } = await managementActor();
 
   for (const f of getEgos()) {
-    const dfx_folder = process.cwd() + '/' + 'artifacts' + '/' + f.package;
+    const dfx_folder = process.cwd() + '/' + `${artifacts}` + '/' + f.package;
     // const dfx_sh = dfx_folder + '/dfx.sh';
     if (!f.no_deploy) {
       if (f.custom_deploy) {
@@ -500,7 +482,7 @@ async function runReInstall() {
 
             const result = await walletActor.wallet_call({
               canister: Principal.fromHex(''),
-              cycles: BigInt(200_000_000_000),
+              cycles: cyclesCreateCanister,
               method_name: 'install_code',
               args,
             });
@@ -524,7 +506,7 @@ async function runUpgrade() {
   const { actor } = await managementActor();
 
   for (const f of getEgos()) {
-    const dfx_folder = process.cwd() + '/' + 'artifacts' + '/' + f.package;
+    const dfx_folder = process.cwd() + '/' + `${artifacts}` + '/' + f.package;
     // const dfx_sh = dfx_folder + '/dfx.sh';
     if (!f.no_deploy) {
       if (f.custom_deploy) {
@@ -603,7 +585,7 @@ async function runUpgrade() {
 
             const result = await walletActor.wallet_call({
               canister: Principal.fromHex(''),
-              cycles: BigInt(200_000_000_000),
+              cycles: cyclesCreateCanister,
               method_name: 'install_code',
               args,
             });
@@ -623,103 +605,65 @@ async function runUpgrade() {
   }
 }
 
-// async function runRemove() {
-//   const { actor } = await managementActor();
-//   const walletActor = (await cycleWalletActor()).actor;
-//   for (const f of getEgos()) {
-//     const dfx_folder = process.cwd() + '/' + 'artifacts' + '/' + f.package;
-//     // const dfx_sh = dfx_folder + '/dfx.sh';
-//     if (!f.no_deploy) {
-//       if (f.custom_deploy) {
-//         if (typeof f.custom_deploy === 'string') {
-//           shell.exec(`cd ${dfx_folder} && ${f.custom_deploy}`);
-//         } else {
-//           (f.custom_deploy as () => void)();
-//         }
-//       } else {
-//         const pkg = readEgoDfxJson(dfx_folder, f.package);
-//         const wasm = readWasm(dfx_folder + '/' + pkg.wasm);
-//         const config = readConfig(
-//           process.cwd() + '/configs/' + f.package + '.json',
-//         );
-//         if (!isProduction) {
-//           try {
-//             console.log(
-//               `upgrading ${f.package} to ${config.LOCAL_CANISTERID!}`,
-//             );
-//             await actor.stop_canister({
-//               canister_id: Principal.fromText(config.LOCAL_CANISTERID!),
-//             });
-//             await actor.delete_canister({
-//               canister_id: Principal.fromText(config.LOCAL_CANISTERID!),
-//             });
-//             console.log(`Success with wasm bytes length: ${wasm.length}`);
-//           } catch (error) {
-//             console.log((error as Error).message);
-//           }
-//         } else {
-//           try {
-//             console.log(
-//               `upgrading ${f.package} to ${config.PRODUCTION_CANISTERID!}`,
-//             );
-//             const wasm_module = IDL.Vec(IDL.Nat8);
-//             const idl = IDL.Record({
-//               arg: IDL.Vec(IDL.Nat8),
-//               wasm_module: wasm_module,
-//               mode: IDL.Variant({
-//                 reinstall: IDL.Null,
-//                 upgrade: IDL.Null,
-//                 install: IDL.Null,
-//               }),
-//               canister_id: IDL.Principal,
-//             });
+async function runPostPatch() {
+  const { actor } = await managementActor();
+  const walletActor = (await cycleWalletActor()).actor;
+  for (const f of getEgos()) {
+    const dfx_folder = process.cwd() + '/' + `${artifacts}` + '/' + f.package;
+    // const dfx_sh = dfx_folder + '/dfx.sh';
+    if (!f.no_deploy) {
+      if (f.custom_deploy) {
+        if (typeof f.custom_deploy === 'string') {
+          shell.exec(`cd ${dfx_folder} && ${f.custom_deploy}`);
+        } else {
+          (f.custom_deploy as () => void)();
+        }
+      } else {
+        const pkg = readEgoDfxJson(dfx_folder, f.package);
+        const wasm = readWasm(dfx_folder + '/' + pkg.wasm);
+        console.log(pkg.wasm);
+        const config = readConfig(
+          process.cwd() + '/configs/' + f.package + '.json',
+        );
+        if (!isProduction) {
+        } else {
+          try {
+            console.log(
+              `postPatching ${f.package} to ${config.PRODUCTION_CANISTERID!}`,
+            );
+            const idl = IDL.Record({
+              principal: IDL.Principal,
+              name: IDL.Text,
+            });
 
-//             // IDL.Tuple()
-//             const initArgs = Array.from(
-//               new Uint8Array(
-//                 IDL.encode(
-//                   [IDL.Opt(IDL.Principal)],
-//                   [[identity.getPrincipal()]],
-//                 ),
-//               ),
-//             );
+            const buf = IDL.encode(
+              [idl],
+              [{ principal: identity.getPrincipal(), name: 'local' }],
+            );
 
-//             const buf = IDL.encode(
-//               [idl],
-//               [
-//                 {
-//                   arg: initArgs,
-//                   wasm_module: wasm,
-//                   mode: { upgrade: null },
-//                   canister_id: Principal.fromText(
-//                     config.PRODUCTION_CANISTERID!,
-//                   ),
-//                 },
-//               ],
-//             );
-//             const args = Array.from(new Uint8Array(buf));
+            const args = Array.from(new Uint8Array(buf));
 
-//             const result = await walletActor.wallet_call({
-//               canister: Principal.fromHex(''),
-//               cycles: BigInt(0),
-//               method_name: 'install_code',
-//               args,
-//             });
+            const result = await walletActor.wallet_call({
+              canister: Principal.fromText(config.PRODUCTION_CANISTERID!),
+              cycles: BigInt(0),
+              method_name: 'addManager',
+              args,
+            });
 
-//             if (hasOwnProperty(result, 'Ok')) {
-//               console.log(result.Ok.return);
-//             } else {
-//               throw new Error(result.Err);
-//             }
-//             console.log(`Success with wasm bytes length: ${wasm.length}`);
-//           } catch (error) {
-//             console.log((error as Error).message);
-//           }
-//         }
-//       }
-//     }
-//   }
-// }
+            if (hasOwnProperty(result, 'Ok')) {
+              console.log(result.Ok.return);
+            } else {
+              throw new Error(result.Err);
+            }
+            console.log(`Success with wasm bytes length: ${wasm.length}`);
+          } catch (error) {
+            console.log((error as Error).message);
+          }
+        }
+      }
+    }
+  }
+}
 
 checkAndArtifacts();
 generateDFXJson();
@@ -747,4 +691,9 @@ if ((argv as ThisArgv).reinstall) {
 if ((argv as ThisArgv).upgrade) {
   // console.log('upgrade');
   runUpgrade();
+}
+
+if ((argv as ThisArgv).postPatch) {
+  // console.log('upgrade');
+  runPostPatch();
 }

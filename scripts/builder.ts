@@ -8,10 +8,11 @@ import {
   dfxConfigTemplate,
   ProjectConfig,
 } from './config';
+import { artifacts, rustEntry } from './env';
 
 interface ThisArgv {
   [x: string]: unknown;
-  infra: boolean | undefined;
+  provider: boolean | undefined;
   apps: boolean | undefined;
   idl: boolean | undefined;
   project: string | undefined;
@@ -20,23 +21,10 @@ interface ThisArgv {
 }
 
 const argv = yargs
-  .option('infra', {
-    description: 'build infra only',
-    type: 'boolean',
-  })
-  .option('apps', {
-    description: 'build apps only',
-    type: 'boolean',
-  })
   .option('idl', {
     alias: 'i',
     description: 'build idl only',
     type: 'boolean',
-  })
-  .option('project', {
-    alias: 'p',
-    description: 'build project only',
-    type: 'string',
   })
   .help()
   .alias('help', 'h').argv;
@@ -44,25 +32,27 @@ const argv = yargs
 function checkAndArtifacs(ego: ProjectConfig) {
   let folder_exist = true;
   try {
-    folder_exist = file.existsSync(`${process.cwd()}/artifacts/${ego.package}`);
+    folder_exist = file.existsSync(
+      `${process.cwd()}/${artifacts}/${ego.package}`,
+    );
   } catch (error) {
     folder_exist = false;
   }
 
   if (!folder_exist) {
-    shell.exec(`mkdir ${process.cwd()}/artifacts/${ego.package}`);
+    shell.exec(`mkdir ${process.cwd()}/${artifacts}/${ego.package}`);
   }
 }
 
 function generateDFXJson(ego: ProjectConfig) {
-  let shouldSaveName = `${process.cwd()}/artifacts/${ego.package}/dfx.json`;
+  let shouldSaveName = `${process.cwd()}/${artifacts}/${ego.package}/dfx.json`;
   shell.exec(`rm -rf ${shouldSaveName}`);
   const packageItem = {};
 
   packageItem[ego.package] = {
     type: 'custom',
     candid: `${ego.package}.did`,
-    wasm: `${ego.package}_opt.wasm`,
+    wasm: `${ego.package}_opt.wasm.gz`,
     build: [],
   };
   // dfxConfigTemplate.canisters
@@ -73,14 +63,14 @@ function generateDFXJson(ego: ProjectConfig) {
 
 function buildDID(ego: ProjectConfig) {
   console.log({ ego });
-  let originFile = `${process.cwd()}/ego/${ego.category}/${ego.package}/${
+  let originFile = `${process.cwd()}/${rustEntry}/${ego.category}/${
     ego.package
-  }.did`;
+  }/${ego.package}.did`;
 
-  let shouldSaveAutoName = `${process.cwd()}/artifacts/${ego.package}/${
+  let shouldSaveAutoName = `${process.cwd()}/${artifacts}/${ego.package}/${
     ego.package
   }.auto.did`;
-  let shouldSaveName = `${process.cwd()}/artifacts/${ego.package}/${
+  let shouldSaveName = `${process.cwd()}/${artifacts}/${ego.package}/${
     ego.package
   }.did`;
 
@@ -97,12 +87,12 @@ function buildDID(ego: ProjectConfig) {
   console.log({ did_file_exist });
   if (did_file_exist && ego.custom_candid) {
     shell.exec(`
-    EGO_DIR="${process.cwd()}/ego/${ego.category}/${ego.package}"
+    EGO_DIR="${process.cwd()}/${rustEntry}/${ego.category}/${ego.package}"
     cd $EGO_DIR/actor && cargo run ${ego.bin_name} > ${shouldSaveAutoName}
     `);
   } else {
     shell.exec(`
-    EGO_DIR="${process.cwd()}/ego/${ego.category}/${ego.package}"
+    EGO_DIR="${process.cwd()}/${rustEntry}/${ego.category}/${ego.package}"
     cd $EGO_DIR/actor && cargo run ${
       ego.bin_name
     } > ${shouldSaveAutoName} && cargo run ${ego.bin_name} > ${shouldSaveName}
@@ -112,7 +102,7 @@ function buildDID(ego: ProjectConfig) {
 
 function buildIDL(ego: ProjectConfig) {
   shell.exec(`
-    EGO_DIR="${process.cwd()}/artifacts/${ego.package}"
+    EGO_DIR="${process.cwd()}/${artifacts}/${ego.package}"
     didc bind $EGO_DIR/${
       ego.package
     }.did -t ts > ${process.cwd()}/clients/idls/${ego.package}.d.ts
@@ -122,40 +112,16 @@ function buildIDL(ego: ProjectConfig) {
     `);
 }
 
-function buildExampleIDL(ego: ProjectConfig) {
-  shell.exec(`
-    EGO_DIR="${process.cwd()}/artifacts/${ego.package}"
-    didc bind $EGO_DIR/${
-      ego.package
-    }.did -t ts > ${process.cwd()}/clients/ego_land/src/canisters/${
-    ego.package
-  }.d.ts
-    didc bind $EGO_DIR/${
-      ego.package
-    }.did -t js > ${process.cwd()}/clients/ego_land/src/canisters/${
-    ego.package
-  }.idl.js
-    `);
-}
-
 function runBuildRust(ego: ProjectConfig) {
   // buildDID();
   if (ego.no_build === false || ego.no_build === undefined) {
-    let shouldSaveName = `${process.cwd()}/artifacts/${ego.package}/${
+    let shouldSaveName = `${process.cwd()}/${artifacts}/${ego.package}/${
       ego.package
     }_opt.wasm`;
-
-    const constantFile = file
-      .readFileSync(process.cwd() + '/configs/constant.json')
-      .toString('utf8');
-
-    const staging = JSON.parse(constantFile)['staging'];
-    if (staging === 'production') {
-      // getSnapshot();
-      shell.exec(`
-          PARENT_DIR="${process.cwd()}/ego"
-          EGO_DIR="${process.cwd()}/ego/${ego.category}/${ego.package}"
-          CAT_DIR="${process.cwd()}/ego/${ego.category}"
+    shell.exec(`
+          PARENT_DIR="${process.cwd()}/${rustEntry}"
+          EGO_DIR="${process.cwd()}/${rustEntry}/${ego.category}/${ego.package}"
+          CAT_DIR="${process.cwd()}/${rustEntry}/${ego.category}"
           TARGET="wasm32-unknown-unknown"
           cargo build --manifest-path "$EGO_DIR/actor/Cargo.toml" --target $TARGET --release -j1
           cargo install ic-wasm
@@ -165,6 +131,7 @@ function runBuildRust(ego: ProjectConfig) {
                  ic-wasm \
                  "$PARENT_DIR/target/$TARGET/release/${ego.package}.wasm" \
                  -o "${shouldSaveName}" shrink
+                 gzip -c ${shouldSaveName} > ${shouldSaveName}.gz
           
              true
            else
@@ -172,16 +139,6 @@ function runBuildRust(ego: ProjectConfig) {
              false
            fi
           `);
-      // buildDID();
-    } else {
-      // getSnapshot();
-      shell.exec(`
-          EGO_DIR="${process.cwd()}/ego/${ego.category}/${ego.package}" 
-          TARGET="wasm32-unknown-unknown"
-          cargo build --manifest-path "$EGO_DIR/actor/Cargo.toml" --target $TARGET --release -j1
-          `);
-      // buildDID();
-    }
   }
 }
 

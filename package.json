@@ -6,7 +6,8 @@
   "scripts": {
     "script:fixtures": "swc ./clients/fixtures -d dist",
     "script:bootstrap": "swc ./scripts -d dist",
-    "ego:pre": "pnpm script:bootstrap && node ./dist/ic_deployer.js --clean",
+    "dfx:nns": "dfx nns install",
+    "ego:pre": "pnpm script:bootstrap",
     "ego:bootstrap": "pnpm ego:clean && pnpm ego:create",
     "ego:build": "node ./dist/builder.js",
     "ego:clean": "node ./dist/deployer.js --clean",

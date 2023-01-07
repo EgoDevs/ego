@@ -12,14 +12,12 @@ import { ActorSubclass } from '@dfinity/agent';
 import fs from 'fs';
 import { Principal } from '@dfinity/principal';
 import { identity } from './settings/identity';
+import { productionCyclesWallet } from './env';
 const managementCanisterId = '';
 export const cycleWalletCanisterId = fs
-  .readFileSync(
-    path.join(process.cwd(), '/credentials', '/production_cycle_wallet.txt'),
-    {
-      encoding: 'utf8',
-    },
-  )
+  .readFileSync(path.join(process.cwd(), productionCyclesWallet), {
+    encoding: 'utf8',
+  })
   .toString();
 
 export async function managementActor(): Promise<

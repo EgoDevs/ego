@@ -7,7 +7,11 @@ const bip39 = require('bip39');
 const ecc = require('tiny-secp256k1');
 import { SignIdentity } from '@dfinity/agent';
 import curve from 'starkbank-ecdsa';
-import { isProduction } from '../env';
+import {
+  isProduction,
+  productionPem,
+  seedPhrase as seedPhraseFile,
+} from '../env';
 
 export function fromHexString(hexString: string): ArrayBuffer {
   return new Uint8Array(
@@ -22,10 +26,9 @@ export function getIdentityFromPem(): SignIdentity {
   const PrivateKey = curve.PrivateKey;
   const secretKey = PrivateKey.fromPem(
     fs
-      .readFileSync(
-        path.join(process.cwd(), '/credentials', '/production.pem'),
-        { encoding: 'utf-8' },
-      )
+      .readFileSync(path.join(process.cwd(), productionPem), {
+        encoding: 'utf-8',
+      })
       .toString(),
   );
   return Secp256k1KeyIdentity.fromSecretKey(
@@ -72,7 +75,7 @@ export function getIdentityFromPhraseWithSeed(phrase: string): {
 }
 
 const seedPhrase = fs
-  .readFileSync(path.join(process.cwd(), '/credentials', '/internal.txt'), {
+  .readFileSync(path.join(process.cwd(), seedPhraseFile), {
     encoding: 'utf8',
   })
   .toString();

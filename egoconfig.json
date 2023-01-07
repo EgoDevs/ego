@@ -1,3 +1,12 @@
 {
-    "dfxPort": 8080
+    "dfxVersion": "0.12.1",
+    "dfxPort": 8080,
+    "rustEntry": "rust",
+    "artifacts": "artifacts",
+    "credentials": {
+        "seedPhrase": "./credentials/internal.txt",
+        "production_pem": "./credentials/production.pem",
+        "production_cycles_wallet": "./credentials/production_cycles_wallet.txt"
+    },
+    "cycles_install_code": "200_000_000_000"
 }

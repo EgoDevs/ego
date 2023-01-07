@@ -2,13 +2,12 @@ import fs from 'fs';
 import { randomBytes } from 'crypto';
 import Mock from 'mockjs';
 import { toHexString } from '@dfinity/candid';
-import { Ed25519KeyIdentity, Secp256k1KeyIdentity } from '@dfinity/identity';
+import { Secp256k1KeyIdentity } from '@dfinity/identity';
 
 const BIP32Factory = require('bip32');
 const bip39 = require('bip39');
 const ecc = require('tiny-secp256k1');
 
-import { SignIdentity } from '@dfinity/agent';
 const { Random } = Mock;
 
 export interface MockIdentity {
