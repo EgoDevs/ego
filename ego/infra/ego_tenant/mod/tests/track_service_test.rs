@@ -3,6 +3,7 @@ use ic_cdk::export::Principal;
 use mockall::mock;
 
 use ego_lib::ego_canister::TEgoCanister;
+use ego_lib::inject_mock_ego_canister;
 use ego_tenant_mod::c2c::ego_store::TEgoStore;
 use ego_tenant_mod::c2c::ic_management::TIcManagement;
 use ego_tenant_mod::service::EgoTenantService;
@@ -44,29 +45,25 @@ mock! {
   impl TIcManagement for Management {
     async fn canister_main_create(&self, cycles_to_use: Cycles) -> Result<Principal, EgoError>;
 
-    async fn canister_code_install(
-        &self,
-        canister_id: Principal,
-        wasm_module: Vec<u8>,
-    ) -> Result<(), EgoError>;
+  async fn canister_code_install(
+    &self,
+    canister_id: Principal,
+    wasm_module: Vec<u8>,
+  ) -> Result<(), EgoError>;
 
-    async fn canister_code_upgrade(
-        &self,
-        canister_id: Principal,
-        wasm_module: Vec<u8>,
-    ) -> Result<(), EgoError>;
+  async fn canister_code_upgrade(
+    &self,
+    canister_id: Principal,
+    wasm_module: Vec<u8>,
+  ) -> Result<(), EgoError>;
 
-    fn canister_cycle_top_up(
-        &self,
-        canister_id: Principal,
-        cycles_to_use: Cycles,
-    ) ;
+  async fn canister_cycle_top_up(
+    &self,
+    canister_id: Principal,
+    cycles_to_use: Cycles,
+  ) -> Result<(), EgoError>;
 
-    // async fn canister_controller_set(
-    //     &self,
-    //     canister_id: Principal,
-    //     principals: Vec<Principal>,
-    // ) -> Result<(), EgoError>;
+  async fn canister_main_delete(&self, canister_id: Principal) -> Result<(), EgoError>;
 
   }
 }
@@ -86,38 +83,7 @@ mock! {
   }
 }
 
-mock! {
-  Canister {}
-
-  #[async_trait]
-  impl TEgoCanister for Canister {
-    fn ego_owner_set(&self, target_canister_id: Principal, principals: Vec<Principal>);
-    fn ego_owner_add(&self, target_canister_id: Principal, principal: Principal);
-    fn ego_owner_remove(&self, target_canister_id: Principal, principal: Principal);
-
-    fn ego_user_set(&self, target_canister_id: Principal, user_ids: Vec<Principal>);
-    fn ego_user_add(&self, target_canister_id: Principal, principal: Principal);
-    fn ego_user_remove(&self, target_canister_id: Principal, principal: Principal);
-
-    fn ego_op_add(&self, target_canister_id: Principal, user_id: Principal);
-
-    fn ego_canister_add(&self, target_canister_id: Principal, name: String, principal: Principal);
-
-    fn ego_controller_set(&self, target_canister_id: Principal, principals: Vec<Principal>);
-    async fn ego_controller_add(&self, target_canister_id: Principal, principal: Principal) -> Result<(), String>;
-    fn ego_controller_remove(&self, target_canister_id: Principal, principal: Principal);
-
-    async fn balance_get(&self, target_canister_id: Principal) -> Result<u128, String>;
-
-    // app info
-    fn ego_app_info_update(&self, target_canister_id: Principal, wallet_id: Option<Principal>, app_id: AppId, version: Version);
-    async fn ego_app_info_get(&self, target_canister_id: Principal) -> Result<AppInfo, String>;
-    async fn ego_app_version_check(&self, target_canister_id: Principal) -> Result<App, String>;
-
-    // canister upgrade
-    fn ego_canister_upgrade(&self, target_canister_id: Principal);
-  }
-}
+inject_mock_ego_canister!();
 
 #[test]
 fn canister_main_track() {
@@ -318,6 +284,7 @@ async fn canister_cycles_check_second_time_none_zero_cycle_consumption() {
     .returning(move |canister_id, cycle| {
       assert_eq!(canister_principal, canister_id);
       assert_eq!(180000000000, cycle);
+      Ok(())
     });
 
   let _result = EgoTenantService::canister_cycles_check(

@@ -36,6 +36,11 @@ pub trait TEgoTenant {
     wallet_id: &Principal,
     canister_id: &Principal,
   );
+  fn app_main_delete(
+    &self,
+    ego_tenant_id: Principal,
+    canister_id: &Principal,
+  );
 }
 
 pub struct EgoTenant {}
@@ -115,5 +120,13 @@ impl TEgoTenant for EgoTenant {
     canister_id: &Principal,
   ) {
     let _result = api::call::notify(ego_tenant_id, "canister_main_untrack", (wallet_id, canister_id, ));
+  }
+
+  fn app_main_delete(
+    &self,
+    ego_tenant_id: Principal,
+    canister_id: &Principal,
+  ) {
+    let _result = api::call::notify(ego_tenant_id, "app_main_delete", (canister_id, ));
   }
 }

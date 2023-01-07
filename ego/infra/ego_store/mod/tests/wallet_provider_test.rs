@@ -4,6 +4,7 @@ use ic_ledger_types::Memo;
 use mockall::mock;
 
 use ego_lib::ego_canister::TEgoCanister;
+use ego_lib::inject_mock_ego_canister;
 use ego_store_mod::app::EgoStoreApp;
 use ego_store_mod::c2c::ego_tenant::TEgoTenant;
 use ego_store_mod::order::Order;
@@ -23,65 +24,39 @@ mock! {
   #[async_trait]
   impl TEgoTenant for Tenant {
     async fn app_main_install(
-        &self,
-        ego_tenant_id: Principal,
-        wallet_id: Principal,
-        user_id: Principal,
-        wasm: &Wasm,
+      &self,
+      ego_tenant_id: Principal,
+      wallet_id: Principal,
+      user_id: Principal,
+      wasm: &Wasm,
     ) -> Result<Principal, EgoError>;
     async fn app_main_upgrade(
-        &self,
-        ego_tenant_id: Principal,
-        canister_id: Principal,
-        wasm: &Wasm,
+      &self,
+      ego_tenant_id: Principal,
+      canister_id: Principal,
+      wasm: &Wasm,
     ) -> Result<bool, EgoError>;
     fn canister_main_track(
-        &self,
-        ego_tenant_id: Principal,
-        wallet_id: &Principal,
-        canister_id: &Principal,
+      &self,
+      ego_tenant_id: Principal,
+      wallet_id: &Principal,
+      canister_id: &Principal,
     );
     fn canister_main_untrack(
-        &self,
-        ego_tenant_id: Principal,
-        wallet_id: &Principal,
-        canister_id: &Principal,
+      &self,
+      ego_tenant_id: Principal,
+      wallet_id: &Principal,
+      canister_id: &Principal,
+    );
+    fn app_main_delete(
+      &self,
+      ego_tenant_id: Principal,
+      canister_id: &Principal
     );
   }
 }
 
-mock! {
-  Canister {}
-
-  #[async_trait]
-  impl TEgoCanister for Canister {
-    fn ego_owner_set(&self, target_canister_id: Principal, principals: Vec<Principal>);
-    fn ego_owner_add(&self, target_canister_id: Principal, principal: Principal);
-    fn ego_owner_remove(&self, target_canister_id: Principal, principal: Principal);
-
-    fn ego_user_set(&self, target_canister_id: Principal, user_ids: Vec<Principal>);
-    fn ego_user_add(&self, target_canister_id: Principal, principal: Principal);
-    fn ego_user_remove(&self, target_canister_id: Principal, principal: Principal);
-
-    fn ego_op_add(&self, target_canister_id: Principal, user_id: Principal);
-
-    fn ego_canister_add(&self, target_canister_id: Principal, name: String, principal: Principal);
-
-    fn ego_controller_set(&self, target_canister_id: Principal, principals: Vec<Principal>);
-    async fn ego_controller_add(&self, target_canister_id: Principal, principal: Principal) -> Result<(), String>;
-    fn ego_controller_remove(&self, target_canister_id: Principal, principal: Principal);
-
-    async fn balance_get(&self, target_canister_id: Principal) -> Result<u128, String>;
-
-    // app info
-    fn ego_app_info_update(&self, target_canister_id: Principal, wallet_id: Option<Principal>, app_id: AppId, version: Version);
-    async fn ego_app_info_get(&self, target_canister_id: Principal) -> Result<AppInfo, String>;
-    async fn ego_app_version_check(&self, target_canister_id: Principal) -> Result<App, String>;
-
-    // canister upgrade
-    fn ego_canister_upgrade(&self, target_canister_id: Principal);
-  }
-}
+inject_mock_ego_canister!();
 
 static FILE_CANISTER_ID: &str = "amybd-zyaaa-aaaah-qc4hq-cai";
 static WALLET_PROVIDER_ID: &str = "2265i-mqaaa-aaaad-qbsga-cai";

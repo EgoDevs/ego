@@ -33,8 +33,9 @@ pub trait TEgoCanister {
   async fn ego_app_info_get(&self, target_canister_id: Principal) -> Result<AppInfo, String>;
   async fn ego_app_version_check(&self, target_canister_id: Principal) -> Result<App, String>;
 
-  // canister upgrade
+  // canister relative
   fn ego_canister_upgrade(&self, target_canister_id: Principal);
+  fn ego_canister_remove(&self, target_canister_id: Principal);
 }
 
 pub struct EgoCanister {}
@@ -185,5 +186,9 @@ impl TEgoCanister for EgoCanister {
 
   fn ego_canister_upgrade(&self, target_canister_id: Principal) {
     let _result = api::call::notify(target_canister_id, "ego_canister_upgrade", ());
+  }
+
+  fn ego_canister_remove(&self, target_canister_id: Principal) {
+    let _result = api::call::notify(target_canister_id, "ego_canister_remove", ());
   }
 }

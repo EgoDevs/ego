@@ -1,5 +1,4 @@
-use ic_cdk::api;
-use ic_cdk::api::management_canister::main::{CanisterIdRecord, CanisterSettings, CanisterStatusResponse, UpdateSettingsArgument};
+use ic_cdk::api::management_canister::main::{canister_status, CanisterIdRecord, CanisterSettings, CanisterStatusResponse, update_settings, UpdateSettingsArgument};
 use ic_cdk::export::Principal;
 use tracing::error;
 
@@ -16,51 +15,27 @@ async fn controllers_update(canister_id: Principal, controllers: Vec<Principal>)
     },
   };
 
-  let (_, ): ((), ) = match api::call::call(
-    Principal::management_canister(),
-    "update_settings",
-    (in_arg, ),
-  )
-    .await
-  {
-    Ok(x) => x,
+  match update_settings(in_arg).await {
+    Ok(_) => Ok(()),
     Err((code, msg)) => {
       let code = code as u16;
-      error!(
-          error_code = code,
-          error_message = msg.as_str(),
-          "Error calling controllers_update"
-        );
-      return Err(EgoError { code, msg });
+      error!(error_code = code, error_message = msg.as_str(), "Error calling controllers_update");
+      Err(EgoError { code, msg })
     }
-  };
-
-  Ok(())
+  }
 }
 
 async fn canister_status_get(canister_id: Principal) -> Result<CanisterStatusResponse, EgoError> {
-  let req = CanisterIdRecord {
-    canister_id,
-  };
-
-  let (status_result, ): (CanisterStatusResponse, ) = match api::call::call(
-    Principal::management_canister(),
-    "canister_status",
-    (req, ),
-  ).await {
-    Ok(x) => x,
+  match canister_status(CanisterIdRecord { canister_id }).await {
+    Ok(result) => {
+      Ok(result.0)
+    }
     Err((code, msg)) => {
       let code = code as u16;
-      error!(
-          error_code = code,
-          error_message = msg.as_str(),
-          "Error calling canister_status_get"
-        );
-      return Err(EgoError { code, msg });
+      error!(error_code = code, error_message = msg.as_str(), "Error calling canister_status_get");
+      Err(EgoError { code, msg })
     }
-  };
-
-  Ok(status_result)
+  }
 }
 
 pub async fn controller_add(canister_id: Principal, principal: Principal) -> Result<(), EgoError> {

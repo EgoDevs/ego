@@ -11,7 +11,6 @@ use crate::c2c::ego_tenant::TEgoTenant;
 use crate::cash_flow::CashFlow;
 use crate::order::Order;
 use crate::state::{EGO_STORE, log_add};
-use crate::types::EgoStoreErr;
 
 pub struct EgoStoreService {}
 
@@ -100,12 +99,13 @@ impl EgoStoreService {
     log_add("2 get app to be upgrade");
     let ego_store_app = EGO_STORE.with(|ego_store| ego_store.borrow().app_main_get(&user_app.app.app_id).clone())?;
 
+    log_add(format!("3 current version is {:?}, next version is {:?}", user_app.app.current_version, ego_store_app.app.current_version).as_str());
 
-    log_add("3 get ego tenant id relative to wallet");
+    log_add("4 get ego tenant id relative to wallet");
     let ego_tenant_id =
       EGO_STORE.with(|ego_store| ego_store.borrow().wallet_tenant_get(&wallet_id).clone())?;
 
-    log_add("4 call ego tenant to upgrade backend");
+    log_add("5 call ego tenant to upgrade canister");
     ego_tenant
       .app_main_upgrade(
         ego_tenant_id,
@@ -120,16 +120,24 @@ impl EgoStoreService {
         .wallet_app_upgrade(&wallet_id, &user_app, &ego_store_app);
     });
 
-    log_add("5 set app info");
+    log_add("6 set app info");
     ego_canister.ego_app_info_update(canister_id.clone(), None, ego_store_app.app.app_id, ego_store_app.app.current_version);
 
     Ok(())
   }
 
-  pub fn wallet_app_remove(wallet_id: &Principal, canister_id: &Principal) -> Result<(), EgoError> {
-    log_add("1 check user_app exists");
-    let _user_app = EgoStoreService::wallet_app_get(&wallet_id, &canister_id)?;
+  pub fn wallet_app_remove<T: TEgoTenant>(ego_tenant: T, wallet_id: &Principal, canister_id: &Principal) -> Result<(), EgoError> {
+    log_add("1 get user_app to be delete");
+    let user_app = EgoStoreService::wallet_app_get(wallet_id, canister_id)?;
 
+    log_add("2 get ego tenant id relative to wallet");
+    let ego_tenant_id =
+      EGO_STORE.with(|ego_store| ego_store.borrow().wallet_tenant_get(&wallet_id).clone())?;
+
+    log_add("3 call ego tenant to delete canister");
+    ego_tenant.app_main_delete(ego_tenant_id, &user_app.canister.canister_id);
+
+    log_add("4 remove the user app from wallet");
     EGO_STORE.with(|ego_store| {
       ego_store
         .borrow_mut()

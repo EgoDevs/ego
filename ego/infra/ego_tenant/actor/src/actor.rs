@@ -134,6 +134,15 @@ async fn app_main_upgrade(req: AppMainUpgradeRequest) -> Result<bool, EgoError> 
   Ok(ret)
 }
 
+#[update(name = "app_main_delete", guard = "user_guard")]
+#[candid_method(update, rename = "app_main_delete")]
+async fn app_main_delete(canister_id: Principal) -> Result<(), EgoError> {
+  log_add("ego_tenant: app_main_upgrade");
+  let management = IcManagement::new();
+
+  EgoTenantService::app_main_delete(management, &canister_id).await
+}
+
 #[update(name = "canister_main_track", guard = "user_guard")]
 #[candid_method(update, rename = "canister_main_track")]
 fn canister_main_track(wallet_id: Principal, canister_id: Principal) -> Result<(), EgoError> {

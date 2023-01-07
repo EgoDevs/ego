@@ -117,6 +117,13 @@ impl EgoTenantService {
     Ok(true)
   }
 
+  pub async fn app_main_delete<M: TIcManagement>(
+    management: M,
+    canister_id: &Principal,
+  ) -> Result<(), EgoError> {
+    management.canister_main_delete(*canister_id).await
+  }
+
   pub async fn canister_cycles_check<M: TIcManagement, S: TEgoStore, EC: TEgoCanister>(
     management: M,
     ego_store: S,
@@ -166,12 +173,16 @@ impl EgoTenantService {
               .await?
             {
               true => {
-                management
+                match management
                   .canister_cycle_top_up(
                     task.canister_id,
                     cycle_required_to_top_up,
-                  );
-                current_cycle = current_cycle + cycle_required_to_top_up;
+                  ).await {
+                  Ok(_) => {
+                    current_cycle = current_cycle + cycle_required_to_top_up;
+                  }
+                  Err(_) => {}
+                }
               }
               false => {
                 // TODO: in case wallet controller do not contains enough cycles

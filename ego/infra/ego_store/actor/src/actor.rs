@@ -155,23 +155,6 @@ pub async fn wallet_app_install(
   log_add("2 get wallet_id");
   let wallet_id = caller();
 
-  // support install same app multi times
-  // let result = EgoStoreService::wallet_app_get(&wallet_id, app_id.clone());
-  //
-  // match result {
-  //   Ok(app_installed) => {
-  //     Ok(app_installed)
-  //   }
-  //   Err(_e) => {
-  //     let ego_tenant = EgoTenant::new();
-  //     let ego_canister = EgoCanister::new();
-  //
-  //     let user_app =
-  //       EgoStoreService::wallet_app_install(ego_tenant, ego_canister, wallet_id, app).await?;
-  //     Ok(user_app)
-  //   }
-  // }
-
   let ego_tenant = EgoTenant::new();
   let ego_canister = EgoCanister::new();
 
@@ -196,11 +179,12 @@ pub async fn wallet_app_upgrade(wallet_id: Principal) -> Result<(), EgoError> {
 #[update(name = "wallet_app_remove")]
 #[candid_method(update, rename = "wallet_app_remove")]
 pub fn wallet_app_remove(wallet_id: Principal) -> Result<(), EgoError> {
-  log_add("ego_store: wallet_app_remove");
-
   let canister_id = caller();
+  let ego_tenant = EgoTenant::new();
 
-  match EgoStoreService::wallet_app_remove(&wallet_id, &canister_id) {
+  log_add(format!("ego_store: wallet_app_remove wallet_id: {}, canister_id: {}", wallet_id, canister_id).as_str());
+
+  match EgoStoreService::wallet_app_remove(ego_tenant, &wallet_id, &canister_id) {
     Ok(_) => Ok(()),
     Err(e) => Err(e),
   }

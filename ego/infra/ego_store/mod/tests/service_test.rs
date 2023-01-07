@@ -3,6 +3,7 @@ use ic_cdk::export::Principal;
 use mockall::mock;
 
 use ego_lib::ego_canister::TEgoCanister;
+use ego_lib::inject_mock_ego_canister;
 use ego_store_mod::app::EgoStoreApp;
 use ego_store_mod::c2c::ego_tenant::TEgoTenant;
 use ego_store_mod::service::EgoStoreService;
@@ -42,65 +43,39 @@ mock! {
   #[async_trait]
   impl TEgoTenant for Tenant {
     async fn app_main_install(
-        &self,
-        ego_tenant_id: Principal,
-        wallet_id: Principal,
-        user_id: Principal,
-        wasm: &Wasm,
+      &self,
+      ego_tenant_id: Principal,
+      wallet_id: Principal,
+      user_id: Principal,
+      wasm: &Wasm,
     ) -> Result<Principal, EgoError>;
     async fn app_main_upgrade(
-        &self,
-        ego_tenant_id: Principal,
-        canister_id: Principal,
-        wasm: &Wasm,
+      &self,
+      ego_tenant_id: Principal,
+      canister_id: Principal,
+      wasm: &Wasm,
     ) -> Result<bool, EgoError>;
     fn canister_main_track(
-        &self,
-        ego_tenant_id: Principal,
-        wallet_id: &Principal,
-        canister_id: &Principal,
+      &self,
+      ego_tenant_id: Principal,
+      wallet_id: &Principal,
+      canister_id: &Principal,
     );
     fn canister_main_untrack(
-        &self,
-        ego_tenant_id: Principal,
-        wallet_id: &Principal,
-        canister_id: &Principal,
+      &self,
+      ego_tenant_id: Principal,
+      wallet_id: &Principal,
+      canister_id: &Principal,
+    );
+    fn app_main_delete(
+      &self,
+      ego_tenant_id: Principal,
+      canister_id: &Principal
     );
   }
 }
 
-mock! {
-  Canister {}
-
-  #[async_trait]
-  impl TEgoCanister for Canister {
-    fn ego_owner_set(&self, target_canister_id: Principal, principals: Vec<Principal>);
-    fn ego_owner_add(&self, target_canister_id: Principal, principal: Principal);
-    fn ego_owner_remove(&self, target_canister_id: Principal, principal: Principal);
-
-    fn ego_user_set(&self, target_canister_id: Principal, user_ids: Vec<Principal>);
-    fn ego_user_add(&self, target_canister_id: Principal, principal: Principal);
-    fn ego_user_remove(&self, target_canister_id: Principal, principal: Principal);
-
-    fn ego_op_add(&self, target_canister_id: Principal, user_id: Principal);
-
-    fn ego_canister_add(&self, target_canister_id: Principal, name: String, principal: Principal);
-
-    fn ego_controller_set(&self, target_canister_id: Principal, principals: Vec<Principal>);
-    async fn ego_controller_add(&self, target_canister_id: Principal, principal: Principal) -> Result<(), String>;
-    fn ego_controller_remove(&self, target_canister_id: Principal, principal: Principal);
-
-    async fn balance_get(&self, target_canister_id: Principal) -> Result<u128, String>;
-
-    // app info
-    fn ego_app_info_update(&self, target_canister_id: Principal, wallet_id: Option<Principal>, app_id: AppId, version: Version);
-    async fn ego_app_info_get(&self, target_canister_id: Principal) -> Result<AppInfo, String>;
-    async fn ego_app_version_check(&self, target_canister_id: Principal) -> Result<App, String>;
-
-    // canister upgrade
-    fn ego_canister_upgrade(&self, target_canister_id: Principal);
-  }
-}
+inject_mock_ego_canister!();
 
 pub fn set_up() {
   let tenant_principal = Principal::from_text(EXISTS_TENANT_ID.to_string()).unwrap();
@@ -164,7 +139,6 @@ pub fn set_up() {
 
     // add wallet
     let mut wallet = Wallet::new(tenant_principal, wallet_principal, user_principal);
-
 
     let backend_principal = Principal::from_text(EXISTS_USER_APP_BACKEND.to_string()).unwrap();
     wallet.apps.insert(
@@ -346,6 +320,9 @@ async fn wallet_app_upgrade_not_installed_app() {
 async fn wallet_app_upgrade_success() {
   set_up();
 
+  let current_version = Version::new(1, 0, 1);
+  let latest_version = Version::new(1, 0, 2);
+
   let exist_wallet_id = Principal::from_text(EXISTS_WALLET_ID).unwrap();
   let backend_principal = Principal::from_text(EXISTS_USER_APP_BACKEND.to_string()).unwrap();
 
@@ -353,7 +330,15 @@ async fn wallet_app_upgrade_success() {
   // get app list before upgrade
   let result = EgoStoreService::wallet_app_list(&exist_wallet_id);
   assert!(result.is_ok());
-  assert_eq!(1, result.unwrap().len());
+
+  let user_apps = result.unwrap();
+  let user_app = user_apps.get(0).unwrap();
+  assert_eq!(current_version, user_app.app.current_version);
+
+  // upgrade app version
+  EGO_STORE.with(|ego_store| {
+    ego_store.borrow_mut().apps.get_mut(EXISTS_APP_ID).unwrap().app.current_version = latest_version;
+  });
 
   // upgrade installed app
   let mut ego_tenant = MockTenant::new();
@@ -364,13 +349,17 @@ async fn wallet_app_upgrade_success() {
   ego_canister.expect_ego_app_info_update().returning(|_, _, _, _| {
     ()
   });
+
   let result = EgoStoreService::wallet_app_upgrade(ego_tenant, ego_canister, &exist_wallet_id, &backend_principal).await;
   assert!(result.is_ok());
 
   // get app list after upgrade
   let result = EgoStoreService::wallet_app_list(&exist_wallet_id);
   assert!(result.is_ok());
-  assert_eq!(1, result.unwrap().len());
+
+  let user_apps = result.unwrap();
+  let user_app = user_apps.get(0).unwrap();
+  assert_eq!(latest_version, user_app.app.current_version);
 }
 
 #[test]
@@ -379,9 +368,9 @@ fn wallet_app_remove_not_exists_wallet() {
 
   let wallet_id = Principal::from_text(TEST_WALLET_ID).unwrap();
   let backend_principal = Principal::from_text(EXISTS_USER_APP_BACKEND.to_string()).unwrap();
-
+  let ego_tenant = MockTenant::new();
   // remove not exists wallet
-  let result = EgoStoreService::wallet_app_remove(&wallet_id, &backend_principal);
+  let result = EgoStoreService::wallet_app_remove(ego_tenant, &wallet_id, &backend_principal);
   assert!(result.is_err());
   assert_eq!(3006, result.unwrap_err().code);
 }
@@ -392,9 +381,10 @@ fn wallet_app_remove_not_exists_app() {
 
   let exist_wallet_id = Principal::from_text(EXISTS_WALLET_ID).unwrap();
   let fake_principal = Principal::from_text(FAKE_USER_APP_BACKEND.to_string()).unwrap();
+  let ego_tenant = MockTenant::new();
 
   // install with not exists wallet
-  let result = EgoStoreService::wallet_app_remove(&exist_wallet_id, &fake_principal);
+  let result = EgoStoreService::wallet_app_remove(ego_tenant, &exist_wallet_id, &fake_principal);
   println!("{:?}", result);
   assert!(result.is_err());
   assert_eq!(3010, result.unwrap_err().code);
@@ -407,13 +397,14 @@ fn wallet_app_remove_not_installed_app() {
   let wallet_principal = Principal::from_text(TEST_WALLET_ID).unwrap();
   let user_principal = Principal::from_text(TEST_USER_ID).unwrap();
   let backend_principal = Principal::from_text(EXISTS_USER_APP_BACKEND.to_string()).unwrap();
+  let ego_tenant = MockTenant::new();
 
   // register wallet
   let result = EgoStoreService::wallet_main_register(wallet_principal, user_principal);
   assert!(result.is_ok());
 
   // remove not exists wallet
-  let result = EgoStoreService::wallet_app_remove(&wallet_principal, &backend_principal);
+  let result = EgoStoreService::wallet_app_remove(ego_tenant, &wallet_principal, &backend_principal);
   assert!(result.is_err());
   assert_eq!(3010, result.unwrap_err().code);
 }
@@ -424,6 +415,8 @@ fn wallet_app_remove_success() {
 
   let exist_wallet_id = Principal::from_text(EXISTS_WALLET_ID).unwrap();
   let backend_principal = Principal::from_text(EXISTS_USER_APP_BACKEND.to_string()).unwrap();
+  let mut ego_tenant = MockTenant::new();
+  ego_tenant.expect_app_main_delete().returning(|_, _| ());
 
   // get app list before upgrade
   let result = EgoStoreService::wallet_app_list(&exist_wallet_id);
@@ -431,7 +424,7 @@ fn wallet_app_remove_success() {
   assert_eq!(1, result.unwrap().len());
 
   // upgrade installed app
-  let result = EgoStoreService::wallet_app_remove(&exist_wallet_id, &backend_principal);
+  let result = EgoStoreService::wallet_app_remove(ego_tenant, &exist_wallet_id, &backend_principal);
   assert!(result.is_ok());
 
   // get app list after upgrade
