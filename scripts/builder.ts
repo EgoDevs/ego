@@ -11,7 +11,7 @@ import {
 
 interface ThisArgv {
   [x: string]: unknown;
-  infra: boolean | undefined;
+  provider: boolean | undefined;
   apps: boolean | undefined;
   idl: boolean | undefined;
   project: string | undefined;
@@ -20,23 +20,10 @@ interface ThisArgv {
 }
 
 const argv = yargs
-  .option('infra', {
-    description: 'build infra only',
-    type: 'boolean',
-  })
-  .option('apps', {
-    description: 'build apps only',
-    type: 'boolean',
-  })
   .option('idl', {
     alias: 'i',
     description: 'build idl only',
     type: 'boolean',
-  })
-  .option('project', {
-    alias: 'p',
-    description: 'build project only',
-    type: 'string',
   })
   .help()
   .alias('help', 'h').argv;
@@ -62,7 +49,7 @@ function generateDFXJson(ego: ProjectConfig) {
   packageItem[ego.package] = {
     type: 'custom',
     candid: `${ego.package}.did`,
-    wasm: `${ego.package}_opt.wasm`,
+    wasm: `${ego.package}_opt.wasm.gz`,
     build: [],
   };
   // dfxConfigTemplate.canisters
@@ -122,22 +109,6 @@ function buildIDL(ego: ProjectConfig) {
     `);
 }
 
-function buildExampleIDL(ego: ProjectConfig) {
-  shell.exec(`
-    EGO_DIR="${process.cwd()}/artifacts/${ego.package}"
-    didc bind $EGO_DIR/${
-      ego.package
-    }.did -t ts > ${process.cwd()}/clients/ego_land/src/canisters/${
-    ego.package
-  }.d.ts
-    didc bind $EGO_DIR/${
-      ego.package
-    }.did -t js > ${process.cwd()}/clients/ego_land/src/canisters/${
-    ego.package
-  }.idl.js
-    `);
-}
-
 function runBuildRust(ego: ProjectConfig) {
   // buildDID();
   if (ego.no_build === false || ego.no_build === undefined) {
@@ -165,6 +136,8 @@ function runBuildRust(ego: ProjectConfig) {
                  ic-wasm \
                  "$PARENT_DIR/target/$TARGET/release/${ego.package}.wasm" \
                  -o "${shouldSaveName}" shrink
+
+                 gzip -c ${shouldSaveName} > ${shouldSaveName}.gz
           
              true
            else
