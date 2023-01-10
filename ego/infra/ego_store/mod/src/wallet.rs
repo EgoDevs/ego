@@ -6,9 +6,9 @@ use ic_ledger_types::Memo;
 use serde::Serialize;
 
 use ego_types::app::UserApp;
+use ego_types::cycle::{CashFlow, CashFlowType};
 
 use crate::app::EgoStoreApp;
-use crate::cash_flow::{CashFlow, CashFlowType};
 use crate::order::Order;
 
 #[derive(CandidType, Serialize, Deserialize, Clone, Debug)]

@@ -5,9 +5,13 @@ use ic_cdk::export::Principal;
 use tracing::error;
 
 use ego_types::app::{App, AppId, EgoError, UserApp};
+use ego_types::cycle::CashFlow;
 
 #[async_trait]
 pub trait TEgoStore {
+
+  async fn wallet_main_register(&self, user_id: Principal) -> Result<Principal, EgoError>;
+
   async fn wallet_main_new(&self, user_id: Principal) -> Result<UserApp, EgoError>;
 
   async fn app_main_list(&self) -> Result<Vec<App>, EgoError>;
@@ -17,6 +21,9 @@ pub trait TEgoStore {
   fn wallet_app_upgrade(&self, wallet_id: Principal);
   fn wallet_app_remove(&self, wallet_id: Principal);
   async fn wallet_app_list(&self) -> Result<Vec<UserApp>, EgoError>;
+
+  async fn wallet_cycle_balance(&self) -> Result<u128, EgoError>;
+  async fn wallet_cycle_list(&self) -> Result<Vec<CashFlow>, EgoError>;
 }
 
 pub struct EgoStore {
@@ -33,6 +40,26 @@ impl EgoStore {
 
 #[async_trait]
 impl TEgoStore for EgoStore {
+  async fn wallet_main_register(&self, user_id: Principal) -> Result<Principal, EgoError> {
+    let call_result = api::call::call(self.canister_id, "wallet_main_register", (user_id, )).await as Result<(Result<Principal, EgoError>, ), (RejectionCode, String)>;
+
+    match call_result {
+      Ok(resp) => match resp.0 {
+        Ok(tenant_id) => Ok(tenant_id),
+        Err(e) => Err(e),
+      },
+      Err((code, msg)) => {
+        let code = code as u16;
+        error!(
+          error_code = code,
+          error_message = msg.as_str(),
+          "Error calling wallet_main_register"
+        );
+        Err(EgoError { code, msg })
+      }
+    }
+  }
+
   async fn wallet_main_new(&self, user_id: Principal) -> Result<UserApp, EgoError> {
     let call_result = api::call::call(self.canister_id, "wallet_main_new", (user_id, )).await as Result<(Result<UserApp, EgoError>, ), (RejectionCode, String)>;
 
@@ -157,23 +184,45 @@ impl TEgoStore for EgoStore {
 
   fn wallet_app_remove(&self, wallet_id: Principal) {
     let _result = api::call::notify(self.canister_id, "wallet_app_remove", (wallet_id, ));
+  }
 
-    // let call_result = api::call::call(self.canister_id, "wallet_app_remove", (wallet_id, )).await as Result<(Result<(), EgoError>, ), (RejectionCode, String)>;
-    //
-    // match call_result {
-    //   Ok(resp) => match resp.0 {
-    //     Ok(_) => Ok(()),
-    //     Err(e) => Err(e),
-    //   },
-    //   Err((code, msg)) => {
-    //     let code = code as u16;
-    //     error!(
-    //       error_code = code,
-    //       error_message = msg.as_str(),
-    //       "Error calling wallet_app_remove"
-    //     );
-    //     Err(EgoError { code, msg })
-    //   }
-    // }
+  async fn wallet_cycle_balance(&self) -> Result<u128, EgoError> {
+    let call_result = api::call::call(self.canister_id, "wallet_cycle_balance", ()).await as Result<(Result<u128, EgoError>, ), (RejectionCode, String)>;
+
+    match call_result {
+      Ok(resp) => match resp.0 {
+        Ok(balance) => Ok(balance),
+        Err(e) => Err(e),
+      },
+      Err((code, msg)) => {
+        let code = code as u16;
+        error!(
+          error_code = code,
+          error_message = msg.as_str(),
+          "Error calling wallet_cycle_balance"
+        );
+        Err(EgoError { code, msg })
+      }
+    }
+  }
+
+  async fn wallet_cycle_list(&self) -> Result<Vec<CashFlow>, EgoError>{
+    let call_result = api::call::call(self.canister_id, "wallet_cycle_list", ()).await as Result<(Result<Vec<CashFlow>, EgoError>, ), (RejectionCode, String)>;
+
+    match call_result {
+      Ok(resp) => match resp.0 {
+        Ok(cash_flows) => Ok(cash_flows),
+        Err(e) => Err(e),
+      },
+      Err((code, msg)) => {
+        let code = code as u16;
+        error!(
+          error_code = code,
+          error_message = msg.as_str(),
+          "Error calling wallet_cycle_list"
+        );
+        Err(EgoError { code, msg })
+      }
+    }
   }
 }

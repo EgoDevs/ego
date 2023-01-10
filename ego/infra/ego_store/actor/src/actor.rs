@@ -14,20 +14,20 @@ use ego_store_mod::app::EgoStoreApp;
 use ego_store_mod::c2c::ego_ledger::EgoLedger;
 use ego_store_mod::c2c::ego_tenant::EgoTenant;
 use ego_store_mod::ego_store::EgoStore;
-use ego_store_mod::order::Order;
 use ego_store_mod::service::*;
-use ego_store_mod::state::{canister_add, canister_get_one, is_op, is_owner, is_user, log_add, log_list, op_add, owner_add, owner_remove, owners_set, registry_post_upgrade, registry_pre_upgrade, user_add, user_remove, users_post_upgrade, users_pre_upgrade, users_set};
+use ego_store_mod::state::*;
 use ego_store_mod::state::EGO_STORE;
 use ego_store_mod::types::*;
 use ego_types::app::{App, AppId};
 use ego_types::app::EgoError;
 use ego_types::app::UserApp;
+use ego_types::cycle::{CashFlow};
+use ic_ledger_types::Memo;
+use ego_store_mod::order::Order;
 use ego_types::registry::Registry;
 use ego_types::user::User;
 
 inject_ego_api!();
-
-
 
 
 #[derive(Clone, Debug, CandidType, Deserialize)]
@@ -214,27 +214,25 @@ pub fn wallet_canister_untrack(canister_id: Principal) -> Result<(), EgoError> {
 
 #[update(name = "wallet_order_list")]
 #[candid_method(update, rename = "wallet_order_list")]
-pub fn wallet_order_list() -> Result<WalletOrderListResponse, EgoError> {
+pub fn wallet_order_list() -> Result<Vec<Order>, EgoError> {
   log_add("ego_store: wallet_order_list");
 
   match EgoStoreService::wallet_order_list(ic_cdk::caller()) {
-    Ok(orders) => Ok(WalletOrderListResponse { orders }),
+    Ok(orders) => Ok( orders ),
     Err(e) => Err(e),
   }
 }
 
 #[update(name = "wallet_order_new")]
 #[candid_method(update, rename = "wallet_order_new")]
-pub async fn wallet_order_new(
-  request: WalletOrderNewRequest,
-) -> Result<WalletOrderNewResponse, EgoError> {
+pub async fn wallet_order_new(amount: f32) -> Result<Memo, EgoError> {
   log_add("ego_store: wallet_order_new");
 
   let ego_ledger_id = canister_get_one("ego_ledger").unwrap();
   let ego_ledger = EgoLedger::new(ego_ledger_id);
 
-  match EgoStoreService::wallet_order_new(ego_ledger, ic_cdk::caller(), ic_cdk::id(), request.amount) {
-    Ok(order) => Ok(WalletOrderNewResponse { memo: order.memo }),
+  match EgoStoreService::wallet_order_new(ego_ledger, ic_cdk::caller(), ic_cdk::id(), amount) {
+    Ok(order) => Ok(order.memo),
     Err(e) => {
       log_add(&format!("ego_store: wallet_order_new {:?}", e));
       Err(e)
@@ -242,15 +240,31 @@ pub async fn wallet_order_new(
   }
 }
 
+#[update(name = "wallet_cycle_balance")]
+#[candid_method(update, rename = "wallet_cycle_balance")]
+pub async fn wallet_cycle_balance() -> Result<u128, EgoError> {
+  log_add("ego_store: wallet_cycle_balance");
+
+  let wallet_id = caller();
+
+  match EgoStoreService::wallet_cycle_balance(wallet_id) {
+    Ok(balance) => Ok(balance),
+    Err(e) => {
+      log_add(&format!("ego_store: wallet_cycle_list {:?}", e));
+      Err(e)
+    }
+  }
+}
+
 #[update(name = "wallet_cycle_list")]
 #[candid_method(update, rename = "wallet_cycle_list")]
-pub async fn wallet_cycle_list() -> Result<WalletCycleListResponse, EgoError> {
+pub async fn wallet_cycle_list() -> Result<Vec<CashFlow>, EgoError> {
   log_add("ego_store: wallet_cycle_list");
 
   let wallet_id = caller();
 
   match EgoStoreService::wallet_cycle_list(wallet_id) {
-    Ok(cash_flows) => Ok(WalletCycleListResponse { cash_flows }),
+    Ok(cash_flows) => Ok(cash_flows),
     Err(e) => {
       log_add(&format!("ego_store: wallet_cycle_list {:?}", e));
       Err(e)
@@ -296,16 +310,14 @@ pub async fn app_main_release(app: EgoStoreApp) -> Result<bool, EgoError> {
 /********************  methods for ego-ledger callback  ********************/
 #[update(name = "wallet_order_notify", guard = "user_guard")]
 #[candid_method(update, rename = "wallet_order_notify")]
-pub fn wallet_order_notify(
-  request: WalletOrderNotifyRequest,
-) -> Result<WalletOrderNotifyResponse, EgoError> {
+pub fn wallet_order_notify(memo: Memo) -> Result<bool, EgoError> {
   log_add("ego_store: wallet_order_notify");
 
   // the ego_ledger id
   let operator = caller();
 
-  match EgoStoreService::wallet_order_notify(request.memo, operator, ic_cdk::api::time()) {
-    Ok(ret) => Ok(WalletOrderNotifyResponse { ret }),
+  match EgoStoreService::wallet_order_notify(memo, operator, ic_cdk::api::time()) {
+    Ok(ret) => Ok( ret ),
     Err(e) => Err(e),
   }
 }

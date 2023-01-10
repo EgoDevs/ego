@@ -45,6 +45,8 @@ macro_rules! inject_mock_ego_store {
 
       #[async_trait]
       impl TEgoStore for Store {
+        async fn wallet_main_register(&self, user_id: Principal) -> Result<Principal, EgoError>;
+
         async fn wallet_main_new(&self, user_id: Principal) -> Result<UserApp, EgoError>;
 
         async fn app_main_list(&self) -> Result<Vec<App>, EgoError>;
@@ -54,6 +56,9 @@ macro_rules! inject_mock_ego_store {
         fn wallet_app_upgrade(&self, wallet_id: Principal);
         fn wallet_app_remove(&self, wallet_id: Principal);
         async fn wallet_app_list(&self) -> Result<Vec<UserApp>, EgoError>;
+
+        async fn wallet_cycle_balance(&self) -> Result<u128, EgoError>;
+        async fn wallet_cycle_list(&self) -> Result<Vec<CashFlow>, EgoError>;
       }
     }
   }

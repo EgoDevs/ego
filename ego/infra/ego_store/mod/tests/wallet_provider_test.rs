@@ -7,7 +7,6 @@ use ego_lib::ego_canister::TEgoCanister;
 use ego_lib::inject_mock_ego_canister;
 use ego_store_mod::app::EgoStoreApp;
 use ego_store_mod::c2c::ego_tenant::TEgoTenant;
-use ego_store_mod::order::Order;
 use ego_store_mod::service::EgoStoreService;
 use ego_store_mod::state::EGO_STORE;
 use ego_store_mod::tenant::Tenant;
@@ -17,6 +16,7 @@ use ego_types::app::CanisterType::BACKEND;
 use ego_types::app::EgoError;
 use ego_types::app::Version;
 use ego_types::app_info::AppInfo;
+use ego_store_mod::order::Order;
 
 mock! {
   Tenant {}

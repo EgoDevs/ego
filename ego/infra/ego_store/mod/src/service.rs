@@ -4,11 +4,11 @@ use ic_ledger_types::Memo;
 use ego_lib::ego_canister::TEgoCanister;
 use ego_types::app::{App, AppId, Canister, UserApp};
 use ego_types::app::EgoError;
+use ego_types::cycle::{CashFlow};
 
 use crate::app::EgoStoreApp;
 use crate::c2c::ego_ledger::TEgoLedger;
 use crate::c2c::ego_tenant::TEgoTenant;
-use crate::cash_flow::CashFlow;
 use crate::order::Order;
 use crate::state::{EGO_STORE, log_add};
 
@@ -227,6 +227,16 @@ impl EgoStoreService {
     })?;
     Ok(cash_flows)
   }
+
+  pub fn wallet_cycle_balance(wallet_id: Principal) -> Result<u128, EgoError> {
+    let balance = EGO_STORE.with(|ego_store| {
+      ego_store
+        .borrow()
+        .wallet_cycle_balance(&wallet_id)
+    })?;
+    Ok(balance)
+  }
+
 
   pub fn wallet_order_notify(memo: Memo, operator: Principal, ts: u64) -> Result<bool, EgoError> {
     EGO_STORE.with(|ego_store| ego_store.borrow_mut().wallet_order_notify(memo, operator, ts))

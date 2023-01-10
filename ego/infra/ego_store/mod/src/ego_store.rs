@@ -7,9 +7,9 @@ use serde::Serialize;
 
 use ego_types::app::{App, AppId, UserApp};
 use ego_types::app::EgoError;
+use ego_types::cycle::{CashFlow};
 
 use crate::app::EgoStoreApp;
-use crate::cash_flow::CashFlow;
 use crate::order::{Order, OrderStatus};
 use crate::tenant::Tenant;
 use crate::types::EgoStoreErr;
@@ -223,6 +223,13 @@ impl EgoStore {
         }
       }
       None => Err(EgoStoreErr::OrderNotExists.into()),
+    }
+  }
+
+  pub fn wallet_cycle_balance(&self, wallet_id: &Principal) -> Result<u128, EgoError> {
+    match self.wallets.get(&wallet_id) {
+      None => Err(EgoStoreErr::WalletNotExists.into()),
+      Some(wallet) => Ok(wallet.cycles),
     }
   }
 

@@ -36,20 +36,6 @@ impl From<(RejectionCode, std::string::String)> for EgoError {
   }
 }
 
-
-#[derive(CandidType, Deserialize, Serialize)]
-pub struct WalletOrderNewRequest {
-  pub amount: f32,
-}
-
-#[derive(CandidType, Deserialize, Serialize)]
-pub struct WalletOrderNewResponse {
-  pub memo: Memo,
-}
-
-#[derive(CandidType, Serialize, Deserialize, Clone, Copy, Debug)]
-pub struct Memo(pub u64);
-
 pub type AppId = String;
 pub type WasmId = String;
 pub type FileId = String;
