@@ -58,7 +58,7 @@ macro_rules! inject_mock_ego_store {
         async fn wallet_app_list(&self) -> Result<Vec<UserApp>, EgoError>;
 
         async fn wallet_cycle_balance(&self) -> Result<u128, EgoError>;
-        async fn wallet_cycle_list(&self) -> Result<Vec<CashFlow>, EgoError>;
+        async fn wallet_cycle_list(&self) -> Result<Vec<ego_types::cycle::CashFlow>, EgoError>;
       }
     }
   }
