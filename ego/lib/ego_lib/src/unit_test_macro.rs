@@ -65,6 +65,9 @@ macro_rules! inject_mock_ego_store {
 
         async fn wallet_cycle_balance(&self) -> Result<u128, EgoError>;
         async fn wallet_cycle_list(&self) -> Result<Vec<ego_types::app::CashFlow>, EgoError>;
+
+        fn wallet_canister_track(&self, canister_id: Principal);
+        fn wallet_canister_untrack(&self, canister_id: Principal);
       }
     }
   }

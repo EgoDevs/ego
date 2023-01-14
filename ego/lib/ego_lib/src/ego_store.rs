@@ -23,6 +23,10 @@ pub trait TEgoStore {
 
   async fn wallet_cycle_balance(&self) -> Result<u128, EgoError>;
   async fn wallet_cycle_list(&self) -> Result<Vec<CashFlow>, EgoError>;
+
+  // canister track
+  fn wallet_canister_track(&self, canister_id: Principal);
+  fn wallet_canister_untrack(&self, canister_id: Principal);
 }
 
 pub struct EgoStore {
@@ -223,5 +227,13 @@ impl TEgoStore for EgoStore {
         Err(EgoError { code, msg })
       }
     }
+  }
+
+  fn wallet_canister_track(&self, canister_id: Principal){
+    let _result = api::call::notify(self.canister_id, "wallet_canister_track", (canister_id, ));
+  }
+
+  fn wallet_canister_untrack(&self, canister_id: Principal){
+    let _result = api::call::notify(self.canister_id, "wallet_canister_untrack", (canister_id, ));
   }
 }
