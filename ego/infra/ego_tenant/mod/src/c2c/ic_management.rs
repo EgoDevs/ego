@@ -1,8 +1,7 @@
 use async_trait::async_trait;
-use ic_cdk::export::Principal;
-
 use ego_types::app::EgoError;
 use ego_utils::ic_management::{canister_code_install, canister_code_upgrade, canister_cycle_top_up, canister_main_create, canister_main_delete, Cycles};
+use ic_cdk::export::Principal;
 
 #[async_trait]
 pub trait TIcManagement {

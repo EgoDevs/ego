@@ -13,16 +13,17 @@ use ego_dev_mod::c2c::ego_store::EgoStore;
 use ego_dev_mod::developer::Developer;
 use ego_dev_mod::ego_dev::EgoDev;
 use ego_dev_mod::service::*;
-use ego_dev_mod::state::{canister_add, canister_get_one, is_op, is_owner, is_user, log_add, log_list, op_add, owner_add, owner_remove, owners_set, registry_post_upgrade, registry_pre_upgrade, user_add, user_remove, users_post_upgrade, users_pre_upgrade, users_set};
+use ego_dev_mod::state::*;
 use ego_dev_mod::state::EGO_DEV;
 use ego_dev_mod::types::{AdminAppCreateBackendRequest, AppMainNewRequest, AppVersionSetFrontendAddressRequest, AppVersionUploadWasmRequest, UserRoleSetRequest};
-use ego_macros::inject_ego_api;
+use ego_macros::{inject_cycle_info_api, inject_ego_api};
 use ego_types::app::{AppId, Version};
 use ego_types::app::EgoError;
 use ego_types::registry::Registry;
 use ego_types::user::User;
 
 inject_ego_api!();
+inject_cycle_info_api!();
 
 #[derive(Clone, Debug, CandidType, Deserialize)]
 pub struct InitArg {
@@ -52,6 +53,7 @@ struct PersistState {
   pub ego_dev: EgoDev,
   users: Option<User>,
   registry: Option<Registry>,
+  cycle_info: Option<CycleInfo>
 }
 
 #[pre_upgrade]
@@ -63,6 +65,7 @@ fn pre_upgrade() {
     ego_dev,
     users: Some(users_pre_upgrade()),
     registry: Some(registry_pre_upgrade()),
+    cycle_info: Some(cycle_info_pre_upgrade())
   };
   storage::stable_save((state, )).unwrap();
 }
@@ -84,6 +87,13 @@ fn post_upgrade() {
     None => {}
     Some(registry) => {
       registry_post_upgrade(registry);
+    }
+  }
+
+  match state.cycle_info {
+    None => {}
+    Some(cycle_info) => {
+      cycle_info_post_upgrade(cycle_info);
     }
   }
 }

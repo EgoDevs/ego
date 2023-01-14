@@ -1,10 +1,10 @@
 use std::ops::{Div, Mul};
 
-use ic_cdk::export::Principal;
-
 use ego_lib::ego_canister::TEgoCanister;
 use ego_types::app::{CanisterType, Wasm};
 use ego_types::app::EgoError;
+use ego_types::cycle_info::CycleRecord;
+use ic_cdk::export::Principal;
 
 use crate::c2c::ego_file::TEgoFile;
 use crate::c2c::ego_store::TEgoStore;
@@ -15,7 +15,7 @@ use crate::types::EgoTenantErr;
 
 pub struct EgoTenantService {}
 
-pub const HALF_HOUR: u64 = 1000 * 60 * 30;
+pub const NEXT_CHECK_DURATION: u64 = 60 * 2;
 pub const CREATE_CANISTER_CYCLES_FEE: u128 = 200_000_000_000;
 
 
@@ -32,13 +32,12 @@ impl EgoTenantService {
   }
 
   pub fn canister_main_untrack(
-    wallet_id: Principal,
     canister_id: Principal,
   ) -> Result<(), EgoError> {
     EGO_TENANT.with(|ego_tenant| {
       ego_tenant
         .borrow_mut()
-        .canister_main_untrack(wallet_id, canister_id)
+        .canister_main_untrack(canister_id)
     })
   }
 
@@ -124,42 +123,64 @@ impl EgoTenantService {
     management.canister_main_delete(*canister_id).await
   }
 
-  pub async fn canister_cycles_check<M: TIcManagement, S: TEgoStore, EC: TEgoCanister>(
+  pub async fn ego_cycle_check_cb<M: TIcManagement, S: TEgoStore, EC: TEgoCanister>(
     management: M,
     ego_store: S,
     ego_canister: EC,
-    sentinel: u64,
-    task: Task,
+    task: &Task,
+    canister_id: &Principal,
+    records: &Vec<CycleRecord>,
   ) -> Result<(), EgoError> {
     let ego_store_id = canister_get_one("ego_store").unwrap();
 
-    let cycle = ego_canister.balance_get(task.canister_id).await?;
+    let current_cycle = records[0].balance;
+    let current_ts: u64 = records[0].ts;  // second
 
-    let mut current_cycle = cycle;
-    let mut next_time = sentinel + HALF_HOUR;
+    let mut last_cycle = 0;
+    let mut last_ts :u64 = 0;
 
-    log_add(format!("last_cycle: {}, current_cycle: {}", task.last_cycle, current_cycle).as_str());
-    if task.last_cycle == 0 {
+    if records.len() > 1 {
+      last_cycle = records[1].balance;
+      last_ts = records[1].ts; // second
+    }
+
+    let next_time = current_ts + NEXT_CHECK_DURATION;
+
+    let mut estimate_duration: u64 = 0;
+
+    log_add(format!("2. check cycle last_cycle: {}, current_cycle: {}", last_cycle, current_cycle).as_str());
+    if last_cycle == 0 {
       // for the first time checking, we will check it again after 30 minutes
-    } else if task.last_cycle <= current_cycle {
+      log_add("2.1 last cycle is 0. skip")
+    } else if last_cycle <= current_cycle {
       // more cycle then before, do nothing
+      log_add("2.2 more cycle then before. skip")
     } else {
-      let delta_cycle = task.last_cycle - current_cycle;
-      let delta_time = sentinel - task.last_check_time;
+      let delta_cycle = last_cycle - current_cycle;
+      let delta_time = current_ts - last_ts; // in second
+
+      log_add(format!("3. delta cycle {}, delta time {}", delta_cycle, delta_time).as_str());
       if delta_time == 0 {
+        log_add("3.1 delta_time is zero. skip")
         // just checked, do nothing
       } else {
-        let cycle_consume_per_nanosecond = delta_cycle / (delta_time as u128);
+        let cycle_consume_per_second = delta_cycle / (delta_time as u128);
+        log_add(format!("4. cycle_consume_per_second: {}", cycle_consume_per_second).as_str());
 
-        if cycle_consume_per_nanosecond != 0 {
-          // the remain cycles can be used in estimate_duration nanosecond
-          let estimate_duration = (current_cycle / cycle_consume_per_nanosecond)
+        if cycle_consume_per_second != 0 {
+          // the remain cycles can be used in estimate_duration second
+          estimate_duration = (current_cycle / cycle_consume_per_second)
             .mul(8)
             .div(10) as u64;
 
-          if estimate_duration <= HALF_HOUR {
+          log_add(format!("5. estimate_duration: {}", estimate_duration).as_str());
+
+          if estimate_duration <= NEXT_CHECK_DURATION {
             let cycle_required_to_top_up =
-              cycle_consume_per_nanosecond * HALF_HOUR as u128;
+              cycle_consume_per_second * NEXT_CHECK_DURATION as u128;
+
+            log_add(format!("6. cycle_required_to_top_up: {}", cycle_required_to_top_up).as_str());
+
             match ego_store
               .wallet_cycle_charge(
                 ego_store_id,
@@ -179,7 +200,7 @@ impl EgoTenantService {
                     cycle_required_to_top_up,
                   ).await {
                   Ok(_) => {
-                    current_cycle = current_cycle + cycle_required_to_top_up;
+                    estimate_duration = estimate_duration + NEXT_CHECK_DURATION;
                   }
                   Err(_) => {}
                 }
@@ -188,18 +209,19 @@ impl EgoTenantService {
                 // TODO: in case wallet controller do not contains enough cycles
               }
             }
-          } else {
-            next_time = estimate_duration as u64 + sentinel;
           }
         }
       }
     }
 
     EGO_TENANT.with(|ego_tenant| {
+      // convert next_time back to nanoseconds
       ego_tenant
         .borrow_mut()
-        .task_update(task.canister_id, current_cycle, next_time)
+        .task_update(task.canister_id, next_time)
     });
+
+    ego_canister.ego_cycle_estimate_set(*canister_id, estimate_duration);
 
     Ok(())
   }

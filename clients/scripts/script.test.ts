@@ -77,6 +77,14 @@ describe('scripts', () => {
     console.log(resp1.Ok.apps);
   });
 
+  test('cycle_info', async () => {
+    const deployer = await egoStoreDeployerActor;
+
+    console.log(`\t\t get estimate\n`);
+    let resp1 = await deployer.ego_cycle_info();
+    console.log(resp1);
+  });
+
   test('get_log', async () => {
     const deployer = await egoOpsDeployerActor;
 

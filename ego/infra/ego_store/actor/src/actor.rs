@@ -9,11 +9,11 @@ use ic_cdk_macros::*;
 use serde::Serialize;
 
 use ego_lib::ego_canister::EgoCanister;
-use ego_macros::inject_ego_api;
+use ego_macros::{inject_cycle_info_api, inject_ego_api};
 use ego_store_mod::app::EgoStoreApp;
 use ego_store_mod::c2c::ego_ledger::EgoLedger;
-use ego_store_mod::c2c::ego_tenant::EgoTenant;
-use ego_store_mod::ego_store::EgoStore;
+use ego_store_mod::c2c::ego_tenant::EgoTenant as EgoTenantInner;
+use ego_store_mod::store::EgoStore;
 use ego_store_mod::service::*;
 use ego_store_mod::state::*;
 use ego_store_mod::state::EGO_STORE;
@@ -21,14 +21,14 @@ use ego_store_mod::types::*;
 use ego_types::app::{App, AppId};
 use ego_types::app::EgoError;
 use ego_types::app::UserApp;
-use ego_types::cycle::{CashFlow};
+use ego_types::app::CashFlow;
 use ic_ledger_types::Memo;
 use ego_store_mod::order::Order;
 use ego_types::registry::Registry;
 use ego_types::user::User;
 
 inject_ego_api!();
-
+inject_cycle_info_api!();
 
 #[derive(Clone, Debug, CandidType, Deserialize)]
 pub struct InitArg {
@@ -47,9 +47,10 @@ pub fn init(arg: InitArg) {
 
 #[derive(CandidType, Deserialize, Serialize)]
 struct PersistState {
-  pub ego_store: EgoStore,
+  ego_store: EgoStore,
   users: Option<User>,
   registry: Option<Registry>,
+  cycle_info: Option<CycleInfo>
 }
 
 #[pre_upgrade]
@@ -62,6 +63,7 @@ fn pre_upgrade() {
     ego_store,
     users: Some(users_pre_upgrade()),
     registry: Some(registry_pre_upgrade()),
+    cycle_info: Some(cycle_info_pre_upgrade())
   };
   storage::stable_save((state, )).unwrap();
 }
@@ -84,6 +86,13 @@ fn post_upgrade() {
     None => {}
     Some(registry) => {
       registry_post_upgrade(registry);
+    }
+  }
+
+  match state.cycle_info {
+    None => {}
+    Some(cycle_info) => {
+      cycle_info_post_upgrade(cycle_info);
     }
   }
 }
@@ -155,7 +164,7 @@ pub async fn wallet_app_install(
   log_add("2 get wallet_id");
   let wallet_id = caller();
 
-  let ego_tenant = EgoTenant::new();
+  let ego_tenant = EgoTenantInner::new();
   let ego_canister = EgoCanister::new();
 
   let user_app =
@@ -167,7 +176,7 @@ pub async fn wallet_app_install(
 #[candid_method(update, rename = "wallet_app_upgrade")]
 pub async fn wallet_app_upgrade(wallet_id: Principal) -> Result<(), EgoError> {
   let canister_id = caller();
-  let ego_tenant = EgoTenant::new();
+  let ego_tenant = EgoTenantInner::new();
   let ego_canister = EgoCanister::new();
 
   log_add(format!("ego_store: wallet_app_upgrade wallet_id: {}, canister_id: {}", wallet_id, canister_id).as_str());
@@ -180,7 +189,7 @@ pub async fn wallet_app_upgrade(wallet_id: Principal) -> Result<(), EgoError> {
 #[candid_method(update, rename = "wallet_app_remove")]
 pub fn wallet_app_remove(wallet_id: Principal) -> Result<(), EgoError> {
   let canister_id = caller();
-  let ego_tenant = EgoTenant::new();
+  let ego_tenant = EgoTenantInner::new();
 
   log_add(format!("ego_store: wallet_app_remove wallet_id: {}, canister_id: {}", wallet_id, canister_id).as_str());
 
@@ -195,7 +204,7 @@ pub fn wallet_app_remove(wallet_id: Principal) -> Result<(), EgoError> {
 pub fn wallet_canister_track(canister_id: Principal) -> Result<(), EgoError> {
   log_add("ego_store: canister_main_track");
 
-  let ego_tenant = EgoTenant::new();
+  let ego_tenant = EgoTenantInner::new();
   let wallet_id = caller();
 
   EgoStoreService::wallet_canister_track(ego_tenant, &wallet_id, &canister_id)
@@ -206,7 +215,7 @@ pub fn wallet_canister_track(canister_id: Principal) -> Result<(), EgoError> {
 pub fn wallet_canister_untrack(canister_id: Principal) -> Result<(), EgoError> {
   log_add("ego_store: canister_main_untrack");
 
-  let ego_tenant = EgoTenant::new();
+  let ego_tenant = EgoTenantInner::new();
   let wallet_id = caller();
 
   EgoStoreService::wallet_canister_untrack(ego_tenant, &wallet_id, &canister_id)
@@ -242,7 +251,7 @@ pub async fn wallet_order_new(amount: f32) -> Result<Memo, EgoError> {
 
 #[update(name = "wallet_cycle_balance")]
 #[candid_method(update, rename = "wallet_cycle_balance")]
-pub async fn wallet_cycle_balance() -> Result<u128, EgoError> {
+pub fn wallet_cycle_balance() -> Result<u128, EgoError> {
   log_add("ego_store: wallet_cycle_balance");
 
   let wallet_id = caller();
@@ -258,7 +267,7 @@ pub async fn wallet_cycle_balance() -> Result<u128, EgoError> {
 
 #[update(name = "wallet_cycle_list")]
 #[candid_method(update, rename = "wallet_cycle_list")]
-pub async fn wallet_cycle_list() -> Result<Vec<CashFlow>, EgoError> {
+pub fn wallet_cycle_list() -> Result<Vec<CashFlow>, EgoError> {
   log_add("ego_store: wallet_cycle_list");
 
   let wallet_id = caller();
@@ -377,7 +386,7 @@ pub async fn wallet_main_new(user_id: Principal) -> Result<UserApp, EgoError> {
 
   log_add(&format!("1 get controller app_id {}", app_id));
 
-  let ego_tenant = EgoTenant::new();
+  let ego_tenant = EgoTenantInner::new();
   let ego_canister = EgoCanister::new();
   let user_app =
     EgoStoreService::wallet_controller_install(ego_tenant, ego_canister, wallet_provider, user_id, app_id).await?;

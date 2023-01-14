@@ -1,8 +1,26 @@
 use std::collections::BTreeMap;
+use std::ops::Div;
 use std::time::Duration;
 
 use candid::candid_method;
-use ic_cdk::{api, caller, id, storage};
+use ego_lib::ego_canister::{EgoCanister, TEgoCanister};
+use ego_macros::{inject_ego_api};
+use ego_tenant_mod::c2c::ego_file::EgoFile;
+use ego_tenant_mod::c2c::ego_store::EgoStore;
+use ego_tenant_mod::c2c::ic_management::IcManagement;
+use ego_tenant_mod::service::EgoTenantService;
+use ego_tenant_mod::state::*;
+use ego_tenant_mod::state::EGO_TENANT;
+use ego_tenant_mod::tenant::Tenant;
+use ego_tenant_mod::types::{
+  AppMainInstallRequest, AppMainUpgradeRequest,
+};
+use ego_tenant_mod::types::EgoTenantErr::CanisterNotFounded;
+use ego_types::app::EgoError;
+use ego_types::cycle_info::CycleRecord;
+use ego_types::registry::Registry;
+use ego_types::user::User;
+use ic_cdk::{caller, id, storage};
 use ic_cdk::api::time;
 use ic_cdk::export::candid::{CandidType, Deserialize};
 use ic_cdk::export::Principal;
@@ -10,24 +28,9 @@ use ic_cdk::timer::set_timer_interval;
 use ic_cdk_macros::*;
 use serde::Serialize;
 
-use ego_lib::ego_canister::EgoCanister;
-use ego_macros::inject_ego_api;
-use ego_tenant_mod::c2c::ego_file::EgoFile;
-use ego_tenant_mod::c2c::ego_store::EgoStore;
-use ego_tenant_mod::c2c::ic_management::IcManagement;
-use ego_tenant_mod::ego_tenant::EgoTenant;
-use ego_tenant_mod::service::EgoTenantService;
-use ego_tenant_mod::state::{canister_add, is_op, is_owner, is_user, log_add, log_list, op_add, owner_add, owner_remove, owners_set, registry_post_upgrade, registry_pre_upgrade, user_add, user_remove, users_post_upgrade, users_pre_upgrade, users_set};
-use ego_tenant_mod::state::EGO_TENANT;
-use ego_tenant_mod::types::{
-  AppMainInstallRequest, AppMainUpgradeRequest,
-};
-use ego_types::app::EgoError;
-use ego_types::registry::Registry;
-use ego_types::user::User;
-
 inject_ego_api!();
 
+pub const CHECK_DURATION: u64 = 60 * 1; // 2 minutes
 
 #[derive(Clone, Debug, CandidType, Deserialize)]
 pub struct InitArg {
@@ -43,15 +46,15 @@ pub fn init(arg: InitArg) {
   log_add("==> add caller as the owner");
   owner_add(caller.clone());
 
-  let duration = Duration::new(1800, 0);
+  let duration = Duration::new(CHECK_DURATION, 0);
   set_timer_interval(duration, || {
-    let _result = api::call::notify(id(), "message_main_notify", ());
+    task_run();
   });
 }
 
 #[derive(CandidType, Deserialize, Serialize)]
 struct PersistState {
-  pub ego_tenant: EgoTenant,
+  ego_tenant: Tenant,
   users: Option<User>,
   registry: Option<Registry>,
 }
@@ -89,9 +92,9 @@ fn post_upgrade() {
     }
   }
 
-  let duration = Duration::new(1800, 0);
+  let duration = Duration::new(CHECK_DURATION, 0);
   set_timer_interval(duration, || {
-    let _result = api::call::notify(id(), "message_main_notify", ());
+    task_run();
   });
 }
 
@@ -154,40 +157,51 @@ fn canister_main_track(wallet_id: Principal, canister_id: Principal) -> Result<(
 
 #[update(name = "canister_main_untrack", guard = "user_guard")]
 #[candid_method(update, rename = "canister_main_untrack")]
-fn canister_main_untrack(wallet_id: Principal, canister_id: Principal) -> Result<(), EgoError> {
+fn canister_main_untrack(canister_id: Principal) -> Result<(), EgoError> {
   log_add("ego_tenant: canister_main_untrack");
 
-  EgoTenantService::canister_main_untrack(wallet_id, canister_id)?;
+  EgoTenantService::canister_main_untrack(canister_id)?;
   Ok(())
 }
 
-/********************  notify  ********************/
-#[update(name = "message_main_notify")]
-#[candid_method(update, rename = "message_main_notify")]
-async fn message_main_notify() {
-  log_add("ego-tenant: message_main_notify");
+#[update(name = "ego_cycle_check_cb")]
+#[candid_method(update, rename = "ego_cycle_check_cb")]
+async fn ego_cycle_check_cb(records: Vec<CycleRecord>) -> Result<(), EgoError> {
+  let canister_id = caller();
+  log_add(format!("ego_tenant: ego_cycle_check_cb, canister_id: {}, records: {:?}", canister_id, records).as_str());
 
-  let sentinel = time();
+  let management = IcManagement::new();
+  let ego_store = EgoStore::new();
+  let ego_canister = EgoCanister::new();
+
+  log_add("1. get task by canister_id");
+  let task = EGO_TENANT.with(|ego_tenant| {
+    match ego_tenant.borrow().tasks.get(&canister_id) {
+      None => {
+        log_add("ego_tenant error, can not find task");
+        Err(EgoError::from(CanisterNotFounded))
+      }
+      Some(task) => {
+        Ok(task.clone())
+      }
+    }
+  })?;
+
+  EgoTenantService::ego_cycle_check_cb(management, ego_store, ego_canister, &task, &canister_id, &records).await?;
+  Ok(())
+}
+
+
+/********************  notify  ********************/
+fn task_run() {
+  log_add("ego-tenant: task_run");
+
+  let sentinel = time().div(1e9 as u64);  // convert to second
   let tasks = EGO_TENANT.with(|ego_tenant| ego_tenant.borrow_mut().tasks_get(sentinel));
 
   for task in tasks {
-    let management = IcManagement::new();
-    let ego_store = EgoStore::new();
     let ego_canister = EgoCanister::new();
 
-    match EgoTenantService::canister_cycles_check(
-      management,
-      ego_store,
-      ego_canister,
-      sentinel,
-      task,
-    )
-      .await
-    {
-      Ok(_) => {}
-      Err(e) => {
-        log_add(&format!("canister_cycles_check failed: {:?}", e));
-      }
-    }
+    ego_canister.ego_cycle_check(task.canister_id);
   }
 }

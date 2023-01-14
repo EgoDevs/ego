@@ -1,5 +1,5 @@
 pub mod c2c;
-pub mod ego_tenant;
+pub mod tenant;
 pub mod service;
 pub mod state;
 pub mod task;

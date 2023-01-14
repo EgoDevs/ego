@@ -14,8 +14,8 @@ fn main() {
   use ego_types::app::EgoError;
   use ic_cdk::export::Principal;
   use ego_types::app::UserApp;
-  use ego_types::app::{AppId, App};
-  use ego_types::cycle::{CashFlow};
+  use ego_types::app::{AppId, App, CashFlow};
+  use ego_types::cycle_info::*;
 
   use ic_ledger_types::Memo;
 

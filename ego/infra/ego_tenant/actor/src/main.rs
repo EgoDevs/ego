@@ -10,6 +10,7 @@ fn main() {
   use crate::actor::InitArg;
   use ego_tenant_mod::types::*;
   use ego_types::app::EgoError;
+  use ego_types::cycle_info::*;
   use ic_cdk::export::Principal;
 
   candid::export_service!();

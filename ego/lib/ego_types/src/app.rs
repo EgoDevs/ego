@@ -231,6 +231,43 @@ impl Wasm {
   }
 }
 
+#[derive(CandidType, Serialize, Deserialize, Clone, Debug)]
+pub struct CashFlow {
+  pub cash_flow_type: CashFlowType,
+  pub cycles: u128,
+  pub balance: u128,
+  // balance after the operation
+  pub created_at: u64,
+  pub operator: Principal,
+  pub comment: String,
+}
+
+#[derive(CandidType, Serialize, Deserialize, Clone, Debug)]
+pub enum CashFlowType {
+  CHARGE,
+  RECHARGE,
+}
+
+impl CashFlow {
+  pub fn new(
+    cash_flow_type: CashFlowType,
+    cycles: u128,
+    balance: u128,
+    operator: Principal,
+    ts: u64,
+    comment: String,
+  ) -> Self {
+    CashFlow {
+      cash_flow_type,
+      cycles,
+      balance,
+      created_at: ts,
+      operator,
+      comment,
+    }
+  }
+}
+
 fn get_md5(data: &Vec<u8>) -> String {
   let digest = md5::compute(data);
   return format!("{:?}", digest);

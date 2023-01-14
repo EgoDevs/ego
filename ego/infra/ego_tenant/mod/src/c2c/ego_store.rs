@@ -1,9 +1,8 @@
 use async_trait::async_trait;
+use ego_types::app::EgoError;
 use ic_cdk::api;
 use ic_cdk::api::call::RejectionCode;
 use ic_cdk::export::Principal;
-
-use ego_types::app::EgoError;
 
 use crate::c2c::c2c_types::{WalletCycleChargeRequest, WalletCycleChargeResponse};
 

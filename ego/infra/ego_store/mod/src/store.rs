@@ -5,9 +5,8 @@ use ic_cdk::export::Principal;
 use ic_ledger_types::Memo;
 use serde::Serialize;
 
-use ego_types::app::{App, AppId, UserApp};
+use ego_types::app::{App, AppId, UserApp, CashFlow};
 use ego_types::app::EgoError;
-use ego_types::cycle::{CashFlow};
 
 use crate::app::EgoStoreApp;
 use crate::order::{Order, OrderStatus};

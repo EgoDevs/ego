@@ -1,7 +1,4 @@
 use async_trait::async_trait;
-use ic_cdk::export::Principal;
-use mockall::mock;
-
 use ego_lib::ego_canister::TEgoCanister;
 use ego_lib::inject_mock_ego_canister;
 use ego_tenant_mod::c2c::ego_file::TEgoFile;
@@ -15,6 +12,8 @@ use ego_types::app::EgoError;
 use ego_types::app::Version;
 use ego_types::app_info::AppInfo;
 use ego_utils::ic_management::Cycles;
+use ic_cdk::export::Principal;
+use mockall::mock;
 
 static STORE_CANISTER_ID: &str = "qhbym-qaaaa-aaaaa-aaafq-cai";
 static TENANT_CANISTER_ID: &str = "rdmx6-jaaaa-aaaaa-aaadq-cai";

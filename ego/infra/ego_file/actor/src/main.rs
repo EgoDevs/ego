@@ -11,6 +11,7 @@ fn main() {
   use ego_types::app::EgoError;
   use ic_cdk::export::Principal;
   use ego_types::app::FileId;
+  use ego_types::cycle_info::*;
 
   candid::export_service!();
   std::print!("{}", __export_service());

@@ -12,6 +12,7 @@ fn main() {
   use ego_dev_mod::app::*;
   use ego_dev_mod::developer::*;
   use ego_types::app::*;
+  use ego_types::cycle_info::*;
   use ic_cdk::export::Principal;
 
   candid::export_service!();

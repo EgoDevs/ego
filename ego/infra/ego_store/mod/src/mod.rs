@@ -1,6 +1,6 @@
 pub mod app;
 pub mod c2c;
-pub mod ego_store;
+pub mod store;
 pub mod service;
 pub mod state;
 pub mod tenant;

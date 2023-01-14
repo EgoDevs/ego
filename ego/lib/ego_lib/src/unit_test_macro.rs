@@ -32,6 +32,12 @@ macro_rules! inject_mock_ego_canister {
         // canister upgrade
         fn ego_canister_upgrade(&self, target_canister_id: Principal);
         fn ego_canister_remove(&self, target_canister_id: Principal);
+
+        // canister cycle info
+        fn ego_cycle_check(&self, target_canister_id: Principal);
+        async fn ego_cycle_history(&self, target_canister_id: Principal) -> Result<Vec<ego_types::cycle_info::CycleRecord>, String>;
+        async fn ego_cycle_info(&self, target_canister_id: Principal) -> Result<ego_types::cycle_info::CycleInfo, String>;
+        fn ego_cycle_estimate_set(&self, target_canister_id: Principal, estimate: u64);
       }
     }
   }
@@ -58,7 +64,21 @@ macro_rules! inject_mock_ego_store {
         async fn wallet_app_list(&self) -> Result<Vec<UserApp>, EgoError>;
 
         async fn wallet_cycle_balance(&self) -> Result<u128, EgoError>;
-        async fn wallet_cycle_list(&self) -> Result<Vec<ego_types::cycle::CashFlow>, EgoError>;
+        async fn wallet_cycle_list(&self) -> Result<Vec<ego_types::app::CashFlow>, EgoError>;
+      }
+    }
+  }
+}
+
+#[macro_export]
+macro_rules! inject_mock_ego_tenant {
+  () => {
+    mock! {
+      Tenant {}
+
+      #[async_trait]
+      pub trait TEgoTenant {
+        fn ego_cycle_check_cb(&self, records: Vec<ego_types::cycle_info::CycleRecord>);
       }
     }
   }

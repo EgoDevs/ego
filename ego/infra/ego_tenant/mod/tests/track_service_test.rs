@@ -1,12 +1,9 @@
 use async_trait::async_trait;
-use ic_cdk::export::Principal;
-use mockall::mock;
-
 use ego_lib::ego_canister::TEgoCanister;
 use ego_lib::inject_mock_ego_canister;
 use ego_tenant_mod::c2c::ego_store::TEgoStore;
 use ego_tenant_mod::c2c::ic_management::TIcManagement;
-use ego_tenant_mod::service::EgoTenantService;
+use ego_tenant_mod::service::{EgoTenantService, NEXT_CHECK_DURATION};
 use ego_tenant_mod::state::canister_add;
 use ego_tenant_mod::state::EGO_TENANT;
 use ego_tenant_mod::task::Task;
@@ -14,6 +11,9 @@ use ego_types::app::{App, AppId, Version};
 use ego_types::app::EgoError;
 use ego_types::app_info::AppInfo;
 use ego_utils::ic_management::Cycles;
+use ic_cdk::export::Principal;
+use mockall::mock;
+use ego_types::cycle_info::CycleRecord;
 
 static STORE_CANISTER_ID: &str = "qhbym-qaaaa-aaaaa-aaafq-cai";
 
@@ -99,10 +99,10 @@ fn canister_main_track() {
 #[test]
 fn canister_main_untrack() {
   set_up();
-  let wallet_principal = Principal::from_text(TEST_WALLET_ID.to_string()).unwrap();
+
   let canister_principal = Principal::from_text(TEST_CANISTER_ID.to_string()).unwrap();
 
-  let result = EgoTenantService::canister_main_untrack(wallet_principal, canister_principal);
+  let result = EgoTenantService::canister_main_untrack(canister_principal);
   assert!(result.is_ok());
 }
 
@@ -112,8 +112,10 @@ async fn canister_cycles_check_first_time() {
 
   let canister_principal = Principal::from_text(EXISTS_CANISTER_ID.to_string()).unwrap();
 
-  let sentinel = 10u64;
+  let ts = 10u64;
   let cycle = 1_000_000u128;
+
+  let records = vec![CycleRecord{ balance: cycle, ts }];
 
   let task = EGO_TENANT.with(|ego_tenant| {
     ego_tenant
@@ -124,28 +126,24 @@ async fn canister_cycles_check_first_time() {
       .clone()
   });
 
-  assert_eq!(0, task.last_check_time);
-  assert_eq!(0, task.last_cycle);
-
   let management = MockManagement::new();
   let ego_store = MockStore::new();
   let mut ego_canister = MockCanister::new();
 
   ego_canister
-    .expect_balance_get()
-    .times(1)
-    .returning(move |canister_id| {
+    .expect_ego_cycle_estimate_set()
+    .returning(move |canister_id, estimate| {
       assert_eq!(canister_principal, canister_id);
-
-      Ok(cycle)
+      assert_eq!(0, estimate);
     });
 
-  let _result = EgoTenantService::canister_cycles_check(
+  let _result = EgoTenantService::ego_cycle_check_cb(
     management,
     ego_store,
     ego_canister,
-    sentinel,
-    task,
+    &task,
+    &canister_principal,
+    &records
   )
     .await;
 
@@ -158,10 +156,9 @@ async fn canister_cycles_check_first_time() {
       .clone()
   });
 
-  assert_eq!(sentinel + 1000 * 60 * 30, task.next_check_time);
-  assert_eq!(0, task.last_check_time);
-  assert_eq!(1_000_000, task.last_cycle);
+  assert_eq!(ts + NEXT_CHECK_DURATION, task.next_check_time);
 }
+
 
 // zero cycle consumption between two check times
 #[tokio::test]
@@ -170,14 +167,12 @@ async fn canister_cycles_check_second_time_zero_cycle_consumption() {
 
   let canister_principal = Principal::from_text(EXISTS_CANISTER_ID.to_string()).unwrap();
 
-  let sentinel = 10u64;
+  let ts1 = 10u64;
+  let ts2 = 20u64;
   let cycle = 1_000_000u128;
 
-  EGO_TENANT.with(|ego_tenant| {
-    ego_tenant
-      .borrow_mut()
-      .task_update(canister_principal, cycle, sentinel)
-  });
+  let records = vec![CycleRecord{ balance: cycle, ts: ts2 }, CycleRecord{ balance: cycle, ts: ts1 }];
+
 
   let task = EGO_TENANT.with(|ego_tenant| {
     ego_tenant
@@ -188,29 +183,24 @@ async fn canister_cycles_check_second_time_zero_cycle_consumption() {
       .clone()
   });
 
-  assert_eq!(0, task.last_check_time);
-  assert_eq!(sentinel, task.next_check_time);
-  assert_eq!(cycle, task.last_cycle);
-
   let management = MockManagement::new();
   let ego_store = MockStore::new();
   let mut ego_canister = MockCanister::new();
 
   ego_canister
-    .expect_balance_get()
-    .times(1)
-    .returning(move |canister_id| {
+    .expect_ego_cycle_estimate_set()
+    .returning(move |canister_id, estimate| {
       assert_eq!(canister_principal, canister_id);
-
-      Ok(cycle)
+      assert_eq!(0, estimate);
     });
 
-  let _result = EgoTenantService::canister_cycles_check(
+  let _result = EgoTenantService::ego_cycle_check_cb(
     management,
     ego_store,
     ego_canister,
-    sentinel,
-    task,
+    &task,
+    &canister_principal,
+    &records
   )
     .await;
 
@@ -223,9 +213,8 @@ async fn canister_cycles_check_second_time_zero_cycle_consumption() {
       .clone()
   });
 
-  assert_eq!(sentinel, task.last_check_time);
-  assert_eq!(sentinel + 1000 * 60 * 30, task.next_check_time);
-  assert_eq!(1_000_000, task.last_cycle);
+
+  assert_eq!(ts2 + NEXT_CHECK_DURATION, task.next_check_time);
 }
 
 // zero cycle consumption between two check times
@@ -236,14 +225,12 @@ async fn canister_cycles_check_second_time_none_zero_cycle_consumption() {
   let wallet_principal = Principal::from_text(EXISTS_WALLET_ID.to_string()).unwrap();
   let canister_principal = Principal::from_text(EXISTS_CANISTER_ID.to_string()).unwrap();
 
-  let sentinel = 10u64;
-  let cycle = 1_000_000u128;
+  let ts1 = 10u64;
+  let ts2 = 20u64;
+  let cycle1 = 1_000_000u128;
+  let cycle2 = 500_000u128;
 
-  EGO_TENANT.with(|ego_tenant| {
-    ego_tenant
-      .borrow_mut()
-      .task_update(canister_principal, 2 * cycle, sentinel)
-  });
+  let records = vec![CycleRecord{ balance: cycle2, ts: ts2 }, CycleRecord{ balance: cycle1, ts: ts1 }];
 
   let task = EGO_TENANT.with(|ego_tenant| {
     ego_tenant
@@ -254,28 +241,16 @@ async fn canister_cycles_check_second_time_none_zero_cycle_consumption() {
       .clone()
   });
 
-  assert_eq!(0, task.last_check_time);
-  assert_eq!(sentinel, task.next_check_time);
-  assert_eq!(2 * cycle, task.last_cycle);
-
   let mut management = MockManagement::new();
   let mut ego_store = MockStore::new();
   let mut ego_canister = MockCanister::new();
 
-  ego_canister
-    .expect_balance_get()
-    .times(1)
-    .returning(move |canister_id| {
-      assert_eq!(canister_principal, canister_id);
-
-      Ok(cycle)
-    });
 
   ego_store
     .expect_wallet_cycle_charge()
     .returning(move |_canister_id, wallet_id, cycle, _comment| {
       assert_eq!(wallet_principal, wallet_id);
-      assert_eq!(180000000000, cycle);
+      assert_eq!(6000000, cycle);
       Ok(true)
     });
 
@@ -283,16 +258,24 @@ async fn canister_cycles_check_second_time_none_zero_cycle_consumption() {
     .expect_canister_cycle_top_up()
     .returning(move |canister_id, cycle| {
       assert_eq!(canister_principal, canister_id);
-      assert_eq!(180000000000, cycle);
+      assert_eq!(6000000, cycle);
       Ok(())
     });
 
-  let _result = EgoTenantService::canister_cycles_check(
+  ego_canister
+    .expect_ego_cycle_estimate_set()
+    .returning(move |canister_id, estimate| {
+      assert_eq!(canister_principal, canister_id);
+      assert_eq!(128, estimate);
+    });
+
+  let _result = EgoTenantService::ego_cycle_check_cb(
     management,
     ego_store,
     ego_canister,
-    sentinel,
-    task,
+    &task,
+    &canister_principal,
+    &records
   )
     .await;
 
@@ -305,7 +288,5 @@ async fn canister_cycles_check_second_time_none_zero_cycle_consumption() {
       .clone()
   });
 
-  assert_eq!(sentinel, task.last_check_time);
-  assert_eq!(sentinel + 1800000, task.next_check_time);
-  assert_eq!(180_000_000_000 + 1_000_000, task.last_cycle);
+  assert_eq!(ts2 + NEXT_CHECK_DURATION, task.next_check_time);
 }

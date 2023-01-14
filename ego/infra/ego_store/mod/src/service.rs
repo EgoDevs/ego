@@ -2,9 +2,8 @@ use ic_cdk::export::Principal;
 use ic_ledger_types::Memo;
 
 use ego_lib::ego_canister::TEgoCanister;
-use ego_types::app::{App, AppId, Canister, UserApp};
+use ego_types::app::{App, AppId, Canister, UserApp, CashFlow};
 use ego_types::app::EgoError;
-use ego_types::cycle::{CashFlow};
 
 use crate::app::EgoStoreApp;
 use crate::c2c::ego_ledger::TEgoLedger;
@@ -80,7 +79,10 @@ impl EgoStoreService {
         .wallet_app_install(&wallet_id, &user_app);
     });
 
-    log_add("6 set app info");
+    log_add("6 track canister");
+    ego_tenant.canister_main_track(ego_tenant_id, &wallet_id, &canister_id);
+
+    log_add("7 set app info");
     ego_canister.ego_app_info_update(canister_id, Some(wallet_id), ego_store_app.app.app_id, ego_store_app.app.current_version);
 
     Ok(user_app)
@@ -184,12 +186,10 @@ impl EgoStoreService {
     let _user_app =
       EGO_STORE.with(|ego_store| ego_store.borrow().wallet_app_get(&wallet_id, &canister_id))?;
 
-    log_add("4 untrack canister");
-
+    log_add("3 untrack canister");
     ego_tenant
       .canister_main_untrack(
         ego_tenant_id,
-        wallet_id,
         canister_id,
       );
 
@@ -325,7 +325,10 @@ impl EgoStoreService {
         .wallet_app_install(&canister_id, &user_app);
     });
 
-    log_add("6 set app info");
+    log_add("6 track canister");
+    ego_tenant.canister_main_track(ego_tenant_id, &canister_id, &canister_id);
+
+    log_add("7 set app info");
     ego_canister.ego_app_info_update(canister_id, Some(canister_id), ego_store_app.app.app_id, ego_store_app.app.current_version);
 
     Ok(user_app)

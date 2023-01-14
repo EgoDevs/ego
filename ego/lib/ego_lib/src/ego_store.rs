@@ -4,8 +4,7 @@ use ic_cdk::api::call::RejectionCode;
 use ic_cdk::export::Principal;
 use tracing::error;
 
-use ego_types::app::{App, AppId, EgoError, UserApp};
-use ego_types::cycle::CashFlow;
+use ego_types::app::{App, AppId, EgoError, UserApp,CashFlow};
 
 #[async_trait]
 pub trait TEgoStore {
