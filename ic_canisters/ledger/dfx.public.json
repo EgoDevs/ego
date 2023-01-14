@@ -3,7 +3,7 @@
     "ledger": {
       "type": "custom",
       "candid": "ledger.public.did",
-      "wasm": "ledger-canister.wasm",
+      "wasm": "ledger-canister.wasm.gz",
       "build": []
     }
   },
