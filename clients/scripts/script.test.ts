@@ -126,8 +126,9 @@ describe('scripts', () => {
 
   test('add_ops_owner', async () => {
     const deployer = await egoOpsDeployerActor;
+    console.log(`\t\t add_ops_owner\n`);
 
-    let principal = Principal.fromText("replace_this");
+    let principal = Principal.fromText("el7s7-33f72-jqhxg-cvbuv-omslr-obd22-qhrhb-bv26n-sjle3-ulxaz-6ae");
     let resp = await deployer.ego_owner_add(principal);
     console.log(resp)
   })
