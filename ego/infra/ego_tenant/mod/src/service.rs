@@ -15,8 +15,8 @@ use crate::types::EgoTenantErr;
 
 pub struct EgoTenantService {}
 
-pub const NEXT_CHECK_DURATION: u64 = 60 * 2;
-pub const CREATE_CANISTER_CYCLES_FEE: u128 = 200_000_000_000;
+pub const NEXT_CHECK_DURATION: u64 = 60 * 5;
+pub const CREATE_CANISTER_CYCLES_FEE: u128 = 50_000_000_000;
 
 
 impl EgoTenantService {

@@ -2,6 +2,8 @@ use ic_cdk::export::candid::Deserialize;
 use ic_cdk::export::candid::CandidType;
 use serde::Serialize;
 
+pub const DEFAULT_ESTIMATE: u64 = 86400 * 5;
+
 #[derive(CandidType, Serialize, Deserialize, Clone, Debug)]
 pub struct CycleRecord {
   pub balance: u128,
@@ -18,7 +20,7 @@ pub struct CycleInfo {
 impl Default for CycleInfo {
   fn default() -> Self {
     CycleInfo {
-      estimate_remaining: 0,
+      estimate_remaining: DEFAULT_ESTIMATE,
       records: vec![]
     }
   }
