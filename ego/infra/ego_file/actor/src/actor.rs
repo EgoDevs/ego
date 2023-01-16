@@ -8,16 +8,17 @@ use ic_cdk::export::Principal;
 use ic_cdk_macros::*;
 
 use ego_file_mod::service::EgoFileService;
-use ego_file_mod::state::{canister_add, is_op, is_owner, is_user, log_add, log_list, op_add, owner_add, owner_remove, owners_set, registry_post_upgrade, registry_pre_upgrade, user_add, user_remove, users_post_upgrade, users_pre_upgrade, users_set};
+use ego_file_mod::state::*;
 use ego_file_mod::state::STORAGE;
 use ego_file_mod::storage::{DEFAULT_FILE_SIZE, HEADER_SIZE, Storage, WASM_PAGE_SIZE};
 use ego_file_mod::types::EgoFileError;
-use ego_macros::inject_ego_api;
+use ego_macros::{inject_cycle_info_api, inject_ego_api};
 use ego_types::app::{EgoError, FileId};
 use ego_types::registry::Registry;
 use ego_types::user::User;
 
 inject_ego_api!();
+inject_cycle_info_api!();
 
 #[derive(Clone, Debug, CandidType, Deserialize)]
 pub struct InitArg {
@@ -86,6 +87,7 @@ struct PersistState {
   pub storage: Storage,
   users: Option<User>,
   registry: Option<Registry>,
+  cycle_info: Option<CycleInfo>
 }
 
 /********************  persist method ********************/
@@ -100,6 +102,7 @@ fn state_persist() -> Result<bool, EgoError> {
     storage,
     users: Some(users_pre_upgrade()),
     registry: Some(registry_pre_upgrade()),
+    cycle_info: Some(cycle_info_pre_upgrade())
   };
 
   let data = Encode!(&state).unwrap();
@@ -143,6 +146,13 @@ fn state_restore() -> Result<bool, EgoError> {
     None => {}
     Some(registry) => {
       registry_post_upgrade(registry);
+    }
+  }
+
+  match state.cycle_info {
+    None => {}
+    Some(cycle_info) => {
+      cycle_info_post_upgrade(cycle_info);
     }
   }
 

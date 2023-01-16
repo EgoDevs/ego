@@ -36,20 +36,6 @@ impl From<(RejectionCode, std::string::String)> for EgoError {
   }
 }
 
-
-#[derive(CandidType, Deserialize, Serialize)]
-pub struct WalletOrderNewRequest {
-  pub amount: f32,
-}
-
-#[derive(CandidType, Deserialize, Serialize)]
-pub struct WalletOrderNewResponse {
-  pub memo: Memo,
-}
-
-#[derive(CandidType, Serialize, Deserialize, Clone, Copy, Debug)]
-pub struct Memo(pub u64);
-
 pub type AppId = String;
 pub type WasmId = String;
 pub type FileId = String;
@@ -242,6 +228,43 @@ impl Wasm {
       )
         .into_bytes(),
     )
+  }
+}
+
+#[derive(CandidType, Serialize, Deserialize, Clone, Debug)]
+pub struct CashFlow {
+  pub cash_flow_type: CashFlowType,
+  pub cycles: u128,
+  pub balance: u128,
+  // balance after the operation
+  pub created_at: u64,
+  pub operator: Principal,
+  pub comment: String,
+}
+
+#[derive(CandidType, Serialize, Deserialize, Clone, Debug)]
+pub enum CashFlowType {
+  CHARGE,
+  RECHARGE,
+}
+
+impl CashFlow {
+  pub fn new(
+    cash_flow_type: CashFlowType,
+    cycles: u128,
+    balance: u128,
+    operator: Principal,
+    ts: u64,
+    comment: String,
+  ) -> Self {
+    CashFlow {
+      cash_flow_type,
+      cycles,
+      balance,
+      created_at: ts,
+      operator,
+      comment,
+    }
   }
 }
 

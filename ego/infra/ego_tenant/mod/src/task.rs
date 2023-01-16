@@ -6,9 +6,7 @@ use serde::Serialize;
 pub struct Task {
   pub wallet_id: Principal,
   pub canister_id: Principal,
-  pub last_check_time: u64,
-  pub next_check_time: u64,
-  pub last_cycle: u128,
+  pub next_check_time: u64, // second
 }
 
 impl Task {
@@ -16,9 +14,7 @@ impl Task {
     Task {
       wallet_id,
       canister_id,
-      last_check_time: 0,
-      next_check_time: 0,
-      last_cycle: 0,
+      next_check_time: 0
     }
   }
 }

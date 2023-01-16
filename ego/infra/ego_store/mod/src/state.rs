@@ -1,11 +1,13 @@
 use std::cell::RefCell;
 
-use ego_macros::inject_ego_data;
+use ego_macros::{inject_cycle_info, inject_ego_data};
 
-use crate::ego_store::EgoStore;
+use crate::store::EgoStore;
 use crate::service::EgoStoreService;
 
 inject_ego_data!();
+inject_cycle_info!();
+
 
 
 /********************  methods for ego_registry   ********************/

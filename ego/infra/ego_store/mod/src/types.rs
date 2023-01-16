@@ -1,13 +1,9 @@
 use ic_cdk::export::candid::{CandidType, Deserialize};
 use ic_cdk::export::Principal;
-use ic_ledger_types::Memo;
 use serde::Serialize;
 
 use ego_types::app::AppId;
 use ego_types::app::EgoError;
-
-use crate::cash_flow::CashFlow;
-use crate::order::Order;
 
 #[derive(Clone, Debug, CandidType, Deserialize, Serialize)]
 pub enum EgoStoreErr {
@@ -58,48 +54,6 @@ impl From<std::string::String> for EgoStoreErr {
   }
 }
 
-
-#[derive(CandidType, Deserialize, Serialize)]
-pub struct WalletOrderNotifyRequest {
-  pub memo: Memo,
-}
-
-#[derive(CandidType, Deserialize, Serialize)]
-pub struct WalletOrderNotifyResponse {
-  pub ret: bool,
-}
-
-#[derive(CandidType, Deserialize, Serialize)]
-pub struct WalletCanisterTrackRequest {
-  pub app_id: AppId,
-}
-
-#[derive(CandidType, Deserialize, Serialize)]
-pub struct WalletCanisterUnTrackRequest {
-  pub app_id: AppId,
-}
-
-#[derive(CandidType, Deserialize, Serialize)]
-pub struct WalletOrderNewRequest {
-  pub amount: f32,
-}
-
-#[derive(CandidType, Deserialize, Serialize)]
-pub struct WalletOrderNewResponse {
-  pub memo: Memo,
-}
-
-#[derive(CandidType, Deserialize, Serialize)]
-pub struct WalletCycleListResponse {
-  pub cash_flows: Vec<CashFlow>,
-}
-
-
-#[derive(CandidType, Deserialize, Serialize)]
-pub struct WalletOrderListResponse {
-  pub orders: Vec<Order>,
-}
-
 #[derive(CandidType, Deserialize, Serialize)]
 pub struct WalletCycleChargeRequest {
   pub wallet_id: Principal,
@@ -115,16 +69,6 @@ pub struct WalletCycleChargeResponse {
 #[derive(CandidType, Deserialize, Serialize)]
 pub struct WalletMainNewRequest {
   pub user_id: Principal,
-}
-
-#[derive(CandidType, Deserialize, Serialize)]
-pub struct AdminEgoTenantAddRequest {
-  pub tenant_id: Principal,
-}
-
-#[derive(CandidType, Deserialize, Serialize)]
-pub struct AdminEgoTenantAddResponse {
-  pub ret: bool,
 }
 
 

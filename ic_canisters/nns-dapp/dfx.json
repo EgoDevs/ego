@@ -3,7 +3,7 @@
     "nns-dapp": {
       "type": "custom",
       "candid": "nns-dapp.did",
-      "wasm": "nns-dapp.wasm",
+      "wasm": "nns-dapp.wasm.gz",
       "build": []
     }
   },

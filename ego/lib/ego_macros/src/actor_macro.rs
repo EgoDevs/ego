@@ -217,5 +217,78 @@ macro_rules! inject_app_info_api {
 
             Ok(())
         }
+
+        // canister remove
+        #[update(name = "ego_canister_remove", guard = "owner_guard")]
+        #[candid_method(update, rename = "ego_canister_remove")]
+        pub async fn ego_canister_remove() -> Result<(), String> {
+            let app_info = app_info_get();
+
+            log_add("ego_canister_delete");
+
+            log_add("1 add ego_tenant as controller");
+            let ego_tenant_id = canister_get_one("ego_tenant").unwrap();
+            let _result = match controller_add(ic_cdk::api::id(), ego_tenant_id).await {
+                Ok(_) => Ok(()),
+                Err(e) => Err(e.msg)
+            };
+
+            log_add("2 call ego_store to delete");
+            let ego_store_id = canister_get_one("ego_store").unwrap();
+            let ego_store = EgoStore::new(ego_store_id);
+
+            ego_store.wallet_app_remove(app_info.wallet_id.unwrap());
+
+            Ok(())
+        }
+    };
+}
+
+#[macro_export]
+macro_rules! inject_cycle_info_api {
+    () => {
+        // for canister cycle info
+        use ego_types::cycle_info::{CycleInfo, CycleRecord};
+        use ego_lib::ego_tenant::{TEgoTenant, EgoTenant};
+
+        use std::ops::{Div};
+
+        #[update(name = "ego_cycle_check", guard = "op_guard")]
+        #[candid_method(update, rename = "ego_cycle_check")]
+        pub fn ego_cycle_check() -> Result<(), String> {
+            log_add("ego_cycle_check");
+
+            let balance = ic_cdk::api::canister_balance128();
+            let ts = ic_cdk::api::time().div(1e9 as u64);
+
+            cycle_record_add(balance, ts);
+
+            let ego_tenant_id = canister_get_one("ego_tenant").unwrap();
+            let ego_tenant = EgoTenant::new(ego_tenant_id);
+
+            ego_tenant.ego_cycle_check_cb(cycle_record_list());
+
+            Ok(())
+        }
+
+        #[query(name = "ego_cycle_history", guard = "op_guard")]
+        #[candid_method(query, rename = "ego_cycle_history")]
+        pub fn ego_cycle_history() -> Result<Vec<CycleRecord>, String>  {
+            Ok(cycle_record_list())
+        }
+
+        #[update(name = "ego_cycle_info", guard = "op_guard")]
+        #[candid_method(update, rename = "ego_cycle_info")]
+        pub async fn ego_cycle_info() -> Result<CycleInfo, String> {
+            Ok(cycle_info_get())
+        }
+
+        #[update(name = "ego_cycle_estimate_set", guard = "op_guard")]
+        #[candid_method(update, rename = "ego_cycle_estimate_set")]
+        pub fn ego_cycle_estimate_set(estimate: u64) -> Result<(), String> {
+            log_add(format!("ego_cycle_estimate_set {}", estimate).as_str());
+            estimate_remaining_set(estimate);
+            Ok(())
+        }
     };
 }

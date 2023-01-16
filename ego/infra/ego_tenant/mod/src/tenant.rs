@@ -1,21 +1,20 @@
 use std::collections::BTreeMap;
 
+use ego_types::app::EgoError;
 use ic_cdk::export::candid::{CandidType, Deserialize};
 use ic_cdk::export::Principal;
 use serde::Serialize;
 
-use ego_types::app::EgoError;
-
 use crate::task::Task;
 
 #[derive(CandidType, Deserialize, Serialize, Debug, Clone)]
-pub struct EgoTenant {
+pub struct Tenant {
   pub tasks: BTreeMap<Principal, Task>,
 }
 
-impl EgoTenant {
+impl Tenant {
   pub fn new() -> Self {
-    EgoTenant {
+    Tenant {
       tasks: Default::default(),
     }
   }
@@ -33,7 +32,6 @@ impl EgoTenant {
 
   pub fn canister_main_untrack(
     &mut self,
-    _wallet_id: Principal,
     canister_id: Principal,
   ) -> Result<(), EgoError> {
     self.tasks.remove(&canister_id);
@@ -52,12 +50,9 @@ impl EgoTenant {
   pub fn task_update(
     &mut self,
     canister_id: Principal,
-    current_cycle: u128,
     next_check_time: u64,
   ) {
     self.tasks.entry(canister_id).and_modify(|task| {
-      task.last_cycle = current_cycle;
-      task.last_check_time = task.next_check_time;
       task.next_check_time = next_check_time;
     });
   }

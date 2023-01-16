@@ -1,8 +1,8 @@
 use std::cell::RefCell;
 
-use ego_macros::inject_ego_data;
+use ego_macros::{inject_ego_data};
 
-use crate::ego_tenant::EgoTenant;
+use crate::tenant::Tenant;
 
 inject_ego_data!();
 
@@ -15,5 +15,5 @@ fn on_canister_added(name: &str, canister_id: Principal) {
 }
 
 thread_local! {
-  pub static EGO_TENANT: RefCell<EgoTenant> = RefCell::new(EgoTenant::new());
+  pub static EGO_TENANT: RefCell<Tenant> = RefCell::new(Tenant::new());
 }

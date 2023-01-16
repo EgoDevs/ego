@@ -35,6 +35,51 @@ macro_rules! inject_app_info {
     };
 }
 
+#[macro_export]
+macro_rules! inject_cycle_info {
+    () => {
+        thread_local! {
+          pub static CYCLE_INFO: RefCell<CycleInfo> = RefCell::new(CycleInfo::new());
+        }
+
+        use ego_types::cycle_info::CycleInfo;
+        use ego_types::cycle_info::CycleRecord;
+
+        pub fn cycle_record_add(balance: u128, ts: u64) {
+            CYCLE_INFO.with(|cycle_info|{
+                cycle_info.borrow_mut().record_add(balance, ts);
+            })
+        }
+
+        pub fn cycle_record_list() -> Vec<CycleRecord> {
+            CYCLE_INFO.with(|cycle_info|{
+                cycle_info.borrow().record_list()
+            })
+        }
+
+        pub fn cycle_info_get() -> CycleInfo {
+            CYCLE_INFO.with(|cycle_info|{
+                cycle_info.borrow().clone()
+            })
+        }
+
+        pub fn estimate_remaining_set(estimate: u64) {
+            CYCLE_INFO.with(|cycle_info|{
+                cycle_info.borrow_mut().estimate_remaining_set(estimate)
+            })
+        }
+
+        pub fn cycle_info_pre_upgrade() -> CycleInfo {
+            CYCLE_INFO.with(|s| s.take().into())
+        }
+
+        pub fn cycle_info_post_upgrade(stable_state: CycleInfo) {
+            CYCLE_INFO.with(|s| s.replace(stable_state));
+        }
+    };
+}
+
+
 
 #[macro_export]
 macro_rules! inject_ego_data {

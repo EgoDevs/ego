@@ -1,12 +1,10 @@
 pub mod app;
 pub mod c2c;
-pub mod cash_flow;
-pub mod ego_store;
-pub mod order;
+pub mod store;
 pub mod service;
 pub mod state;
 pub mod tenant;
 pub mod types;
 pub mod wallet;
 pub mod wallet_provider;
-
+pub mod order;

@@ -1,11 +1,7 @@
 use async_trait::async_trait;
-use ic_cdk::export::Principal;
-
 use ego_types::app::EgoError;
-use ego_utils::ic_management::{
-  canister_code_install, canister_code_upgrade,
-  canister_cycle_top_up, canister_main_create, Cycles,
-};
+use ego_utils::ic_management::{canister_code_install, canister_code_upgrade, canister_cycle_top_up, canister_main_create, canister_main_delete, Cycles};
+use ic_cdk::export::Principal;
 
 #[async_trait]
 pub trait TIcManagement {
@@ -23,11 +19,13 @@ pub trait TIcManagement {
     wasm_module: Vec<u8>,
   ) -> Result<(), EgoError>;
 
-  fn canister_cycle_top_up(
+  async fn canister_cycle_top_up(
     &self,
     canister_id: Principal,
     cycles_to_use: Cycles,
-  );
+  ) -> Result<(), EgoError>;
+
+  async fn canister_main_delete(&self, canister_id: Principal) -> Result<(), EgoError>;
 }
 
 #[derive(Clone)]
@@ -60,12 +58,15 @@ impl TIcManagement for IcManagement {
     canister_code_upgrade(canister_id, wasm_module).await
   }
 
-
-  fn canister_cycle_top_up(
+  async fn canister_cycle_top_up(
     &self,
     canister_id: Principal,
     cycles_to_use: Cycles,
-  ) {
-    canister_cycle_top_up(canister_id, cycles_to_use);
+  ) -> Result<(), EgoError> {
+    canister_cycle_top_up(canister_id, cycles_to_use).await
+  }
+
+  async fn canister_main_delete(&self, canister_id: Principal) -> Result<(), EgoError> {
+    canister_main_delete(canister_id).await
   }
 }

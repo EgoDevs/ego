@@ -1,5 +1,7 @@
 # EGO
 
+**This Project is Under Development, Scripts and Documentations are under-construction!**
+
 EGO is a smart-contract platform built on IC's canisters. EGO's goal is to allow users to own and control his/her canisters, in an easy way, like App store. Upgrade canisters into latest or specific version, backup and restore smartcontracts data, interlink with other installed canisters, even interact with user-owned distributed/decentralized marketplace.
 
 There are at least 3 different roles in EGO.

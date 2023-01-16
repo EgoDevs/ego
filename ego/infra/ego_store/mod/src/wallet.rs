@@ -5,10 +5,9 @@ use ic_cdk::export::Principal;
 use ic_ledger_types::Memo;
 use serde::Serialize;
 
-use ego_types::app::UserApp;
+use ego_types::app::{UserApp, CashFlow, CashFlowType};
 
 use crate::app::EgoStoreApp;
-use crate::cash_flow::{CashFlow, CashFlowType};
 use crate::order::Order;
 
 #[derive(CandidType, Serialize, Deserialize, Clone, Debug)]
@@ -42,7 +41,7 @@ impl Wallet {
   pub fn app_upgrade(&mut self, user_app: &UserApp, ego_store_app: &EgoStoreApp) {
     self.apps
       .entry(user_app.canister.canister_id.clone())
-      .and_modify(|user_app| user_app.latest_version = ego_store_app.app.current_version.clone());
+      .and_modify(|user_app| user_app.app.current_version = ego_store_app.app.current_version.clone());
   }
 
   pub fn app_remove(&mut self, canister_id: &Principal) {

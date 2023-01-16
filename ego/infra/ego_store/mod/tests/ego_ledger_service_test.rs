@@ -3,10 +3,10 @@ use ic_ledger_types::Memo;
 use mockall::mock;
 
 use ego_store_mod::c2c::ego_ledger::TEgoLedger;
-use ego_store_mod::order::{Order, OrderStatus};
 use ego_store_mod::service::EgoStoreService;
 use ego_store_mod::state::EGO_STORE;
 use ego_store_mod::wallet::Wallet;
+use ego_store_mod::order::{Order, OrderStatus};
 
 static LEDGER_ID: &str = "22k5f-nqaaa-aaaad-qaigq-cai";
 static STORE_ID: &str = "22cl3-kqaaa-aaaaf-add7q-cai";

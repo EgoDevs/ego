@@ -6,6 +6,7 @@ use tracing::error;
 
 use ego_types::app::{App, AppId, Version};
 use ego_types::app_info::AppInfo;
+use ego_types::cycle_info::{CycleInfo, CycleRecord};
 
 // facility to call canister method which is created by the inject_ego_macros
 #[async_trait]
@@ -33,8 +34,15 @@ pub trait TEgoCanister {
   async fn ego_app_info_get(&self, target_canister_id: Principal) -> Result<AppInfo, String>;
   async fn ego_app_version_check(&self, target_canister_id: Principal) -> Result<App, String>;
 
-  // canister upgrade
+  // canister relative
   fn ego_canister_upgrade(&self, target_canister_id: Principal);
+  fn ego_canister_remove(&self, target_canister_id: Principal);
+
+  // canister cycle info
+  fn ego_cycle_check(&self, target_canister_id: Principal);
+  async fn ego_cycle_history(&self, target_canister_id: Principal) -> Result<Vec<CycleRecord>, String>;
+  async fn ego_cycle_info(&self, target_canister_id: Principal) -> Result<CycleInfo, String>;
+  fn ego_cycle_estimate_set(&self, target_canister_id: Principal, estimate: u64);
 }
 
 pub struct EgoCanister {}
@@ -185,5 +193,52 @@ impl TEgoCanister for EgoCanister {
 
   fn ego_canister_upgrade(&self, target_canister_id: Principal) {
     let _result = api::call::notify(target_canister_id, "ego_canister_upgrade", ());
+  }
+
+  fn ego_canister_remove(&self, target_canister_id: Principal) {
+    let _result = api::call::notify(target_canister_id, "ego_canister_remove", ());
+  }
+
+  // canister cycle info
+  fn ego_cycle_check(&self, target_canister_id: Principal){
+    let _result = api::call::notify(target_canister_id, "ego_cycle_check", ());
+  }
+
+  async fn ego_cycle_history(&self, target_canister_id: Principal) -> Result<Vec<CycleRecord>, String>{
+    let call_result = api::call::call(target_canister_id, "ego_cycle_history", ()).await
+      as Result<(Result<Vec<CycleRecord>, String>, ), (RejectionCode, String)>;
+
+    match call_result {
+      Ok(resp) => {
+        match resp.0 {
+          Ok(records) => Ok(records),
+          Err(msg) => Err(msg)
+        }
+      }
+      Err((_code, msg)) => {
+        Err(msg)
+      }
+    }
+  }
+
+  async fn ego_cycle_info(&self, target_canister_id: Principal) -> Result<CycleInfo, String>{
+    let call_result = api::call::call(target_canister_id, "ego_cycle_info", ()).await
+      as Result<(Result<CycleInfo, String>, ), (RejectionCode, String)>;
+
+    match call_result {
+      Ok(resp) => {
+        match resp.0 {
+          Ok(cycle_info) => Ok(cycle_info),
+          Err(msg) => Err(msg)
+        }
+      }
+      Err((_code, msg)) => {
+        Err(msg)
+      }
+    }
+  }
+
+  fn ego_cycle_estimate_set(&self, target_canister_id: Principal, estimate: u64){
+    let _result = api::call::notify(target_canister_id, "ego_cycle_estimate_set", (estimate, ));
   }
 }
