@@ -9,9 +9,10 @@ use ego_dev_mod::developer::Developer;
 use ego_dev_mod::ego_file::EgoFile;
 use ego_dev_mod::service::EgoDevService;
 use ego_dev_mod::state::EGO_DEV;
-use ego_types::app::Category;
+use ego_types::app::{CanisterType, Category};
 use ego_types::app::EgoError;
 use ego_types::app::Version;
+use ego_types::app::{App, Wasm};
 
 mock! {
   File {}
@@ -29,8 +30,8 @@ mock! {
   impl TEgoStore for Store {
     fn app_main_release(
         &self,
-        app: EgoDevApp,
-        app_version: AppVersion
+        app: App,
+        wasm: Wasm
     );
   }
 }
@@ -85,6 +86,13 @@ pub fn set_up() {
       .insert(auditer_principal, auditer);
 
     // submitted app
+    let wasm = Wasm{
+      app_id: "".to_string(),
+      version: Default::default(),
+      canister_type: CanisterType::BACKEND,
+      canister_id: file_canister
+    };
+
     let mut app = EgoDevApp::new(
       developer_principal,
       EXIST_APP_ID.to_string(),
@@ -96,6 +104,7 @@ pub fn set_up() {
     );
     let mut app_version = AppVersion::new(EXIST_APP_ID.to_string(), file_canister, version);
     app_version.status = AppVersionStatus::SUBMITTED;
+    app_version.wasm = Some(wasm);
     app.versions.push(app_version);
 
     app.audit_version = Some(version);
@@ -421,7 +430,10 @@ async fn app_version_release() {
   let version = Version::new(1, 0, 1);
 
   let mut ego_store = MockStore::new();
-  ego_store.expect_app_main_release().returning(|_, _| ());
+  ego_store.expect_app_main_release().returning(|app, _wasm| {
+    assert_eq!("e2a24d7f694107d056b967aace21349b", app.app_hash);
+    ()
+  });
 
   // approve version
   let result = EgoDevService::app_version_approve(EXIST_APP_ID.to_string(), version);
@@ -432,9 +444,9 @@ async fn app_version_release() {
     EgoDevService::app_version_release(developer, EXIST_APP_ID.to_string(), version, ego_store);
   assert!(result.is_ok());
 
-  // check after audit
   let result = EgoDevService::developer_app_get(developer, EXIST_APP_ID.to_string());
   assert!(result.is_ok());
+
   let app = result.unwrap();
   let app_version = app.version_get(version).unwrap();
   assert_eq!(version, app_version.version);

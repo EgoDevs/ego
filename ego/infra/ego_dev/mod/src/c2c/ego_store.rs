@@ -1,16 +1,16 @@
 use async_trait::async_trait;
 use ic_cdk::api;
 use ic_cdk::export::Principal;
+use ego_types::app::{App, Wasm};
 
-use crate::app::{AppVersion, EgoDevApp};
 use crate::c2c::c2c_types::EgoStoreApp;
 
 #[async_trait]
 pub trait TEgoStore {
   fn app_main_release(
     &self,
-    app: EgoDevApp,
-    app_version: AppVersion,
+    app: App,
+    wasm: Wasm,
   );
 }
 
@@ -28,12 +28,12 @@ impl EgoStore {
 impl TEgoStore for EgoStore {
   fn app_main_release(
     &self,
-    ego_dev_app: EgoDevApp,
-    released_version: AppVersion,
+    app: App,
+    wasm: Wasm,
   ) {
     let ego_store_app = EgoStoreApp {
-      app: ego_dev_app.app.clone(),
-      wasm: released_version.wasm.unwrap(),
+      app,
+      wasm,
     };
 
     let _result = api::call::notify(self.canister_id, "app_main_release", (ego_store_app, ));
