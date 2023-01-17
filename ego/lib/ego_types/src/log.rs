@@ -11,11 +11,19 @@ impl Log {
     Log { logs: vec![] }
   }
 
-  pub fn log_add(&mut self, log: String) {
+  pub fn info_log_add(&mut self, log: String) {
     self.logs.insert(0, log);
     if self.logs.len() > 1000 {
       self.log_clear(500)
     }
+  }
+
+  pub fn info_info_log_add(&mut self, log: String) {
+    self.info_log_add(format!("info - {}", log).to_string());
+  }
+
+  pub fn error_info_log_add(&mut self, log: String) {
+    self.info_log_add(format!("error - {}", log).to_string());
   }
 
   pub fn log_list(&self, amount: usize) -> Vec<String> {

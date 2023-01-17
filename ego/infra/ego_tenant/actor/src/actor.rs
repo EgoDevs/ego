@@ -41,9 +41,9 @@ pub struct InitArg {
 #[candid_method(init)]
 pub fn init(arg: InitArg) {
   let caller = arg.init_caller.unwrap_or(caller());
-  log_add(format!("ego-tenant: init, caller is {}", caller.clone()).as_str());
+  info_log_add(format!("ego-tenant: init, caller is {}", caller.clone()).as_str());
 
-  log_add("==> add caller as the owner");
+  info_log_add("==> add caller as the owner");
   owner_add(caller.clone());
 
   let duration = Duration::new(CHECK_DURATION, 0);
@@ -61,7 +61,7 @@ struct PersistState {
 
 #[pre_upgrade]
 fn pre_upgrade() {
-  log_add("ego-tenant: pre_upgrade");
+  info_log_add("ego-tenant: pre_upgrade");
   let ego_tenant = EGO_TENANT.with(|ego_tenant| ego_tenant.borrow().clone());
 
   let state = PersistState {
@@ -74,7 +74,7 @@ fn pre_upgrade() {
 
 #[post_upgrade]
 fn post_upgrade() {
-  log_add("ego-tenant: post_upgrade");
+  info_log_add("ego-tenant: post_upgrade");
   let (state, ): (PersistState, ) = storage::stable_restore().unwrap();
   EGO_TENANT.with(|ego_tenant| *ego_tenant.borrow_mut() = state.ego_tenant);
 
@@ -103,7 +103,7 @@ fn post_upgrade() {
 #[update(name = "app_main_install", guard = "user_guard")]
 #[candid_method(update, rename = "app_main_install")]
 async fn app_main_install(req: AppMainInstallRequest) -> Result<Principal, EgoError> {
-  log_add("ego_tenant: app_main_install");
+  info_log_add("ego_tenant: app_main_install");
 
   let ego_tenant_id = id();
   let management = IcManagement::new();
@@ -126,7 +126,7 @@ async fn app_main_install(req: AppMainInstallRequest) -> Result<Principal, EgoEr
 #[update(name = "app_main_upgrade", guard = "user_guard")]
 #[candid_method(update, rename = "app_main_upgrade")]
 async fn app_main_upgrade(req: AppMainUpgradeRequest) -> Result<bool, EgoError> {
-  log_add("ego_tenant: app_main_upgrade");
+  info_log_add("ego_tenant: app_main_upgrade");
   let management = IcManagement::new();
   let ego_file = EgoFile::new();
 
@@ -140,7 +140,7 @@ async fn app_main_upgrade(req: AppMainUpgradeRequest) -> Result<bool, EgoError> 
 #[update(name = "app_main_delete", guard = "user_guard")]
 #[candid_method(update, rename = "app_main_delete")]
 async fn app_main_delete(canister_id: Principal) -> Result<(), EgoError> {
-  log_add("ego_tenant: app_main_upgrade");
+  info_log_add("ego_tenant: app_main_upgrade");
   let management = IcManagement::new();
 
   EgoTenantService::app_main_delete(management, &canister_id).await
@@ -149,7 +149,7 @@ async fn app_main_delete(canister_id: Principal) -> Result<(), EgoError> {
 #[update(name = "canister_main_track", guard = "user_guard")]
 #[candid_method(update, rename = "canister_main_track")]
 fn canister_main_track(wallet_id: Principal, canister_id: Principal) -> Result<(), EgoError> {
-  log_add("ego_tenant: canister_main_track");
+  info_log_add("ego_tenant: canister_main_track");
 
   EgoTenantService::canister_main_track(wallet_id, canister_id)?;
   Ok(())
@@ -158,7 +158,7 @@ fn canister_main_track(wallet_id: Principal, canister_id: Principal) -> Result<(
 #[update(name = "canister_main_untrack", guard = "user_guard")]
 #[candid_method(update, rename = "canister_main_untrack")]
 fn canister_main_untrack(canister_id: Principal) -> Result<(), EgoError> {
-  log_add("ego_tenant: canister_main_untrack");
+  info_log_add("ego_tenant: canister_main_untrack");
 
   EgoTenantService::canister_main_untrack(canister_id)?;
   Ok(())
@@ -168,17 +168,17 @@ fn canister_main_untrack(canister_id: Principal) -> Result<(), EgoError> {
 #[candid_method(update, rename = "ego_cycle_check_cb")]
 async fn ego_cycle_check_cb(records: Vec<CycleRecord>) -> Result<(), EgoError> {
   let canister_id = caller();
-  log_add(format!("ego_tenant: ego_cycle_check_cb, canister_id: {}, records: {:?}", canister_id, records).as_str());
+  info_log_add(format!("ego_tenant: ego_cycle_check_cb, canister_id: {}, records: {:?}", canister_id, records).as_str());
 
   let management = IcManagement::new();
   let ego_store = EgoStore::new();
   let ego_canister = EgoCanister::new();
 
-  log_add("1. get task by canister_id");
+  info_log_add("1. get task by canister_id");
   let task = EGO_TENANT.with(|ego_tenant| {
     match ego_tenant.borrow().tasks.get(&canister_id) {
       None => {
-        log_add("ego_tenant error, can not find task");
+        info_log_add("ego_tenant error, can not find task");
         Err(EgoError::from(CanisterNotFounded))
       }
       Some(task) => {
@@ -194,7 +194,7 @@ async fn ego_cycle_check_cb(records: Vec<CycleRecord>) -> Result<(), EgoError> {
 
 /********************  notify  ********************/
 fn task_run() {
-  log_add("ego-tenant: task_run");
+  info_log_add("ego-tenant: task_run");
 
   let sentinel = time().div(1e9 as u64);  // convert to second
   let tasks = EGO_TENANT.with(|ego_tenant| ego_tenant.borrow_mut().tasks_get(sentinel));

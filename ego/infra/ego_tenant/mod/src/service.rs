@@ -9,7 +9,7 @@ use ic_cdk::export::Principal;
 use crate::c2c::ego_file::TEgoFile;
 use crate::c2c::ego_store::TEgoStore;
 use crate::c2c::ic_management::TIcManagement;
-use crate::state::{canister_get_one, EGO_TENANT, log_add};
+use crate::state::{canister_get_one, EGO_TENANT, info_log_add};
 use crate::task::Task;
 use crate::types::EgoTenantErr;
 
@@ -57,32 +57,32 @@ impl EgoTenantService {
       return Err(EgoTenantErr::SystemError("not implemented".to_string()).into());
     }
 
-    log_add("1 create canister");
+    info_log_add("1 create canister");
     let canister_id = management
       .canister_main_create(CREATE_CANISTER_CYCLES_FEE)
       .await?;
 
-    log_add("2 load wasm data");
+    info_log_add("2 load wasm data");
     let data = ego_file
       .file_main_read(wasm.canister_id, wasm.fid())
       .await?;
 
-    log_add("3 install code");
+    info_log_add("3 install code");
     management.canister_code_install(canister_id, data).await?;
 
     // add ego_store_id to app
-    log_add("4 add [ego_store, ego_tenant] to canister");
+    info_log_add("4 add [ego_store, ego_tenant] to canister");
     ego_canister.ego_canister_add(canister_id, "ego_store".to_string(), ego_store_id);
     ego_canister.ego_canister_add(canister_id, "ego_tenant".to_string(), ego_tenant_id);
 
-    log_add("5 add [ego_store, ego_tenant] as ops_user");
+    info_log_add("5 add [ego_store, ego_tenant] as ops_user");
     ego_canister.ego_op_add(canister_id, ego_store_id);
     ego_canister.ego_op_add(canister_id, ego_tenant_id);
 
-    log_add("6 set canister controller to [wallet, user, self]");
+    info_log_add("6 set canister controller to [wallet, user, self]");
     ego_canister.ego_controller_set(canister_id, vec![wallet_id, user_id, canister_id]);
 
-    log_add("7 change canister owner to [wallet, user, self]");
+    info_log_add("7 change canister owner to [wallet, user, self]");
     ego_canister.ego_owner_set(canister_id, vec![wallet_id, user_id, canister_id]);
 
     Ok(canister_id)
@@ -102,15 +102,15 @@ impl EgoTenantService {
       return Err(EgoTenantErr::SystemError("not implemented".to_string()).into());
     }
 
-    log_add("1 load wasm data");
+    info_log_add("1 load wasm data");
     let data = ego_file
       .file_main_read(wasm.canister_id, wasm.fid())
       .await?;
 
-    log_add("2 install code");
+    info_log_add("2 install code");
     management.canister_code_upgrade(canister_id, data).await?;
 
-    log_add("3 remove [ego_tenant] from canister controller");
+    info_log_add("3 remove [ego_tenant] from canister controller");
     ego_canister.ego_controller_remove(canister_id, tenant_id);
 
     Ok(true)
@@ -148,24 +148,24 @@ impl EgoTenantService {
 
     let mut estimate_duration: u64 = 0;
 
-    log_add(format!("2. check cycle last_cycle: {}, current_cycle: {}", last_cycle, current_cycle).as_str());
+    info_log_add(format!("2. check cycle last_cycle: {}, current_cycle: {}", last_cycle, current_cycle).as_str());
     if last_cycle == 0 {
       // for the first time checking, we will check it again after 30 minutes
-      log_add("2.1 last cycle is 0. skip")
+      info_log_add("2.1 last cycle is 0. skip")
     } else if last_cycle <= current_cycle {
       // more cycle then before, do nothing
-      log_add("2.2 more cycle then before. skip")
+      info_log_add("2.2 more cycle then before. skip")
     } else {
       let delta_cycle = last_cycle - current_cycle;
       let delta_time = current_ts - last_ts; // in second
 
-      log_add(format!("3. delta cycle {}, delta time {}", delta_cycle, delta_time).as_str());
+      info_log_add(format!("3. delta cycle {}, delta time {}", delta_cycle, delta_time).as_str());
       if delta_time == 0 {
-        log_add("3.1 delta_time is zero. skip")
+        info_log_add("3.1 delta_time is zero. skip")
         // just checked, do nothing
       } else {
         let cycle_consume_per_second = delta_cycle / (delta_time as u128);
-        log_add(format!("4. cycle_consume_per_second: {}", cycle_consume_per_second).as_str());
+        info_log_add(format!("4. cycle_consume_per_second: {}", cycle_consume_per_second).as_str());
 
         if cycle_consume_per_second != 0 {
           // the remain cycles can be used in estimate_duration second
@@ -173,13 +173,13 @@ impl EgoTenantService {
             .mul(8)
             .div(10) as u64;
 
-          log_add(format!("5. estimate_duration: {}", estimate_duration).as_str());
+          info_log_add(format!("5. estimate_duration: {}", estimate_duration).as_str());
 
           if estimate_duration <= NEXT_CHECK_DURATION {
             let cycle_required_to_top_up =
               cycle_consume_per_second * NEXT_CHECK_DURATION as u128;
 
-            log_add(format!("6. cycle_required_to_top_up: {}", cycle_required_to_top_up).as_str());
+            info_log_add(format!("6. cycle_required_to_top_up: {}", cycle_required_to_top_up).as_str());
 
             match ego_store
               .wallet_cycle_charge(

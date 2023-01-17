@@ -15,17 +15,18 @@ use ego_ledger_mod::c2c::ic_ledger::IcLedger;
 use ego_ledger_mod::ego_ledger::EgoLedger;
 use ego_ledger_mod::payment::Payment;
 use ego_ledger_mod::service::EgoLedgerService;
-use ego_ledger_mod::state::{canister_add, canister_get_one, is_op, is_owner, is_user, log_add, log_list, op_add, owner_add, owner_remove, owners_set, registry_post_upgrade, registry_pre_upgrade, user_add, user_remove, users_post_upgrade, users_pre_upgrade, users_set};
+use ego_ledger_mod::state::*;
 use ego_ledger_mod::state::EGO_LEDGER;
 use ego_ledger_mod::types::{
   LedgerMainInitRequest, LedgerPaymentAddRequest,
 };
-use ego_macros::inject_ego_api;
+use ego_macros::{inject_cycle_info_api, inject_ego_api};
 use ego_types::app::EgoError;
 use ego_types::registry::Registry;
 use ego_types::user::User;
 
 inject_ego_api!();
+inject_cycle_info_api!();
 
 
 #[derive(Clone, Debug, CandidType, Deserialize)]
@@ -37,9 +38,9 @@ pub struct InitArg {
 #[candid_method(init)]
 pub fn init(arg: InitArg) {
   let caller = arg.init_caller.unwrap_or(caller());
-  log_add(format!("ego-ledger: init, caller is {}", caller.clone()).as_str());
+  info_log_add(format!("ego-ledger: init, caller is {}", caller.clone()).as_str());
 
-  log_add("==> add caller as the owner");
+  info_log_add("==> add caller as the owner");
   owner_add(caller.clone());
 
   // remove order check
@@ -54,24 +55,26 @@ struct PersistState {
   pub ego_ledger: EgoLedger,
   users: Option<User>,
   registry: Option<Registry>,
+  cycle_info: Option<CycleInfo>
 }
 
 #[pre_upgrade]
 fn pre_upgrade() {
-  log_add("ego-ledger: pre_upgrade");
+  info_log_add("ego-ledger: pre_upgrade");
   let ego_ledger = EGO_LEDGER.with(|ego_ledger| ego_ledger.borrow().clone());
 
   let state = PersistState {
     ego_ledger,
     users: Some(users_pre_upgrade()),
     registry: Some(registry_pre_upgrade()),
+    cycle_info: Some(cycle_info_pre_upgrade())
   };
   storage::stable_save((state, )).unwrap();
 }
 
 #[post_upgrade]
 fn post_upgrade() {
-  log_add("ego-ledger: post_upgrade");
+  info_log_add("ego-ledger: post_upgrade");
   let (state, ): (PersistState, ) = storage::stable_restore().unwrap();
   EGO_LEDGER.with(|ego_ledger| *ego_ledger.borrow_mut() = state.ego_ledger);
 
@@ -89,6 +92,13 @@ fn post_upgrade() {
     }
   }
 
+  match state.cycle_info {
+    None => {}
+    Some(cycle_info) => {
+      cycle_info_post_upgrade(cycle_info);
+    }
+  }
+
   // remove order check
   // let duration = Duration::new(60, 0);
   // set_timer_interval(duration, || {
@@ -100,7 +110,7 @@ fn post_upgrade() {
 #[update(name = "ledger_payment_add", guard = "user_guard")]
 #[candid_method(update, rename = "ledger_payment_add")]
 fn ledger_payment_add(req: LedgerPaymentAddRequest) -> Result<(), EgoError> {
-  log_add(format!("ego-ledger: ledger_payment_add from:{} to:{} memo:{:?}", req.from, req.to, req.memo).as_str());
+  info_log_add(format!("ego-ledger: ledger_payment_add from:{} to:{} memo:{:?}", req.from, req.to, req.memo).as_str());
 
   EgoLedgerService::ledger_payment_add(req.from, req.to, req.amount, req.memo);
   Ok(())
@@ -110,7 +120,7 @@ fn ledger_payment_add(req: LedgerPaymentAddRequest) -> Result<(), EgoError> {
 #[update(name = "ledger_main_init", guard = "owner_guard")]
 #[candid_method(update, rename = "ledger_main_init")]
 fn ledger_main_init(req: LedgerMainInitRequest) -> Result<(), EgoError> {
-  log_add("ego-ledger: ledger_main_init");
+  info_log_add("ego-ledger: ledger_main_init");
   EgoLedgerService::ledger_main_init(req.start);
   Ok(())
 }
@@ -118,7 +128,7 @@ fn ledger_main_init(req: LedgerMainInitRequest) -> Result<(), EgoError> {
 #[update(name = "ledger_payment_list", guard = "owner_guard")]
 #[candid_method(update, rename = "ledger_payment_list")]
 fn ledger_payment_list() -> Result<Vec<Payment>, EgoError> {
-  log_add("ego-ledger: ledger_payment_list");
+  info_log_add("ego-ledger: ledger_payment_list");
 
   let payments = EGO_LEDGER.with(|ego_ledger| ego_ledger.borrow().payments.values().cloned().collect());
 
@@ -129,7 +139,7 @@ fn ledger_payment_list() -> Result<Vec<Payment>, EgoError> {
 #[update(name = "message_main_notify")]
 #[candid_method(update, rename = "message_main_notify")]
 async fn message_main_notify() {
-  log_add("ego-ledger: message_main_notify");
+  info_log_add("ego-ledger: message_main_notify");
 
   let ego_store_id = canister_get_one("ego_store").unwrap();
   let ego_store = EgoStore::new(ego_store_id);

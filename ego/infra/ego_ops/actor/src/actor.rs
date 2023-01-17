@@ -33,9 +33,9 @@ pub struct InitArg {
 #[candid_method(init)]
 pub fn init(arg: InitArg) {
   let caller = arg.init_caller.unwrap_or(caller());
-  log_add(format!("ego-ops: init, caller is {}", caller.clone()).as_str());
+  info_log_add(format!("ego-ops: init, caller is {}", caller.clone()).as_str());
 
-  log_add("==> add caller as the owner");
+  info_log_add("==> add caller as the owner");
   owner_add(caller.clone());
 }
 
@@ -49,7 +49,7 @@ struct PersistState {
 
 #[pre_upgrade]
 fn pre_upgrade() {
-  log_add("ego-ops: pre_upgrade");
+  info_log_add("ego-ops: pre_upgrade");
   let ego_ops = EGO_OPS.with(|ego_ops| ego_ops.borrow().clone());
 
   let state = PersistState {
@@ -63,7 +63,7 @@ fn pre_upgrade() {
 
 #[post_upgrade]
 fn post_upgrade() {
-  log_add("ego-ops: post_upgrade");
+  info_log_add("ego-ops: post_upgrade");
   let (state, ): (PersistState, ) = storage::stable_restore().unwrap();
   EGO_OPS.with(|ego_ops| *ego_ops.borrow_mut() = state.ego_ops);
 
@@ -94,7 +94,7 @@ fn post_upgrade() {
 #[update(name = "canister_relation_update", guard = "owner_guard")]
 #[candid_method(update, rename = "canister_relation_update")]
 pub fn canister_relation_update(name: String) {
-  log_add(&format!("ego-ops: canister_relation_update {}", name));
+  info_log_add(&format!("ego-ops: canister_relation_update {}", name));
 
   let ego_canister = EgoCanister::new();
 
@@ -155,7 +155,7 @@ pub fn canister_relation_update(name: String) {
 #[update(name = "canister_main_track", guard = "owner_guard")]
 #[candid_method(update, rename = "canister_main_track")]
 pub fn canister_main_track() {
-  log_add("ego-ops: canister_main_track");
+  info_log_add("ego-ops: canister_main_track");
 
   let wallet_id = id();
   let ego_tenant = EgoTenantInner::new();
@@ -166,39 +166,39 @@ pub fn canister_main_track() {
   let tracker_ego_tenant_id = canister_get_one("ego_tenant").unwrap();
 
   // ego_dev
-  log_add("1 track ego_dev");
+  info_log_add("1 track ego_dev");
   let ego_dev_id = canister_get_one("ego_dev").unwrap();
   ego_canister.ego_op_add(ego_dev_id, tracker_ego_tenant_id);
   // ego_tenant.canister_main_track(tracker_ego_tenant_id, wallet_id, ego_dev_id);
 
   // ego_file
-  log_add("2 track ego_file");
+  info_log_add("2 track ego_file");
   for ego_file_id in canister_get_all("ego_file") {
     ego_canister.ego_op_add(ego_file_id, tracker_ego_tenant_id);
     // ego_tenant.canister_main_track(tracker_ego_tenant_id, wallet_id, ego_file_id);
   }
 
   // ego_store
-  log_add("3 track ego_store");
+  info_log_add("3 track ego_store");
   let ego_store_id = canister_get_one("ego_store").unwrap();
   ego_canister.ego_op_add(ego_store_id, tracker_ego_tenant_id);
   // ego_tenant.canister_main_track(tracker_ego_tenant_id, wallet_id, ego_store_id);
 
   // ego_tenant
-  // log_add("4 track ego_tenant");
+  // info_log_add("4 track ego_tenant");
   // for ego_tenant_id in canister_get_all("ego_tenant") {
   //   ego_tenant
   //     .canister_main_track(tracker_ego_tenant_id, wallet_id, ego_tenant_id);
   // }
 
   // ego_ledger
-  log_add("4 track ego_ledger");
+  info_log_add("4 track ego_ledger");
   let ego_ledger_id = canister_get_one("ego_ledger").unwrap();
   ego_canister.ego_op_add(ego_ledger_id, tracker_ego_tenant_id);
   // ego_tenant.canister_main_track(tracker_ego_tenant_id, wallet_id, ego_ledger_id);
 
   // ego_ops
-  log_add("5 track ego_ops");
+  info_log_add("5 track ego_ops");
   op_add(tracker_ego_tenant_id);
   // ego_tenant.canister_main_track(tracker_ego_tenant_id, wallet_id, wallet_id);
 }
@@ -208,7 +208,7 @@ pub fn canister_main_track() {
 pub fn admin_app_create(
   req: AdminAppCreateRequest,
 ) -> Result<(), EgoError> {
-  log_add("ego-ops: admin_app_create");
+  info_log_add("ego-ops: admin_app_create");
 
   let ego_dev = EgoDev::new();
   let ego_dev_id = canister_get_one("ego_dev").unwrap();
@@ -232,7 +232,7 @@ pub fn admin_app_create(
 #[update(name = "admin_wallet_provider_add", guard = "owner_guard")]
 #[candid_method(update, rename = "admin_wallet_provider_add")]
 pub fn admin_wallet_provider_add(req: AdminWalletProviderAddRequest) -> Result<(), EgoError> {
-  log_add("ego_ops: admin_wallet_provider_add");
+  info_log_add("ego_ops: admin_wallet_provider_add");
 
   let ego_store_id = canister_get_one("ego_store").unwrap();
   let ego_store = EgoStore::new(ego_store_id);
@@ -248,7 +248,7 @@ pub fn admin_wallet_provider_add(req: AdminWalletProviderAddRequest) -> Result<(
 pub fn admin_wallet_cycle_recharge(
   req: AdminWalletCycleRechargeRequest,
 ) -> Result<(), EgoError> {
-  log_add("ego_ops: admin_wallet_cycle_recharge");
+  info_log_add("ego_ops: admin_wallet_cycle_recharge");
 
   let ego_store_id = canister_get_one("ego_store").unwrap();
   let ego_store = EgoStore::new(ego_store_id);
@@ -264,7 +264,7 @@ pub fn admin_wallet_cycle_recharge(
 pub fn admin_wallet_order_new(
   amount: f32,
 ) -> Result<(), EgoError> {
-  log_add("ego_ops: admin_wallet_order_new");
+  info_log_add("ego_ops: admin_wallet_order_new");
 
   let ego_store_id = canister_get_one("ego_store").unwrap();
   let ego_store = EgoStore::new(ego_store_id);

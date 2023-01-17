@@ -16,7 +16,7 @@ macro_rules! inject_ego_api {
         #[update(name = "ego_owner_add", guard = "owner_guard")]
         #[candid_method(update, rename = "ego_owner_add")]
         pub fn ego_owner_add(principal: Principal) -> Result<(), String> {
-            log_add(format!("ego_owner_add {}", principal).as_str());
+            info_log_add(format!("ego_owner_add {}", principal).as_str());
             owner_add(principal);
             Ok(())
         }
@@ -25,7 +25,7 @@ macro_rules! inject_ego_api {
         #[update(name = "ego_owner_remove", guard = "owner_guard")]
         #[candid_method(update, rename = "ego_owner_remove")]
         pub fn ego_owner_remove(principal: Principal) -> Result<(), String> {
-            log_add(format!("ego_owner_remove {}", principal).as_str());
+            info_log_add(format!("ego_owner_remove {}", principal).as_str());
             owner_remove(principal);
             Ok(())
         }
@@ -55,7 +55,7 @@ macro_rules! inject_ego_api {
         #[update(name = "ego_user_add", guard = "owner_guard")]
         #[candid_method(update, rename = "ego_user_add")]
         pub fn ego_user_add(principal: Principal) -> Result<(), String> {
-            log_add(format!("ego_user_add {}", principal).as_str());
+            info_log_add(format!("ego_user_add {}", principal).as_str());
             user_add(principal);
             Ok(())
         }
@@ -63,7 +63,7 @@ macro_rules! inject_ego_api {
         #[update(name = "ego_user_remove", guard = "owner_guard")]
         #[candid_method(update, rename = "ego_user_remove")]
         pub fn ego_user_remove(principal: Principal) -> Result<(), String> {
-            log_add(format!("ego_user_remove {}", principal).as_str());
+            info_log_add(format!("ego_user_remove {}", principal).as_str());
             user_remove(principal);
             Ok(())
         }
@@ -82,7 +82,7 @@ macro_rules! inject_ego_api {
         #[update(name = "ego_op_add", guard = "op_guard")]
         #[candid_method(update, rename = "ego_op_add")]
         pub fn ego_op_add(principal: Principal) -> Result<(), String> {
-            log_add(format!("ego_op_add {}", principal).as_str());
+            info_log_add(format!("ego_op_add {}", principal).as_str());
             op_add(principal);
             Ok(())
         }
@@ -161,7 +161,7 @@ macro_rules! inject_app_info_api {
         #[update(name = "ego_app_info_update", guard = "op_guard")]
         #[candid_method(update, rename = "ego_app_info_update")]
         pub fn ego_app_info_update(wallet_id: Option<Principal>, app_id: AppId, version: Version) -> Result<(), String> {
-            log_add(format!("app_info_update {}", app_id.clone()).as_str());
+            info_log_add(format!("app_info_update {}", app_id.clone()).as_str());
 
             app_info_update(wallet_id, app_id, version);
 
@@ -179,7 +179,7 @@ macro_rules! inject_app_info_api {
         pub async fn ego_app_version_check() -> Result<AppInfo, String> {
             let app_info = app_info_get();
 
-            log_add(format!("app_version_check {}", app_info.app_id).as_str());
+            info_log_add(format!("app_version_check {}", app_info.app_id).as_str());
 
             let ego_store_id = canister_get_one("ego_store").unwrap();
             let ego_store = EgoStore::new(ego_store_id);
@@ -200,16 +200,16 @@ macro_rules! inject_app_info_api {
         pub async fn ego_canister_upgrade() -> Result<(), String> {
             let app_info = app_info_get();
 
-            log_add("ego_canister_upgrade");
+            info_log_add("ego_canister_upgrade");
 
-            log_add("1 add ego_tenant as controller");
+            info_log_add("1 add ego_tenant as controller");
             let ego_tenant_id = canister_get_one("ego_tenant").unwrap();
             let _result = match controller_add(ic_cdk::api::id(), ego_tenant_id).await {
                 Ok(_) => Ok(()),
                 Err(e) => Err(e.msg)
             };
 
-            log_add("2 call ego_store to upgrade");
+            info_log_add("2 call ego_store to upgrade");
             let ego_store_id = canister_get_one("ego_store").unwrap();
             let ego_store = EgoStore::new(ego_store_id);
 
@@ -224,16 +224,16 @@ macro_rules! inject_app_info_api {
         pub async fn ego_canister_remove() -> Result<(), String> {
             let app_info = app_info_get();
 
-            log_add("ego_canister_delete");
+            info_log_add("ego_canister_delete");
 
-            log_add("1 add ego_tenant as controller");
+            info_log_add("1 add ego_tenant as controller");
             let ego_tenant_id = canister_get_one("ego_tenant").unwrap();
             let _result = match controller_add(ic_cdk::api::id(), ego_tenant_id).await {
                 Ok(_) => Ok(()),
                 Err(e) => Err(e.msg)
             };
 
-            log_add("2 call ego_store to delete");
+            info_log_add("2 call ego_store to delete");
             let ego_store_id = canister_get_one("ego_store").unwrap();
             let ego_store = EgoStore::new(ego_store_id);
 
@@ -256,7 +256,7 @@ macro_rules! inject_cycle_info_api {
         #[update(name = "ego_cycle_check", guard = "op_guard")]
         #[candid_method(update, rename = "ego_cycle_check")]
         pub fn ego_cycle_check() -> Result<(), String> {
-            log_add("ego_cycle_check");
+            info_log_add("ego_cycle_check");
 
             let balance = ic_cdk::api::canister_balance128();
             let ts = ic_cdk::api::time().div(1e9 as u64);
@@ -286,7 +286,7 @@ macro_rules! inject_cycle_info_api {
         #[update(name = "ego_cycle_estimate_set", guard = "op_guard")]
         #[candid_method(update, rename = "ego_cycle_estimate_set")]
         pub fn ego_cycle_estimate_set(estimate: u64) -> Result<(), String> {
-            log_add(format!("ego_cycle_estimate_set {}", estimate).as_str());
+            info_log_add(format!("ego_cycle_estimate_set {}", estimate).as_str());
             estimate_remaining_set(estimate);
             Ok(())
         }

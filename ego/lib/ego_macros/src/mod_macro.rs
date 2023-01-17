@@ -90,9 +90,14 @@ macro_rules! inject_ego_data {
 
         use ego_types::log::Log;
 
-        pub fn log_add(log: &str)  {
+        pub fn info_log_add(log: &str)  {
             ic_cdk::println!("{}", log.to_string());
-            LOG.with(|s| s.borrow_mut().log_add(log.to_string()));
+            LOG.with(|s| s.borrow_mut().info_info_log_add(log.to_string()));
+        }
+
+        pub fn error_log_add(log: &str)  {
+            ic_cdk::println!("{}", log.to_string());
+            LOG.with(|s| s.borrow_mut().error_info_log_add(log.to_string()));
         }
 
         pub fn log_list(amount: usize) -> Vec<String> {
