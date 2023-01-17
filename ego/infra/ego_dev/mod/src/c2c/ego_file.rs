@@ -6,6 +6,7 @@ use tracing::error;
 
 use ego_types::app::EgoError;
 use ego_types::app::FileId;
+use crate::state::error_log_add;
 
 #[async_trait]
 pub trait TEgoFile {
@@ -43,6 +44,7 @@ impl TEgoFile for EgoFile {
       },
       Err((code, msg)) => {
         let code = code as u16;
+        error_log_add(format!("Error calling file_main_write code: {}, msg: {}", code, msg).as_str());
         error!(error_code = code, error_message = msg.as_str(), "Error calling file_main_write");
         Err(EgoError { code, msg })
       }

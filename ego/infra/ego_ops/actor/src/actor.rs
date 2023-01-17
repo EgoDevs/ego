@@ -169,38 +169,37 @@ pub fn canister_main_track() {
   info_log_add("1 track ego_dev");
   let ego_dev_id = canister_get_one("ego_dev").unwrap();
   ego_canister.ego_op_add(ego_dev_id, tracker_ego_tenant_id);
-  // ego_tenant.canister_main_track(tracker_ego_tenant_id, wallet_id, ego_dev_id);
+  ego_tenant.canister_main_track(tracker_ego_tenant_id, wallet_id, ego_dev_id);
 
   // ego_file
   info_log_add("2 track ego_file");
   for ego_file_id in canister_get_all("ego_file") {
     ego_canister.ego_op_add(ego_file_id, tracker_ego_tenant_id);
-    // ego_tenant.canister_main_track(tracker_ego_tenant_id, wallet_id, ego_file_id);
+    ego_tenant.canister_main_track(tracker_ego_tenant_id, wallet_id, ego_file_id);
   }
 
   // ego_store
   info_log_add("3 track ego_store");
   let ego_store_id = canister_get_one("ego_store").unwrap();
   ego_canister.ego_op_add(ego_store_id, tracker_ego_tenant_id);
-  // ego_tenant.canister_main_track(tracker_ego_tenant_id, wallet_id, ego_store_id);
+  ego_tenant.canister_main_track(tracker_ego_tenant_id, wallet_id, ego_store_id);
 
   // ego_tenant
-  // info_log_add("4 track ego_tenant");
-  // for ego_tenant_id in canister_get_all("ego_tenant") {
-  //   ego_tenant
-  //     .canister_main_track(tracker_ego_tenant_id, wallet_id, ego_tenant_id);
-  // }
+  info_log_add("4 track ego_tenant");
+  for ego_tenant_id in canister_get_all("ego_tenant") {
+    ego_tenant.canister_main_track(tracker_ego_tenant_id, wallet_id, ego_tenant_id);
+  }
 
   // ego_ledger
   info_log_add("4 track ego_ledger");
   let ego_ledger_id = canister_get_one("ego_ledger").unwrap();
   ego_canister.ego_op_add(ego_ledger_id, tracker_ego_tenant_id);
-  // ego_tenant.canister_main_track(tracker_ego_tenant_id, wallet_id, ego_ledger_id);
+  ego_tenant.canister_main_track(tracker_ego_tenant_id, wallet_id, ego_ledger_id);
 
   // ego_ops
   info_log_add("5 track ego_ops");
   op_add(tracker_ego_tenant_id);
-  // ego_tenant.canister_main_track(tracker_ego_tenant_id, wallet_id, wallet_id);
+  ego_tenant.canister_main_track(tracker_ego_tenant_id, wallet_id, wallet_id);
 }
 
 #[update(name = "admin_app_create", guard = "owner_guard")]

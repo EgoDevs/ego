@@ -8,9 +8,6 @@ use ego_types::app::EgoError;
 
 pub type Cycles = u128;
 
-pub const INSTALL_CANISTER_CYCLES_FEE: Cycles = 1_000_000_000_000; // 1T cycles
-
-
 #[derive(CandidType)]
 struct DepositCyclesArgs {
   pub canister_id: Principal,
