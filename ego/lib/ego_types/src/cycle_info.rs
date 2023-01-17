@@ -2,7 +2,7 @@ use ic_cdk::export::candid::Deserialize;
 use ic_cdk::export::candid::CandidType;
 use serde::Serialize;
 
-pub const DEFAULT_ESTIMATE: u64 = 86400 * 5;
+pub const DEFAULT_ESTIMATE: u64 = 86400 * 7;
 
 #[derive(CandidType, Serialize, Deserialize, Clone, Debug)]
 pub struct CycleRecord {
