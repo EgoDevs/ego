@@ -1,0 +1,27 @@
+[package]
+name = "ego_tenant_mod"
+version = "0.1.0"
+edition = "2021"
+
+
+[lib]
+path = "src/mod.rs"
+
+[dependencies]
+candid = "0.8.4"
+ic-cdk = "0.6.8"
+ic-cdk-macros = "0.6.8"
+serde = "1.0"
+serde_json = "1.0"
+serde_bytes = "0.11"
+tracing = "0.1.29"
+async-trait = "0.1.57"
+num-traits = "0.2.15"
+ego_types = { path = "../../../lib/ego_types" }
+ego_macros = { path = "../../../lib/ego_macros" }
+ego_lib = { path = "../../../lib/ego_lib" }
+ego_utils = { path = "../../../lib/ego_utils" }
+
+[dev-dependencies]
+mockall = "0.11.2"
+tokio = { version = "1.21.0", features = ["full"] }

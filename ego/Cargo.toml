@@ -1,0 +1,25 @@
+[workspace]
+members = [
+    "infra/ego_ledger/actor",
+    "infra/ego_ledger/mod",
+    "infra/ego_ops/actor",
+    "infra/ego_ops/mod",
+    "infra/ego_assets/actor",
+    "infra/ego_assets/mod",
+    "infra/ego_store/actor",
+    "infra/ego_store/mod",
+    "infra/ego_file/actor",
+    "infra/ego_file/mod",
+    "infra/ego_tenant/actor",
+    "infra/ego_tenant/mod",
+    "infra/ego_dev/actor",
+    "infra/ego_dev/mod",
+    "lib/ego_utils",
+    "lib/ego_types",
+    "lib/ego_macros",
+    "lib/ego_lib"
+]
+
+[profile.release]
+lto = true
+opt-level = 'z'

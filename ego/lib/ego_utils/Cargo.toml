@@ -1,0 +1,16 @@
+[package]
+name = "ego_utils"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[dependencies]
+candid = "0.8.4"
+ic-cdk = "0.6.8"
+ic-cdk-macros = "0.6.8"
+serde = "1.0"
+serde_json = "1.0"
+serde_bytes = "0.11"
+tracing = "0.1.29"
+
+ego_types = { path = "../ego_types" }
