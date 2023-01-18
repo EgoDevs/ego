@@ -27,28 +27,28 @@ export const infraConfig: Configs = [
     package: 'ego_tenant',
     bin_name: 'ego-tenant',
     config: './configs/ego_tenant.json',
-    post_install_sequence: 100
+    post_install_sequence: 100,
   },
   {
     category: 'infra',
     package: 'ego_dev',
     bin_name: 'ego-dev',
     config: './configs/ego_dev.json',
-    post_install_sequence: 100
+    post_install_sequence: 100,
   },
   {
     category: 'infra',
     package: 'ego_file',
     bin_name: 'ego-file',
     config: './configs/ego_file.json',
-    post_install_sequence: 100
+    post_install_sequence: 100,
   },
   {
     category: 'infra',
     package: 'ego_store',
     bin_name: 'ego-store',
     config: './configs/ego_store.json',
-    post_install_sequence: 100
+    post_install_sequence: 100,
   },
   {
     category: 'infra',
@@ -56,7 +56,7 @@ export const infraConfig: Configs = [
     bin_name: 'ego-assets',
     config: './configs/ego_assets.json',
     post_install_sequence: 100,
-    no_deploy: true
+    no_deploy: true,
   },
   {
     category: 'infra',
@@ -81,16 +81,6 @@ export const dfxConfigTemplate = {
   defaults: {
     build: {
       packtool: '',
-    },
-  },
-  networks: {
-    local: {
-      bind: '127.0.0.1:8080',
-      type: 'ephemeral',
-    },
-    mainnet: {
-      providers: ['https://identity.ic0.app'],
-      type: 'persistent',
     },
   },
   version: 1,
