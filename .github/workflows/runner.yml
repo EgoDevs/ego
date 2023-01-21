@@ -15,6 +15,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
+      - name: Install WASM Target
+        run: rustup target add wasm32-unknown-unknown
       - name: install dfx and install nns
         run: |
           sh -ci "$(curl -fsSL https://internetcomputer.org/install.sh)"
