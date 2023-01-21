@@ -18,6 +18,9 @@ jobs:
       - name: install dfx and install nns
         run: |
           sh -ci "$(curl -fsSL https://internetcomputer.org/install.sh)"
+      - name: copy network settings
+        run: |
+          cp ./default_network.json ~/.config/dfx/networks.json
       - name: run dfx
         run: dfx start --clean --background
       - name: Generate credentials
