@@ -25,6 +25,7 @@ jobs:
       - name: Install WASM Target
         run: |
           rustup target add wasm32-unknown-unknown
+          cargo rustc -- -C link-arg=-nostartfiles
 
       - name: install dfx and install nns
         run: |
