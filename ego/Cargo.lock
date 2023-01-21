@@ -499,7 +499,7 @@ dependencies = [
  "ego_dev_mod",
  "ego_lib",
  "ego_macros",
- "ego_types 0.1.6",
+ "ego_types",
  "ic-cdk",
  "ic-cdk-macros",
  "serde",
@@ -515,7 +515,7 @@ dependencies = [
  "candid",
  "ego_lib",
  "ego_macros",
- "ego_types 0.1.6",
+ "ego_types",
  "getrandom",
  "ic-cdk",
  "ic-cdk-macros",
@@ -538,7 +538,7 @@ dependencies = [
  "ego_file_mod",
  "ego_lib",
  "ego_macros",
- "ego_types 0.1.6",
+ "ego_types",
  "ic-cdk",
  "ic-cdk-macros",
  "serde",
@@ -553,7 +553,7 @@ dependencies = [
  "candid",
  "ego_lib",
  "ego_macros",
- "ego_types 0.1.6",
+ "ego_types",
  "hex",
  "hex-literal",
  "ic-cdk",
@@ -576,7 +576,7 @@ dependencies = [
  "ego_ledger_mod",
  "ego_lib",
  "ego_macros",
- "ego_types 0.1.6",
+ "ego_types",
  "ic-cdk",
  "ic-cdk-macros",
  "ic-ledger-types",
@@ -593,7 +593,7 @@ dependencies = [
  "candid",
  "ego_lib",
  "ego_macros",
- "ego_types 0.1.6",
+ "ego_types",
  "ic-cdk",
  "ic-cdk-macros",
  "ic-ledger-types",
@@ -606,11 +606,11 @@ dependencies = [
 
 [[package]]
 name = "ego_lib"
-version = "0.3.10"
+version = "0.3.11"
 dependencies = [
  "async-trait",
  "candid",
- "ego_types 0.1.6",
+ "ego_types",
  "ic-cdk",
  "serde",
  "serde_bytes",
@@ -619,10 +619,10 @@ dependencies = [
 
 [[package]]
 name = "ego_macros"
-version = "0.1.9"
+version = "0.1.10"
 dependencies = [
  "candid",
- "ego_types 0.1.6 (registry+https://github.com/rust-lang/crates.io-index)",
+ "ego_types",
  "ic-cdk",
  "serde",
 ]
@@ -635,7 +635,7 @@ dependencies = [
  "ego_lib",
  "ego_macros",
  "ego_ops_mod",
- "ego_types 0.1.6",
+ "ego_types",
  "ic-cdk",
  "ic-cdk-macros",
  "md5",
@@ -652,7 +652,7 @@ dependencies = [
  "candid",
  "ego_lib",
  "ego_macros",
- "ego_types 0.1.6",
+ "ego_types",
  "ic-cdk",
  "ic-cdk-macros",
  "ic-certified-map",
@@ -670,7 +670,7 @@ dependencies = [
  "ego_lib",
  "ego_macros",
  "ego_store_mod",
- "ego_types 0.1.6",
+ "ego_types",
  "ic-cdk",
  "ic-cdk-macros",
  "ic-ledger-types",
@@ -687,7 +687,7 @@ dependencies = [
  "candid",
  "ego_lib",
  "ego_macros",
- "ego_types 0.1.6",
+ "ego_types",
  "ic-cdk",
  "ic-cdk-macros",
  "ic-ledger-types",
@@ -707,7 +707,7 @@ dependencies = [
  "ego_lib",
  "ego_macros",
  "ego_tenant_mod",
- "ego_types 0.1.6",
+ "ego_types",
  "ic-cdk",
  "ic-cdk-macros",
  "log",
@@ -727,7 +727,7 @@ dependencies = [
  "candid",
  "ego_lib",
  "ego_macros",
- "ego_types 0.1.6",
+ "ego_types",
  "ego_utils",
  "ic-cdk",
  "ic-cdk-macros",
@@ -751,23 +751,11 @@ dependencies = [
 ]
 
 [[package]]
-name = "ego_types"
-version = "0.1.6"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "72f36dd2a826a568ba6d940be8fb2c9d6146e290251aeb2c52daa13a0d9659dd"
-dependencies = [
- "candid",
- "ic-cdk",
- "md5",
- "serde",
-]
-
-[[package]]
 name = "ego_utils"
 version = "0.1.0"
 dependencies = [
  "candid",
- "ego_types 0.1.6",
+ "ego_types",
  "ic-cdk",
  "ic-cdk-macros",
  "serde",
