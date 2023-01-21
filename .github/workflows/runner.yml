@@ -15,8 +15,6 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
-      - name: pnpm
-        run: npm install -g pnpm && pnpm install
       - name: install dfx and install nns
         run: |
           sh -ci "$(curl -fsSL https://internetcomputer.org/install.sh)"
@@ -29,6 +27,8 @@ jobs:
           ./quill generate --seed-file credentials/seedPhrase.txt --pem-file credentials/production.pem
           dfx identity new me --disable-encryption
           dfx identity use me
+      - name: pnpm
+        run: npm install -g pnpm && pnpm install
       - name: Build
         run: pnpm run ego:run
       - name: Run tests
