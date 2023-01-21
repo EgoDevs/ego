@@ -14,7 +14,7 @@ impl Task {
     Task {
       wallet_id,
       canister_id,
-      next_check_time: 0
+      next_check_time: 0,
     }
   }
 }

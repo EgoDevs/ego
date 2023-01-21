@@ -35,6 +35,7 @@ pub fn set_up() {
       description: EXISTS_APP_DESCRIPTION.to_string(),
       current_version: version,
       price: 0.0,
+      app_hash: "".to_string(),
     };
 
     let ego_store_app = EgoStoreApp::new(
@@ -72,6 +73,7 @@ fn app_main_release_new_app() {
     description: NEW_APP_DESCRIPTION.to_string(),
     current_version: version,
     price: 0.0,
+    app_hash: "".to_string(),
   };
 
   let ego_store_app = EgoStoreApp::new(
@@ -112,6 +114,7 @@ fn app_main_release_new_app_version() {
     description: EXISTS_APP_DESCRIPTION.to_string(),
     current_version: version,
     price: 0.0,
+    app_hash: "".to_string(),
   };
 
   let app = EgoStoreApp::new(app, wasm);

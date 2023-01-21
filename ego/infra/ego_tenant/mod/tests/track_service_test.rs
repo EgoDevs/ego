@@ -1,4 +1,7 @@
 use async_trait::async_trait;
+use ic_cdk::export::Principal;
+use mockall::mock;
+
 use ego_lib::ego_canister::TEgoCanister;
 use ego_lib::inject_mock_ego_canister;
 use ego_tenant_mod::c2c::ego_store::TEgoStore;
@@ -10,10 +13,8 @@ use ego_tenant_mod::task::Task;
 use ego_types::app::{App, AppId, Version};
 use ego_types::app::EgoError;
 use ego_types::app_info::AppInfo;
-use ego_utils::ic_management::Cycles;
-use ic_cdk::export::Principal;
-use mockall::mock;
 use ego_types::cycle_info::CycleRecord;
+use ego_utils::ic_management::Cycles;
 
 static STORE_CANISTER_ID: &str = "qhbym-qaaaa-aaaaa-aaafq-cai";
 
@@ -75,7 +76,6 @@ mock! {
   impl TEgoStore for Store {
     async fn wallet_cycle_charge(
       &self,
-      canister_id: Principal,
       wallet_id: Principal,
       cycle: u128,
       comment: String,
@@ -115,7 +115,7 @@ async fn canister_cycles_check_first_time() {
   let ts = 10u64;
   let cycle = 1_000_000u128;
 
-  let records = vec![CycleRecord{ balance: cycle, ts }];
+  let records = vec![CycleRecord { balance: cycle, ts }];
 
   let task = EGO_TENANT.with(|ego_tenant| {
     ego_tenant
@@ -143,7 +143,8 @@ async fn canister_cycles_check_first_time() {
     ego_canister,
     &task,
     &canister_principal,
-    &records
+    &records,
+    100_000,
   )
     .await;
 
@@ -171,7 +172,7 @@ async fn canister_cycles_check_second_time_zero_cycle_consumption() {
   let ts2 = 20u64;
   let cycle = 1_000_000u128;
 
-  let records = vec![CycleRecord{ balance: cycle, ts: ts2 }, CycleRecord{ balance: cycle, ts: ts1 }];
+  let records = vec![CycleRecord { balance: cycle, ts: ts2 }, CycleRecord { balance: cycle, ts: ts1 }];
 
 
   let task = EGO_TENANT.with(|ego_tenant| {
@@ -200,7 +201,8 @@ async fn canister_cycles_check_second_time_zero_cycle_consumption() {
     ego_canister,
     &task,
     &canister_principal,
-    &records
+    &records,
+    100_000,
   )
     .await;
 
@@ -230,7 +232,7 @@ async fn canister_cycles_check_second_time_none_zero_cycle_consumption() {
   let cycle1 = 1_000_000u128;
   let cycle2 = 500_000u128;
 
-  let records = vec![CycleRecord{ balance: cycle2, ts: ts2 }, CycleRecord{ balance: cycle1, ts: ts1 }];
+  let records = vec![CycleRecord { balance: cycle2, ts: ts2 }, CycleRecord { balance: cycle1, ts: ts1 }];
 
   let task = EGO_TENANT.with(|ego_tenant| {
     ego_tenant
@@ -248,9 +250,9 @@ async fn canister_cycles_check_second_time_none_zero_cycle_consumption() {
 
   ego_store
     .expect_wallet_cycle_charge()
-    .returning(move |_canister_id, wallet_id, cycle, _comment| {
+    .returning(move |wallet_id, cycle, _comment| {
       assert_eq!(wallet_principal, wallet_id);
-      assert_eq!(6000000, cycle);
+      assert_eq!(500_000, cycle);
       Ok(true)
     });
 
@@ -258,7 +260,7 @@ async fn canister_cycles_check_second_time_none_zero_cycle_consumption() {
     .expect_canister_cycle_top_up()
     .returning(move |canister_id, cycle| {
       assert_eq!(canister_principal, canister_id);
-      assert_eq!(6000000, cycle);
+      assert_eq!(500_000, cycle);
       Ok(())
     });
 
@@ -266,7 +268,7 @@ async fn canister_cycles_check_second_time_none_zero_cycle_consumption() {
     .expect_ego_cycle_estimate_set()
     .returning(move |canister_id, estimate| {
       assert_eq!(canister_principal, canister_id);
-      assert_eq!(128, estimate);
+      assert_eq!(10, estimate);
     });
 
   let _result = EgoTenantService::ego_cycle_check_cb(
@@ -275,7 +277,8 @@ async fn canister_cycles_check_second_time_none_zero_cycle_consumption() {
     ego_canister,
     &task,
     &canister_principal,
-    &records
+    &records,
+    1_000_000,
   )
     .await;
 

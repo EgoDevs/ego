@@ -55,7 +55,7 @@ struct PersistState {
   pub ego_ledger: EgoLedger,
   users: Option<User>,
   registry: Option<Registry>,
-  cycle_info: Option<CycleInfo>
+  cycle_info: Option<CycleInfo>,
 }
 
 #[pre_upgrade]
@@ -67,7 +67,7 @@ fn pre_upgrade() {
     ego_ledger,
     users: Some(users_pre_upgrade()),
     registry: Some(registry_pre_upgrade()),
-    cycle_info: Some(cycle_info_pre_upgrade())
+    cycle_info: Some(cycle_info_pre_upgrade()),
   };
   storage::stable_save((state, )).unwrap();
 }
@@ -150,4 +150,10 @@ async fn message_main_notify() {
     Ok(_) => {}
     Err(_) => {}
   }
+}
+
+
+/********************  methods for ego_cycle_threshold_get   ********************/
+pub fn cycle_threshold_get() -> u128 {
+  1_000_000_000_000
 }

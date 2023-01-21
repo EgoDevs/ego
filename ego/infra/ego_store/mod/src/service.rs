@@ -2,7 +2,7 @@ use ic_cdk::export::Principal;
 use ic_ledger_types::Memo;
 
 use ego_lib::ego_canister::TEgoCanister;
-use ego_types::app::{App, AppId, Canister, UserApp, CashFlow};
+use ego_types::app::{App, AppId, Canister, CashFlow, UserApp};
 use ego_types::app::EgoError;
 
 use crate::app::EgoStoreApp;

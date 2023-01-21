@@ -1,6 +1,7 @@
 use async_trait::async_trait;
 use ic_cdk::api;
 use ic_cdk::export::Principal;
+
 use ego_types::app::{App, Wasm};
 
 use crate::c2c::c2c_types::EgoStoreApp;

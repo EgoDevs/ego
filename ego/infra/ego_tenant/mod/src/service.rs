@@ -1,10 +1,9 @@
-use std::ops::{Div, Mul};
+use ic_cdk::export::Principal;
 
 use ego_lib::ego_canister::TEgoCanister;
 use ego_types::app::{CanisterType, Wasm};
 use ego_types::app::EgoError;
 use ego_types::cycle_info::CycleRecord;
-use ic_cdk::export::Principal;
 
 use crate::c2c::ego_file::TEgoFile;
 use crate::c2c::ego_store::TEgoStore;
@@ -12,6 +11,7 @@ use crate::c2c::ic_management::TIcManagement;
 use crate::state::{canister_get_one, EGO_TENANT, info_log_add};
 use crate::task::Task;
 use crate::types::EgoTenantErr;
+use crate::types::EgoTenantErr::CycleNotEnough;
 
 pub struct EgoTenantService {}
 
@@ -131,38 +131,39 @@ impl EgoTenantService {
     task: &Task,
     canister_id: &Principal,
     records: &Vec<CycleRecord>,
+    threshold: u128,
   ) -> Result<(), EgoError> {
-    let ego_store_id = canister_get_one("ego_store").unwrap();
-
-    let current_cycle = records[0].balance;
+    let mut current_cycle = records[0].balance;
     let current_ts: u64 = records[0].ts;  // second
 
     let mut last_cycle = 0;
-    let mut last_ts :u64 = 0;
+    let mut last_ts: u64 = 0;
 
     if records.len() > 1 {
       last_cycle = records[1].balance;
       last_ts = records[1].ts; // second
     }
 
-    let next_time = current_ts + NEXT_CHECK_DURATION;
+    if current_cycle < threshold {
+      let cycle_required_to_top_up = threshold - current_cycle;
 
-    let mut estimate_duration: u64 = 0;
+      info_log_add(format!("1. cycle_required_to_top_up: {}", cycle_required_to_top_up).as_str());
+      EgoTenantService::wallet_cycle_recharge(management, ego_store, task, cycle_required_to_top_up).await?;
+
+      current_cycle = threshold;
+    }
 
     info_log_add(format!("2. check cycle last_cycle: {}, current_cycle: {}", last_cycle, current_cycle).as_str());
     if last_cycle == 0 {
       // for the first time checking, we will check it again after 30 minutes
-      info_log_add("2.1 last cycle is 0. skip")
-    } else if last_cycle <= current_cycle {
-      // more cycle then before, do nothing
-      info_log_add("2.2 more cycle then before. skip")
+      info_log_add("2.1 last cycle is 0. skip estimation")
     } else {
       let delta_cycle = last_cycle - current_cycle;
       let delta_time = current_ts - last_ts; // in second
 
       info_log_add(format!("3. delta cycle {}, delta time {}", delta_cycle, delta_time).as_str());
       if delta_time == 0 {
-        info_log_add("3.1 delta_time is zero. skip")
+        info_log_add("3.1 delta_time is zero. skip estimation")
         // just checked, do nothing
       } else {
         let cycle_consume_per_second = delta_cycle / (delta_time as u128);
@@ -170,60 +171,45 @@ impl EgoTenantService {
 
         if cycle_consume_per_second != 0 {
           // the remain cycles can be used in estimate_duration second
-          estimate_duration = (current_cycle / cycle_consume_per_second)
-            .mul(8)
-            .div(10) as u64;
+          let estimate_duration = (current_cycle / cycle_consume_per_second) as u64;
 
           info_log_add(format!("5. estimate_duration: {}", estimate_duration).as_str());
-
-          if estimate_duration <= NEXT_CHECK_DURATION {
-            let cycle_required_to_top_up =
-              cycle_consume_per_second * NEXT_CHECK_DURATION as u128;
-
-            info_log_add(format!("6. cycle_required_to_top_up: {}", cycle_required_to_top_up).as_str());
-
-            match ego_store
-              .wallet_cycle_charge(
-                ego_store_id,
-                task.wallet_id,
-                cycle_required_to_top_up,
-                format!(
-                  "wallet cycle charge, top up canister id {}",
-                  task.canister_id
-                ),
-              )
-              .await?
-            {
-              true => {
-                match management
-                  .canister_cycle_top_up(
-                    task.canister_id,
-                    cycle_required_to_top_up,
-                  ).await {
-                  Ok(_) => {
-                    estimate_duration = estimate_duration + NEXT_CHECK_DURATION;
-                  }
-                  Err(_) => {}
-                }
-              }
-              false => {
-                // TODO: in case wallet controller do not contains enough cycles
-              }
-            }
-          }
+          ego_canister.ego_cycle_estimate_set(*canister_id, estimate_duration);
         }
       }
     }
 
+    let next_time = current_ts + NEXT_CHECK_DURATION;
     EGO_TENANT.with(|ego_tenant| {
-      // convert next_time back to nanoseconds
       ego_tenant
         .borrow_mut()
         .task_update(task.canister_id, next_time)
     });
 
-    ego_canister.ego_cycle_estimate_set(*canister_id, estimate_duration);
-
     Ok(())
+  }
+
+  pub async fn wallet_cycle_recharge<M: TIcManagement, S: TEgoStore>(
+    management: M,
+    ego_store: S,
+    task: &Task,
+    cycles: u128,
+  ) -> Result<(), EgoError> {
+    let charge_ret = ego_store
+      .wallet_cycle_charge(
+        task.wallet_id,
+        cycles,
+        format!(
+          "wallet cycle charge, top up canister id {}",
+          task.canister_id
+        ),
+      ).await?;
+
+    if charge_ret {
+      management.canister_cycle_top_up(task.canister_id, cycles).await?;
+      Ok(())
+    } else {
+      Err(CycleNotEnough.into())
+    }
   }
 }

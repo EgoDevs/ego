@@ -140,13 +140,6 @@ macro_rules! inject_ego_api {
         pub fn ego_log_list(amount: usize) -> Result<Vec<String>, String> {
             Ok(log_list(amount))
         }
-
-        // for balance
-        #[query(name = "balance_get", guard = "op_guard")]
-        #[candid_method(query, rename = "balance_get")]
-        pub fn balance_get() -> Result<u128, String>  {
-            Ok(ic_cdk::api::canister_balance128())
-        }
     }
 }
 
@@ -266,7 +259,7 @@ macro_rules! inject_cycle_info_api {
             let ego_tenant_id = canister_get_one("ego_tenant").unwrap();
             let ego_tenant = EgoTenant::new(ego_tenant_id);
 
-            ego_tenant.ego_cycle_check_cb(cycle_record_list());
+            ego_tenant.ego_cycle_check_cb(cycle_record_list(), cycle_threshold_get());
 
             Ok(())
         }
@@ -289,6 +282,30 @@ macro_rules! inject_cycle_info_api {
             info_log_add(format!("ego_cycle_estimate_set {}", estimate).as_str());
             estimate_remaining_set(estimate);
             Ok(())
+        }
+
+        #[update(name = "ego_cycle_threshold_get", guard = "op_guard")]
+        #[candid_method(update, rename = "ego_cycle_threshold_get")]
+        pub fn ego_cycle_threshold_get() -> Result<u128, String> {
+            Ok(cycle_threshold_get())
+        }
+
+        #[update(name = "ego_cycle_recharge", guard = "op_guard")]
+        #[candid_method(update, rename = "ego_cycle_recharge")]
+        pub async fn ego_cycle_recharge(cycles: u128) -> Result<(), String> {
+            let ego_tenant_id = canister_get_one("ego_tenant").unwrap();
+            let ego_tenant = EgoTenant::new(ego_tenant_id);
+
+            match ego_tenant.wallet_cycle_recharge(cycles).await{
+              Ok(_) => Ok(()),
+              Err(e) => Err(e.msg)
+            }
+        }
+
+        #[query(name = "balance_get", guard = "op_guard")]
+        #[candid_method(query, rename = "balance_get")]
+        pub fn balance_get() -> Result<u128, String>  {
+            Ok(ic_cdk::api::canister_balance128())
         }
     };
 }

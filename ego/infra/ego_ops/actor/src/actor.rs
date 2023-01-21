@@ -44,7 +44,7 @@ struct PersistState {
   pub ego_ops: EgoOps,
   users: Option<User>,
   registry: Option<Registry>,
-  cycle_info: Option<CycleInfo>
+  cycle_info: Option<CycleInfo>,
 }
 
 #[pre_upgrade]
@@ -56,7 +56,7 @@ fn pre_upgrade() {
     ego_ops,
     users: Some(users_pre_upgrade()),
     registry: Some(registry_pre_upgrade()),
-    cycle_info: Some(cycle_info_pre_upgrade())
+    cycle_info: Some(cycle_info_pre_upgrade()),
   };
   storage::stable_save((state, )).unwrap();
 }
@@ -272,4 +272,9 @@ pub fn admin_wallet_order_new(
     .admin_wallet_order_new(amount);
 
   Ok(())
+}
+
+/********************  methods for ego_cycle_threshold_get   ********************/
+pub fn cycle_threshold_get() -> u128 {
+  1_000_000_000_000
 }

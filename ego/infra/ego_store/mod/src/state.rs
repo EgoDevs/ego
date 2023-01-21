@@ -2,8 +2,8 @@ use std::cell::RefCell;
 
 use ego_macros::{inject_cycle_info, inject_ego_data};
 
-use crate::store::EgoStore;
 use crate::service::EgoStoreService;
+use crate::store::EgoStore;
 
 inject_ego_data!();
 inject_cycle_info!();

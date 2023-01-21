@@ -1,6 +1,6 @@
 use std::cell::RefCell;
 
-use ego_macros::{inject_ego_data};
+use ego_macros::inject_ego_data;
 
 use crate::tenant::Tenant;
 

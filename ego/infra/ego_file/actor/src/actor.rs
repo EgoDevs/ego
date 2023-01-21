@@ -87,7 +87,7 @@ struct PersistState {
   pub storage: Storage,
   users: Option<User>,
   registry: Option<Registry>,
-  cycle_info: Option<CycleInfo>
+  cycle_info: Option<CycleInfo>,
 }
 
 /********************  persist method ********************/
@@ -102,7 +102,7 @@ fn state_persist() -> Result<bool, EgoError> {
     storage,
     users: Some(users_pre_upgrade()),
     registry: Some(registry_pre_upgrade()),
-    cycle_info: Some(cycle_info_pre_upgrade())
+    cycle_info: Some(cycle_info_pre_upgrade()),
   };
 
   let data = Encode!(&state).unwrap();
@@ -157,4 +157,9 @@ fn state_restore() -> Result<bool, EgoError> {
   }
 
   Ok(true)
+}
+
+/********************  methods for ego_cycle_threshold_get   ********************/
+pub fn cycle_threshold_get() -> u128 {
+  1_000_000_000_000
 }
