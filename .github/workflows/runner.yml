@@ -18,17 +18,17 @@ jobs:
       - name: install dfx and install nns
         run: |
           sh -ci "$(curl -fsSL https://internetcomputer.org/install.sh)"
-      - name: copy network settings
-        run: |
-          cp ./default_network.json ~/.config/dfx/networks.json
-      - name: run dfx
-        run: dfx start --clean --background
       - name: Generate credentials
         run: |
           curl -L https://github.com/dfinity/quill/releases/download/v0.2.15/quill-linux-x86_64 -o ./quill && chmod +x ./quill
           ./quill generate --seed-file credentials/seedPhrase.txt --pem-file credentials/production.pem
           dfx identity new me --disable-encryption
           dfx identity use me
+      - name: copy network settings
+        run: |
+          cp ./default_network.json ~/.config/dfx/networks.json
+      - name: run dfx
+        run: dfx start --clean --background
       - name: pnpm
         run: npm install -g pnpm && pnpm install
       - name: Build
