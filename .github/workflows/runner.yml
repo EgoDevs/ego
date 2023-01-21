@@ -23,7 +23,6 @@ jobs:
       - name: Generate credentials
         run: |
           curl -L https://github.com/dfinity/quill/releases/download/v0.2.15/quill-linux-x86_64 -o ./quill && chmod +x ./quill
-          mkdir credentials
           ./quill generate --seed-file credentials/seedPhrase.txt --pem-file credentials/production.pem
           dfx identity new me --disable-encryption
           dfx identity use me
