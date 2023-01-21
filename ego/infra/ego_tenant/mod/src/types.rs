@@ -1,8 +1,9 @@
-use ego_types::app::EgoError;
-use ego_types::app::Wasm;
 use ic_cdk::export::candid::{CandidType, Deserialize};
 use ic_cdk::export::Principal;
 use serde::Serialize;
+
+use ego_types::app::EgoError;
+use ego_types::app::Wasm;
 
 #[derive(Clone, Debug, CandidType, Deserialize, Serialize)]
 pub enum EgoTenantErr {
@@ -10,6 +11,7 @@ pub enum EgoTenantErr {
   WalletNotExists,
   AppNotInstalled,
   CanisterNotFounded,
+  CycleNotEnough,
   SystemError(String),
 }
 
@@ -23,6 +25,9 @@ impl From<EgoTenantErr> for EgoError {
       }
       EgoTenantErr::CanisterNotFounded => {
         EgoError::new(4004, "ego-tenant: can not find canister to installed")
+      }
+      EgoTenantErr::CycleNotEnough => {
+        EgoError::new(4004, "ego-tenant: cycle not enough")
       }
       EgoTenantErr::SystemError(msg) => msg.into(),
     }

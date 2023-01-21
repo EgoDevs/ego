@@ -43,35 +43,34 @@ mock! {
   #[async_trait]
   impl TEgoTenant for Tenant {
     async fn app_main_install(
-      &self,
-      ego_tenant_id: Principal,
-      wallet_id: Principal,
-      user_id: Principal,
-      wasm: &Wasm,
-    ) -> Result<Principal, EgoError>;
-    async fn app_main_upgrade(
-      &self,
-      ego_tenant_id: Principal,
-      canister_id: Principal,
-      wasm: &Wasm,
-    ) -> Result<bool, EgoError>;
-    fn canister_main_track(
-      &self,
-      ego_tenant_id: Principal,
-      wallet_id: &Principal,
-      canister_id: &Principal,
-    );
-    fn canister_main_untrack(
-      &self,
-      ego_tenant_id: Principal,
-      wallet_id: &Principal,
-      canister_id: &Principal,
-    );
-    fn app_main_delete(
-      &self,
-      ego_tenant_id: Principal,
-      canister_id: &Principal
-    );
+    &self,
+    ego_tenant_id: Principal,
+    wallet_id: Principal,
+    user_id: Principal,
+    wasm: &Wasm,
+  ) -> Result<Principal, EgoError>;
+  async fn app_main_upgrade(
+    &self,
+    ego_tenant_id: Principal,
+    canister_id: Principal,
+    wasm: &Wasm,
+  ) -> Result<bool, EgoError>;
+  fn canister_main_track(
+    &self,
+    ego_tenant_id: Principal,
+    wallet_id: &Principal,
+    canister_id: &Principal,
+  );
+  fn canister_main_untrack(
+    &self,
+    ego_tenant_id: Principal,
+    canister_id: &Principal,
+  );
+  fn app_main_delete(
+    &self,
+    ego_tenant_id: Principal,
+    canister_id: &Principal,
+  );
   }
 }
 
@@ -103,6 +102,7 @@ pub fn set_up() {
       description: APP_DESCRIPTION.to_string(),
       current_version: version,
       price: 0.0,
+      app_hash: "".to_string(),
     };
 
     let ego_store_app = EgoStoreApp::new(
@@ -127,6 +127,7 @@ pub fn set_up() {
       description: APP_DESCRIPTION.to_string(),
       current_version: version,
       price: 0.0,
+      app_hash: "".to_string(),
     };
 
     let test_ego_store_app = EgoStoreApp::new(
@@ -250,6 +251,10 @@ async fn wallet_app_install_success() {
   ego_tenant
     .expect_app_main_install()
     .returning(move |_, _, _, _| Ok(backend_principal));
+
+  ego_tenant
+    .expect_canister_main_track()
+    .returning(|_, _, _| ());
 
   let mut ego_canister = MockCanister::new();
   ego_canister.expect_ego_app_info_update().returning(|_, _, _, _| {
@@ -525,7 +530,7 @@ async fn wallet_canister_untrack_wallet_not_exists() {
   let mut ego_tenant = MockTenant::new();
   ego_tenant
     .expect_canister_main_untrack()
-    .returning(|_, _, _| ());
+    .returning(|_, _| ());
   let wallet_id = Principal::from_text(TEST_WALLET_ID).unwrap();
   let backend_principal = Principal::from_text(EXISTS_USER_APP_BACKEND.to_string()).unwrap();
 
@@ -545,7 +550,7 @@ async fn wallet_canister_untrack_app_not_install() {
   let mut ego_tenant = MockTenant::new();
   ego_tenant
     .expect_canister_main_untrack()
-    .returning(|_, _, _| ());
+    .returning(|_, _| ());
   let wallet_id = Principal::from_text(EXISTS_WALLET_ID).unwrap();
   let fake_principal = Principal::from_text(FAKE_USER_APP_BACKEND.to_string()).unwrap();
 
@@ -565,7 +570,7 @@ async fn wallet_canister_untrack() {
   let mut ego_tenant = MockTenant::new();
   ego_tenant
     .expect_canister_main_untrack()
-    .returning(|_, _, _| ());
+    .returning(|_, _| ());
   let wallet_id = Principal::from_text(EXISTS_WALLET_ID).unwrap();
   let backend_principal = Principal::from_text(EXISTS_USER_APP_BACKEND.to_string()).unwrap();
 

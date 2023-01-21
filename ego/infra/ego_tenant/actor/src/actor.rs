@@ -3,8 +3,16 @@ use std::ops::Div;
 use std::time::Duration;
 
 use candid::candid_method;
+use ic_cdk::{caller, id, storage};
+use ic_cdk::api::time;
+use ic_cdk::export::candid::{CandidType, Deserialize};
+use ic_cdk::export::Principal;
+use ic_cdk::timer::set_timer_interval;
+use ic_cdk_macros::*;
+use serde::Serialize;
+
 use ego_lib::ego_canister::{EgoCanister, TEgoCanister};
-use ego_macros::{inject_ego_api};
+use ego_macros::inject_ego_api;
 use ego_tenant_mod::c2c::ego_file::EgoFile;
 use ego_tenant_mod::c2c::ego_store::EgoStore;
 use ego_tenant_mod::c2c::ic_management::IcManagement;
@@ -20,13 +28,6 @@ use ego_types::app::EgoError;
 use ego_types::cycle_info::CycleRecord;
 use ego_types::registry::Registry;
 use ego_types::user::User;
-use ic_cdk::{caller, id, storage};
-use ic_cdk::api::time;
-use ic_cdk::export::candid::{CandidType, Deserialize};
-use ic_cdk::export::Principal;
-use ic_cdk::timer::set_timer_interval;
-use ic_cdk_macros::*;
-use serde::Serialize;
 
 inject_ego_api!();
 
@@ -166,12 +167,15 @@ fn canister_main_untrack(canister_id: Principal) -> Result<(), EgoError> {
 
 #[update(name = "ego_cycle_check_cb")]
 #[candid_method(update, rename = "ego_cycle_check_cb")]
-async fn ego_cycle_check_cb(records: Vec<CycleRecord>) -> Result<(), EgoError> {
+async fn ego_cycle_check_cb(records: Vec<CycleRecord>, threshold: u128) -> Result<(), EgoError> {
   let canister_id = caller();
-  info_log_add(format!("ego_tenant: ego_cycle_check_cb, canister_id: {}, records: {:?}", canister_id, records).as_str());
+  info_log_add(format!("ego_tenant: ego_cycle_check_cb, canister_id: {}", canister_id).as_str());
 
   let management = IcManagement::new();
-  let ego_store = EgoStore::new();
+
+  let ego_store_id = canister_get_one("ego_store").unwrap();
+  let ego_store = EgoStore::new(ego_store_id);
+
   let ego_canister = EgoCanister::new();
 
   info_log_add("1. get task by canister_id");
@@ -187,10 +191,37 @@ async fn ego_cycle_check_cb(records: Vec<CycleRecord>) -> Result<(), EgoError> {
     }
   })?;
 
-  EgoTenantService::ego_cycle_check_cb(management, ego_store, ego_canister, &task, &canister_id, &records).await?;
+  EgoTenantService::ego_cycle_check_cb(management, ego_store, ego_canister, &task, &canister_id, &records, threshold).await?;
   Ok(())
 }
 
+#[update(name = "wallet_cycle_recharge")]
+#[candid_method(update, rename = "wallet_cycle_recharge")]
+async fn wallet_cycle_recharge(cycles: u128) -> Result<(), EgoError> {
+  let canister_id = caller();
+  info_log_add(format!("ego_tenant: wallet_cycle_recharge, canister_id: {}", canister_id).as_str());
+
+  let management = IcManagement::new();
+
+  let ego_store_id = canister_get_one("ego_store").unwrap();
+  let ego_store = EgoStore::new(ego_store_id);
+
+  info_log_add("1. get task by canister_id");
+  let task = EGO_TENANT.with(|ego_tenant| {
+    match ego_tenant.borrow().tasks.get(&canister_id) {
+      None => {
+        info_log_add("ego_tenant error, can not find task");
+        Err(EgoError::from(CanisterNotFounded))
+      }
+      Some(task) => {
+        Ok(task.clone())
+      }
+    }
+  })?;
+
+  EgoTenantService::wallet_cycle_recharge(management, ego_store, &task, cycles).await?;
+  Ok(())
+}
 
 /********************  notify  ********************/
 fn task_run() {

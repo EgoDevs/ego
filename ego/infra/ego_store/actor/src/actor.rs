@@ -6,6 +6,7 @@ use ic_cdk::api::time;
 use ic_cdk::export::candid::{CandidType, Deserialize};
 use ic_cdk::export::Principal;
 use ic_cdk_macros::*;
+use ic_ledger_types::Memo;
 use serde::Serialize;
 
 use ego_lib::ego_canister::EgoCanister;
@@ -13,17 +14,16 @@ use ego_macros::{inject_cycle_info_api, inject_ego_api};
 use ego_store_mod::app::EgoStoreApp;
 use ego_store_mod::c2c::ego_ledger::EgoLedger;
 use ego_store_mod::c2c::ego_tenant::EgoTenant as EgoTenantInner;
-use ego_store_mod::store::EgoStore;
+use ego_store_mod::order::Order;
 use ego_store_mod::service::*;
 use ego_store_mod::state::*;
 use ego_store_mod::state::EGO_STORE;
+use ego_store_mod::store::EgoStore;
 use ego_store_mod::types::*;
 use ego_types::app::{App, AppId};
+use ego_types::app::CashFlow;
 use ego_types::app::EgoError;
 use ego_types::app::UserApp;
-use ego_types::app::CashFlow;
-use ic_ledger_types::Memo;
-use ego_store_mod::order::Order;
 use ego_types::registry::Registry;
 use ego_types::user::User;
 
@@ -50,7 +50,7 @@ struct PersistState {
   ego_store: EgoStore,
   users: Option<User>,
   registry: Option<Registry>,
-  cycle_info: Option<CycleInfo>
+  cycle_info: Option<CycleInfo>,
 }
 
 #[pre_upgrade]
@@ -63,7 +63,7 @@ fn pre_upgrade() {
     ego_store,
     users: Some(users_pre_upgrade()),
     registry: Some(registry_pre_upgrade()),
-    cycle_info: Some(cycle_info_pre_upgrade())
+    cycle_info: Some(cycle_info_pre_upgrade()),
   };
   storage::stable_save((state, )).unwrap();
 }
@@ -227,7 +227,7 @@ pub fn wallet_order_list() -> Result<Vec<Order>, EgoError> {
   info_log_add("ego_store: wallet_order_list");
 
   match EgoStoreService::wallet_order_list(ic_cdk::caller()) {
-    Ok(orders) => Ok( orders ),
+    Ok(orders) => Ok(orders),
     Err(e) => Err(e),
   }
 }
@@ -326,7 +326,7 @@ pub fn wallet_order_notify(memo: Memo) -> Result<bool, EgoError> {
   let operator = caller();
 
   match EgoStoreService::wallet_order_notify(memo, operator, ic_cdk::api::time()) {
-    Ok(ret) => Ok( ret ),
+    Ok(ret) => Ok(ret),
     Err(e) => Err(e),
   }
 }
@@ -340,8 +340,8 @@ pub fn admin_wallet_provider_add(
   info_log_add("ego_store: admin_wallet_provider_add");
 
   info_log_add(&format!("wallet_provider: {}, app_id: {}",
-                   req.wallet_provider,
-                   req.wallet_app_id));
+                        req.wallet_provider,
+                        req.wallet_app_id));
 
   EgoStoreService::admin_wallet_provider_add(&req.wallet_provider, &req.wallet_app_id);
   Ok(())
@@ -392,4 +392,10 @@ pub async fn wallet_main_new(user_id: Principal) -> Result<UserApp, EgoError> {
     EgoStoreService::wallet_controller_install(ego_tenant, ego_canister, wallet_provider, user_id, app_id).await?;
 
   Ok(user_app)
+}
+
+
+/********************  methods for ego_cycle_threshold_get   ********************/
+pub fn cycle_threshold_get() -> u128 {
+  1_000_000_000_000
 }

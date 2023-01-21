@@ -53,7 +53,7 @@ struct PersistState {
   pub ego_dev: EgoDev,
   users: Option<User>,
   registry: Option<Registry>,
-  cycle_info: Option<CycleInfo>
+  cycle_info: Option<CycleInfo>,
 }
 
 #[pre_upgrade]
@@ -65,7 +65,7 @@ fn pre_upgrade() {
     ego_dev,
     users: Some(users_pre_upgrade()),
     registry: Some(registry_pre_upgrade()),
-    cycle_info: Some(cycle_info_pre_upgrade())
+    cycle_info: Some(cycle_info_pre_upgrade()),
   };
   storage::stable_save((state, )).unwrap();
 }
@@ -361,4 +361,9 @@ pub fn developer_guard() -> Result<(), String> {
   } else {
     trap(&format!("{} unauthorized", api::caller()));
   }
+}
+
+/********************  methods for ego_cycle_threshold_get   ********************/
+pub fn cycle_threshold_get() -> u128 {
+  1_000_000_000_000
 }

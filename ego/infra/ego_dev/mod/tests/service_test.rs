@@ -10,9 +10,9 @@ use ego_dev_mod::ego_file::EgoFile;
 use ego_dev_mod::service::EgoDevService;
 use ego_dev_mod::state::EGO_DEV;
 use ego_types::app::{CanisterType, Category};
+use ego_types::app::{App, Wasm};
 use ego_types::app::EgoError;
 use ego_types::app::Version;
-use ego_types::app::{App, Wasm};
 
 mock! {
   File {}
@@ -86,11 +86,11 @@ pub fn set_up() {
       .insert(auditer_principal, auditer);
 
     // submitted app
-    let wasm = Wasm{
+    let wasm = Wasm {
       app_id: "".to_string(),
       version: Default::default(),
       canister_type: CanisterType::BACKEND,
-      canister_id: file_canister
+      canister_id: file_canister,
     };
 
     let mut app = EgoDevApp::new(

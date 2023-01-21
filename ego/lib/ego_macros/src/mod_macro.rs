@@ -76,6 +76,16 @@ macro_rules! inject_cycle_info {
         pub fn cycle_info_post_upgrade(stable_state: CycleInfo) {
             CYCLE_INFO.with(|s| s.replace(stable_state));
         }
+
+        pub fn is_cycle_available(amount: u128) -> bool {
+            let balance = ic_cdk::api::canister_balance128();
+
+            if balance > amount {
+                true
+            } else {
+                false
+            }
+        }
     };
 }
 
