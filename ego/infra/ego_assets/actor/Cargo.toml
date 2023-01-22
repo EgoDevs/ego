@@ -9,7 +9,7 @@ path = "src/actor.rs"
 crate-type = ["cdylib"]
 
 [[bin]]
-name = "ego-asssets"
+name = "ego-assets"
 path = "src/main.rs"
 
 [dependencies]
