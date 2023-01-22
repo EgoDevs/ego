@@ -15,16 +15,11 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
-      - name: Install Rust Toolchain
-        uses: actions-rs/toolchain@v1
-        with:
-          profile: minimal
-          toolchain: nightly
-          override: true
-          components: rustfmt
       - name: setup env
         run: |
           sudo apt install gcc-multilib
+          rustup toolchain uninstall stable
+          rustup toolchain install stable
           rustup target add wasm32-unknown-unknown
       - name: install dfx and install nns
         run: |
