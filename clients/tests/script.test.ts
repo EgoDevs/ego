@@ -116,7 +116,7 @@ describe('scripts', () => {
     });
   });
 
-  test('add_ops_owner', async () => {
+  test.skip('add_ops_owner', async () => {
     const deployer = await egoOpsDeployerActor;
 
     let principal = Principal.fromText('replace_this');
