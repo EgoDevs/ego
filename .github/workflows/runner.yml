@@ -31,7 +31,8 @@ jobs:
           sh -ci "$(curl -fsSL https://internetcomputer.org/install.sh)"
       - name: Get DIDc
         run: |
-          wget "https://github.com/dfinity/candid/releases/download/2022-08-09/didc-linux64" -O ~/opt/bin/didc
+          mkdir ~/opt/bin
+          curl -L https://github.com/dfinity/candid/releases/download/2022-08-09/didc-linux64 -o ~/opt/bin/didc && chmod +x ~/opt/bin/didc
           export PATH=$PATH:~/opt/bin/didc
       - name: Generate credentials
         run: |
