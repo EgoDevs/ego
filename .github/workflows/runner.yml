@@ -22,11 +22,10 @@ jobs:
           toolchain: nightly
           override: true
           components: rustfmt
-      - name: Install WASM Target
+      - name: setup env
         run: |
+          sudo apt install gcc-multilib
           rustup target add wasm32-unknown-unknown
-          cargo rustc -- -C link-arg=-nostartfiles
-
       - name: install dfx and install nns
         run: |
           sh -ci "$(curl -fsSL https://internetcomputer.org/install.sh)"
