@@ -15,15 +15,24 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
+      - name: Install stable toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
+          components: rustfmt, clippy
       - name: setup env
         run: |
           sudo apt install gcc-multilib
-          rustup toolchain uninstall stable
-          rustup toolchain install stable
           rustup target add wasm32-unknown-unknown
       - name: install dfx and install nns
         run: |
           sh -ci "$(curl -fsSL https://internetcomputer.org/install.sh)"
+      - name: Get DIDc
+        run: |
+          wget "https://github.com/dfinity/candid/releases/download/2022-08-09/didc-linux64" -O ~/opt/bin/didc
+          export PATH=$PATH:~/opt/bin/didc
       - name: Generate credentials
         run: |
           curl -L https://github.com/dfinity/quill/releases/download/v0.2.15/quill-linux-x86_64 -o ./quill && chmod +x ./quill
