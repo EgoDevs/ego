@@ -39,6 +39,7 @@ macro_rules! inject_mock_ego_canister {
         async fn ego_cycle_info(&self, target_canister_id: Principal) -> Result<ego_types::cycle_info::CycleInfo, String>;
         fn ego_cycle_estimate_set(&self, target_canister_id: Principal, estimate: u64);
         async fn ego_cycle_threshold_get(&self, target_canister_id: Principal) -> Result<u128, String>;
+        async fn ego_runtime_cycle_threshold_get(&self, target_canister_id: Principal) -> Result<u128, String>;
         async fn ego_cycle_recharge(&self, target_canister_id: Principal, cycles: u128) -> Result<(), String>;
       }
     }

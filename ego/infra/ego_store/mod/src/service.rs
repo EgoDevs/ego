@@ -278,6 +278,7 @@ impl EgoStoreService {
     ts: u64,
     comment: String,
   ) -> Result<bool, EgoError> {
+    info_log_add(format!("admin_wallet_cycle_recharge operator:{}, cycle:{}", operator, cycle).as_str());
     EGO_STORE.with(|ego_store| {
       ego_store
         .borrow_mut()
@@ -325,10 +326,10 @@ impl EgoStoreService {
         .wallet_app_install(&canister_id, &user_app);
     });
 
-    info_log_add("6 track canister");
+    info_log_add("7 track canister");
     ego_tenant.canister_main_track(ego_tenant_id, &canister_id, &canister_id);
 
-    info_log_add("7 set app info");
+    info_log_add("8 set app info");
     ego_canister.ego_app_info_update(canister_id, Some(canister_id), ego_store_app.app.app_id, ego_store_app.app.current_version);
 
     Ok(user_app)

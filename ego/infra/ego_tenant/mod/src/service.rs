@@ -24,11 +24,12 @@ impl EgoTenantService {
   pub fn canister_main_track(
     wallet_id: Principal,
     canister_id: Principal,
+    next_check_time: u64
   ) -> Result<(), EgoError> {
     EGO_TENANT.with(|ego_tenant| {
       ego_tenant
         .borrow_mut()
-        .canister_main_track(wallet_id, canister_id)
+        .canister_main_track(wallet_id, canister_id, next_check_time)
     })
   }
 

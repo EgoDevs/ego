@@ -152,7 +152,9 @@ async fn app_main_delete(canister_id: Principal) -> Result<(), EgoError> {
 fn canister_main_track(wallet_id: Principal, canister_id: Principal) -> Result<(), EgoError> {
   info_log_add("ego_tenant: canister_main_track");
 
-  EgoTenantService::canister_main_track(wallet_id, canister_id)?;
+  let next_check_time = time().div(1e9 as u64) + 60;  // convert to second
+
+  EgoTenantService::canister_main_track(wallet_id, canister_id, next_check_time)?;
   Ok(())
 }
 

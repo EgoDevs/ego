@@ -1,13 +1,1 @@
-{
-    "dfxVersion": "0.12.1",
-    "dfxPort": 8000,
-    "canisters": "ego",
-    "artifacts": "artifacts",
-    "configs": "configs",
-    "credentials": {
-        "seedPhrase": "./credentials/seedPhrase.txt",
-        "production_pem": "./credentials/production.pem",
-        "production_cycles_wallet": "6sjrz-3qaaa-aaaah-aakkq-cai"
-    },
-    "cycles_install_code": "200000000000"
-}
+{"dfxVersion":"0.12.1","dfxPort":8080,"canisters":"ego","artifacts":"artifacts","configs":"configs","credentials":{"seedPhrase":"./credentials/seedPhrase.txt","production_pem":"./credentials/production.pem","production_cycles_wallet":"6sjrz-3qaaa-aaaah-aakkq-cai"},"cycles_install_code":"200000000000"}

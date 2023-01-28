@@ -24,10 +24,11 @@ impl Tenant {
     &mut self,
     wallet_id: Principal,
     canister_id: Principal,
+    next_check_time: u64
   ) -> Result<(), EgoError> {
     self.tasks
       .entry(canister_id)
-      .or_insert(Task::new(wallet_id, canister_id));
+      .or_insert(Task::new(wallet_id, canister_id, next_check_time));
     Ok(())
   }
 

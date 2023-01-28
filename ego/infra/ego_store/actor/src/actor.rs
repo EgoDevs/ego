@@ -1,7 +1,7 @@
 use std::collections::BTreeMap;
 
 use candid::candid_method;
-use ic_cdk::{caller, storage};
+use ic_cdk::{caller, id, storage};
 use ic_cdk::api::time;
 use ic_cdk::export::candid::{CandidType, Deserialize};
 use ic_cdk::export::Principal;
@@ -9,7 +9,7 @@ use ic_cdk_macros::*;
 use ic_ledger_types::Memo;
 use serde::Serialize;
 
-use ego_lib::ego_canister::EgoCanister;
+use ego_lib::ego_canister::{EgoCanister, TEgoCanister};
 use ego_macros::{inject_cycle_info_api, inject_ego_api};
 use ego_store_mod::app::EgoStoreApp;
 use ego_store_mod::c2c::ego_ledger::EgoLedger;
@@ -169,6 +169,12 @@ pub async fn wallet_app_install(
 
   let user_app =
     EgoStoreService::wallet_app_install(ego_tenant, ego_canister, wallet_id, app).await?;
+
+  info_log_add("8 top up canister");
+  let ego_canister = EgoCanister::new();
+  let canister_id = user_app.canister.canister_id;
+  let runtime_cycle_threshold = ego_canister.ego_runtime_cycle_threshold_get(canister_id.clone()).await?;
+  let _result = EgoStoreService::admin_wallet_cycle_recharge(wallet_id.clone(), runtime_cycle_threshold, id(), time(), "首次安装充值".to_string());
   Ok(user_app)
 }
 
@@ -390,6 +396,12 @@ pub async fn wallet_main_new(user_id: Principal) -> Result<UserApp, EgoError> {
   let ego_canister = EgoCanister::new();
   let user_app =
     EgoStoreService::wallet_controller_install(ego_tenant, ego_canister, wallet_provider, user_id, app_id).await?;
+
+  info_log_add("9 top up canister");
+  let ego_canister = EgoCanister::new();
+  let canister_id = user_app.canister.canister_id;
+  let runtime_cycle_threshold = ego_canister.ego_runtime_cycle_threshold_get(canister_id.clone()).await?;
+  let _result = EgoStoreService::admin_wallet_cycle_recharge(canister_id.clone(), runtime_cycle_threshold, id(), time(), "首次安装充值".to_string());
 
   Ok(user_app)
 }

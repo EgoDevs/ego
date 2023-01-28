@@ -303,6 +303,12 @@ macro_rules! inject_cycle_info_api {
             Ok(cycle_threshold_get())
         }
 
+        #[update(name = "ego_runtime_cycle_threshold_get", guard = "op_guard")]
+        #[candid_method(update, rename = "ego_runtime_cycle_threshold_get")]
+        pub fn ego_runtime_cycle_threshold_get() -> Result<u128, String> {
+            Ok(runtime_cycle_threshold_get())
+        }
+
         #[update(name = "ego_cycle_recharge", guard = "op_guard")]
         #[candid_method(update, rename = "ego_cycle_recharge")]
         pub async fn ego_cycle_recharge(cycles: u128) -> Result<(), String> {

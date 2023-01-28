@@ -10,11 +10,11 @@ pub struct Task {
 }
 
 impl Task {
-  pub fn new(wallet_id: Principal, canister_id: Principal) -> Self {
+  pub fn new(wallet_id: Principal, canister_id: Principal, next_check_time: u64) -> Self {
     Task {
       wallet_id,
       canister_id,
-      next_check_time: 0,
+      next_check_time
     }
   }
 }

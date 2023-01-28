@@ -221,6 +221,10 @@ async fn wallet_controller_install() {
     ()
   });
 
+  ego_canister.expect_ego_app_info_update().returning(|_, _, _, _| {
+    ()
+  });
+
   let result = EgoStoreService::wallet_controller_install(ego_tenant, ego_canister, wallet_provider_principal, user_principal, WALLET_APP_ID.to_string()).await;
   assert!(result.is_ok());
   let c_id = result.unwrap().canister.canister_id;
