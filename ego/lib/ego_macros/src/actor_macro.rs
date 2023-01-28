@@ -272,7 +272,7 @@ macro_rules! inject_cycle_info_api {
             let ego_tenant_id = canister_get_one("ego_tenant").unwrap();
             let ego_tenant = EgoTenant::new(ego_tenant_id);
 
-            ego_tenant.ego_cycle_check_cb(cycle_record_list(), cycle_threshold_get());
+            ego_tenant.ego_cycle_check_cb(cycle_record_list(), runtime_cycle_threshold_get());
 
             Ok(())
         }

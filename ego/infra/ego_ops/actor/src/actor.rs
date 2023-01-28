@@ -278,3 +278,7 @@ pub fn admin_wallet_order_new(
 pub fn cycle_threshold_get() -> u128 {
   1_000_000_000_000
 }
+
+pub fn runtime_cycle_threshold_get() -> u128 {
+  1_000_000_000_000
+}

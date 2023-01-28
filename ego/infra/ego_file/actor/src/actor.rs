@@ -163,3 +163,7 @@ fn state_restore() -> Result<bool, EgoError> {
 pub fn cycle_threshold_get() -> u128 {
   1_000_000_000_000
 }
+
+pub fn runtime_cycle_threshold_get() -> u128 {
+  1_000_000_000_000
+}
