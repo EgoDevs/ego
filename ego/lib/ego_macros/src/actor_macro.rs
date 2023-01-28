@@ -30,6 +30,12 @@ macro_rules! inject_ego_api {
             Ok(())
         }
 
+        #[query(name = "ego_is_owner")]
+        #[candid_method(query, rename = "ego_is_owner")]
+        pub fn ego_is_owner() -> Result<bool, String> {
+            let ret = is_owner(caller());
+            Ok(ret)
+        }
 
         #[inline(always)]
         pub fn owner_guard() -> Result<(), String> {
@@ -66,6 +72,13 @@ macro_rules! inject_ego_api {
             info_log_add(format!("ego_user_remove {}", principal).as_str());
             user_remove(principal);
             Ok(())
+        }
+
+        #[query(name = "ego_is_user")]
+        #[candid_method(query, rename = "ego_is_user")]
+        pub fn ego_is_user() -> Result<bool, String> {
+            let ret = is_user(caller());
+            Ok(ret)
         }
 
         #[inline(always)]
