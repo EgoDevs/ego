@@ -249,11 +249,15 @@ impl EgoStoreService {
     ts: u64,
     comment: String,
   ) -> Result<bool, EgoError> {
-    EGO_STORE.with(|ego_store| {
-      ego_store
-        .borrow_mut()
-        .wallet_cycle_charge(wallet_id, cycle, operator, ts, comment)
-    })
+    if cycle > 0 {
+      EGO_STORE.with(|ego_store| {
+        ego_store
+          .borrow_mut()
+          .wallet_cycle_charge(wallet_id, cycle, operator, ts, comment)
+      })
+    } else {
+      Ok(true)
+    }
   }
 
   pub fn admin_ego_tenant_add(tenant_id: Principal) {
@@ -279,11 +283,15 @@ impl EgoStoreService {
     comment: String,
   ) -> Result<bool, EgoError> {
     info_log_add(format!("admin_wallet_cycle_recharge operator:{}, cycle:{}", operator, cycle).as_str());
-    EGO_STORE.with(|ego_store| {
-      ego_store
-        .borrow_mut()
-        .wallet_cycle_recharge(wallet_id, cycle, operator, ts, comment)
-    })
+    if cycle > 0 {
+      EGO_STORE.with(|ego_store| {
+        ego_store
+          .borrow_mut()
+          .wallet_cycle_recharge(wallet_id, cycle, operator, ts, comment)
+      })
+    } else {
+      Ok(true)
+    }
   }
 
   pub fn app_main_release(app: EgoStoreApp) -> Result<bool, EgoError> {

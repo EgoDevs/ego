@@ -13,6 +13,14 @@ macro_rules! inject_ego_api {
             Ok(())
         }
 
+        #[update(name = "ego_owner_add_with_name", guard = "owner_guard")]
+        #[candid_method(update, rename = "ego_owner_add_with_name")]
+        pub fn ego_owner_add_with_name(name: String, principal: Principal) -> Result<(), String> {
+            info_log_add(format!("ego_owner_add_with_name name:{}, principal:{}", name, principal).as_str());
+            owner_add_with_name(name, principal);
+            Ok(())
+        }
+
         #[update(name = "ego_owner_add", guard = "owner_guard")]
         #[candid_method(update, rename = "ego_owner_add")]
         pub fn ego_owner_add(principal: Principal) -> Result<(), String> {
