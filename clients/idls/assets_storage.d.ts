@@ -61,16 +61,10 @@ export interface UnsetAssetContentArguments {
 export interface _SERVICE {
   authorize: ActorMethod<[Principal], undefined>;
   clear: ActorMethod<[ClearArguments], undefined>;
-  commit_batch: ActorMethod<
-    [{ batch_id: BatchId; operations: Array<BatchOperationKind> }],
-    undefined
-  >;
+  commit_batch: ActorMethod<[{ batch_id: BatchId; operations: Array<BatchOperationKind> }], undefined>;
   create_asset: ActorMethod<[CreateAssetArguments], undefined>;
   create_batch: ActorMethod<[{}], { batch_id: BatchId }>;
-  create_chunk: ActorMethod<
-    [{ content: Array<number>; batch_id: BatchId }],
-    { chunk_id: ChunkId }
-  >;
+  create_chunk: ActorMethod<[{ content: Array<number>; batch_id: BatchId }], { chunk_id: ChunkId }>;
   delete_asset: ActorMethod<[DeleteAssetArguments], undefined>;
   get: ActorMethod<
     [{ key: Key; accept_encodings: Array<string> }],
@@ -94,10 +88,7 @@ export interface _SERVICE {
     { content: Array<number> }
   >;
   http_request: ActorMethod<[HttpRequest], HttpResponse>;
-  http_request_streaming_callback: ActorMethod<
-    [StreamingCallbackToken],
-    [] | [StreamingCallbackHttpResponse]
-  >;
+  http_request_streaming_callback: ActorMethod<[StreamingCallbackToken], [] | [StreamingCallbackHttpResponse]>;
   list: ActorMethod<
     [{}],
     Array<{

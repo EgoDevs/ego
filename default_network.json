@@ -1,0 +1,15 @@
+{
+    "local": {
+        "bind": "127.0.0.1:8000",
+        "type": "ephemeral",
+        "replica": {
+            "subnet_type": "application"
+        },
+        "bitcoin": {
+            "enabled": false,
+            "nodes": [
+                "127.0.0.1:18444"
+            ]
+        }
+    }
+}

@@ -45,11 +45,7 @@ export const idlFactory = ({ IDL }) => {
   const StreamingStrategy = IDL.Variant({
     Callback: IDL.Record({
       token: StreamingCallbackToken,
-      callback: IDL.Func(
-        [StreamingCallbackToken],
-        [IDL.Opt(StreamingCallbackHttpResponse)],
-        ['query'],
-      ),
+      callback: IDL.Func([StreamingCallbackToken], [IDL.Opt(StreamingCallbackHttpResponse)], ['query']),
     }),
   });
   const HttpResponse = IDL.Record({
@@ -73,16 +69,8 @@ export const idlFactory = ({ IDL }) => {
       [],
     ),
     create_asset: IDL.Func([CreateAssetArguments], [], []),
-    create_batch: IDL.Func(
-      [IDL.Record({})],
-      [IDL.Record({ batch_id: BatchId })],
-      [],
-    ),
-    create_chunk: IDL.Func(
-      [IDL.Record({ content: IDL.Vec(IDL.Nat8), batch_id: BatchId })],
-      [IDL.Record({ chunk_id: ChunkId })],
-      [],
-    ),
+    create_batch: IDL.Func([IDL.Record({})], [IDL.Record({ batch_id: BatchId })], []),
+    create_chunk: IDL.Func([IDL.Record({ content: IDL.Vec(IDL.Nat8), batch_id: BatchId })], [IDL.Record({ chunk_id: ChunkId })], []),
     delete_asset: IDL.Func([DeleteAssetArguments], [], []),
     get: IDL.Func(
       [IDL.Record({ key: Key, accept_encodings: IDL.Vec(IDL.Text) })],
@@ -110,11 +98,7 @@ export const idlFactory = ({ IDL }) => {
       ['query'],
     ),
     http_request: IDL.Func([HttpRequest], [HttpResponse], ['query']),
-    http_request_streaming_callback: IDL.Func(
-      [StreamingCallbackToken],
-      [IDL.Opt(StreamingCallbackHttpResponse)],
-      ['query'],
-    ),
+    http_request_streaming_callback: IDL.Func([StreamingCallbackToken], [IDL.Opt(StreamingCallbackHttpResponse)], ['query']),
     list: IDL.Func(
       [IDL.Record({})],
       [

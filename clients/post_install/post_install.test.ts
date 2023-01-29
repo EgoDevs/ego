@@ -17,13 +17,6 @@ describe('post_infra', () => {
   });
 });
 
-// run post_assets
-describe('post_assets', () => {
-  test('assets post install', async () => {
-    await assetsStorageInstall();
-  });
-});
-
 // run post_ops
 describe('post_ops', () => {
   test('ego_ops post install', async () => {

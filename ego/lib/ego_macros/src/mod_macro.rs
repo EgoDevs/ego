@@ -76,6 +76,16 @@ macro_rules! inject_cycle_info {
         pub fn cycle_info_post_upgrade(stable_state: CycleInfo) {
             CYCLE_INFO.with(|s| s.replace(stable_state));
         }
+
+        pub fn is_cycle_available(amount: u128) -> bool {
+            let balance = ic_cdk::api::canister_balance128();
+
+            if balance > amount {
+                true
+            } else {
+                false
+            }
+        }
     };
 }
 
@@ -90,9 +100,14 @@ macro_rules! inject_ego_data {
 
         use ego_types::log::Log;
 
-        pub fn log_add(log: &str)  {
+        pub fn info_log_add(log: &str)  {
             ic_cdk::println!("{}", log.to_string());
-            LOG.with(|s| s.borrow_mut().log_add(log.to_string()));
+            LOG.with(|s| s.borrow_mut().info_info_log_add(log.to_string()));
+        }
+
+        pub fn error_log_add(log: &str)  {
+            ic_cdk::println!("{}", log.to_string());
+            LOG.with(|s| s.borrow_mut().error_info_log_add(log.to_string()));
         }
 
         pub fn log_list(amount: usize) -> Vec<String> {

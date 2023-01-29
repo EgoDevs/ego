@@ -1,8 +1,7 @@
 module.exports = {
   testMatch: [
-    '<rootDir>/clients/tests/**/*.test.{ts,tsx,js,jsx}',
-    '<rootDir>/clients/post_install/*.test.{ts,tsx,js,jsx}',
-    '<rootDir>/clients/scripts/*.test.{ts,tsx,js,jsx}',
+    '<rootDir>/clients/post_install/**/*.test.{ts,tsx,js,jsx}',
+    '<rootDir>/clients/tests/**/*.test.{ts,tsx,js,jsx}'
   ],
   collectCoverage: false,
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'node'],

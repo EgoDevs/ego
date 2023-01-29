@@ -30,7 +30,7 @@ pub struct InitArg {
 pub fn init(arg: InitArg) {
   let caller = arg.init_caller.unwrap_or(caller());
 
-  log_add("==> create stable page for state");
+  info_log_add("==> create stable page for state");
   let pages_to_grow = HEADER_SIZE / WASM_PAGE_SIZE;
   let result = stable64_grow(pages_to_grow);
   if result.is_err() {
@@ -40,13 +40,13 @@ pub fn init(arg: InitArg) {
     ))
   }
 
-  log_add("==> add caller as the owner");
+  info_log_add("==> add caller as the owner");
   owner_add(caller.clone());
 }
 
 #[pre_upgrade]
 fn pre_upgrade() {
-  log_add("ego-file: pre_upgrade");
+  info_log_add("ego-file: pre_upgrade");
   match state_persist() {
     Ok(_) => {}
     Err(_) => {}
@@ -55,7 +55,7 @@ fn pre_upgrade() {
 
 #[post_upgrade]
 fn post_upgrade() {
-  log_add("ego-file: post_upgrade");
+  info_log_add("ego-file: post_upgrade");
   match state_restore() {
     Ok(_) => {}
     Err(_) => {}
@@ -67,7 +67,7 @@ fn post_upgrade() {
 #[update(name = "file_main_write", guard = "user_guard")]
 #[candid_method(update, rename = "file_main_write")]
 fn file_main_write(fid: FileId, hash: String, data: Vec<u8>) -> Result<bool, EgoError> {
-  log_add("ego-file: file_main_write");
+  info_log_add("ego-file: file_main_write");
 
   let ret = EgoFileService::file_main_write(&fid, &hash, data)?;
   Ok(ret)
@@ -76,7 +76,7 @@ fn file_main_write(fid: FileId, hash: String, data: Vec<u8>) -> Result<bool, Ego
 #[query(name = "file_main_read", guard = "user_guard")]
 #[candid_method(query, rename = "file_main_read")]
 fn file_main_read(fid: FileId) -> Result<Vec<u8>, EgoError> {
-  log_add("ego-file: file_main_read");
+  info_log_add("ego-file: file_main_read");
 
   let data = EgoFileService::file_main_read(&fid)?;
   Ok(data)
@@ -87,14 +87,14 @@ struct PersistState {
   pub storage: Storage,
   users: Option<User>,
   registry: Option<Registry>,
-  cycle_info: Option<CycleInfo>
+  cycle_info: Option<CycleInfo>,
 }
 
 /********************  persist method ********************/
 #[update(name = "state_persist")]
 #[candid_method(update, rename = "state_persist")]
 fn state_persist() -> Result<bool, EgoError> {
-  log_add("ego-file: state_persist");
+  info_log_add("ego-file: state_persist");
 
   let storage = STORAGE.with(|s| s.borrow().clone());
 
@@ -102,12 +102,12 @@ fn state_persist() -> Result<bool, EgoError> {
     storage,
     users: Some(users_pre_upgrade()),
     registry: Some(registry_pre_upgrade()),
-    cycle_info: Some(cycle_info_pre_upgrade())
+    cycle_info: Some(cycle_info_pre_upgrade()),
   };
 
   let data = Encode!(&state).unwrap();
 
-  log_add(&format!("==> data length is: {}", data.len()));
+  info_log_add(&format!("==> data length is: {}", data.len()));
 
   if data.len() > DEFAULT_FILE_SIZE as usize {
     Err(EgoFileError::UnknownError("state too large".to_string()).into())
@@ -122,14 +122,14 @@ fn state_persist() -> Result<bool, EgoError> {
 #[update(name = "state_restore")]
 #[candid_method(update, rename = "state_restore")]
 fn state_restore() -> Result<bool, EgoError> {
-  log_add("ego-file: state_restore");
+  info_log_add("ego-file: state_restore");
 
   // read file
   let mut buf = vec![0; DEFAULT_FILE_SIZE as usize];
   stable64_read(0, &mut buf); // file length
   let len = u64::from_le_bytes(buf[0..8].try_into().unwrap()) as usize;
 
-  log_add(&format!("==> data length is: {}", len));
+  info_log_add(&format!("==> data length is: {}", len));
 
   let data = &buf[8..8 + len];
   let state = Decode!(data, PersistState).unwrap();
@@ -157,4 +157,13 @@ fn state_restore() -> Result<bool, EgoError> {
   }
 
   Ok(true)
+}
+
+/********************  methods for ego_cycle_threshold_get   ********************/
+pub fn cycle_threshold_get() -> u128 {
+  1_000_000_000_000
+}
+
+pub fn runtime_cycle_threshold_get() -> u128 {
+  1_000_000_000_000
 }

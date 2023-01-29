@@ -43,6 +43,9 @@ pub trait TEgoCanister {
   async fn ego_cycle_history(&self, target_canister_id: Principal) -> Result<Vec<CycleRecord>, String>;
   async fn ego_cycle_info(&self, target_canister_id: Principal) -> Result<CycleInfo, String>;
   fn ego_cycle_estimate_set(&self, target_canister_id: Principal, estimate: u64);
+  async fn ego_cycle_threshold_get(&self, target_canister_id: Principal) -> Result<u128, String>;
+  async fn ego_runtime_cycle_threshold_get(&self, target_canister_id: Principal) -> Result<u128, String>;
+  async fn ego_cycle_recharge(&self, target_canister_id: Principal, cycles: u128) -> Result<(), String>;
 }
 
 pub struct EgoCanister {}
@@ -240,5 +243,56 @@ impl TEgoCanister for EgoCanister {
 
   fn ego_cycle_estimate_set(&self, target_canister_id: Principal, estimate: u64){
     let _result = api::call::notify(target_canister_id, "ego_cycle_estimate_set", (estimate, ));
+  }
+
+  async fn ego_cycle_threshold_get(&self, target_canister_id: Principal) -> Result<u128, String>{
+    let call_result = api::call::call(target_canister_id, "ego_cycle_threshold_get", ()).await
+      as Result<(Result<u128, String>, ), (RejectionCode, String)>;
+
+    match call_result {
+      Ok(resp) => {
+        match resp.0 {
+          Ok(cycles) => Ok(cycles),
+          Err(msg) => Err(msg)
+        }
+      }
+      Err((_code, msg)) => {
+        Err(msg)
+      }
+    }
+  }
+
+  async fn ego_runtime_cycle_threshold_get(&self, target_canister_id: Principal) -> Result<u128, String>{
+    let call_result = api::call::call(target_canister_id, "ego_runtime_cycle_threshold_get", ()).await
+      as Result<(Result<u128, String>, ), (RejectionCode, String)>;
+
+    match call_result {
+      Ok(resp) => {
+        match resp.0 {
+          Ok(cycles) => Ok(cycles),
+          Err(msg) => Err(msg)
+        }
+      }
+      Err((_code, msg)) => {
+        Err(msg)
+      }
+    }
+  }
+
+  async fn ego_cycle_recharge(&self, target_canister_id: Principal, cycles: u128) -> Result<(), String>{
+    let call_result = api::call::call(target_canister_id, "ego_cycle_recharge", (cycles, )).await
+      as Result<(Result<(), String>, ), (RejectionCode, String)>;
+
+    match call_result {
+      Ok(resp) => {
+        match resp.0 {
+          Ok(_) => Ok(()),
+          Err(msg) => Err(msg)
+        }
+      }
+      Err((_code, msg)) => {
+        Err(msg)
+      }
+    }
   }
 }

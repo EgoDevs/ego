@@ -1,9 +1,10 @@
 use std::collections::BTreeMap;
 
-use ego_types::app::EgoError;
 use ic_cdk::export::candid::{CandidType, Deserialize};
 use ic_cdk::export::Principal;
 use serde::Serialize;
+
+use ego_types::app::EgoError;
 
 use crate::task::Task;
 
@@ -23,10 +24,11 @@ impl Tenant {
     &mut self,
     wallet_id: Principal,
     canister_id: Principal,
+    next_check_time: u64
   ) -> Result<(), EgoError> {
     self.tasks
       .entry(canister_id)
-      .or_insert(Task::new(wallet_id, canister_id));
+      .or_insert(Task::new(wallet_id, canister_id, next_check_time));
     Ok(())
   }
 

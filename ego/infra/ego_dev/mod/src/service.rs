@@ -168,15 +168,18 @@ impl EgoDevService {
       }
     })?;
 
-    let app = EGO_DEV.with(|ego_dev| {
+    let ego_dev_app = EGO_DEV.with(|ego_dev| {
       match ego_dev.borrow_mut().developer_app_get(&caller, &app_id) {
-        Ok(app) => Ok(app.clone()),
+        Ok(ego_dev_app) => Ok(ego_dev_app.clone()),
         Err(e) => Err(e),
       }
     })?;
 
+    let mut app = ego_dev_app.app;
+    app.app_hash_update();
+
     ego_store
-      .app_main_release(app, app_version.clone());
+      .app_main_release(app, app_version.clone().wasm.unwrap());
 
     Ok(app_version)
   }

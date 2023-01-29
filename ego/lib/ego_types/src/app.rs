@@ -107,14 +107,12 @@ pub struct App {
   pub description: String,
   pub current_version: Version,
   pub price: f32,
+  pub app_hash: String
 }
 
 impl App {
   pub fn to_string(&self) -> String {
-    format!(
-      "app_id: {:?},category:{:?},current_version:{:?},",
-      self.app_id, self.category, self.current_version
-    )
+    format!("app_id: {:?}, category: {:?}, current_version: {:?},", self.app_id, self.category, self.current_version)
   }
 }
 
@@ -126,8 +124,10 @@ impl App {
     logo: String,
     description: String,
     current_version: Version,
-    price: f32,
+    price: f32
   ) -> Self {
+    let data= &format!("{}|{}", app_id.clone(), current_version.to_string()).into_bytes();
+    let app_hash = get_md5(data);
     App {
       app_id,
       name,
@@ -136,7 +136,13 @@ impl App {
       description,
       current_version,
       price,
+      app_hash
     }
+  }
+
+  pub fn app_hash_update(&mut self){
+    let data= &format!("{}|{}", self.app_id, self.current_version.to_string()).into_bytes();
+    self.app_hash = get_md5(data);
   }
 }
 

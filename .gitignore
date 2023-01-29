@@ -53,10 +53,10 @@ clients/idls/**/ego*.ts
 clients/idls/**/ego*.js
 
 # canisters/
-ego/**/*.wasm
-ego/**/Cargo.lock
-ego/**/*.auto.did
-ego/.pnpm-debug.log
+canisters/**/*.wasm
+canisters/**/Cargo.lock
+canisters/**/*.auto.did
+canisters/.pnpm-debug.log
 
 
 # configs
