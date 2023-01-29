@@ -10,6 +10,7 @@ use ego_types::app::EgoError;
 
 use crate::app::EgoStoreApp;
 use crate::order::{Order, OrderStatus};
+use crate::state::error_log_add;
 use crate::tenant::Tenant;
 use crate::types::EgoStoreErr;
 use crate::wallet::*;
@@ -51,14 +52,20 @@ impl EgoStore {
   pub fn app_main_get(&self, app_id: &AppId) -> Result<EgoStoreApp, EgoError> {
     match self.apps.get(app_id) {
       Some(app) => Ok(app.clone()),
-      None => Err(EgoStoreErr::AppNotExists.into()),
+      None => {
+        error_log_add("app_main_get: app not exists");
+        Err(EgoStoreErr::AppNotExists.into())
+      },
     }
   }
 
   pub fn wallet_main_get(&self, wallet_id: Principal) -> Result<Wallet, EgoError> {
     match self.wallets.get(&wallet_id) {
       Some(wallet) => Ok(wallet.clone()),
-      None => Err(EgoStoreErr::WalletNotExists.into()),
+      None => {
+        error_log_add("wallet_main_get: wallet not exists");
+        Err(EgoStoreErr::WalletNotExists.into())
+      },
     }
   }
 
@@ -84,13 +91,19 @@ impl EgoStore {
   pub fn wallet_tenant_get(&self, wallet_id: &Principal) -> Result<Principal, EgoError> {
     match self.wallets.get(wallet_id) {
       Some(wallet) => Ok(wallet.tenant_id),
-      None => Err(EgoStoreErr::WalletNotExists.into()),
+      None => {
+        error_log_add("wallet_tenant_get: wallet not exists");
+        Err(EgoStoreErr::WalletNotExists.into())
+      },
     }
   }
 
   pub fn wallet_app_list(&self, wallet_id: &Principal) -> Result<Vec<UserApp>, EgoError> {
     match self.wallets.get(wallet_id) {
-      None => Err(EgoStoreErr::WalletNotExists.into()),
+      None => {
+        error_log_add("wallet_app_list: wallet not exists");
+        Err(EgoStoreErr::WalletNotExists.into())
+      },
       Some(wallet) => Ok(wallet
         .apps
         .iter()
@@ -110,7 +123,10 @@ impl EgoStore {
     canister_id: &Principal,
   ) -> Result<UserApp, EgoError> {
     match self.wallets.get(wallet_id) {
-      None => Err(EgoStoreErr::WalletNotExists.into()),
+      None => {
+        error_log_add("wallet_app_get: wallet not exists");
+        Err(EgoStoreErr::WalletNotExists.into())
+      },
       Some(wallet) => match wallet.apps.get(canister_id) {
         None => Err(EgoStoreErr::AppNotInstall.into()),
         Some(user_app) => {
@@ -147,7 +163,10 @@ impl EgoStore {
     canister_id: &Principal,
   ) -> Result<(), EgoError> {
     match self.wallets.get_mut(wallet_id) {
-      None => Err(EgoStoreErr::WalletNotExists.into()),
+      None => {
+        error_log_add("wallet_app_remove: wallet not exists");
+        Err(EgoStoreErr::WalletNotExists.into())
+      },
       Some(wallet) => {
         wallet.app_remove(canister_id);
         Ok(())
@@ -157,7 +176,10 @@ impl EgoStore {
 
   pub fn wallet_order_list(&self, wallet_id: &Principal) -> Result<Vec<Order>, EgoError> {
     match self.wallets.get(wallet_id) {
-      None => Err(EgoStoreErr::WalletNotExists.into()),
+      None => {
+        error_log_add("wallet_order_list: wallet not exists");
+        Err(EgoStoreErr::WalletNotExists.into())
+      },
       Some(wallet) => Ok(wallet
         .orders
         .iter()
@@ -177,7 +199,10 @@ impl EgoStore {
     amount: f32,
   ) -> Result<Order, EgoError> {
     match self.wallets.get_mut(wallet_id) {
-      None => Err(EgoStoreErr::WalletNotExists.into()),
+      None => {
+        error_log_add("wallet_order_new: wallet not exists");
+        Err(EgoStoreErr::WalletNotExists.into())
+      },
       Some(wallet) => {
         let order_id = self.next_order_id;
         self.next_order_id += 1;
@@ -190,7 +215,10 @@ impl EgoStore {
 
   pub fn wallet_cycle_list(&self, wallet_id: &Principal) -> Result<Vec<CashFlow>, EgoError> {
     match self.wallets.get(wallet_id) {
-      None => Err(EgoStoreErr::WalletNotExists.into()),
+      None => {
+        error_log_add("wallet_cycle_list: wallet not exists");
+        Err(EgoStoreErr::WalletNotExists.into())
+      },
       Some(wallet) => {
         Ok(wallet.cash_flowes.clone())
       }
@@ -208,7 +236,10 @@ impl EgoStore {
         order.status = OrderStatus::SUCCESS;
 
         match self.wallets.get_mut(&order.wallet_id) {
-          None => Err(EgoStoreErr::WalletNotExists.into()),
+          None => {
+            error_log_add("wallet_order_notify: wallet not exists");
+            Err(EgoStoreErr::WalletNotExists.into())
+          },
           Some(wallet) => {
             // TODO: Add Real Recharge Logic
             let cycle = (order.amount * 1_000_000f32) as u128;
@@ -221,13 +252,19 @@ impl EgoStore {
           }
         }
       }
-      None => Err(EgoStoreErr::OrderNotExists.into()),
+      None => {
+        error_log_add("wallet_order_notify: order not exists");
+        Err(EgoStoreErr::OrderNotExists.into())
+      },
     }
   }
 
   pub fn wallet_cycle_balance(&self, wallet_id: &Principal) -> Result<u128, EgoError> {
     match self.wallets.get(&wallet_id) {
-      None => Err(EgoStoreErr::WalletNotExists.into()),
+      None => {
+        error_log_add("wallet_cycle_balance: wallet not exists");
+        Err(EgoStoreErr::WalletNotExists.into())
+      },
       Some(wallet) => Ok(wallet.cycles),
     }
   }
@@ -241,7 +278,10 @@ impl EgoStore {
     comment: String,
   ) -> Result<bool, EgoError> {
     match self.wallets.get_mut(&wallet_id) {
-      None => Err(EgoStoreErr::WalletNotExists.into()),
+      None => {
+        error_log_add("wallet_cycle_charge: wallet not exits");
+        Err(EgoStoreErr::WalletNotExists.into())
+      },
       Some(wallet) => Ok(wallet.cycle_charge(cycle, operator, ts, comment)),
     }
   }
@@ -255,7 +295,10 @@ impl EgoStore {
     comment: String,
   ) -> Result<bool, EgoError> {
     match self.wallets.get_mut(&wallet_id) {
-      None => Err(EgoStoreErr::WalletNotExists.into()),
+      None => {
+        error_log_add("wallet_cycle_recharge: wallet not exits");
+        Err(EgoStoreErr::WalletNotExists.into())
+      },
       Some(wallet) => Ok(wallet.cycle_recharge(cycle, operator, ts, comment)),
     }
   }
@@ -283,6 +326,7 @@ impl EgoStore {
 
   pub fn tenant_get(&self) -> Result<Principal, EgoError> {
     if self.tenants.len() == 0 {
+      error_log_add("tenant_get: no tenant");
       Err(EgoStoreErr::NoTenant.into())
     } else {
       Ok(self.tenants.values().min().unwrap().canister_id)
