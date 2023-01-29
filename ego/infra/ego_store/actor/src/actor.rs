@@ -259,11 +259,12 @@ pub fn wallet_cycle_balance() -> Result<u128, EgoError> {
   match EgoStoreService::wallet_cycle_balance(wallet_id) {
     Ok(balance) => Ok(balance),
     Err(e) => {
-      log_add(&format!("ego_store: wallet_cycle_list {:?}", e));
+      log_add(&format!("ego_store: wallet_cycle_balance {:?}", e));
       Err(e)
     }
   }
 }
+
 
 #[update(name = "wallet_cycle_list")]
 #[candid_method(update, rename = "wallet_cycle_list")]
