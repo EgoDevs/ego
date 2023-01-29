@@ -264,8 +264,6 @@ pub fn wallet_cycle_balance() -> Result<u128, EgoError> {
     }
   }
 }
-
-
 #[update(name = "wallet_cycle_list")]
 #[candid_method(update, rename = "wallet_cycle_list")]
 pub fn wallet_cycle_list() -> Result<Vec<CashFlow>, EgoError> {
