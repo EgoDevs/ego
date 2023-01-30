@@ -342,4 +342,22 @@ impl EgoStoreService {
 
     Ok(user_app)
   }
+
+  pub fn wallet_user_apps_track<T: TEgoTenant>(
+    ego_tenant: T,
+    wallet_id: &Principal
+  ) -> Result<(), EgoError> {
+    info_log_add("1 get ego tenant id");
+    let ego_tenant_id =
+      EGO_STORE.with(|ego_store| ego_store.borrow().wallet_tenant_get(&wallet_id).clone())?;
+
+    info_log_add("2 track user_apps");
+    let user_apps = EgoStoreService::wallet_app_list(&wallet_id)?;
+
+    user_apps.iter().for_each(|user_app| {
+      ego_tenant.canister_main_track(ego_tenant_id, &wallet_id, &user_app.canister.canister_id);
+    });
+
+    Ok(())
+  }
 }

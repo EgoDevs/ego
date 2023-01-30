@@ -9,11 +9,11 @@ use ic_cdk_macros::*;
 use ic_ledger_types::Memo;
 use serde::Serialize;
 
-use ego_lib::ego_canister::{EgoCanister, TEgoCanister};
+use ego_lib::ego_canister::{EgoCanister};
 use ego_macros::{inject_cycle_info_api, inject_ego_api};
 use ego_store_mod::app::EgoStoreApp;
 use ego_store_mod::c2c::ego_ledger::EgoLedger;
-use ego_store_mod::c2c::ego_tenant::EgoTenant as EgoTenantInner;
+use ego_store_mod::c2c::ego_tenant::{EgoTenant as EgoTenantInner};
 use ego_store_mod::order::Order;
 use ego_store_mod::service::*;
 use ego_store_mod::state::*;
@@ -29,6 +29,8 @@ use ego_types::user::User;
 
 inject_ego_api!();
 inject_cycle_info_api!();
+
+pub const GIFT_CYCLES_AMOUNT: u128 = 1_000_000_000_000;
 
 #[derive(Clone, Debug, CandidType, Deserialize)]
 pub struct InitArg {
@@ -170,11 +172,6 @@ pub async fn wallet_app_install(
   let user_app =
     EgoStoreService::wallet_app_install(ego_tenant, ego_canister, wallet_id, app).await?;
 
-  info_log_add("8 top up canister");
-  let ego_canister = EgoCanister::new();
-  let canister_id = user_app.canister.canister_id;
-  let runtime_cycle_threshold = ego_canister.ego_runtime_cycle_threshold_get(canister_id.clone()).await?;
-  let _result = EgoStoreService::admin_wallet_cycle_recharge(wallet_id.clone(), runtime_cycle_threshold, id(), time(), "首次安装充值".to_string());
   Ok(user_app)
 }
 
@@ -362,7 +359,13 @@ pub fn admin_wallet_cycle_recharge(req: AdminWalletCycleRechargeRequest) -> Resu
   // the ego_ops id
   let operator = caller();
 
-  EgoStoreService::admin_wallet_cycle_recharge(req.wallet_id, req.cycle, operator, time(), req.comment)
+  let wallet_id = req.wallet_id;
+
+  let _result = EgoStoreService::admin_wallet_cycle_recharge(wallet_id, req.cycle, operator, time(), req.comment)?;
+
+  let ego_tenant = EgoTenantInner::new();
+  let _track_result = EgoStoreService::wallet_user_apps_track(ego_tenant, &wallet_id);
+  Ok(true)
 }
 
 #[update(name = "admin_wallet_order_list", guard = "owner_guard")]
@@ -397,11 +400,9 @@ pub async fn wallet_main_new(user_id: Principal) -> Result<UserApp, EgoError> {
   let user_app =
     EgoStoreService::wallet_controller_install(ego_tenant, ego_canister, wallet_provider, user_id, app_id).await?;
 
-  info_log_add("9 top up canister");
-  let ego_canister = EgoCanister::new();
+  info_log_add("9 send gift cycle to wallet");
   let canister_id = user_app.canister.canister_id;
-  let runtime_cycle_threshold = ego_canister.ego_runtime_cycle_threshold_get(canister_id.clone()).await?;
-  let _result = EgoStoreService::admin_wallet_cycle_recharge(canister_id.clone(), runtime_cycle_threshold, id(), time(), "首次安装充值".to_string());
+  let _result = EgoStoreService::admin_wallet_cycle_recharge(canister_id.clone(), GIFT_CYCLES_AMOUNT, id(), time(), "Register Account".to_string());
 
   Ok(user_app)
 }

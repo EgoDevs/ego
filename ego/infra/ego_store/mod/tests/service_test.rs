@@ -578,3 +578,23 @@ async fn wallet_canister_untrack() {
     EgoStoreService::wallet_canister_untrack(ego_tenant, &wallet_id, &backend_principal);
   assert!(canister_untrack.is_ok());
 }
+
+#[test]
+fn wallet_user_apps_track(){
+  set_up();
+  let wallet_id = Principal::from_text(EXISTS_WALLET_ID).unwrap();
+  let backend_principal = Principal::from_text(EXISTS_USER_APP_BACKEND.to_string()).unwrap();
+
+  let mut ego_tenant = MockTenant::new();
+  ego_tenant
+    .expect_canister_main_track()
+    .returning(move |_, &w_id, &canister_id| {
+      assert_eq!(wallet_id, w_id);
+      assert_eq!(backend_principal, canister_id);
+      ()
+    });
+  // wallet canister track success
+  let canister_track =
+    EgoStoreService::wallet_user_apps_track(ego_tenant, &wallet_id);
+  assert!(canister_track.is_ok());
+}
