@@ -9,6 +9,7 @@ inject_ego_data!();
 static WALLET_ID: &str = "amybd-zyaaa-aaaah-qc4hq-cai";
 static EXISTS_CANISTER_ID: &str = "223xb-saaaa-aaaaf-arlqa-cai";
 static APP_ID: &str = "app_exists";
+// static EXISTS_USER: &str ="user1";
 
 fn on_canister_added(_name: &str, _canister_id: Principal) {}
 
@@ -232,4 +233,70 @@ fn canister_get_all_test() {
     // canister get one after canister added
     let get_all_1 = canister_get_all("user1");
     assert!(!get_all_1.is_empty());
+}
+
+#[test]
+fn registry_upgrade_test() {
+    // registry pre upgrade befor canister add
+    let _befor_registry_upgrade = registry_pre_upgrade();
+
+    // get canister list befor canister add
+    let pre_canister_list = canister_list();
+    assert!(pre_canister_list.is_empty());
+
+    // canister add
+    let name = "user1";
+    let canister_id = Principal::from_text(EXISTS_CANISTER_ID.to_string()).unwrap();
+    let _canister_add = canister_add(name.to_string(), canister_id);
+    assert_eq!((), _canister_add);
+
+    // git canister list befor registry upgrade
+    let after_canister_list_1 = canister_list();
+    assert_eq!(1, after_canister_list_1.len());
+    assert!(after_canister_list_1.contains_key(name));
+
+    // registry pre upgrade after canister added
+    let _registry_upgrade = registry_pre_upgrade();
+
+    // registry post upgrade
+    let _registry_uupgrade_post = registry_post_upgrade(_registry_upgrade);
+
+    // git canister list after registry upgrade
+    let after_canister_list_2 = canister_list();
+    assert_eq!(1, after_canister_list_2.len());
+    assert!(after_canister_list_2.contains_key(name));
+}
+
+#[test]
+fn is_owner_test() {
+    let user_id = Principal::from_text(EXISTS_CANISTER_ID.to_string()).unwrap();
+
+    // is owner befor owner add
+    let _owner = is_owner(user_id);
+    assert_eq!(false, _owner);
+
+    // owners befor owner add
+    let _owners = owners();
+    let _owners = _owners.unwrap();
+    assert!(_owners.is_empty());
+
+    // let mut users = BTreeMap::new();
+    // users.insert(user_id, "user1".to_string());
+    // let owner_set_1 = owners_set(
+    //   [user_id, "user1".to_string()]
+    // );
+
+    // add owner
+    let _owner_add = owner_add(user_id);
+    // println!("owner_add_ {:?}", _owner_add);
+
+    // is owner after owner add
+    let owner_1 = is_owner(user_id);
+    // assert_eq!(owner_1.unwarp(), )
+    assert!(owner_1);
+
+    // owners after owner add
+    let owners_ = owners();
+    let owners_ = owners_.unwrap();
+    assert!(!owners_.is_empty());
 }
