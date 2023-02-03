@@ -16,7 +16,7 @@ use crate::types::EgoTenantErr::CycleNotEnough;
 
 pub struct EgoTenantService {}
 
-pub const NEXT_CHECK_DURATION: u64 = 60 * 5;
+pub const NEXT_CHECK_DURATION: u64 = 60 * 60; // 1 hour
 pub const CREATE_CANISTER_CYCLES_FEE: u128 = 100_000_000_000;
 // pub const CREATE_CANISTER_CYCLES_FEE: u128 = 200_000_000_000;
 

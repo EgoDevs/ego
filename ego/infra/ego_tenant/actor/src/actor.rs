@@ -31,7 +31,7 @@ use ego_types::user::User;
 
 inject_ego_api!();
 
-pub const CHECK_DURATION: u64 = 60 * 1; // 2 minutes
+pub const CHECK_DURATION: u64 = 60 * 2; // 2 minutes
 
 #[derive(Clone, Debug, CandidType, Deserialize)]
 pub struct InitArg {
