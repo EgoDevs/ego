@@ -1,9 +1,10 @@
+use std::ops::{Div, Mul};
 use ic_cdk::export::Principal;
 
 use ego_lib::ego_canister::TEgoCanister;
 use ego_types::app::{CanisterType, Wasm};
 use ego_types::app::EgoError;
-use ego_types::cycle_info::CycleRecord;
+use ego_types::cycle_info::{CycleRecord, DEFAULT_ESTIMATE};
 
 use crate::c2c::ego_file::TEgoFile;
 use crate::c2c::ego_store::TEgoStore;
@@ -15,7 +16,7 @@ use crate::types::EgoTenantErr::CycleNotEnough;
 
 pub struct EgoTenantService {}
 
-pub const NEXT_CHECK_DURATION: u64 = 60 * 5;
+pub const NEXT_CHECK_DURATION: u64 = 60 * 60; // 1 hour
 pub const CREATE_CANISTER_CYCLES_FEE: u128 = 100_000_000_000;
 // pub const CREATE_CANISTER_CYCLES_FEE: u128 = 200_000_000_000;
 
@@ -145,40 +146,46 @@ impl EgoTenantService {
       last_ts = records[1].ts; // second
     }
 
-    if current_cycle < threshold {
-      let cycle_required_to_top_up = threshold - current_cycle;
+    let delta_cycle:i128 = last_cycle as i128 - current_cycle as i128;
+    let delta_time = current_ts - last_ts; // in second
 
-      info_log_add(format!("1. cycle_required_to_top_up: {}", cycle_required_to_top_up).as_str());
+    let mut estimate_duration = DEFAULT_ESTIMATE;
+
+    info_log_add(format!("1. compare current_cycle: {} and threshold: {}", current_cycle, threshold).as_str());
+    if current_cycle < threshold {
+      let cycle_required_to_top_up = threshold.mul(15).div(10) - current_cycle;
+
+      info_log_add(format!("1.1. cycle_required_to_top_up: {}", cycle_required_to_top_up).as_str());
       EgoTenantService::wallet_cycle_recharge(management, ego_store, task, cycle_required_to_top_up).await?;
 
-      current_cycle = threshold;
+      current_cycle = threshold.mul(15).div(10);
+    } else {
+      info_log_add("1.2. cycle enough");
     }
 
-    info_log_add(format!("2. check cycle last_cycle: {}, current_cycle: {}", last_cycle, current_cycle).as_str());
+    info_log_add(format!("2. delta cycle {}, delta time {}", delta_cycle, delta_time).as_str());
+
     if last_cycle == 0 {
       // for the first time checking, we will check it again after 30 minutes
-      info_log_add("2.1 last cycle is 0. skip estimation")
+      info_log_add("2.1 last cycle is 0. skip estimation");
+    } else if delta_time == 0 {
+      info_log_add("2.2 delta_time is zero. skip estimation");
+    } else if delta_cycle < 0 {
+      info_log_add("2.3. more cycle then before. use default estimation");
     } else {
-      let delta_cycle = last_cycle - current_cycle;
-      let delta_time = current_ts - last_ts; // in second
+      let cycle_consume_per_second = (delta_cycle / (delta_time as i128)) as u128;
+      info_log_add(format!("3. cycle_consume_per_second: {}", cycle_consume_per_second).as_str());
 
-      info_log_add(format!("3. delta cycle {}, delta time {}", delta_cycle, delta_time).as_str());
-      if delta_time == 0 {
-        info_log_add("3.1 delta_time is zero. skip estimation")
-        // just checked, do nothing
+      if cycle_consume_per_second == 0 {
+        info_log_add("3.1. cycle_consume_per_second is zero. use default estimation");
       } else {
-        let cycle_consume_per_second = delta_cycle / (delta_time as u128);
-        info_log_add(format!("4. cycle_consume_per_second: {}", cycle_consume_per_second).as_str());
-
-        if cycle_consume_per_second != 0 {
-          // the remain cycles can be used in estimate_duration second
-          let estimate_duration = (current_cycle / cycle_consume_per_second) as u64;
-
-          info_log_add(format!("5. estimate_duration: {}", estimate_duration).as_str());
-          ego_canister.ego_cycle_estimate_set(*canister_id, estimate_duration);
-        }
+        // the remain cycles can be used in estimate_duration second
+        estimate_duration = (current_cycle / cycle_consume_per_second) as u64;
       }
     }
+
+    info_log_add(format!("4. estimate_duration: {}", estimate_duration).as_str());
+    ego_canister.ego_cycle_estimate_set(*canister_id, estimate_duration);
 
     let next_time = current_ts + NEXT_CHECK_DURATION;
     EGO_TENANT.with(|ego_tenant| {

@@ -28,6 +28,7 @@ impl Tenant {
   ) -> Result<(), EgoError> {
     self.tasks
       .entry(canister_id)
+      .and_modify(|task| task.next_check_time = next_check_time)
       .or_insert(Task::new(wallet_id, canister_id, next_check_time));
     Ok(())
   }
