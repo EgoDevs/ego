@@ -86,31 +86,36 @@ fn post_upgrade() {
 
 #[update(name = "record_add", guard = "user_guard")]
 #[candid_method(update, rename = "record_add")]
-fn record_add(scope: String, event: String, message: String) {
-    RecordService::record_add(scope.as_str(), event.as_str(), message.as_str(), time());
+fn record_add(scope: String, event: String, message: String, created_at: Option<u64>) {
+    info_log_add("ego_record: record_add");
+    RecordService::record_add(scope.as_str(), event.as_str(), message.as_str(), created_at.unwrap_or(time()));
 }
 
 #[query(name = "record_amount", guard = "user_guard")]
 #[candid_method(update, rename = "record_amount")]
 fn record_amount() -> usize {
+    info_log_add("ego_record: record_amount");
     RecordService::record_amount()
 }
 
 #[query(name = "record_list", guard = "user_guard")]
 #[candid_method(update, rename = "record_list")]
 fn record_list(amount: usize) -> Vec<Record> {
+    info_log_add(format!("ego_record: record_list {}", amount).as_str());
     RecordService::record_list(amount)
 }
 
 #[update(name = "record_retain", guard = "user_guard")]
 #[candid_method(update, rename = "record_retain")]
 fn record_retain(amount: usize) {
+    info_log_add(format!("ego_record: record_retain {}", amount).as_str());
     RecordService::record_retain(amount);
 }
 
 #[update(name = "record_retain_after", guard = "user_guard")]
 #[candid_method(update, rename = "record_retain_after")]
 fn record_retain_after(end_time: u64) {
+    info_log_add(format!("ego_record: record_retain_after {}", end_time).as_str());
     RecordService::record_retain_after(end_time);
 }
 

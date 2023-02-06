@@ -569,6 +569,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "ego_inner_rpc"
+version = "0.3.12"
+dependencies = [
+ "async-trait",
+ "candid",
+ "ego_types",
+ "ic-cdk",
+ "serde",
+ "serde_bytes",
+ "tracing",
+]
+
+[[package]]
 name = "ego_ledger"
 version = "0.1.0"
 dependencies = [
@@ -706,6 +719,7 @@ name = "ego_store"
 version = "0.1.0"
 dependencies = [
  "candid",
+ "ego_inner_rpc",
  "ego_lib",
  "ego_macros",
  "ego_store_mod",

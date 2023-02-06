@@ -46,9 +46,15 @@ export const opsPostInstall = async () => {
   await opsOperator.canister_relation_update('ego_tenant');
   await opsOperator.canister_relation_update('ego_ledger');
   await opsOperator.canister_relation_update('ego_ops');
+  await opsOperator.canister_relation_update('ego_record');
 
   console.log(`3. canister_main_track\n`);
-  await opsOperator.canister_main_track();
+  await opsOperator.canister_main_track("ego_dev");
+  await opsOperator.canister_main_track("ego_file");
+  await opsOperator.canister_main_track("ego_store");
+  await opsOperator.canister_main_track("ego_tenant");
+  await opsOperator.canister_main_track("ego_ledger");
+  await opsOperator.canister_main_track("ego_record");
 };
 
 const canister_registers = async () => {
@@ -57,6 +63,7 @@ const canister_registers = async () => {
   await canister_register('ego_store');
   await canister_register('ego_tenant');
   await canister_register('ego_ledger');
+  await canister_register('ego_record');
 };
 
 async function getOperator<T>(canisterName: string): Promise<ActorSubclass<T>> {

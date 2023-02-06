@@ -8,6 +8,7 @@ use ic_cdk::export::Principal;
 use ic_cdk_macros::*;
 use ic_ledger_types::Memo;
 use serde::Serialize;
+use ego_inner_rpc::ego_record::{EgoRecord, TEgoRecord};
 
 use ego_lib::ego_canister::{EgoCanister};
 use ego_macros::{inject_cycle_info_api, inject_ego_api};
@@ -374,6 +375,26 @@ pub fn admin_wallet_order_list() -> Result<Vec<Order>, EgoError> {
   info_log_add("ego_store: admin_wallet_order_list");
 
   Ok(EgoStoreService::wallet_order_list_all())
+}
+
+#[update(name = "flush_wallet_change_record", guard = "owner_guard")]
+#[candid_method(update, rename = "flush_wallet_change_record")]
+pub fn flush_wallet_change_record() {
+  info_log_add("ego_store: flush_wallet_change_record");
+
+  let ego_record_id = canister_get_one("ego_record").unwrap();
+
+  let ego_record = EgoRecord::new(ego_record_id);
+
+
+  EGO_STORE.with(|ego_store| {
+    for wallet in ego_store.borrow().wallets.values() {
+      wallet.cash_flowes.iter().for_each(|cash_flow| {
+        // TODO: convert to actual record
+        ego_record.record_add("ego_store".to_string(), "cash_flow".to_string(), "example cash flow".to_string(), Some(cash_flow.created_at));
+      })
+    }
+  });
 }
 
 /********************  methods for wallet provider  ********************/

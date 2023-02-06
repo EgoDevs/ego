@@ -4,12 +4,14 @@ import { _SERVICE as EgoStoreService, Category } from '@/idls/ego_store';
 import { _SERVICE as EgoOpsService, AdminWalletProviderAddRequest } from '@/idls/ego_ops';
 
 import { _SERVICE as EgoLedgerService } from '@/idls/ego_ledger';
+import { _SERVICE as EgoRecordService } from '@/idls/ego_record';
 
 import { idlFactory as EgoDevIdlFactory } from '@/idls/ego_dev.idl';
 import { idlFactory as EgoStoreIdlFactory } from '@/idls/ego_store.idl';
 
 import { idlFactory as EgoOpsIdlFactory } from '@/idls/ego_ops.idl';
-import { idlFactory as EgoOLedgerIdlFactory } from '@/idls/ego_ledger.idl';
+import { idlFactory as EgoLedgerIdlFactory } from '@/idls/ego_ledger.idl';
+import { idlFactory as EgoRecordIdlFactory } from '@/idls/ego_record.idl';
 
 import { Principal } from '@dfinity/principal';
 import path from 'path';
@@ -22,7 +24,9 @@ export const egoStoreDeployerActor = getActor<EgoStoreService>(identity, EgoStor
 
 export const egoOpsDeployerActor = getActor<EgoOpsService>(identity, EgoOpsIdlFactory, getCanisterId('ego_ops')!);
 
-export const egoLedgerDeployerActor = getActor<EgoLedgerService>(identity, EgoOLedgerIdlFactory, getCanisterId('ego_ledger')!);
+export const egoLedgerDeployerActor = getActor<EgoLedgerService>(identity, EgoLedgerIdlFactory, getCanisterId('ego_ledger')!);
+
+export const egoRecordDeployerActor = getActor<EgoRecordService>(identity, EgoRecordIdlFactory, getCanisterId('ego_record')!);
 
 describe('scripts', () => {
   test('set_auditor', async () => {
@@ -114,6 +118,17 @@ describe('scripts', () => {
     payments.forEach(payment => {
       console.log(payment);
     });
+  });
+
+  test('flush_wallet_change_record', async () => {
+    const store = await egoStoreDeployerActor;
+    const record = await egoRecordDeployerActor
+
+    console.log(`\t\t flush_wallet_change_record\n`);
+    await store.flush_wallet_change_record();
+
+    let resp = await record.record_list(BigInt(100));
+    console.log(resp)
   });
 
   test.skip('add_ops_owner', async () => {

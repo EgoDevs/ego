@@ -19,7 +19,8 @@ members = [
     "lib/ego_utils",
     "lib/ego_types",
     "lib/ego_macros",
-    "lib/ego_lib"
+    "lib/ego_lib",
+    "lib/ego_inner_rpc"
 ]
 
 [profile.release]
