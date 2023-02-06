@@ -8,6 +8,8 @@ inject_ego_data!();
 
 static WALLET_ID: &str = "amybd-zyaaa-aaaah-qc4hq-cai";
 static EXISTS_CANISTER_ID: &str = "223xb-saaaa-aaaaf-arlqa-cai";
+static EXISTS_USER_1: &str ="3dxkw-giaaa-aaaah-qbwea-cai";
+static EXISTS_USER_2: &str ="ekaet-lqaaa-aaaaf-bdkta-cai";
 static APP_ID: &str = "app_exists";
 // static EXISTS_USER: &str ="user1";
 
@@ -268,35 +270,130 @@ fn registry_upgrade_test() {
 }
 
 #[test]
-fn is_owner_test() {
+fn owner_interface_test() {
     let user_id = Principal::from_text(EXISTS_CANISTER_ID.to_string()).unwrap();
-
-    // is owner befor owner add
+    let exists_user_1 = Principal::from_text(EXISTS_USER_1.to_string()).unwrap();
+    let exists_user_2 = Principal::from_text(EXISTS_USER_2.to_string()).unwrap();
+    // check is owner befor owner add
     let _owner = is_owner(user_id);
     assert_eq!(false, _owner);
 
-    // owners befor owner add
+    // get owners befor owner add
     let _owners = owners();
     let _owners = _owners.unwrap();
     assert!(_owners.is_empty());
 
-    // let mut users = BTreeMap::new();
-    // users.insert(user_id, "user1".to_string());
-    // let owner_set_1 = owners_set(
-    //   [user_id, "user1".to_string()]
-    // );
+    // set two owners
+    let mut users_ = BTreeMap::new();
+    users_.insert(exists_user_1, "exists_user1".to_string());
+    users_.insert(exists_user_2, "exists_user2".to_string());
+    let owner_set_1 = owners_set(users_);
+    assert_eq!((), owner_set_1);
 
-    // add owner
-    let _owner_add = owner_add(user_id);
-    // println!("owner_add_ {:?}", _owner_add);
-
-    // is owner after owner add
-    let owner_1 = is_owner(user_id);
-    // assert_eq!(owner_1.unwarp(), )
-    assert!(owner_1);
-
-    // owners after owner add
+    // get&check owners after set two owners
     let owners_ = owners();
     let owners_ = owners_.unwrap();
-    assert!(!owners_.is_empty());
+    assert!(owners_.contains_key(&exists_user_1));
+    assert!(owners_.contains_key(&exists_user_2));
+    assert_eq!(2, owners_.len());
+
+    // third owner add user_id
+    let _third_owner_add = owner_add(user_id);
+
+    // check third owner staus
+    let owner_1 = is_owner(user_id);
+    assert!(owner_1);
+
+    // get owners after third owner add
+    let after_owners_ = owners();
+    let after_owners_ = after_owners_.unwrap();
+    assert!(after_owners_.contains_key(&user_id));
+    assert_eq!(3, after_owners_.len());
+
+    // owner remove user_id
+    let _owner_remove_ = owner_remove(user_id);
+    // println!("owner_remove_ {:?}", owner_remove_);
+
+    // get owners after user_id owner remove
+    let owners_after_remove = owners();
+    let owners_after_remove = owners_after_remove.unwrap();
+    assert!(!owners_after_remove.contains_key(&user_id));
+
+    // owner add with name: owner add user_id
+    let _owner_add_with_name = owner_add_with_name("user_01".to_string(), user_id);
+    // println!("owner_add_user_name {:?}", owner_add_with_name);
+
+    // get&check owners after owner add with name
+    let get_owners = owners();
+    let get_owners = get_owners.unwrap();
+    assert!(get_owners.contains_key(&user_id));
+
+    // get users 
+    let users_3 = users();
+    let users_3 = users_3.unwrap();
+    assert!(users_3.is_empty());
+
+    let is_user_ = is_user(user_id);
+    println!("is_user_ {:?}", is_user_);
+
+}
+
+#[test]
+fn user_interface_test () {
+  let user_id = Principal::from_text(EXISTS_CANISTER_ID.to_string()).unwrap();
+  let exists_user_1 = Principal::from_text(EXISTS_USER_1.to_string()).unwrap();
+  let exists_user_2 = Principal::from_text(EXISTS_USER_2.to_string()).unwrap();
+
+  // get users befor user set
+  let users_1 = users();
+  let users_1 = users_1.unwrap();
+  assert!(users_1.is_empty());
+
+  // check is user befor user add
+  let _is_user = is_user(user_id);
+  assert!(!_is_user);
+
+  // users set 
+  let mut users_ = BTreeMap::new();
+  users_.insert(exists_user_1, "exists_user1".to_string());
+  users_.insert(exists_user_2, "exists_user2".to_string());
+  let _user_set_1 = users_set(users_);
+
+  // get users after users set
+  let users_2 = users();
+  let users_2 = users_2.unwrap();
+  assert!(users_2.contains_key(&exists_user_1));
+  assert!(users_2.contains_key(&exists_user_2));
+
+  // user add 
+  let _user_add = user_add(user_id);
+
+  // check is user after user add  
+  let _is_user_1 = is_user(user_id);
+  assert!(_is_user_1);
+
+  // get users after users add
+  let users_3 = users();
+  let users_3 = users_3.unwrap();
+  assert!(users_3.contains_key(&user_id));
+
+  // remove user
+  let _user_remove = user_remove(user_id);
+  // println!("user remove {:?}", _user_remove);
+
+  // user_id not in users after remove user_id
+  let users_4 = users();
+  let users_4 = users_4.unwrap();
+  assert!(!users_4.contains_key(&user_id));
+
+  // user add with name
+  let _user_add_with_name = user_add_with_name("user_01".to_string(), user_id);
+
+  // check user_id has been added with by name
+  let users_5 = users();
+  let users_5 = users_5.unwrap();
+  assert!(users_5.contains_key(&user_id));
+
+  let is_owner_ = is_owner(user_id);
+  assert!(!is_owner_);
 }
