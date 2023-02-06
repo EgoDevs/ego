@@ -663,6 +663,45 @@ dependencies = [
 ]
 
 [[package]]
+name = "ego_record"
+version = "0.1.0"
+dependencies = [
+ "async-trait",
+ "candid",
+ "ego_lib",
+ "ego_macros",
+ "ego_record_mod",
+ "ego_types",
+ "ic-cdk",
+ "ic-cdk-macros",
+ "ic-ledger-types",
+ "mockall",
+ "serde",
+ "serde_bytes",
+ "serde_json",
+ "tokio",
+]
+
+[[package]]
+name = "ego_record_mod"
+version = "0.1.0"
+dependencies = [
+ "async-trait",
+ "candid",
+ "ego_lib",
+ "ego_macros",
+ "ego_types",
+ "ic-cdk",
+ "ic-cdk-macros",
+ "ic-ledger-types",
+ "mockall",
+ "serde",
+ "serde_bytes",
+ "serde_json",
+ "tokio",
+]
+
+[[package]]
 name = "ego_store"
 version = "0.1.0"
 dependencies = [

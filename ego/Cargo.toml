@@ -14,6 +14,8 @@ members = [
     "infra/ego_tenant/mod",
     "infra/ego_dev/actor",
     "infra/ego_dev/mod",
+    "infra/ego_record/actor",
+    "infra/ego_record/mod",
     "lib/ego_utils",
     "lib/ego_types",
     "lib/ego_macros",
