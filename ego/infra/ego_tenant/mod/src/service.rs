@@ -5,7 +5,8 @@ use ego_lib::ego_canister::TEgoCanister;
 use ego_types::app::{CanisterType, Wasm};
 use ego_types::app::EgoError;
 use ego_types::cycle_info::{CycleRecord, DEFAULT_ESTIMATE};
-
+// use ego_inner_rpc::ego_record::{EgoEvent, EgoRecord, TEgoRecord};
+// use ego_inner_rpc::types::AppOperationRecord;
 use crate::c2c::ego_file::TEgoFile;
 use crate::c2c::ego_store::TEgoStore;
 use crate::c2c::ic_management::TIcManagement;
@@ -87,7 +88,6 @@ impl EgoTenantService {
 
     info_log_add("7 change canister owner to [wallet, user, self]");
     ego_canister.ego_owner_set(canister_id, vec![wallet_id, user_id, canister_id]);
-
     Ok(canister_id)
   }
 

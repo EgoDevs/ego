@@ -8,7 +8,8 @@ use ic_cdk::export::Principal;
 use ic_cdk_macros::*;
 use ic_ledger_types::Memo;
 use serde::Serialize;
-use ego_inner_rpc::ego_record::{EgoRecord, TEgoRecord};
+use ego_inner_rpc::ego_record::{EgoEvent, EgoRecord, TEgoRecord};
+use ego_inner_rpc::types::{AppOperationAction, AppOperationRecord, GeneralEnumResponse, RechargeCycleRecord};
 
 use ego_lib::ego_canister::{EgoCanister};
 use ego_macros::{inject_cycle_info_api, inject_ego_api};
@@ -164,6 +165,8 @@ pub async fn wallet_app_install(
   info_log_add("1 get app to be install");
   let app = EGO_STORE.with(|ego_store| ego_store.borrow().app_main_get(&app_id).clone())?;
 
+  let app_name = app.app.name.clone();
+
   info_log_add("2 get wallet_id");
   let wallet_id = caller();
 
@@ -172,6 +175,16 @@ pub async fn wallet_app_install(
 
   let user_app =
     EgoStoreService::wallet_app_install(ego_tenant, ego_canister, wallet_id, app).await?;
+
+  let ego_record_id = canister_get_one("ego_record").unwrap();
+  let ego_record = EgoRecord::new(ego_record_id);
+  ego_record.record_add(EgoEvent::AppInstall(AppOperationRecord{
+    app_name,
+    canister_id: user_app.clone().canister.canister_id,
+    wallet_id,
+    action: AppOperationAction::Install,
+    response: GeneralEnumResponse::Success,
+  }));
 
   Ok(user_app)
 }
@@ -186,6 +199,18 @@ pub async fn wallet_app_upgrade(wallet_id: Principal) -> Result<(), EgoError> {
   info_log_add(format!("ego_store: wallet_app_upgrade wallet_id: {}, canister_id: {}", wallet_id, canister_id).as_str());
 
   EgoStoreService::wallet_app_upgrade(ego_tenant, ego_canister, &wallet_id, &canister_id).await?;
+
+  let ego_record_id = canister_get_one("ego_record").unwrap();
+  let ego_record = EgoRecord::new(ego_record_id);
+  let user_app = EgoStoreService::wallet_app_get(&wallet_id, &canister_id)?;
+  ego_record.record_add(EgoEvent::AppInstall(AppOperationRecord{
+    app_name: user_app.app.name.clone(),
+    canister_id,
+    wallet_id,
+    action: AppOperationAction::Upgrade,
+    response: GeneralEnumResponse::Success,
+  }));
+
   Ok(())
 }
 
@@ -197,7 +222,21 @@ pub fn wallet_app_remove(wallet_id: Principal) -> Result<(), EgoError> {
 
   info_log_add(format!("ego_store: wallet_app_remove wallet_id: {}, canister_id: {}", wallet_id, canister_id).as_str());
 
-  match EgoStoreService::wallet_app_remove(ego_tenant, &wallet_id, &canister_id) {
+  let res = EgoStoreService::wallet_app_remove(ego_tenant, &wallet_id, &canister_id);
+
+  let ego_record_id = canister_get_one("ego_record").unwrap();
+  let ego_record = EgoRecord::new(ego_record_id);
+  let user_app = EgoStoreService::wallet_app_get(&wallet_id, &canister_id)?;
+
+  ego_record.record_add(EgoEvent::AppInstall(AppOperationRecord{
+    app_name: user_app.app.name.clone(),
+    canister_id,
+    wallet_id,
+    action: AppOperationAction::Uninstall,
+    response: GeneralEnumResponse::Success,
+  }));
+
+  match res {
     Ok(_) => Ok(()),
     Err(e) => Err(e),
   }
@@ -359,13 +398,19 @@ pub fn admin_wallet_cycle_recharge(req: AdminWalletCycleRechargeRequest) -> Resu
 
   // the ego_ops id
   let operator = caller();
-
   let wallet_id = req.wallet_id;
-
   let _result = EgoStoreService::admin_wallet_cycle_recharge(wallet_id, req.cycle, operator, time(), req.comment)?;
-
   let ego_tenant = EgoTenantInner::new();
   let _track_result = EgoStoreService::wallet_user_apps_track(ego_tenant, &wallet_id);
+
+  let ego_record_id = canister_get_one("ego_record").unwrap();
+  let ego_record = EgoRecord::new(ego_record_id);
+  ego_record.record_add(EgoEvent::CycleRecharge(RechargeCycleRecord {
+     cycles: req.cycle,
+     canister_id: operator,
+     wallet_id,
+     response: GeneralEnumResponse::Success,
+  }));
   Ok(true)
 }
 
@@ -387,14 +432,14 @@ pub fn flush_wallet_change_record() {
   let ego_record = EgoRecord::new(ego_record_id);
 
 
-  EGO_STORE.with(|ego_store| {
-    for wallet in ego_store.borrow().wallets.values() {
-      wallet.cash_flowes.iter().for_each(|cash_flow| {
-        // TODO: convert to actual record
-        ego_record.record_add("ego_store".to_string(), "cash_flow".to_string(), "example cash flow".to_string(), Some(cash_flow.created_at));
-      })
-    }
-  });
+  // EGO_STORE.with(|ego_store| {
+  //   for wallet in ego_store.borrow().wallets.values() {
+  //     wallet.cash_flowes.iter().for_each(|cash_flow| {
+  //       // TODO: convert to actual record
+  //       ego_record.record_add("ego_store".to_string(), "cash_flow".to_string(), "example cash flow".to_string(), Some(cash_flow.created_at));
+  //     })
+  //   }
+  // });
 }
 
 /********************  methods for wallet provider  ********************/
@@ -424,6 +469,17 @@ pub async fn wallet_main_new(user_id: Principal) -> Result<UserApp, EgoError> {
   info_log_add("9 send gift cycle to wallet");
   let canister_id = user_app.canister.canister_id;
   let _result = EgoStoreService::admin_wallet_cycle_recharge(canister_id.clone(), GIFT_CYCLES_AMOUNT, id(), time(), "Register Account".to_string());
+
+  let ego_record_id = canister_get_one("ego_record").unwrap();
+  let ego_record = EgoRecord::new(ego_record_id);
+  ego_record.record_add(EgoEvent::MainInstall(AppOperationRecord{
+    app_name: "ego_controller".to_string(),
+    canister_id,
+    wallet_id: wallet_provider,
+    action: AppOperationAction::Install,
+    response: GeneralEnumResponse::Success,
+  }
+  ));
 
   Ok(user_app)
 }

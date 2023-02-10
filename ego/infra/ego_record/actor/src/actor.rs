@@ -86,9 +86,9 @@ fn post_upgrade() {
 
 #[update(name = "record_add", guard = "user_guard")]
 #[candid_method(update, rename = "record_add")]
-fn record_add(scope: String, event: String, message: String, created_at: Option<u64>) {
+fn record_add(scope: String, event: String, message: String) {
     info_log_add("ego_record: record_add");
-    RecordService::record_add(scope.as_str(), event.as_str(), message.as_str(), created_at.unwrap_or(time()));
+    RecordService::record_add(scope.as_str(), event.as_str(), message.as_str(), ic_cdk::api::time() );
 }
 
 #[query(name = "record_amount", guard = "user_guard")]
