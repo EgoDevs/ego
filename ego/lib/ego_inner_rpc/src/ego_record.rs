@@ -1,7 +1,7 @@
 use async_trait::async_trait;
 use ic_cdk::api;
 use ic_cdk::export::Principal;
-use crate::types::{AppOperationRecord, ConsumeCycleRecord, RechargeCycleRecord};
+use crate::types::{AppOperationRecord, ConsumeCycleRecord, RechargeCycleRecord, SnapshotCycleBalanceRecord};
 
 #[async_trait]
 pub trait TEgoRecord {
@@ -71,17 +71,12 @@ fn unpack_event(ev: EgoEvent) -> (String, String, String) {
       serde_json::to_string(&ev).unwrap(),
     ),
 
-    // EgoEvent::CycleConsume(ev) => (
-    //   "EGO".to_string(),
-    //   "CYCLE_CONSUME".to_string(),
-    //   serde_json::to_string(&ev).unwrap(),
-    // ),
+    EgoEvent::SnapshotCycleBalance(ev) => (
+      "EGO".to_string(),
+      "CYCLE_BALANCE_SNAPSHOT".to_string(),
+      serde_json::to_string(&ev).unwrap(),
+    ),
 
-    // EgoEvent::CanisterCall(ev) => (
-    //   "EGO".to_string(),
-    //   "CANISTER_CALL".to_string(),
-    //   serde_json::to_string(&ev).unwrap(),
-    // ),
   }
 }
 
@@ -90,10 +85,9 @@ fn unpack_event(ev: EgoEvent) -> (String, String, String) {
 
 pub enum EgoEvent {
 
-  //cycle 充值与消费事件
+  //cycle 充值
   CycleRecharge(RechargeCycleRecord),
-  // CycleConsume(ConsumeCycleRecord), //TODO: 每个隔一天定时获取cycle余额
-
+  SnapshotCycleBalance(SnapshotCycleBalanceRecord),// 用户canister里cycle余额，每隔一小时snapshot
   //app安装，卸载，更新事件
   AppInstall(AppOperationRecord),
   AppUninstall(AppOperationRecord),
@@ -102,6 +96,8 @@ pub enum EgoEvent {
   MainInstall(AppOperationRecord),
   MainUninstall(AppOperationRecord),
   MainUpgrade(AppOperationRecord),
+
+
 
   //canister 方法调用事件
   // CanisterCall(MethodCallRecord),

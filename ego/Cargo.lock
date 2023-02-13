@@ -758,6 +758,7 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "candid",
+ "ego_inner_rpc",
  "ego_lib",
  "ego_macros",
  "ego_tenant_mod",

@@ -23,6 +23,9 @@ use ego_tenant_mod::tenant::Tenant;
 use ego_tenant_mod::types::{
   AppMainInstallRequest, AppMainUpgradeRequest,
 };
+use ego_inner_rpc::ego_record::{EgoEvent, EgoRecord, TEgoRecord};
+use ego_inner_rpc::types::{GeneralEnumResponse, SnapshotCycleBalanceRecord};
+
 use ego_tenant_mod::types::EgoTenantErr::CanisterNotFounded;
 use ego_types::app::EgoError;
 use ego_types::cycle_info::CycleRecord;
@@ -194,6 +197,18 @@ async fn ego_cycle_check_cb(records: Vec<CycleRecord>, threshold: u128) -> Resul
   })?;
 
   EgoTenantService::ego_cycle_check_cb(management, ego_store, ego_canister, &task, &canister_id, &records, threshold).await?;
+
+
+
+  let ego_record_id = canister_get_one("ego_record").unwrap();
+  let ego_record = EgoRecord::new(ego_record_id);
+  ego_record.record_add(EgoEvent::SnapshotCycleBalance(SnapshotCycleBalanceRecord {
+    cycles: records[0].balance,
+    ts: records[0].ts,
+    canister_id,
+    wallet_id: task.wallet_id,
+    response: GeneralEnumResponse::Success,
+  }));
   Ok(())
 }
 

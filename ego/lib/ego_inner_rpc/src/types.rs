@@ -12,6 +12,16 @@ pub struct RechargeCycleRecord {
 }
 
 #[derive(Serialize, Deserialize)]
+pub struct SnapshotCycleBalanceRecord {
+    // pub user_name: String,
+    pub cycles: u128,
+    pub ts: u64,  // timestamp in seconds
+    pub canister_id: Principal,
+    pub wallet_id: Principal, //用户的principalId
+    pub response: GeneralEnumResponse,
+}
+
+#[derive(Serialize, Deserialize)]
 pub struct ConsumeCycleRecord {
     pub canister_id: Principal,
     pub cycles: u128, //余额

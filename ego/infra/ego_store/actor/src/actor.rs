@@ -155,6 +155,17 @@ pub fn wallet_app_list() -> Result<Vec<UserApp>, EgoError> {
   }
 }
 
+#[update(name = "wallet_app_list_op", guard = "op_guard")]
+#[candid_method(update, rename = "wallet_app_list_op")]
+pub fn wallet_app_list_op(wallet_id: Principal) -> Result<Vec<UserApp>, EgoError> {
+  info_log_add("ego_store: wallet_app_list_op");
+  match EgoStoreService::wallet_app_list(&wallet_id) {
+    Ok(apps) => Ok(apps),
+    Err(e) => Err(e),
+  }
+}
+
+
 #[update(name = "wallet_app_install")]
 #[candid_method(update, rename = "wallet_app_install")]
 pub async fn wallet_app_install(
@@ -291,6 +302,20 @@ pub async fn wallet_order_new(amount: f32) -> Result<Memo, EgoError> {
     }
   }
 }
+
+#[update(name = "wallet_cycle_balance_op", guard = "op_guard")]
+#[candid_method(update, rename = "wallet_cycle_balance_op")]
+pub fn wallet_cycle_balance_op(wallet_id: Principal) -> Result<u128, EgoError> {
+  info_log_add("ego_store: wallet_cycle_balance_op");
+  match EgoStoreService::wallet_cycle_balance(wallet_id) {
+    Ok(balance) => Ok(balance),
+    Err(e) => {
+      info_log_add(&format!("ego_store: wallet_cycle_list {:?}", e));
+      Err(e)
+    }
+  }
+}
+
 
 #[update(name = "wallet_cycle_balance")]
 #[candid_method(update, rename = "wallet_cycle_balance")]
