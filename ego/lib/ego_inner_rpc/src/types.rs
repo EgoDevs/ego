@@ -13,7 +13,6 @@ pub struct RechargeCycleRecord {
 
 #[derive(Serialize, Deserialize)]
 pub struct SnapshotCycleBalanceRecord {
-    // pub user_name: String,
     pub cycles: u128,
     pub ts: u64,  // timestamp in seconds
     pub canister_id: Principal,

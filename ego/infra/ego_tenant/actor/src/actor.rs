@@ -198,8 +198,6 @@ async fn ego_cycle_check_cb(records: Vec<CycleRecord>, threshold: u128) -> Resul
 
   EgoTenantService::ego_cycle_check_cb(management, ego_store, ego_canister, &task, &canister_id, &records, threshold).await?;
 
-
-
   let ego_record_id = canister_get_one("ego_record").unwrap();
   let ego_record = EgoRecord::new(ego_record_id);
   ego_record.record_add(EgoEvent::SnapshotCycleBalance(SnapshotCycleBalanceRecord {

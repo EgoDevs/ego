@@ -214,7 +214,7 @@ pub async fn wallet_app_upgrade(wallet_id: Principal) -> Result<(), EgoError> {
   let ego_record_id = canister_get_one("ego_record").unwrap();
   let ego_record = EgoRecord::new(ego_record_id);
   let user_app = EgoStoreService::wallet_app_get(&wallet_id, &canister_id)?;
-  ego_record.record_add(EgoEvent::AppInstall(AppOperationRecord{
+  ego_record.record_add(EgoEvent::AppUpgrade(AppOperationRecord{
     app_name: user_app.app.name.clone(),
     canister_id,
     wallet_id,
@@ -239,7 +239,7 @@ pub fn wallet_app_remove(wallet_id: Principal) -> Result<(), EgoError> {
   let ego_record = EgoRecord::new(ego_record_id);
   let user_app = EgoStoreService::wallet_app_get(&wallet_id, &canister_id)?;
 
-  ego_record.record_add(EgoEvent::AppInstall(AppOperationRecord{
+  ego_record.record_add(EgoEvent::AppUninstall(AppOperationRecord{
     app_name: user_app.app.name.clone(),
     canister_id,
     wallet_id,

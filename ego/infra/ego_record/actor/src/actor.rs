@@ -91,28 +91,28 @@ fn record_add(scope: String, event: String, message: String) {
     RecordService::record_add(scope.as_str(), event.as_str(), message.as_str(), ic_cdk::api::time() );
 }
 
-#[query(name = "record_amount", guard = "user_guard")]
+#[query(name = "record_amount", guard = "op_guard")]
 #[candid_method(update, rename = "record_amount")]
 fn record_amount() -> usize {
     info_log_add("ego_record: record_amount");
     RecordService::record_amount()
 }
 
-#[query(name = "record_list", guard = "user_guard")]
+#[query(name = "record_list", guard = "op_guard")]
 #[candid_method(update, rename = "record_list")]
 fn record_list(amount: usize) -> Vec<Record> {
     info_log_add(format!("ego_record: record_list {}", amount).as_str());
     RecordService::record_list(amount)
 }
 
-#[update(name = "record_retain", guard = "user_guard")]
+#[update(name = "record_retain", guard = "op_guard")]
 #[candid_method(update, rename = "record_retain")]
 fn record_retain(amount: usize) {
     info_log_add(format!("ego_record: record_retain {}", amount).as_str());
     RecordService::record_retain(amount);
 }
 
-#[update(name = "record_retain_after", guard = "user_guard")]
+#[update(name = "record_retain_after", guard = "op_guard")]
 #[candid_method(update, rename = "record_retain_after")]
 fn record_retain_after(end_time: u64) {
     info_log_add(format!("ego_record: record_retain_after {}", end_time).as_str());
