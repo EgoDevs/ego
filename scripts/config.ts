@@ -72,6 +72,13 @@ export const infraConfig: Configs = [
     config: './configs/ego_ledger.json',
     post_install_sequence: 100,
   },
+  {
+    category: 'infra',
+    package: 'ego_record',
+    bin_name: 'ego-record',
+    config: './configs/ego_record.json',
+    post_install_sequence: 100,
+  },
 ];
 
 export const appsConfig: Configs = [];
