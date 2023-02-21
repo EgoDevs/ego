@@ -85,7 +85,7 @@ export function getIdentityFromPhraseWithSeed(phrase: string): {
 }
 
 const seedPhrase = fs
-  .readFileSync(path.join(process.cwd(), '/credentials', '/internal.txt'), {
+  .readFileSync(path.join(process.cwd(), '/credentials', '/seedPhrase.txt'), {
     encoding: 'utf8',
   })
   .toString();
