@@ -91,18 +91,18 @@ fn record_add(scope: String, event: String, message: String) {
     RecordService::record_add(scope.as_str(), event.as_str(), message.as_str(), ic_cdk::api::time() );
 }
 
-#[query(name = "record_amount", guard = "op_guard")]
-#[candid_method(update, rename = "record_amount")]
-fn record_amount() -> usize {
-    info_log_add("ego_record: record_amount");
+#[query(name = "record_count", guard = "op_guard")]
+#[candid_method(update, rename = "record_count")]
+fn record_count() -> usize {
+    info_log_add("ego_record: record_count");
     RecordService::record_amount()
 }
 
-#[query(name = "record_list", guard = "op_guard")]
-#[candid_method(update, rename = "record_list")]
-fn record_list(amount: usize) -> Vec<Record> {
-    info_log_add(format!("ego_record: record_list {}", amount).as_str());
-    RecordService::record_list(amount)
+#[query(name = "record_get", guard = "op_guard")]
+#[candid_method(update, rename = "record_get")]
+fn record_get(start: usize,end:usize) -> Vec<Record> {
+    info_log_add(format!("ego_record: record_get from {} to {}", start,end).as_str());
+    RecordService::record_list(start,end)
 }
 
 #[update(name = "record_retain", guard = "op_guard")]

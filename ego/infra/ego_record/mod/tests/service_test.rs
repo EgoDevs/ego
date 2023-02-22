@@ -47,13 +47,12 @@ pub fn record_add(){
 pub fn record_list(){
   set_up();
 
-  let records = RecordService::record_list(3);
-
+  let records = RecordService::record_list(0,3);
   assert_eq!(3, records.len());
 
   let record = records.get(0).unwrap();
 
-  assert_eq!("S3", record.scope);
+  assert_eq!("S1", record.scope);
 }
 
 #[test]
@@ -62,7 +61,7 @@ pub fn record_retain(){
 
   RecordService::record_retain(1);
 
-  let records = RecordService::record_list(3);
+  let records = RecordService::record_list(0,1);
 
   assert_eq!(1, records.len());
 
@@ -77,11 +76,11 @@ pub fn record_retain_after(){
 
   RecordService::record_retain_after(15);
 
-  let records = RecordService::record_list(3);
+  let records = RecordService::record_list(0,2);
 
   assert_eq!(2, records.len());
 
   let record = records.get(0).unwrap();
 
-  assert_eq!("S3", record.scope);
+  assert_eq!("S2", record.scope);
 }

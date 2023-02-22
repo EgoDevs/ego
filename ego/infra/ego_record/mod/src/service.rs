@@ -22,21 +22,19 @@ impl RecordService {
         })
     }
 
-    pub fn record_list(amount: usize) -> Vec<Record> {
+    pub fn record_list(start: usize, mut end: usize) -> Vec<Record> {
         let total_amount = EGO_RECORD.with(|ego_record| {
             ego_record.borrow().records.len()
         });
 
-        let mut start: usize = 0;
-
-        if amount < total_amount {
-            start = total_amount - amount;
+        if end > total_amount {
+            end = total_amount;
         }
 
-        let mut records = EGO_RECORD.with(|ego_record| {
-            ego_record.borrow().records[start..].to_vec()
+        let records = EGO_RECORD.with(|ego_record| {
+            ego_record.borrow().records[start..end].to_vec()
         });
-        records.reverse();
+        // records.reverse();
         records
     }
 
