@@ -120,22 +120,24 @@ describe('scripts', () => {
     });
   });
 
-  test('flush_wallet_change_record', async () => {
-    const store = await egoStoreDeployerActor;
-    const record = await egoRecordDeployerActor
-
-    console.log(`\t\t flush_wallet_change_record\n`);
-    await store.flush_wallet_change_record();
-
-    let resp = await record.record_list(BigInt(100));
-    console.log(resp)
-  });
+  // test('flush_wallet_change_record', async () => {
+  //   const store = await egoStoreDeployerActor;
+  //   const record = await egoRecordDeployerActor
+  //
+  //   console.log(`\t\t flush_wallet_change_record\n`);
+  //   await store.flush_wallet_change_record();
+  //
+  //   let resp = await record.record_list(BigInt(100));
+  //   console.log(resp)
+  // });
 
   test.skip('add_ops_owner', async () => {
-    const deployer = await egoOpsDeployerActor;
+    const deployer = await egoRecordDeployerActor;
 
-    let principal = Principal.fromText('replace_this');
-    let resp = await deployer.ego_owner_add(principal);
+    let principal = Principal.fromText('el7s7-33f72-jqhxg-cvbuv-omslr-obd22-qhrhb-bv26n-sjle3-ulxaz-6ae');
+    let resp = await deployer.ego_op_add(principal);
     console.log(resp);
   });
+
+
 });
