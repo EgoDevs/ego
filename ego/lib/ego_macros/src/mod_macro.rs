@@ -70,7 +70,7 @@ macro_rules! inject_cycle_info {
         }
 
         pub fn cycle_info_pre_upgrade() -> CycleInfo {
-            CYCLE_INFO.with(|s| s.take().into())
+            CYCLE_INFO.with(|s| s.borrow().clone())
         }
 
         pub fn cycle_info_post_upgrade(stable_state: CycleInfo) {
@@ -151,7 +151,7 @@ macro_rules! inject_ego_data {
         }
 
         pub fn registry_pre_upgrade() -> Registry {
-            REGISTRY.with(|s| s.take().into())
+            REGISTRY.with(|s| s.borrow().clone())
         }
 
         pub fn registry_post_upgrade(stable_state: Registry) {
@@ -246,7 +246,7 @@ macro_rules! inject_ego_data {
         }
 
         pub fn users_pre_upgrade() -> User {
-            USER.with(|s| s.take().into())
+            USER.with(|s| s.borrow().clone())
         }
 
         pub fn users_post_upgrade(stable_state: User) {
