@@ -1,0 +1,134 @@
+type AdminWalletCycleRechargeRequest = record {
+  cycle : nat;
+  comment : text;
+  wallet_id : principal;
+};
+type AdminWalletProviderAddRequest = record {
+  wallet_provider : principal;
+  wallet_app_id : text;
+};
+type App = record {
+  logo : text;
+  name : text;
+  description : text;
+  app_id : text;
+  app_hash : text;
+  category : Category;
+  current_version : Version;
+  price : float32;
+};
+type Canister = record {
+  canister_id : principal;
+  canister_type : CanisterType;
+};
+type CanisterType = variant { BACKEND; ASSET };
+type CashFlow = record {
+  balance : nat;
+  operator : principal;
+  created_at : nat64;
+  comment : text;
+  cycles : nat;
+  cash_flow_type : CashFlowType;
+};
+type CashFlowType = variant { CHARGE; RECHARGE };
+type Category = variant { System; Vault };
+type CycleInfo = record {
+  records : vec CycleRecord;
+  estimate_remaining : nat64;
+};
+type CycleRecord = record { ts : nat64; balance : nat };
+type EgoError = record { msg : text; code : nat16 };
+type EgoStoreApp = record { app : App; wasm : Wasm };
+type InitArg = record { init_caller : opt principal };
+type Order = record {
+  to : vec nat8;
+  status : OrderStatus;
+  from : vec nat8;
+  memo : nat64;
+  amount : float32;
+  wallet_id : principal;
+};
+type OrderStatus = variant { NEW; SUCCESS };
+type Result = variant { Ok : bool; Err : EgoError };
+type Result_1 = variant { Ok : vec Order; Err : EgoError };
+type Result_10 = variant { Ok : vec text; Err : text };
+type Result_11 = variant { Ok : UserApp; Err : EgoError };
+type Result_12 = variant { Ok : vec UserApp; Err : EgoError };
+type Result_13 = variant { Ok : nat; Err : EgoError };
+type Result_14 = variant { Ok : WalletCycleChargeResponse; Err : EgoError };
+type Result_15 = variant { Ok : vec CashFlow; Err : EgoError };
+type Result_16 = variant { Ok : principal; Err : EgoError };
+type Result_17 = variant { Ok : nat64; Err : EgoError };
+type Result_2 = variant { Ok; Err : EgoError };
+type Result_3 = variant { Ok : App; Err : EgoError };
+type Result_4 = variant { Ok : vec App; Err : EgoError };
+type Result_5 = variant { Ok : nat; Err : text };
+type Result_6 = variant { Ok; Err : text };
+type Result_7 = variant { Ok : vec CycleRecord; Err : text };
+type Result_8 = variant { Ok : CycleInfo; Err : text };
+type Result_9 = variant { Ok : bool; Err : text };
+type UserApp = record {
+  app : App;
+  canister : Canister;
+  latest_version : Version;
+};
+type Version = record { major : nat32; minor : nat32; patch : nat32 };
+type WalletCycleChargeRequest = record {
+  cycle : nat;
+  comment : text;
+  wallet_id : principal;
+};
+type WalletCycleChargeResponse = record { ret : bool };
+type Wasm = record {
+  canister_id : principal;
+  version : Version;
+  app_id : text;
+  canister_type : CanisterType;
+};
+service : (InitArg) -> {
+  admin_wallet_cycle_recharge : (AdminWalletCycleRechargeRequest) -> (Result);
+  admin_wallet_order_list : () -> (Result_1);
+  admin_wallet_provider_add : (AdminWalletProviderAddRequest) -> (Result_2);
+  app_main_get : (text) -> (Result_3);
+  app_main_list : () -> (Result_4);
+  app_main_release : (EgoStoreApp) -> (Result);
+  balance_get : () -> (Result_5) query;
+  ego_canister_add : (text, principal) -> (Result_6);
+  ego_controller_add : (principal) -> (Result_6);
+  ego_controller_remove : (principal) -> (Result_6);
+  ego_controller_set : (vec principal) -> (Result_6);
+  ego_cycle_check : () -> (Result_6);
+  ego_cycle_estimate_set : (nat64) -> (Result_6);
+  ego_cycle_history : () -> (Result_7) query;
+  ego_cycle_info : () -> (Result_8);
+  ego_cycle_recharge : (nat) -> (Result_6);
+  ego_cycle_threshold_get : () -> (Result_5);
+  ego_is_owner : () -> (Result_9) query;
+  ego_is_user : () -> (Result_9) query;
+  ego_log_list : (nat64) -> (Result_10) query;
+  ego_op_add : (principal) -> (Result_6);
+  ego_owner_add : (principal) -> (Result_6);
+  ego_owner_add_with_name : (text, principal) -> (Result_6);
+  ego_owner_remove : (principal) -> (Result_6);
+  ego_owner_set : (vec principal) -> (Result_6);
+  ego_runtime_cycle_threshold_get : () -> (Result_5);
+  ego_user_add : (principal) -> (Result_6);
+  ego_user_remove : (principal) -> (Result_6);
+  ego_user_set : (vec principal) -> (Result_6);
+  flush_wallet_change_record : () -> ();
+  wallet_app_install : (text) -> (Result_11);
+  wallet_app_list : () -> (Result_12);
+  wallet_app_remove : (principal) -> (Result_2);
+  wallet_app_upgrade : (principal) -> (Result_2);
+  wallet_canister_track : (principal) -> (Result_2);
+  wallet_canister_untrack : (principal) -> (Result_2);
+  wallet_cycle_balance : () -> (Result_13);
+  wallet_cycle_charge : (WalletCycleChargeRequest) -> (Result_14);
+  wallet_cycle_list : () -> (Result_15);
+  wallet_main_new : (principal) -> (Result_11);
+  wallet_main_register : (principal) -> (Result_16);
+  wallet_order_list : () -> (Result_1);
+  wallet_order_new : (float32) -> (Result_17);
+  wallet_order_notify : (nat64) -> (Result);
+  wallet_tenant_get : () -> (Result_16);
+}

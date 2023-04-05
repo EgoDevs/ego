@@ -1,0 +1,47 @@
+type AppMainInstallRequest = record {
+  wasm : Wasm;
+  user_id : principal;
+  wallet_id : principal;
+};
+type AppMainUpgradeRequest = record { canister_id : principal; wasm : Wasm };
+type CanisterType = variant { BACKEND; ASSET };
+type CycleRecord = record { ts : nat64; balance : nat };
+type EgoError = record { msg : text; code : nat16 };
+type InitArg = record { init_caller : opt principal };
+type Result = variant { Ok; Err : EgoError };
+type Result_1 = variant { Ok : principal; Err : EgoError };
+type Result_2 = variant { Ok : bool; Err : EgoError };
+type Result_3 = variant { Ok; Err : text };
+type Result_4 = variant { Ok : bool; Err : text };
+type Result_5 = variant { Ok : vec text; Err : text };
+type Version = record { major : nat32; minor : nat32; patch : nat32 };
+type Wasm = record {
+  canister_id : principal;
+  version : Version;
+  app_id : text;
+  canister_type : CanisterType;
+};
+service : (InitArg) -> {
+  app_main_delete : (principal) -> (Result);
+  app_main_install : (AppMainInstallRequest) -> (Result_1);
+  app_main_upgrade : (AppMainUpgradeRequest) -> (Result_2);
+  canister_main_track : (principal, principal) -> (Result);
+  canister_main_untrack : (principal) -> (Result);
+  ego_canister_add : (text, principal) -> (Result_3);
+  ego_controller_add : (principal) -> (Result_3);
+  ego_controller_remove : (principal) -> (Result_3);
+  ego_controller_set : (vec principal) -> (Result_3);
+  ego_cycle_check_cb : (vec CycleRecord, nat) -> (Result);
+  ego_is_owner : () -> (Result_4) query;
+  ego_is_user : () -> (Result_4) query;
+  ego_log_list : (nat64) -> (Result_5) query;
+  ego_op_add : (principal) -> (Result_3);
+  ego_owner_add : (principal) -> (Result_3);
+  ego_owner_add_with_name : (text, principal) -> (Result_3);
+  ego_owner_remove : (principal) -> (Result_3);
+  ego_owner_set : (vec principal) -> (Result_3);
+  ego_user_add : (principal) -> (Result_3);
+  ego_user_remove : (principal) -> (Result_3);
+  ego_user_set : (vec principal) -> (Result_3);
+  wallet_cycle_recharge : (nat) -> (Result);
+}

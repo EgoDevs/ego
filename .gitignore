@@ -64,9 +64,6 @@ canisters/.pnpm-debug.log
 !configs/constant.json
 
 
-# artifacts
-artifacts/**/
-
 # lock files
 **/yarn.lock
 **/package-lock.json

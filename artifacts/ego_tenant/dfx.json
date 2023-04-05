@@ -1,0 +1,1 @@
+{"canisters":{"ego_tenant":{"type":"custom","candid":"ego_tenant.did","wasm":"ego_tenant_opt.wasm.gz","build":[]}},"defaults":{"build":{"packtool":""}},"version":1}

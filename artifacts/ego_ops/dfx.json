@@ -1,0 +1,1 @@
+{"canisters":{"ego_ops":{"type":"custom","candid":"ego_ops.did","wasm":"ego_ops_opt.wasm.gz","build":[]}},"defaults":{"build":{"packtool":""}},"version":1}

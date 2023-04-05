@@ -1,0 +1,144 @@
+type AdminAppCreateBackendRequest = record {
+  logo : text;
+  name : text;
+  description : text;
+  version : Version;
+  app_id : text;
+  category : Category;
+  backend_data_hash : text;
+  backend_data : vec nat8;
+};
+type App = record {
+  logo : text;
+  name : text;
+  description : text;
+  app_id : text;
+  app_hash : text;
+  category : Category;
+  current_version : Version;
+  price : float32;
+};
+type AppMainNewRequest = record {
+  logo : text;
+  name : text;
+  description : text;
+  app_id : text;
+  category : Category;
+  price : float32;
+};
+type AppVersion = record {
+  status : AppVersionStatus;
+  wasm : opt Wasm;
+  version : Version;
+  app_id : text;
+  file_id : principal;
+};
+type AppVersionSetFrontendAddressRequest = record {
+  canister_id : principal;
+  version : Version;
+  app_id : text;
+};
+type AppVersionStatus = variant {
+  NEW;
+  REJECTED;
+  SUBMITTED;
+  REVOKED;
+  RELEASED;
+  APPROVED;
+};
+type AppVersionUploadWasmRequest = record {
+  data : vec nat8;
+  hash : text;
+  version : Version;
+  app_id : text;
+};
+type CanisterType = variant { BACKEND; ASSET };
+type Category = variant { System; Vault };
+type CycleInfo = record {
+  records : vec CycleRecord;
+  estimate_remaining : nat64;
+};
+type CycleRecord = record { ts : nat64; balance : nat };
+type Developer = record {
+  name : text;
+  is_app_auditor : bool;
+  developer_id : principal;
+  created_apps : vec text;
+  is_manager : bool;
+};
+type EgoDevApp = record {
+  app : App;
+  developer_id : principal;
+  versions : vec AppVersion;
+  audit_version : opt Version;
+};
+type EgoError = record { msg : text; code : nat16 };
+type InitArg = record { init_caller : opt principal };
+type Result = variant { Ok : AppVersion; Err : EgoError };
+type Result_1 = variant { Ok : bool; Err : EgoError };
+type Result_10 = variant { Ok : vec text; Err : text };
+type Result_11 = variant { Ok : vec Developer; Err : EgoError };
+type Result_2 = variant { Ok : vec EgoDevApp; Err : EgoError };
+type Result_3 = variant { Ok : nat; Err : text };
+type Result_4 = variant { Ok : EgoDevApp; Err : EgoError };
+type Result_5 = variant { Ok : Developer; Err : EgoError };
+type Result_6 = variant { Ok; Err : text };
+type Result_7 = variant { Ok : vec CycleRecord; Err : text };
+type Result_8 = variant { Ok : CycleInfo; Err : text };
+type Result_9 = variant { Ok : bool; Err : text };
+type UserRoleSetRequest = record {
+  user_id : principal;
+  is_app_auditor : bool;
+  is_manager : bool;
+};
+type Version = record { major : nat32; minor : nat32; patch : nat32 };
+type Wasm = record {
+  canister_id : principal;
+  version : Version;
+  app_id : text;
+  canister_type : CanisterType;
+};
+service : (InitArg) -> {
+  admin_app_create : (AdminAppCreateBackendRequest) -> (Result);
+  app_version_approve : (text, Version) -> (Result);
+  app_version_new : (text, Version) -> (Result);
+  app_version_reject : (text, Version) -> (Result);
+  app_version_release : (text, Version) -> (Result);
+  app_version_revoke : (text, Version) -> (Result);
+  app_version_set_frontend_address : (AppVersionSetFrontendAddressRequest) -> (
+      Result_1,
+    );
+  app_version_submit : (text, Version) -> (Result);
+  app_version_upload_wasm : (AppVersionUploadWasmRequest) -> (Result_1);
+  app_version_wait_for_audit : () -> (Result_2) query;
+  balance_get : () -> (Result_3) query;
+  developer_app_get : (text) -> (Result_4) query;
+  developer_app_list : () -> (Result_2) query;
+  developer_app_new : (AppMainNewRequest) -> (Result_4);
+  developer_main_get : () -> (Result_5) query;
+  developer_main_register : (text) -> (Result_5);
+  ego_canister_add : (text, principal) -> (Result_6);
+  ego_controller_add : (principal) -> (Result_6);
+  ego_controller_remove : (principal) -> (Result_6);
+  ego_controller_set : (vec principal) -> (Result_6);
+  ego_cycle_check : () -> (Result_6);
+  ego_cycle_estimate_set : (nat64) -> (Result_6);
+  ego_cycle_history : () -> (Result_7) query;
+  ego_cycle_info : () -> (Result_8);
+  ego_cycle_recharge : (nat) -> (Result_6);
+  ego_cycle_threshold_get : () -> (Result_3);
+  ego_is_owner : () -> (Result_9) query;
+  ego_is_user : () -> (Result_9) query;
+  ego_log_list : (nat64) -> (Result_10) query;
+  ego_op_add : (principal) -> (Result_6);
+  ego_owner_add : (principal) -> (Result_6);
+  ego_owner_add_with_name : (text, principal) -> (Result_6);
+  ego_owner_remove : (principal) -> (Result_6);
+  ego_owner_set : (vec principal) -> (Result_6);
+  ego_runtime_cycle_threshold_get : () -> (Result_3);
+  ego_user_add : (principal) -> (Result_6);
+  ego_user_remove : (principal) -> (Result_6);
+  ego_user_set : (vec principal) -> (Result_6);
+  user_main_list : (text) -> (Result_11) query;
+  user_role_set : (UserRoleSetRequest) -> (Result_1);
+}

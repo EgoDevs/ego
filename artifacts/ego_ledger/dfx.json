@@ -1,0 +1,1 @@
+{"canisters":{"ego_ledger":{"type":"custom","candid":"ego_ledger.did","wasm":"ego_ledger_opt.wasm.gz","build":[]}},"defaults":{"build":{"packtool":""}},"version":1}

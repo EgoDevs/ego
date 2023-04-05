@@ -1,0 +1,107 @@
+type AssetDetails = record {
+  key : text;
+  encodings : vec AssetEncodingDetails;
+  content_type : text;
+};
+type AssetEncodingDetails = record {
+  modified : int;
+  sha256 : opt vec nat8;
+  length : nat;
+  content_encoding : text;
+};
+type BatchOperation = variant {
+  CreateAsset : CreateAssetArguments;
+  UnsetAssetContent : UnsetAssetContentArguments;
+  DeleteAsset : DeleteAssetArguments;
+  SetAssetContent : SetAssetContentArguments;
+  Clear : record {};
+};
+type CommitBatchArguments = record {
+  batch_id : nat;
+  operations : vec BatchOperation;
+};
+type CreateAssetArguments = record {
+  key : text;
+  content_type : text;
+  headers : opt vec record { text; text };
+  max_age : opt nat64;
+};
+type CreateBatchResponse = record { batch_id : nat };
+type CreateChunkArg = record { content : vec nat8; batch_id : nat };
+type CreateChunkResponse = record { chunk_id : nat };
+type DeleteAssetArguments = record { key : text };
+type EncodedAsset = record {
+  content : vec nat8;
+  sha256 : opt vec nat8;
+  content_type : text;
+  content_encoding : text;
+  total_length : nat;
+};
+type GetArg = record { key : text; accept_encodings : vec text };
+type GetChunkArg = record {
+  key : text;
+  sha256 : opt vec nat8;
+  index : nat;
+  content_encoding : text;
+};
+type GetChunkResponse = record { content : vec nat8 };
+type HttpRequest = record {
+  url : text;
+  method : text;
+  body : vec nat8;
+  headers : vec record { text; text };
+};
+type HttpResponse = record {
+  body : vec nat8;
+  headers : vec record { text; text };
+  streaming_strategy : opt StreamingStrategy;
+  status_code : nat16;
+};
+type InitArg = record { init_caller : opt principal };
+type Result = variant { Ok : vec principal; Err : text };
+type SetAssetContentArguments = record {
+  key : text;
+  sha256 : opt vec nat8;
+  chunk_ids : vec nat;
+  content_encoding : text;
+};
+type StoreArg = record {
+  key : text;
+  content : vec nat8;
+  sha256 : opt vec nat8;
+  content_type : text;
+  content_encoding : text;
+};
+type StreamingCallbackHttpResponse = record {
+  token : opt GetChunkArg;
+  body : vec nat8;
+};
+type StreamingStrategy = variant {
+  Callback : record { token : GetChunkArg; callback : func () -> () };
+};
+type UnsetAssetContentArguments = record {
+  key : text;
+  content_encoding : text;
+};
+service : (InitArg) -> {
+  authorize : (principal) -> ();
+  clear : () -> ();
+  commit_batch : (CommitBatchArguments) -> ();
+  create_asset : (CreateAssetArguments) -> ();
+  create_batch : () -> (CreateBatchResponse);
+  create_chunk : (CreateChunkArg) -> (CreateChunkResponse);
+  delete_asset : (DeleteAssetArguments) -> ();
+  drain_authorize : () -> ();
+  get : (GetArg) -> (EncodedAsset) query;
+  get_chunk : (GetChunkArg) -> (GetChunkResponse) query;
+  http_request : (HttpRequest) -> (HttpResponse) query;
+  http_request_streaming_callback : (GetChunkArg) -> (
+      StreamingCallbackHttpResponse,
+    ) query;
+  list : () -> (vec AssetDetails) query;
+  list_authorize : () -> (Result) query;
+  retrieve : (text) -> (vec nat8) query;
+  set_asset_content : (SetAssetContentArguments) -> ();
+  store : (StoreArg) -> ();
+  unset_asset_content : (UnsetAssetContentArguments) -> ();
+}

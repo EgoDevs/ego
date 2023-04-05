@@ -1,0 +1,44 @@
+type CycleInfo = record {
+  records : vec CycleRecord;
+  estimate_remaining : nat64;
+};
+type CycleRecord = record { ts : nat64; balance : nat };
+type EgoError = record { msg : text; code : nat16 };
+type InitArg = record { init_caller : opt principal };
+type Result = variant { Ok : nat; Err : text };
+type Result_1 = variant { Ok; Err : text };
+type Result_2 = variant { Ok : vec CycleRecord; Err : text };
+type Result_3 = variant { Ok : CycleInfo; Err : text };
+type Result_4 = variant { Ok : bool; Err : text };
+type Result_5 = variant { Ok : vec text; Err : text };
+type Result_6 = variant { Ok : vec nat8; Err : EgoError };
+type Result_7 = variant { Ok : bool; Err : EgoError };
+service : (InitArg) -> {
+  balance_get : () -> (Result) query;
+  ego_canister_add : (text, principal) -> (Result_1);
+  ego_controller_add : (principal) -> (Result_1);
+  ego_controller_remove : (principal) -> (Result_1);
+  ego_controller_set : (vec principal) -> (Result_1);
+  ego_cycle_check : () -> (Result_1);
+  ego_cycle_estimate_set : (nat64) -> (Result_1);
+  ego_cycle_history : () -> (Result_2) query;
+  ego_cycle_info : () -> (Result_3);
+  ego_cycle_recharge : (nat) -> (Result_1);
+  ego_cycle_threshold_get : () -> (Result);
+  ego_is_owner : () -> (Result_4) query;
+  ego_is_user : () -> (Result_4) query;
+  ego_log_list : (nat64) -> (Result_5) query;
+  ego_op_add : (principal) -> (Result_1);
+  ego_owner_add : (principal) -> (Result_1);
+  ego_owner_add_with_name : (text, principal) -> (Result_1);
+  ego_owner_remove : (principal) -> (Result_1);
+  ego_owner_set : (vec principal) -> (Result_1);
+  ego_runtime_cycle_threshold_get : () -> (Result);
+  ego_user_add : (principal) -> (Result_1);
+  ego_user_remove : (principal) -> (Result_1);
+  ego_user_set : (vec principal) -> (Result_1);
+  file_main_read : (text) -> (Result_6) query;
+  file_main_write : (text, text, vec nat8) -> (Result_7);
+  state_persist : () -> (Result_7);
+  state_restore : () -> (Result_7);
+}

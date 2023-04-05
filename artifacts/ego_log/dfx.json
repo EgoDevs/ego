@@ -1,0 +1,1 @@
+{"canisters":{"ego_log":{"type":"custom","candid":"ego_log.did","wasm":"ego_log_opt.wasm","build":[]}},"defaults":{"build":{"packtool":""}},"networks":{"local":{"bind":"127.0.0.1:8080","type":"ephemeral"},"mainnet":{"providers":["https://identity.ic0.app"],"type":"persistent"}},"version":1}
