@@ -14,7 +14,7 @@
         "ego:reinstall": "ego --reinstall",
         "ego:upgrade": "ego --upgrade",
         "test": "jest --verbose -t",
-        "ego:run": "pnpm run ego:clean && pnpm run ego:create && pnpm run ego:build && pnpm run ego:install && pnpm run test deploy_ego",
+        "ego:run": "pnpm run ego:create && pnpm run ego:install && pnpm run test deploy_ego",
 
         "ego:create:live": "NODE_ENV=production ego --create",
         "ego:build:live": "NODE_ENV=production ego --build",
