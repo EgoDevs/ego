@@ -53,7 +53,7 @@ type AppVersionUploadWasmRequest = record {
   app_id : text;
 };
 type CanisterType = variant { BACKEND; ASSET };
-type Category = variant { System; Vault };
+type Category = variant { System; DApp; Vault; Controller; Provider };
 type CycleInfo = record {
   records : vec CycleRecord;
   estimate_remaining : nat64;
