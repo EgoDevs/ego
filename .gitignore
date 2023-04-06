@@ -49,8 +49,6 @@ snapshots/
 
 credentials/*.txt
 credentials/*.pem
-clients/idls/**/ego*.ts
-clients/idls/**/ego*.js
 
 # canisters/
 canisters/**/*.wasm
