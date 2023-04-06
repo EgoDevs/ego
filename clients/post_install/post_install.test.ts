@@ -1,7 +1,3 @@
-import fs from 'fs';
-import crypto, { BinaryLike } from 'crypto';
-import path from 'path';
-
 import { getCanisterId, getActor, identity } from '@ego-js/utils';
 
 import { _SERVICE as EgoOpsService } from '@/idls/ego_ops';

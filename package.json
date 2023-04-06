@@ -4,6 +4,8 @@
     "description": "ego",
     "private": true,
     "scripts": {
+        "ego:credentials": "ego --credentials",
+
         "ego:clean": "ego --clean",
         "ego:create": "ego --create",
         "ego:init": "ego --init",
@@ -11,24 +13,24 @@
         "ego:install": "ego --install",
         "ego:reinstall": "ego --reinstall",
         "ego:upgrade": "ego --upgrade",
+        "test": "jest --verbose -t",
+        "ego:run": "pnpm run ego:clean && pnpm run ego:create && pnpm run ego:build && pnpm run ego:install && pnpm run test deploy_ego",
+
         "ego:create:live": "NODE_ENV=production ego --create",
         "ego:build:live": "NODE_ENV=production ego --build",
         "ego:install:live": "NODE_ENV=production ego --install",
         "ego:reinstall:live": "NODE_ENV=production ego --reinstall",
         "ego:upgrade:live": "NODE_ENV=production ego --upgrade",
-        "ego:credentials": "ego --credentials",
-        "ego:run": "pnpm run ego:clean && pnpm run ego:create && pnpm run ego:build && pnpm run ego:install && pnpm run ego:post_install:project post_ops",
-        "ego:run:live": "pnpm run ego:clean && pnpm run ego:create:live && pnpm run ego:build:live && pnpm run ego:install:live && pnpm run ego:post_install:project:live post_ops",
-        "test": "jest --verbose -t",
-        "test:live": "NODE_ENV=production jest --verbose -t"
+        "test:live": "NODE_ENV=production jest --verbose -t",
+        "ego:run:live": "pnpm run ego:clean && pnpm run ego:create:live && pnpm run ego:build:live && pnpm run ego:install:live && pnpm run ego:post_install:project:live post_ops"
     },
     "author": "egoDevs@github.com",
     "license": "ISC",
     "dependencies": {
-        "@dfinity/agent": "0.15.3",
-        "@dfinity/candid": "0.15.3",
-        "@dfinity/identity": "0.15.3",
-        "@dfinity/principal": "0.15.3",
+        "@dfinity/agent": "^0.15.3",
+        "@dfinity/candid": "^0.15.3",
+        "@dfinity/identity": "^0.15.3",
+        "@dfinity/principal": "^0.15.3",
         "@ego-js/cli": "^2.2.26",
         "@ego-js/utils": "^2.2.26",
         "@swc/cli": "^0.1.57",
