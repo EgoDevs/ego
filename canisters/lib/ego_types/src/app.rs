@@ -95,10 +95,7 @@ impl ToString for Version {
 #[derive(Clone, Debug, CandidType, Deserialize, Serialize, PartialEq)]
 pub enum Category {
   System,
-  Vault,
-  Provider,
-  Controller,
-  DApp
+  Vault
 }
 
 #[derive(CandidType, Serialize, Deserialize, Clone, Debug)]
