@@ -17,7 +17,7 @@ type AdminWalletProviderAddRequest = record {
   wallet_provider : principal;
   wallet_app_id : text;
 };
-type Category = variant { System; DApp; Vault; Controller; Provider };
+type Category = variant { System; Vault };
 type CycleInfo = record {
   records : vec CycleRecord;
   estimate_remaining : nat64;

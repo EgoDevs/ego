@@ -31,7 +31,7 @@ type CashFlow = record {
   cash_flow_type : CashFlowType;
 };
 type CashFlowType = variant { CHARGE; RECHARGE };
-type Category = variant { System; DApp; Vault; Controller; Provider };
+type Category = variant { System; Vault };
 type CycleInfo = record {
   records : vec CycleRecord;
   estimate_remaining : nat64;

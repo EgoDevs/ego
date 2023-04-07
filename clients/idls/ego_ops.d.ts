@@ -21,10 +21,7 @@ export interface AdminWalletProviderAddRequest {
   'wallet_app_id' : string,
 }
 export type Category = { 'System' : null } |
-  { 'DApp' : null } |
-  { 'Vault' : null } |
-  { 'Controller' : null } |
-  { 'Provider' : null };
+  { 'Vault' : null };
 export interface CycleInfo {
   'records' : Array<CycleRecord>,
   'estimate_remaining' : bigint,

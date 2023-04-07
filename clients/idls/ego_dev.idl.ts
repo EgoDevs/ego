@@ -5,13 +5,7 @@ export const idlFactory = ({ IDL }) => {
     'minor' : IDL.Nat32,
     'patch' : IDL.Nat32,
   });
-  const Category = IDL.Variant({
-    'System' : IDL.Null,
-    'DApp' : IDL.Null,
-    'Vault' : IDL.Null,
-    'Controller' : IDL.Null,
-    'Provider' : IDL.Null,
-  });
+  const Category = IDL.Variant({ 'System' : IDL.Null, 'Vault' : IDL.Null });
   const AdminAppCreateBackendRequest = IDL.Record({
     'logo' : IDL.Text,
     'name' : IDL.Text,

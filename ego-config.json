@@ -1,7 +1,7 @@
 {
   "dfxVersion": "0.12.1",
   "dfxPort": 8080,
-  "canisters": "ego",
+  "canisters": "canisters",
   "artifacts": "artifacts",
   "configs": "configs",
   "credentials": {

@@ -37,10 +37,7 @@ export interface CashFlow {
 export type CashFlowType = { 'CHARGE' : null } |
   { 'RECHARGE' : null };
 export type Category = { 'System' : null } |
-  { 'DApp' : null } |
-  { 'Vault' : null } |
-  { 'Controller' : null } |
-  { 'Provider' : null };
+  { 'Vault' : null };
 export interface CycleInfo {
   'records' : Array<CycleRecord>,
   'estimate_remaining' : bigint,

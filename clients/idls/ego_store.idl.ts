@@ -22,13 +22,7 @@ export const idlFactory = ({ IDL }) => {
     'wallet_app_id' : IDL.Text,
   });
   const Result_2 = IDL.Variant({ 'Ok' : IDL.Null, 'Err' : EgoError });
-  const Category = IDL.Variant({
-    'System' : IDL.Null,
-    'DApp' : IDL.Null,
-    'Vault' : IDL.Null,
-    'Controller' : IDL.Null,
-    'Provider' : IDL.Null,
-  });
+  const Category = IDL.Variant({ 'System' : IDL.Null, 'Vault' : IDL.Null });
   const Version = IDL.Record({
     'major' : IDL.Nat32,
     'minor' : IDL.Nat32,

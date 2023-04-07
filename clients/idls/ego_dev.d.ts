@@ -56,10 +56,7 @@ export interface AppVersionUploadWasmRequest {
 export type CanisterType = { 'BACKEND' : null } |
   { 'ASSET' : null };
 export type Category = { 'System' : null } |
-  { 'DApp' : null } |
-  { 'Vault' : null } |
-  { 'Controller' : null } |
-  { 'Provider' : null };
+  { 'Vault' : null };
 export interface CycleInfo {
   'records' : Array<CycleRecord>,
   'estimate_remaining' : bigint,
