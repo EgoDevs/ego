@@ -1,0 +1,9 @@
+{
+    "canisters": {},
+    "defaults": {
+        "build": {
+            "packtool": ""
+        }
+    },
+    "version": 1
+}
