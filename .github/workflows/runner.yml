@@ -41,7 +41,7 @@ jobs:
           dfx identity use me
       - name: copy network settings
         run: |
-          cp ./default_network.json ~/.config/dfx/networks.json
+          cp ./ci_network.json ~/.config/dfx/networks.json
       - name: run dfx
         run: dfx start --clean --background
       - name: pnpm
