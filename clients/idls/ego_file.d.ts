@@ -20,7 +20,7 @@ export type Result_4 = { 'Ok' : boolean } |
   { 'Err' : string };
 export type Result_5 = { 'Ok' : Array<string> } |
   { 'Err' : string };
-export type Result_6 = { 'Ok' : Uint8Array | number[] } |
+export type Result_6 = { 'Ok' : Array<number> } |
   { 'Err' : EgoError };
 export type Result_7 = { 'Ok' : boolean } |
   { 'Err' : EgoError };
@@ -49,10 +49,7 @@ export interface _SERVICE {
   'ego_user_remove' : ActorMethod<[Principal], Result_1>,
   'ego_user_set' : ActorMethod<[Array<Principal>], Result_1>,
   'file_main_read' : ActorMethod<[string], Result_6>,
-  'file_main_write' : ActorMethod<
-    [string, string, Uint8Array | number[]],
-    Result_7
-  >,
+  'file_main_write' : ActorMethod<[string, string, Array<number>], Result_7>,
   'state_persist' : ActorMethod<[], Result_7>,
   'state_restore' : ActorMethod<[], Result_7>,
 }

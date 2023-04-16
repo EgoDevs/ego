@@ -52,7 +52,7 @@ export interface _SERVICE {
   'ego_user_set' : ActorMethod<[Array<Principal>], Result_1>,
   'record_add' : ActorMethod<
     [string, string, string, [] | [bigint]],
-    undefined
+    undefined,
   >,
   'record_amount' : ActorMethod<[], bigint>,
   'record_list' : ActorMethod<[bigint], Array<Record>>,

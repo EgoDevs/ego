@@ -10,15 +10,15 @@ export interface EgoError { 'msg' : string, 'code' : number }
 export interface InitArg { 'init_caller' : [] | [Principal] }
 export interface LedgerMainInitRequest { 'start' : bigint }
 export interface LedgerPaymentAddRequest {
-  'to' : Uint8Array | number[],
-  'from' : Uint8Array | number[],
+  'to' : Array<number>,
+  'from' : Array<number>,
   'memo' : bigint,
   'amount' : Tokens,
 }
 export interface Payment {
-  'to' : Uint8Array | number[],
+  'to' : Array<number>,
   'status' : PaymentStatus,
-  'from' : Uint8Array | number[],
+  'from' : Array<number>,
   'memo' : bigint,
   'amount' : Tokens,
 }
