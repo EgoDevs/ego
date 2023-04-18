@@ -83,7 +83,7 @@ impl EgoTenantService {
     ego_canister.ego_op_add(canister_id, ego_tenant_id);
 
     info_log_add("6 set canister controller to [wallet, user, self]");
-    ego_canister.ego_controller_set(canister_id, vec![wallet_id, user_id, canister_id]);
+    ego_canister.ego_controller_set(canister_id, vec![wallet_id, user_id, canister_id]).await?;
 
     info_log_add("7 change canister owner to [wallet, user, self]");
     ego_canister.ego_owner_set(canister_id, vec![wallet_id, user_id, canister_id]);

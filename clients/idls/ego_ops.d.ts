@@ -9,7 +9,7 @@ export interface AdminAppCreateRequest {
   'app_id' : string,
   'category' : Category,
   'backend_data_hash' : string,
-  'backend_data' : Array<number>,
+  'backend_data' : Uint8Array | number[],
 }
 export interface AdminWalletCycleRechargeRequest {
   'cycle' : bigint,
@@ -52,12 +52,12 @@ export interface _SERVICE {
   'admin_app_create' : ActorMethod<[AdminAppCreateRequest], Result>,
   'admin_wallet_cycle_recharge' : ActorMethod<
     [AdminWalletCycleRechargeRequest],
-    Result,
+    Result
   >,
   'admin_wallet_order_new' : ActorMethod<[number], Result>,
   'admin_wallet_provider_add' : ActorMethod<
     [AdminWalletProviderAddRequest],
-    Result,
+    Result
   >,
   'balance_get' : ActorMethod<[], Result_1>,
   'canister_main_track' : ActorMethod<[string], undefined>,

@@ -14,6 +14,7 @@ pub trait TEgoTenant {
   async fn wallet_cycle_recharge(&self, cycles: u128) -> Result<(), EgoError>;
 }
 
+#[derive(Copy, Clone)]
 pub struct EgoTenant {
   pub canister_id: Principal,
 }

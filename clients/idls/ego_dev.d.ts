@@ -9,7 +9,7 @@ export interface AdminAppCreateBackendRequest {
   'app_id' : string,
   'category' : Category,
   'backend_data_hash' : string,
-  'backend_data' : Array<number>,
+  'backend_data' : Uint8Array | number[],
 }
 export interface App {
   'logo' : string,
@@ -48,7 +48,7 @@ export type AppVersionStatus = { 'NEW' : null } |
   { 'RELEASED' : null } |
   { 'APPROVED' : null };
 export interface AppVersionUploadWasmRequest {
-  'data' : Array<number>,
+  'data' : Uint8Array | number[],
   'hash' : string,
   'version' : Version,
   'app_id' : string,
@@ -126,12 +126,12 @@ export interface _SERVICE {
   'app_version_revoke' : ActorMethod<[string, Version], Result>,
   'app_version_set_frontend_address' : ActorMethod<
     [AppVersionSetFrontendAddressRequest],
-    Result_1,
+    Result_1
   >,
   'app_version_submit' : ActorMethod<[string, Version], Result>,
   'app_version_upload_wasm' : ActorMethod<
     [AppVersionUploadWasmRequest],
-    Result_1,
+    Result_1
   >,
   'app_version_wait_for_audit' : ActorMethod<[], Result_2>,
   'balance_get' : ActorMethod<[], Result_3>,

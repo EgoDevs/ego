@@ -8,7 +8,7 @@ export interface AssetDetails {
 }
 export interface AssetEncodingDetails {
   'modified' : bigint,
-  'sha256' : [] | [Array<number>],
+  'sha256' : [] | [Uint8Array | number[]],
   'length' : bigint,
   'content_encoding' : string,
 }
@@ -29,14 +29,14 @@ export interface CreateAssetArguments {
 }
 export interface CreateBatchResponse { 'batch_id' : bigint }
 export interface CreateChunkArg {
-  'content' : Array<number>,
+  'content' : Uint8Array | number[],
   'batch_id' : bigint,
 }
 export interface CreateChunkResponse { 'chunk_id' : bigint }
 export interface DeleteAssetArguments { 'key' : string }
 export interface EncodedAsset {
-  'content' : Array<number>,
-  'sha256' : [] | [Array<number>],
+  'content' : Uint8Array | number[],
+  'sha256' : [] | [Uint8Array | number[]],
   'content_type' : string,
   'content_encoding' : string,
   'total_length' : bigint,
@@ -44,19 +44,19 @@ export interface EncodedAsset {
 export interface GetArg { 'key' : string, 'accept_encodings' : Array<string> }
 export interface GetChunkArg {
   'key' : string,
-  'sha256' : [] | [Array<number>],
+  'sha256' : [] | [Uint8Array | number[]],
   'index' : bigint,
   'content_encoding' : string,
 }
-export interface GetChunkResponse { 'content' : Array<number> }
+export interface GetChunkResponse { 'content' : Uint8Array | number[] }
 export interface HttpRequest {
   'url' : string,
   'method' : string,
-  'body' : Array<number>,
+  'body' : Uint8Array | number[],
   'headers' : Array<[string, string]>,
 }
 export interface HttpResponse {
-  'body' : Array<number>,
+  'body' : Uint8Array | number[],
   'headers' : Array<[string, string]>,
   'streaming_strategy' : [] | [StreamingStrategy],
   'status_code' : number,
@@ -66,20 +66,20 @@ export type Result = { 'Ok' : Array<Principal> } |
   { 'Err' : string };
 export interface SetAssetContentArguments {
   'key' : string,
-  'sha256' : [] | [Array<number>],
+  'sha256' : [] | [Uint8Array | number[]],
   'chunk_ids' : Array<bigint>,
   'content_encoding' : string,
 }
 export interface StoreArg {
   'key' : string,
-  'content' : Array<number>,
-  'sha256' : [] | [Array<number>],
+  'content' : Uint8Array | number[],
+  'sha256' : [] | [Uint8Array | number[]],
   'content_type' : string,
   'content_encoding' : string,
 }
 export interface StreamingCallbackHttpResponse {
   'token' : [] | [GetChunkArg],
-  'body' : Array<number>,
+  'body' : Uint8Array | number[],
 }
 export type StreamingStrategy = {
     'Callback' : { 'token' : GetChunkArg, 'callback' : [Principal, string] }
@@ -102,11 +102,11 @@ export interface _SERVICE {
   'http_request' : ActorMethod<[HttpRequest], HttpResponse>,
   'http_request_streaming_callback' : ActorMethod<
     [GetChunkArg],
-    StreamingCallbackHttpResponse,
+    StreamingCallbackHttpResponse
   >,
   'list' : ActorMethod<[], Array<AssetDetails>>,
   'list_authorize' : ActorMethod<[], Result>,
-  'retrieve' : ActorMethod<[string], Array<number>>,
+  'retrieve' : ActorMethod<[string], Uint8Array | number[]>,
   'set_asset_content' : ActorMethod<[SetAssetContentArguments], undefined>,
   'store' : ActorMethod<[StoreArg], undefined>,
   'unset_asset_content' : ActorMethod<[UnsetAssetContentArguments], undefined>,

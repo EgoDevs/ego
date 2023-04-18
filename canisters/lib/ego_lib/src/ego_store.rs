@@ -29,6 +29,7 @@ pub trait TEgoStore {
   fn wallet_canister_untrack(&self, canister_id: Principal);
 }
 
+#[derive(Copy, Clone)]
 pub struct EgoStore {
   pub canister_id: Principal,
 }

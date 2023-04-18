@@ -1,5 +1,5 @@
 use async_trait::async_trait;
-use ic_cdk::api;
+use ic_cdk::{api, trap};
 use ic_cdk::api::call::RejectionCode;
 use ic_cdk::export::Principal;
 use tracing::error;
@@ -23,7 +23,7 @@ pub trait TEgoCanister {
 
   fn ego_canister_add(&self, target_canister_id: Principal, name: String, principal: Principal);
 
-  fn ego_controller_set(&self, target_canister_id: Principal, principals: Vec<Principal>);
+  async fn ego_controller_set(&self, target_canister_id: Principal, principals: Vec<Principal>) -> Result<(), String>;
   async fn ego_controller_add(&self, target_canister_id: Principal, principal: Principal) -> Result<(), String>;
   fn ego_controller_remove(&self, target_canister_id: Principal, principal: Principal);
 
@@ -48,6 +48,7 @@ pub trait TEgoCanister {
   async fn ego_cycle_recharge(&self, target_canister_id: Principal, cycles: u128) -> Result<(), String>;
 }
 
+#[derive(Copy, Clone)]
 pub struct EgoCanister {}
 
 impl EgoCanister {
@@ -90,8 +91,27 @@ impl TEgoCanister for EgoCanister {
     let _result = api::call::notify(target_canister_id, "ego_canister_add", (name, principal, ));
   }
 
-  fn ego_controller_set(&self, target_canister_id: Principal, principals: Vec<Principal>) {
-    let _result = api::call::notify(target_canister_id, "ego_controller_set", (principals, ));
+  async fn ego_controller_set(&self, target_canister_id: Principal, principals: Vec<Principal>)  -> Result<(), String>{
+    // let _result = api::call::notify(target_canister_id, "ego_controller_set", (principals, ));
+
+    let call_result = api::call::call(target_canister_id, "ego_controller_set", (principals, )).await
+        as Result<(Result<(), String>, ), (RejectionCode, String)>;
+
+    match call_result {
+      Ok(resp) => match resp.0 {
+        Ok(resp) => Ok(resp),
+        Err(e) => Err(e),
+      },
+      Err((code, msg)) => {
+        let code = code as u16;
+        error!(
+          error_code = code,
+          error_message = msg.as_str(),
+          "Error calling ego_controller_set"
+        );
+        trap(format!("Error calling ego_controller_set code: {}, msg: {}", code, msg).as_str());
+      }
+    }
   }
 
 
