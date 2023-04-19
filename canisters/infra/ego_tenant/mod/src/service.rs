@@ -2,6 +2,7 @@ use std::ops::{Div, Mul};
 use ic_cdk::export::Principal;
 
 use ego_lib::ego_canister::TEgoCanister;
+use ego_lib::ic_management::controllers_update;
 use ego_types::app::{CanisterType, Wasm};
 use ego_types::app::EgoError;
 use ego_types::cycle_info::{CycleRecord, DEFAULT_ESTIMATE};
@@ -60,12 +61,13 @@ impl EgoTenantService {
       return Err(EgoTenantErr::SystemError("not implemented".to_string()).into());
     }
 
-    info_log_add("1 create canister");
+
     let canister_id = management
       .canister_main_create(CREATE_CANISTER_CYCLES_FEE)
       .await?;
+    info_log_add(format!("1 create canister {}", canister_id).as_str());
 
-    info_log_add("2 load wasm data");
+    info_log_add(format!("2 load wasm data {}", wasm.fid()).as_str());
     let data = ego_file
       .file_main_read(wasm.canister_id, wasm.fid())
       .await?;
@@ -82,11 +84,14 @@ impl EgoTenantService {
     ego_canister.ego_op_add(canister_id, ego_store_id);
     ego_canister.ego_op_add(canister_id, ego_tenant_id);
 
-    info_log_add("6 set canister controller to [wallet, user, self]");
-    ego_canister.ego_controller_set(canister_id, vec![wallet_id, user_id, canister_id]).await?;
+    // ego_canister.ego_controller_set(canister_id, vec![wallet_id, user_id, canister_id]).await?;
 
-    info_log_add("7 change canister owner to [wallet, user, self]");
+    info_log_add(format!("6 change canister owner to [wallet: {}, user: {}, self: {}]", wallet_id, user_id, canister_id).as_str());
     ego_canister.ego_owner_set(canister_id, vec![wallet_id, user_id, canister_id]);
+
+    info_log_add(format!("7 set canister controller to [wallet: {}, user: {}, self: {}]", wallet_id, user_id, canister_id).as_str());
+    controllers_update(canister_id, vec![wallet_id, user_id, canister_id]).await?;
+
 
     Ok(canister_id)
   }

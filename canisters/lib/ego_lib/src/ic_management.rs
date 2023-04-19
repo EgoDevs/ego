@@ -4,7 +4,7 @@ use tracing::error;
 
 use ego_types::app::EgoError;
 
-async fn controllers_update(canister_id: Principal, controllers: Vec<Principal>) -> Result<(), EgoError> {
+pub async fn controllers_update(canister_id: Principal, controllers: Vec<Principal>) -> Result<(), EgoError> {
   let in_arg = UpdateSettingsArgument {
     canister_id,
     settings: CanisterSettings {
