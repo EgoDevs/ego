@@ -61,7 +61,6 @@ impl EgoTenantService {
       return Err(EgoTenantErr::SystemError("not implemented".to_string()).into());
     }
 
-
     let canister_id = management
       .canister_main_create(CREATE_CANISTER_CYCLES_FEE)
       .await?;

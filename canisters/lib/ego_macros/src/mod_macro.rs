@@ -16,17 +16,18 @@ macro_rules! inject_app_info {
 
         pub fn app_info_update(wallet_id: Option<Principal>, app_id: AppId, version: Version)  {
             APP_INFO.with(|info| {
+                let mut info_borrow = info.borrow_mut();
                 if wallet_id.is_some() {
-                    info.borrow_mut().wallet_id = wallet_id;
+                    info_borrow.wallet_id = wallet_id;
                 }
-                info.borrow_mut().app_id = app_id;
-                info.borrow_mut().current_version = version;
-                info.borrow_mut().latest_version = version;
+                info_borrow.app_id = app_id;
+                info_borrow.current_version = version;
+                info_borrow.latest_version = version;
             });
         }
 
         pub fn app_info_pre_upgrade() -> AppInfo {
-            APP_INFO.with(|s| s.take().into())
+            APP_INFO.with(|s| s.borrow().clone())
         }
 
         pub fn app_info_post_upgrade(stable_state: AppInfo) {

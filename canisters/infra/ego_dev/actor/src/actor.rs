@@ -299,8 +299,14 @@ pub async fn admin_app_create(
 
   let caller = ic_cdk::caller();
 
-  info_log_add("1. developer_main_register");
-  EgoDevService::developer_main_register(caller, "astrox".to_string())?;
+  if EGO_DEV.with(|ego_dev| {
+    ego_dev.borrow().developers.contains_key(&caller)
+  }) {
+    info_log_add("1. developer exists. skip developer registration");
+  } else {
+    info_log_add("1. developer_main_register");
+    EgoDevService::developer_main_register(caller, "astrox".to_string())?;
+  }
 
   info_log_add("2. developer_app_new");
   EgoDevService::developer_app_new(

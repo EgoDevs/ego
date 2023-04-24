@@ -1,3 +1,4 @@
+use std::collections::BTreeMap;
 use async_trait::async_trait;
 use ic_cdk::{api, trap};
 use ic_cdk::api::call::RejectionCode;
@@ -14,6 +15,7 @@ pub trait TEgoCanister {
   fn ego_owner_set(&self, target_canister_id: Principal, principals: Vec<Principal>);
   fn ego_owner_add(&self, target_canister_id: Principal, principal: Principal);
   fn ego_owner_remove(&self, target_canister_id: Principal, principal: Principal);
+  async fn ego_owner_list(&self, target_canister_id: Principal) -> Result<Option<std::collections::BTreeMap<Principal, String>>, String>;
 
   fn ego_user_set(&self, target_canister_id: Principal, user_ids: Vec<Principal>);
   fn ego_user_add(&self, target_canister_id: Principal, principal: Principal);
@@ -22,9 +24,11 @@ pub trait TEgoCanister {
   fn ego_op_add(&self, target_canister_id: Principal, user_id: Principal);
 
   fn ego_canister_add(&self, target_canister_id: Principal, name: String, principal: Principal);
+  fn ego_canister_remove(&self, target_canister_id: Principal, name: String, principal: Principal);
+  async fn ego_canister_list(&self, target_canister_id: Principal) -> Result<std::collections::BTreeMap<String, Vec<Principal>>, String>;
 
-  async fn ego_controller_set(&self, target_canister_id: Principal, principals: Vec<Principal>) -> Result<(), String>;
-  async fn ego_controller_add(&self, target_canister_id: Principal, principal: Principal) -> Result<(), String>;
+  async fn ego_controller_set(&self, target_canister_id: Principal, principals: Vec<Principal>);
+  async fn ego_controller_add(&self, target_canister_id: Principal, principal: Principal);
   fn ego_controller_remove(&self, target_canister_id: Principal, principal: Principal);
 
   async fn balance_get(&self, target_canister_id: Principal) -> Result<u128, String>;
@@ -36,7 +40,7 @@ pub trait TEgoCanister {
 
   // canister relative
   fn ego_canister_upgrade(&self, target_canister_id: Principal);
-  fn ego_canister_remove(&self, target_canister_id: Principal);
+  fn ego_canister_delete(&self, target_canister_id: Principal);
 
   // canister cycle info
   fn ego_cycle_check(&self, target_canister_id: Principal);
@@ -46,6 +50,8 @@ pub trait TEgoCanister {
   async fn ego_cycle_threshold_get(&self, target_canister_id: Principal) -> Result<u128, String>;
   async fn ego_runtime_cycle_threshold_get(&self, target_canister_id: Principal) -> Result<u128, String>;
   async fn ego_cycle_recharge(&self, target_canister_id: Principal, cycles: u128) -> Result<(), String>;
+
+  async fn ego_log_list(&self, target_canister_id: Principal, amount: usize) -> Result<Vec<String>, String>;
 }
 
 #[derive(Copy, Clone)]
@@ -71,6 +77,22 @@ impl TEgoCanister for EgoCanister {
     let _result = api::call::notify(target_canister_id, "ego_owner_remove", (principal, ));
   }
 
+  async fn ego_owner_list(&self, target_canister_id: Principal) -> Result<Option<BTreeMap<Principal, String>>, String> {
+    let call_result = api::call::call(target_canister_id, "ego_owner_list", ()).await
+        as Result<(Result<Option<BTreeMap<Principal, String>>, String>, ), (RejectionCode, String)>;
+
+    match call_result {
+      Ok(resp) => match resp.0 {
+        Ok(owners) => Ok(owners),
+        Err(msg) => trap(format!("Error calling ego_owners msg: {}", msg).as_str()),
+      },
+      Err((code, msg)) => {
+        let code = code as u16;
+        trap(format!("Error calling ego_owners code: {}, msg: {}", code, msg).as_str());
+      }
+    }
+  }
+
   fn ego_user_set(&self, target_canister_id: Principal, user_ids: Vec<Principal>) {
     let _result = api::call::notify(target_canister_id, "role_user_set", (user_ids, ));
   }
@@ -91,7 +113,27 @@ impl TEgoCanister for EgoCanister {
     let _result = api::call::notify(target_canister_id, "ego_canister_add", (name, principal, ));
   }
 
-  async fn ego_controller_set(&self, target_canister_id: Principal, principals: Vec<Principal>)  -> Result<(), String>{
+  fn ego_canister_remove(&self, target_canister_id: Principal, name: String, principal: Principal) {
+    let _result = api::call::notify(target_canister_id, "ego_canister_remove", (name, principal, ));
+  }
+
+  async fn ego_canister_list(&self, target_canister_id: Principal) -> Result<BTreeMap<String, Vec<Principal>>, String> {
+    let call_result = api::call::call(target_canister_id, "ego_canister_list", ()).await
+        as Result<(Result<BTreeMap<String, Vec<Principal>>, String>, ), (RejectionCode, String)>;
+
+    match call_result {
+      Ok(resp) => match resp.0 {
+        Ok(resp) => Ok(resp),
+        Err(msg) => trap(format!("Error calling ego_canister_list msg: {}", msg).as_str()),
+      },
+      Err((code, msg)) => {
+        let code = code as u16;
+        trap(format!("Error calling ego_canister_list code: {}, msg: {}", code, msg).as_str());
+      }
+    }
+  }
+
+  async fn ego_controller_set(&self, target_canister_id: Principal, principals: Vec<Principal>){
     // let _result = api::call::notify(target_canister_id, "ego_controller_set", (principals, ));
 
     let call_result = api::call::call(target_canister_id, "ego_controller_set", (principals, )).await
@@ -99,39 +141,29 @@ impl TEgoCanister for EgoCanister {
 
     match call_result {
       Ok(resp) => match resp.0 {
-        Ok(resp) => Ok(resp),
-        Err(e) => Err(e),
+        Ok(_resp) => {},
+        Err(msg) => trap(format!("Error calling ego_controller_set msg: {}", msg).as_str()),
       },
       Err((code, msg)) => {
         let code = code as u16;
-        error!(
-          error_code = code,
-          error_message = msg.as_str(),
-          "Error calling ego_controller_set"
-        );
         trap(format!("Error calling ego_controller_set code: {}, msg: {}", code, msg).as_str());
       }
     }
   }
 
 
-  async fn ego_controller_add(&self, target_canister_id: Principal, principal: Principal) -> Result<(), String> {
+  async fn ego_controller_add(&self, target_canister_id: Principal, principal: Principal) {
     let call_result = api::call::call(target_canister_id, "ego_controller_add", (principal, )).await
       as Result<(Result<(), String>, ), (RejectionCode, String)>;
 
     match call_result {
       Ok(resp) => match resp.0 {
-        Ok(resp) => Ok(resp),
-        Err(e) => Err(e),
+        Ok(_resp) => {},
+        Err(msg) => trap(format!("Error calling ego_controller_add msg: {}", msg).as_str()),
       },
       Err((code, msg)) => {
         let code = code as u16;
-        error!(
-          error_code = code,
-          error_message = msg.as_str(),
-          "Error calling ego_controller_add"
-        );
-        Err(msg)
+        trap(format!("Error calling ego_controller_add code: {}, msg: {}", code, msg).as_str());
       }
     }
   }
@@ -170,12 +202,12 @@ impl TEgoCanister for EgoCanister {
     // match call_result {
     //   Ok(resp) => {
     //     match resp.0 {
-    //       Ok(_) => Ok(()),
-    //       Err(msg) => Err(msg)
+    //       Ok(_) => {},
+    //       Err(msg) => trap(format!("Error calling ego_app_info_update msg: {}", msg).as_str()),
     //     }
     //   }
-    //   Err((_code, msg)) => {
-    //     Err(msg)
+    //   Err((code, msg)) => {
+    //     trap(format!("Error calling ego_app_info_update code: {}, msg: {}", code as u16, msg).as_str());
     //   }
     // }
   }
@@ -215,11 +247,25 @@ impl TEgoCanister for EgoCanister {
   }
 
   fn ego_canister_upgrade(&self, target_canister_id: Principal) {
+    // let call_result = api::call::call(target_canister_id, "ego_canister_upgrade", ()).await
+    //     as Result<(Result<(), String>, ), (RejectionCode, String)>;
+    //
+    // match call_result {
+    //   Ok(resp) => {
+    //     match resp.0 {
+    //       Ok(app) => {},
+    //       Err(msg) => trap(format!("error calling balance_get msg:{}", msg).as_str())
+    //     }
+    //   }
+    //   Err((code, msg)) => {
+    //     trap(format!("error calling balance_get code:{}, msg:{}", code as u16, msg).as_str());
+    //   }
+    // }
     let _result = api::call::notify(target_canister_id, "ego_canister_upgrade", ());
   }
 
-  fn ego_canister_remove(&self, target_canister_id: Principal) {
-    let _result = api::call::notify(target_canister_id, "ego_canister_remove", ());
+  fn ego_canister_delete(&self, target_canister_id: Principal) {
+    let _result = api::call::notify(target_canister_id, "ego_canister_delete", ());
   }
 
   // canister cycle info
@@ -307,6 +353,23 @@ impl TEgoCanister for EgoCanister {
       Ok(resp) => {
         match resp.0 {
           Ok(_) => Ok(()),
+          Err(msg) => Err(msg)
+        }
+      }
+      Err((_code, msg)) => {
+        Err(msg)
+      }
+    }
+  }
+
+  async fn ego_log_list(&self, target_canister_id: Principal, amount: usize) -> Result<Vec<String>, String> {
+    let call_result = api::call::call(target_canister_id, "ego_log_list", (amount, )).await
+        as Result<(Result<Vec<String>, String>, ), (RejectionCode, String)>;
+
+    match call_result {
+      Ok(resp) => {
+        match resp.0 {
+          Ok(logs) => Ok(logs),
           Err(msg) => Err(msg)
         }
       }

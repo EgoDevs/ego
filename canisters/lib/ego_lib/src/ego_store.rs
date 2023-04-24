@@ -1,5 +1,5 @@
 use async_trait::async_trait;
-use ic_cdk::api;
+use ic_cdk::{api, trap};
 use ic_cdk::api::call::RejectionCode;
 use ic_cdk::export::Principal;
 use tracing::error;
@@ -17,7 +17,9 @@ pub trait TEgoStore {
   async fn app_main_get(&self, app_id: AppId) -> Result<App, EgoError>;
 
   async fn wallet_app_install(&self, app_id: AppId) -> Result<UserApp, EgoError>;
-  fn wallet_app_upgrade(&self, wallet_id: Principal);
+  async fn wallet_app_upgrade(&self, wallet_id: Principal);
+  async fn wallet_app_upgrade_by_wallet(&self, canister_id: Principal);
+
   fn wallet_app_remove(&self, wallet_id: Principal);
   async fn wallet_app_list(&self) -> Result<Vec<UserApp>, EgoError>;
 
@@ -50,16 +52,11 @@ impl TEgoStore for EgoStore {
     match call_result {
       Ok(resp) => match resp.0 {
         Ok(tenant_id) => Ok(tenant_id),
-        Err(e) => Err(e),
+        Err(e) => trap(format!("Error calling wallet_main_register code: {}, msg: {}", e.code, e.msg).as_str()),
       },
       Err((code, msg)) => {
         let code = code as u16;
-        error!(
-          error_code = code,
-          error_message = msg.as_str(),
-          "Error calling wallet_main_register"
-        );
-        Err(EgoError { code, msg })
+        trap(format!("Error calling wallet_main_register code: {}, msg: {}", code, msg).as_str())
       }
     }
   }
@@ -70,16 +67,11 @@ impl TEgoStore for EgoStore {
     match call_result {
       Ok(resp) => match resp.0 {
         Ok(wallet_app) => Ok(wallet_app),
-        Err(e) => Err(e),
+        Err(e) => trap(format!("Error calling wallet_main_new code: {}, msg: {}", e.code, e.msg).as_str()),
       },
       Err((code, msg)) => {
         let code = code as u16;
-        error!(
-          error_code = code,
-          error_message = msg.as_str(),
-          "Error calling wallet_main_new"
-        );
-        Err(EgoError { code, msg })
+        trap(format!("Error calling wallet_main_new code: {}, msg: {}", code, msg).as_str())
       }
     }
   }
@@ -90,16 +82,11 @@ impl TEgoStore for EgoStore {
     match call_result {
       Ok(resp) => match resp.0 {
         Ok(apps) => Ok(apps),
-        Err(e) => Err(e),
+        Err(e) => trap(format!("Error calling app_main_list code: {}, msg: {}", e.code, e.msg).as_str()),
       },
       Err((code, msg)) => {
         let code = code as u16;
-        error!(
-          error_code = code,
-          error_message = msg.as_str(),
-          "Error calling app_main_list"
-        );
-        Err(EgoError { code, msg })
+        trap(format!("Error calling app_main_list code: {}, msg: {}", code, msg).as_str())
       }
     }
   }
@@ -150,40 +137,47 @@ impl TEgoStore for EgoStore {
     match call_result {
       Ok(resp) => match resp.0 {
         Ok(user_app) => Ok(user_app),
-        Err(e) => Err(e),
+        Err(e) => trap(format!("error calling wallet_app_install code:{}, msg:{}", e.code, e.msg).as_str()),
       },
       Err((code, msg)) => {
         let code = code as u16;
-        error!(
-          error_code = code,
-          error_message = msg.as_str(),
-          "Error calling wallet_app_install"
-        );
-        Err(EgoError { code, msg })
+        trap(format!("error calling wallet_app_install code:{}, msg:{}", code as u16, msg).as_str());
       }
     }
   }
 
-  fn wallet_app_upgrade(&self, wallet_id: Principal) {
-    let _result = api::call::notify(self.canister_id, "wallet_app_upgrade", (wallet_id, ));
+  async fn wallet_app_upgrade(&self, wallet_id: Principal){
+    let call_result = api::call::call(self.canister_id, "wallet_app_upgrade", (wallet_id, )).await as Result<(Result<(), EgoError>, ), (RejectionCode, String)>;
 
-    // let call_result = api::call::call(self.canister_id, "wallet_app_upgrade", (wallet_id, )).await as Result<(Result<(), EgoError>, ), (RejectionCode, String)>;
-    //
-    // match call_result {
-    //   Ok(resp) => match resp.0 {
-    //     Ok(user_app) => Ok(user_app),
-    //     Err(e) => Err(e),
-    //   },
-    //   Err((code, msg)) => {
-    //     let code = code as u16;
-    //     error!(
-    //       error_code = code,
-    //       error_message = msg.as_str(),
-    //       "Error calling wallet_app_upgrade"
-    //     );
-    //     Err(EgoError { code, msg })
-    //   }
-    // }
+    match call_result {
+      Ok(resp) => match resp.0 {
+        Ok(_) => {
+          ic_cdk::println!("wallet_app_upgrade success");
+        },
+        Err(e) => trap(format!("error calling wallet_app_install code:{}, msg:{}", e.code, e.msg).as_str()),
+      },
+      Err((code, msg)) => {
+        let code = code as u16;
+        trap(format!("error calling wallet_app_upgrade code:{}, msg:{}", code as u16, msg).as_str());
+      }
+    }
+  }
+
+  async fn wallet_app_upgrade_by_wallet(&self, canister_id: Principal) {
+    let call_result = api::call::call(self.canister_id, "wallet_app_upgrade_by_wallet", (canister_id, )).await as Result<(Result<(), EgoError>, ), (RejectionCode, String)>;
+
+    match call_result {
+      Ok(resp) => match resp.0 {
+        Ok(_) => {
+          ic_cdk::println!("wallet_app_upgrade_by_wallet success");
+        },
+        Err(e) => trap(format!("error calling wallet_app_upgrade_by_wallet code:{}, msg:{}", e.code, e.msg).as_str()),
+      },
+      Err((code, msg)) => {
+        let code = code as u16;
+        trap(format!("error calling wallet_app_upgrade_by_wallet code:{}, msg:{}", code as u16, msg).as_str());
+      }
+    }
   }
 
   fn wallet_app_remove(&self, wallet_id: Principal) {

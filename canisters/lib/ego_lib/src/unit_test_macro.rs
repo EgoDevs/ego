@@ -9,6 +9,7 @@ macro_rules! inject_mock_ego_canister {
         fn ego_owner_set(&self, target_canister_id: Principal, principals: Vec<Principal>);
         fn ego_owner_add(&self, target_canister_id: Principal, principal: Principal);
         fn ego_owner_remove(&self, target_canister_id: Principal, principal: Principal);
+        async fn ego_owner_list(&self, target_canister_id: Principal) -> Result<Option<BTreeMap<Principal, String>>, String>;
 
         fn ego_user_set(&self, target_canister_id: Principal, user_ids: Vec<Principal>);
         fn ego_user_add(&self, target_canister_id: Principal, principal: Principal);
@@ -17,9 +18,11 @@ macro_rules! inject_mock_ego_canister {
         fn ego_op_add(&self, target_canister_id: Principal, user_id: Principal);
 
         fn ego_canister_add(&self, target_canister_id: Principal, name: String, principal: Principal);
+        fn ego_canister_remove(&self, target_canister_id: Principal, name: String, principal: Principal);
+        async fn ego_canister_list(&self, target_canister_id: Principal) -> Result<BTreeMap<String, Vec<Principal>>, String>;
 
-        fn ego_controller_set(&self, target_canister_id: Principal, principals: Vec<Principal>);
-        async fn ego_controller_add(&self, target_canister_id: Principal, principal: Principal) -> Result<(), String>;
+        async fn ego_controller_set(&self, target_canister_id: Principal, principals: Vec<Principal>);
+        async fn ego_controller_add(&self, target_canister_id: Principal, principal: Principal);
         fn ego_controller_remove(&self, target_canister_id: Principal, principal: Principal);
 
         async fn balance_get(&self, target_canister_id: Principal) -> Result<u128, String>;
@@ -31,7 +34,8 @@ macro_rules! inject_mock_ego_canister {
 
         // canister upgrade
         fn ego_canister_upgrade(&self, target_canister_id: Principal);
-        fn ego_canister_remove(&self, target_canister_id: Principal);
+        fn ego_canister_delete(&self, target_canister_id: Principal);
+
 
         // canister cycle info
         fn ego_cycle_check(&self, target_canister_id: Principal);
@@ -41,6 +45,8 @@ macro_rules! inject_mock_ego_canister {
         async fn ego_cycle_threshold_get(&self, target_canister_id: Principal) -> Result<u128, String>;
         async fn ego_runtime_cycle_threshold_get(&self, target_canister_id: Principal) -> Result<u128, String>;
         async fn ego_cycle_recharge(&self, target_canister_id: Principal, cycles: u128) -> Result<(), String>;
+
+        async fn ego_log_list(&self, target_canister_id: Principal, amount: usize) -> Result<Vec<String>, String>;
       }
     }
   }

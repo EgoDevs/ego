@@ -360,4 +360,72 @@ impl EgoStoreService {
 
     Ok(())
   }
+
+  pub fn admin_wallet_app_transfer(
+    new_wallet_id: &Principal, wallet: Option<Principal>, app: Option<AppId>, canister_id: Principal
+  ) -> Result<(), EgoError>{
+    if let Some(wallet_id) = wallet {
+      // has wallet
+      info_log_add("1. find user_app in wallet");
+      let user_app = EGO_STORE.with(|ego_store| {
+        match ego_store.borrow().wallets.get(&wallet_id) {
+          None => {
+            Err(EgoError::from(format!("wallet {} not exists", wallet_id)))
+          }
+          Some(wallet) => {
+            match wallet.apps.get(&canister_id) {
+              None => {
+                Err(EgoError::from(format!("canister {} not exists", canister_id)))
+              }
+              Some(user_app) => {
+                Ok(user_app.clone())
+              }
+            }
+          }
+        }
+      })?;
+
+      EGO_STORE.with(|ego_store| {
+        info_log_add(format!("2. remove user_app from wallet: {}", wallet_id).as_str());
+        let _result = ego_store
+            .borrow_mut()
+            .wallet_app_remove(&wallet_id, &canister_id);
+
+        ego_store
+            .borrow_mut()
+            .wallet_app_install(&new_wallet_id, &user_app);
+        info_log_add(format!("3. add user_app to wallet: {}", new_wallet_id).as_str());
+      });
+    } else {
+      // no wallet
+      if let Some(app_id) = app {
+        let ego_store_app = EGO_STORE.with(|ego_store| {
+          match ego_store.borrow().apps.get(&app_id) {
+            None => {
+              Err(EgoError::from(format!("app {} not exists", app_id)))
+            }
+            Some(ego_store_app) => {
+              Ok(ego_store_app.clone())
+            }
+          }
+        })?;
+
+        info_log_add(format!("1. add user_app to wallet: {}", new_wallet_id).as_str());
+        let user_app = UserApp::new(
+          &ego_store_app.app,
+          Canister::new(canister_id, ego_store_app.wasm.canister_type),
+        );
+
+        EGO_STORE.with(|ego_store| {
+          ego_store
+              .borrow_mut()
+              .wallet_app_install(&new_wallet_id, &user_app);
+        });
+      } else {
+        return Err(EgoError::from("wallet and app can not both be null".to_string()))
+      }
+    };
+
+    Ok(())
+  }
 }

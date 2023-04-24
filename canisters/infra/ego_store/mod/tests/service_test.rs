@@ -15,6 +15,7 @@ use ego_types::app::CanisterType::BACKEND;
 use ego_types::app::EgoError;
 use ego_types::app::Version;
 use ego_types::app_info::AppInfo;
+use std::collections::BTreeMap;
 
 static FILE_CANISTER_ID: &str = "amybd-zyaaa-aaaah-qc4hq-cai";
 
@@ -36,6 +37,8 @@ static TEST_WALLET_ID: &str = "227wz-liaaa-aaaaa-qaara-cai";
 static TEST_USER_ID: &str = "2265i-mqaaa-aaaad-qbsga-cai";
 
 static TEST_USER_APP_BACKEND: &str = "225cg-4iaaa-aaaaj-adouq-cai";
+
+static NEW_WALLET_ID: &str = "2222s-4iaaa-aaaaf-ax2uq-cai";
 
 mock! {
   Tenant {}
@@ -85,6 +88,12 @@ pub fn set_up() {
   let version = Version::new(1, 0, 1);
 
   EGO_STORE.with(|ego_store| {
+    ego_store.borrow_mut().apps.clear();
+    ego_store.borrow_mut().wallets.clear();
+    ego_store.borrow_mut().orders.clear();
+    ego_store.borrow_mut().tenants.clear();
+    ego_store.borrow_mut().wallet_providers.clear();
+
     // add tenant
     ego_store
       .borrow_mut()
@@ -153,6 +162,14 @@ pub fn set_up() {
       .borrow_mut()
       .wallets
       .insert(wallet_principal, wallet);
+
+    let new_wallet_principal = Principal::from_text(NEW_WALLET_ID.to_string()).unwrap();
+    let mut new_wallet = Wallet::new(tenant_principal, wallet_principal, user_principal);
+    ego_store
+        .borrow_mut()
+        .wallets
+        .insert(new_wallet_principal, new_wallet);
+
   });
 }
 
@@ -597,4 +614,87 @@ fn wallet_user_apps_track(){
   let canister_track =
     EgoStoreService::wallet_user_apps_track(ego_tenant, &wallet_id);
   assert!(canister_track.is_ok());
+}
+
+#[test]
+fn admin_wallet_app_transfer_with_wallet(){
+  set_up();
+
+  let wallet_principal = Principal::from_text(EXISTS_WALLET_ID.to_string()).unwrap();
+  let new_wallet_principal = Principal::from_text(NEW_WALLET_ID.to_string()).unwrap();
+  let backend_principal = Principal::from_text(EXISTS_USER_APP_BACKEND.to_string()).unwrap();
+
+  EGO_STORE.with(|ego_store| {
+    assert_eq!(1, ego_store.borrow().wallets.get(&wallet_principal).unwrap().apps.len());
+    assert_eq!(0, ego_store.borrow().wallets.get(&new_wallet_principal).unwrap().apps.len());
+  });
+
+  let result = EgoStoreService::admin_wallet_app_transfer(&new_wallet_principal, Some(wallet_principal), None, backend_principal);
+  assert!(result.is_ok());
+
+  EGO_STORE.with(|ego_store| {
+    assert_eq!(0, ego_store.borrow().wallets.get(&wallet_principal).unwrap().apps.len());
+    assert_eq!(1, ego_store.borrow().wallets.get(&new_wallet_principal).unwrap().apps.len());
+  });
+}
+
+#[test]
+fn admin_wallet_app_transfer_without_wallet(){
+  set_up();
+
+  let wallet_principal = Principal::from_text(EXISTS_WALLET_ID.to_string()).unwrap();
+  let new_wallet_principal = Principal::from_text(NEW_WALLET_ID.to_string()).unwrap();
+  let backend_principal = Principal::from_text(EXISTS_USER_APP_BACKEND.to_string()).unwrap();
+
+  EGO_STORE.with(|ego_store| {
+    assert_eq!(1, ego_store.borrow().wallets.get(&wallet_principal).unwrap().apps.len());
+    assert_eq!(0, ego_store.borrow().wallets.get(&new_wallet_principal).unwrap().apps.len());
+  });
+
+  let result = EgoStoreService::admin_wallet_app_transfer(&new_wallet_principal, None, Some(EXISTS_APP_ID.to_string()), backend_principal);
+  assert!(result.is_ok());
+
+  EGO_STORE.with(|ego_store| {
+    assert_eq!(1, ego_store.borrow().wallets.get(&wallet_principal).unwrap().apps.len());
+    assert_eq!(1, ego_store.borrow().wallets.get(&new_wallet_principal).unwrap().apps.len());
+  });
+}
+
+#[test]
+fn admin_wallet_app_transfer_no_wallet(){
+  set_up();
+
+  let wallet_principal = Principal::from_text(EXISTS_WALLET_ID.to_string()).unwrap();
+  let new_wallet_principal = Principal::from_text(NEW_WALLET_ID.to_string()).unwrap();
+  let backend_principal = Principal::from_text(EXISTS_USER_APP_BACKEND.to_string()).unwrap();
+
+  let result = EgoStoreService::admin_wallet_app_transfer(&new_wallet_principal, None, None, backend_principal);
+  assert!(result.is_err());
+  assert_eq!("wallet and app can not both be null", result.err().unwrap().msg);
+}
+
+#[test]
+fn admin_wallet_app_transfer_wrong_canister(){
+  set_up();
+
+  let wallet_principal = Principal::from_text(EXISTS_WALLET_ID.to_string()).unwrap();
+  let new_wallet_principal = Principal::from_text(NEW_WALLET_ID.to_string()).unwrap();
+  let backend_principal = Principal::from_text(TEST_USER_APP_BACKEND.to_string()).unwrap();
+
+  let result = EgoStoreService::admin_wallet_app_transfer(&new_wallet_principal, Some(wallet_principal), None, backend_principal);
+  assert!(result.is_err());
+  assert_eq!(format!("canister {} not exists", backend_principal), result.err().unwrap().msg);
+}
+
+#[test]
+fn admin_wallet_app_transfer_wrong_app_id(){
+  set_up();
+
+  let wallet_principal = Principal::from_text(EXISTS_WALLET_ID.to_string()).unwrap();
+  let new_wallet_principal = Principal::from_text(NEW_WALLET_ID.to_string()).unwrap();
+  let backend_principal = Principal::from_text(TEST_USER_APP_BACKEND.to_string()).unwrap();
+
+  let result = EgoStoreService::admin_wallet_app_transfer(&new_wallet_principal, None, Some("app_not_exists".to_string()), backend_principal);
+  assert!(result.is_err());
+  assert_eq!("app app_not_exists not exists", result.err().unwrap().msg);
 }

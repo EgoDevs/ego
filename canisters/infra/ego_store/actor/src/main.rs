@@ -16,6 +16,7 @@ fn main() {
   use ego_types::app::UserApp;
   use ego_types::app::{AppId, App, CashFlow};
   use ego_types::cycle_info::*;
+  use std::collections::BTreeMap;
 
   use ic_ledger_types::Memo;
 

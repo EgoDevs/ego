@@ -35,13 +35,17 @@ export type Result_1 = { 'Ok' : bigint } |
   { 'Err' : string };
 export type Result_2 = { 'Ok' : null } |
   { 'Err' : string };
-export type Result_3 = { 'Ok' : Array<CycleRecord> } |
+export type Result_3 = { 'Ok' : Array<[string, Array<Principal>]> } |
   { 'Err' : string };
-export type Result_4 = { 'Ok' : CycleInfo } |
+export type Result_4 = { 'Ok' : Array<CycleRecord> } |
   { 'Err' : string };
-export type Result_5 = { 'Ok' : boolean } |
+export type Result_5 = { 'Ok' : CycleInfo } |
   { 'Err' : string };
-export type Result_6 = { 'Ok' : Array<string> } |
+export type Result_6 = { 'Ok' : boolean } |
+  { 'Err' : string };
+export type Result_7 = { 'Ok' : Array<string> } |
+  { 'Err' : string };
+export type Result_8 = { 'Ok' : [] | [Array<[Principal, string]>] } |
   { 'Err' : string };
 export interface Version {
   'major' : number,
@@ -63,21 +67,24 @@ export interface _SERVICE {
   'canister_main_track' : ActorMethod<[string], undefined>,
   'canister_relation_update' : ActorMethod<[string], undefined>,
   'ego_canister_add' : ActorMethod<[string, Principal], Result_2>,
+  'ego_canister_list' : ActorMethod<[], Result_3>,
+  'ego_canister_remove' : ActorMethod<[string, Principal], Result_2>,
   'ego_controller_add' : ActorMethod<[Principal], Result_2>,
   'ego_controller_remove' : ActorMethod<[Principal], Result_2>,
   'ego_controller_set' : ActorMethod<[Array<Principal>], Result_2>,
   'ego_cycle_check' : ActorMethod<[], Result_2>,
   'ego_cycle_estimate_set' : ActorMethod<[bigint], Result_2>,
-  'ego_cycle_history' : ActorMethod<[], Result_3>,
-  'ego_cycle_info' : ActorMethod<[], Result_4>,
+  'ego_cycle_history' : ActorMethod<[], Result_4>,
+  'ego_cycle_info' : ActorMethod<[], Result_5>,
   'ego_cycle_recharge' : ActorMethod<[bigint], Result_2>,
   'ego_cycle_threshold_get' : ActorMethod<[], Result_1>,
-  'ego_is_owner' : ActorMethod<[], Result_5>,
-  'ego_is_user' : ActorMethod<[], Result_5>,
-  'ego_log_list' : ActorMethod<[bigint], Result_6>,
+  'ego_is_owner' : ActorMethod<[], Result_6>,
+  'ego_is_user' : ActorMethod<[], Result_6>,
+  'ego_log_list' : ActorMethod<[bigint], Result_7>,
   'ego_op_add' : ActorMethod<[Principal], Result_2>,
   'ego_owner_add' : ActorMethod<[Principal], Result_2>,
   'ego_owner_add_with_name' : ActorMethod<[string, Principal], Result_2>,
+  'ego_owner_list' : ActorMethod<[], Result_8>,
   'ego_owner_remove' : ActorMethod<[Principal], Result_2>,
   'ego_owner_set' : ActorMethod<[Array<Principal>], Result_2>,
   'ego_runtime_cycle_threshold_get' : ActorMethod<[], Result_1>,

@@ -25,7 +25,7 @@ pub async fn controllers_update(canister_id: Principal, controllers: Vec<Princip
   }
 }
 
-async fn canister_status_get(canister_id: Principal) -> Result<CanisterStatusResponse, EgoError> {
+pub async fn canister_status_get(canister_id: Principal) -> Result<CanisterStatusResponse, EgoError> {
   match canister_status(CanisterIdRecord { canister_id }).await {
     Ok(result) => {
       Ok(result.0)

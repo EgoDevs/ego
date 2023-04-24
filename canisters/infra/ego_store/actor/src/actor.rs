@@ -1,7 +1,7 @@
 use std::collections::BTreeMap;
 
 use candid::candid_method;
-use ic_cdk::{caller, id, storage};
+use ic_cdk::{caller, id, storage, trap};
 use ic_cdk::api::time;
 use ic_cdk::export::candid::{CandidType, Deserialize};
 use ic_cdk::export::Principal;
@@ -21,7 +21,7 @@ use ego_store_mod::state::*;
 use ego_store_mod::state::EGO_STORE;
 use ego_store_mod::store::EgoStore;
 use ego_store_mod::types::*;
-use ego_types::app::{App, AppId};
+use ego_types::app::{App, AppId, Canister};
 use ego_types::app::CashFlow;
 use ego_types::app::EgoError;
 use ego_types::app::UserApp;
@@ -176,6 +176,7 @@ pub async fn wallet_app_install(
   Ok(user_app)
 }
 
+/// canister自己升级自己
 #[update(name = "wallet_app_upgrade")]
 #[candid_method(update, rename = "wallet_app_upgrade")]
 pub async fn wallet_app_upgrade(wallet_id: Principal) -> Result<(), EgoError> {
@@ -188,6 +189,21 @@ pub async fn wallet_app_upgrade(wallet_id: Principal) -> Result<(), EgoError> {
   EgoStoreService::wallet_app_upgrade(ego_tenant, ego_canister, &wallet_id, &canister_id).await?;
   Ok(())
 }
+
+/// wallet升级canister
+#[update(name = "wallet_app_upgrade_by_wallet")]
+#[candid_method(update, rename = "wallet_app_upgrade_by_wallet")]
+pub async fn wallet_app_upgrade_by_wallet(canister_id: Principal) -> Result<(), EgoError> {
+  let wallet_id = caller();
+  let ego_tenant = EgoTenantInner::new();
+  let ego_canister = EgoCanister::new();
+
+  info_log_add(format!("ego_store: wallet_app_upgrade_by_wallet wallet_id: {}, canister_id: {}", wallet_id, canister_id).as_str());
+
+  EgoStoreService::wallet_app_upgrade(ego_tenant, ego_canister, &wallet_id, &canister_id).await?;
+  Ok(())
+}
+
 
 #[update(name = "wallet_app_remove")]
 #[candid_method(update, rename = "wallet_app_remove")]
@@ -428,6 +444,19 @@ pub async fn wallet_main_new(user_id: Principal) -> Result<UserApp, EgoError> {
   Ok(user_app)
 }
 
+/********************  methods for astro_deployer   ********************/
+///
+/// 将某个canister，转移到astro_deployer名下
+///
+#[update(name = "admin_wallet_app_transfer", guard = "owner_guard")]
+#[candid_method(update, rename = "admin_wallet_app_transfer")]
+pub fn admin_wallet_app_transfer(
+  wallet: Option<Principal>, app: Option<AppId>, canister_id: Principal
+) -> Result<(), EgoError> {
+  info_log_add("ego_store: admin_wallet_app_transfer");
+
+  EgoStoreService::admin_wallet_app_transfer(&caller(), wallet, app, canister_id)
+}
 
 /********************  methods for ego_cycle_threshold_get   ********************/
 pub fn cycle_threshold_get() -> u128 {

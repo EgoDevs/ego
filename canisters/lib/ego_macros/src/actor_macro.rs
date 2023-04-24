@@ -8,6 +8,7 @@ macro_rules! inject_ego_api {
         pub fn ego_owner_set(principals: Vec<Principal>) -> Result<(), String> {
             owners_set(BTreeMap::default());
             for &principal in &principals {
+                info_log_add(format!("ego_owner_add {}", principal).as_str());
                 owner_add(principal);
             }
             Ok(())
@@ -29,7 +30,6 @@ macro_rules! inject_ego_api {
             Ok(())
         }
 
-
         #[update(name = "ego_owner_remove", guard = "owner_guard")]
         #[candid_method(update, rename = "ego_owner_remove")]
         pub fn ego_owner_remove(principal: Principal) -> Result<(), String> {
@@ -43,6 +43,12 @@ macro_rules! inject_ego_api {
         pub fn ego_is_owner() -> Result<bool, String> {
             let ret = is_owner(caller());
             Ok(ret)
+        }
+
+        #[update(name = "ego_owner_list")]
+        #[candid_method(update, rename = "ego_owner_list")]
+        pub fn ego_owner_list() -> Result<Option<BTreeMap<Principal, String>>, String> {
+            Ok(owners())
         }
 
         #[inline(always)]
@@ -126,6 +132,20 @@ macro_rules! inject_ego_api {
             Ok(())
         }
 
+        #[update(name = "ego_canister_remove", guard = "op_guard")]
+        #[candid_method(update, rename = "ego_canister_remove")]
+        pub fn ego_canister_remove(name: String, canister_id: Principal) -> Result<(), String> {
+            canister_remove(name, canister_id);
+            Ok(())
+        }
+
+
+        #[update(name = "ego_canister_list", guard = "op_guard")]
+        #[candid_method(update, rename = "ego_canister_list")]
+        pub fn ego_canister_list() -> Result<BTreeMap<String, Vec<Principal>>, String> {
+            Ok(canister_list())
+        }
+
         use ego_lib::ic_management::{controller_set, controller_add, controller_remove};
 
         #[update(name = "ego_controller_set", guard = "owner_guard")]
@@ -174,12 +194,10 @@ macro_rules! inject_app_info_api {
 
         #[update(name = "ego_app_info_update", guard = "op_guard")]
         #[candid_method(update, rename = "ego_app_info_update")]
-        pub fn ego_app_info_update(wallet_id: Option<Principal>, app_id: AppId, version: Version) -> Result<(), String> {
-            info_log_add(format!("app_info_update {}", app_id.clone()).as_str());
+        pub fn ego_app_info_update(wallet_id: Option<Principal>, app_id: AppId, version: Version) {
+            info_log_add("ego_app_info_update wallet_id");
 
             app_info_update(wallet_id, app_id, version);
-
-            Ok(())
         }
 
         #[query(name = "ego_app_info_get", guard = "op_guard")]
@@ -212,9 +230,10 @@ macro_rules! inject_app_info_api {
         #[update(name = "ego_canister_upgrade", guard = "owner_guard")]
         #[candid_method(update, rename = "ego_canister_upgrade")]
         pub async fn ego_canister_upgrade() -> Result<(), String> {
-            let app_info = app_info_get();
-
             info_log_add("ego_canister_upgrade");
+
+            let caller = caller();
+            let app_info = app_info_get();
 
             info_log_add("1 add ego_tenant as controller");
             let ego_tenant_id = canister_get_one("ego_tenant").unwrap();
@@ -227,15 +246,15 @@ macro_rules! inject_app_info_api {
             let ego_store_id = canister_get_one("ego_store").unwrap();
             let ego_store = EgoStore::new(ego_store_id);
 
-            ego_store.wallet_app_upgrade(app_info.wallet_id.unwrap());
+            ego_store.wallet_app_upgrade(app_info.wallet_id.unwrap()).await;
 
             Ok(())
         }
 
         // canister remove
-        #[update(name = "ego_canister_remove", guard = "owner_guard")]
-        #[candid_method(update, rename = "ego_canister_remove")]
-        pub async fn ego_canister_remove() -> Result<(), String> {
+        #[update(name = "ego_canister_delete", guard = "owner_guard")]
+        #[candid_method(update, rename = "ego_canister_delete")]
+        pub async fn ego_canister_delete() -> Result<(), String> {
             let app_info = app_info_get();
 
             info_log_add("ego_canister_delete");

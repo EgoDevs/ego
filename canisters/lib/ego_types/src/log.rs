@@ -1,3 +1,4 @@
+use std::cmp::min;
 use ic_cdk::export::candid::CandidType;
 use serde::Serialize;
 
@@ -27,7 +28,8 @@ impl Log {
   }
 
   pub fn log_list(&self, amount: usize) -> Vec<String> {
-    self.logs[0..amount].to_vec()
+    let size = min(amount, self.logs.len());
+    self.logs[0..size].to_vec()
   }
 
   pub fn log_clear(&mut self, remain: usize) {
