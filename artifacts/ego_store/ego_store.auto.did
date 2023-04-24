@@ -49,8 +49,8 @@ type Order = record {
   wallet_id : principal;
 };
 type OrderStatus = variant { NEW; SUCCESS };
-type Result = variant { Ok : bool; Err : EgoError };
-type Result_1 = variant { Ok : vec Order; Err : EgoError };
+type Result = variant { Ok; Err : EgoError };
+type Result_1 = variant { Ok : bool; Err : EgoError };
 type Result_10 = variant { Ok : bool; Err : text };
 type Result_11 = variant { Ok : vec text; Err : text };
 type Result_12 = variant {
@@ -64,7 +64,7 @@ type Result_16 = variant { Ok : WalletCycleChargeResponse; Err : EgoError };
 type Result_17 = variant { Ok : vec CashFlow; Err : EgoError };
 type Result_18 = variant { Ok : principal; Err : EgoError };
 type Result_19 = variant { Ok : nat64; Err : EgoError };
-type Result_2 = variant { Ok; Err : EgoError };
+type Result_2 = variant { Ok : vec Order; Err : EgoError };
 type Result_3 = variant { Ok : App; Err : EgoError };
 type Result_4 = variant { Ok : vec App; Err : EgoError };
 type Result_5 = variant { Ok : nat; Err : text };
@@ -91,12 +91,13 @@ type Wasm = record {
   canister_type : CanisterType;
 };
 service : (InitArg) -> {
-  admin_wallet_cycle_recharge : (AdminWalletCycleRechargeRequest) -> (Result);
-  admin_wallet_order_list : () -> (Result_1);
-  admin_wallet_provider_add : (AdminWalletProviderAddRequest) -> (Result_2);
+  admin_wallet_app_transfer : (opt principal, opt text, principal) -> (Result);
+  admin_wallet_cycle_recharge : (AdminWalletCycleRechargeRequest) -> (Result_1);
+  admin_wallet_order_list : () -> (Result_2);
+  admin_wallet_provider_add : (AdminWalletProviderAddRequest) -> (Result);
   app_main_get : (text) -> (Result_3);
   app_main_list : () -> (Result_4);
-  app_main_release : (EgoStoreApp) -> (Result);
+  app_main_release : (EgoStoreApp) -> (Result_1);
   balance_get : () -> (Result_5) query;
   ego_canister_add : (text, principal) -> (Result_6);
   ego_canister_list : () -> (Result_7);
@@ -126,18 +127,18 @@ service : (InitArg) -> {
   flush_wallet_change_record : () -> ();
   wallet_app_install : (text) -> (Result_13);
   wallet_app_list : () -> (Result_14);
-  wallet_app_remove : (principal) -> (Result_2);
-  wallet_app_upgrade : (principal) -> (Result_2);
-  wallet_app_upgrade_by_wallet : (principal) -> (Result_2);
-  wallet_canister_track : (principal) -> (Result_2);
-  wallet_canister_untrack : (principal) -> (Result_2);
+  wallet_app_remove : (principal) -> (Result);
+  wallet_app_upgrade : (principal) -> (Result);
+  wallet_app_upgrade_by_wallet : (principal) -> (Result);
+  wallet_canister_track : (principal) -> (Result);
+  wallet_canister_untrack : (principal) -> (Result);
   wallet_cycle_balance : () -> (Result_15);
   wallet_cycle_charge : (WalletCycleChargeRequest) -> (Result_16);
   wallet_cycle_list : () -> (Result_17);
   wallet_main_new : (principal) -> (Result_13);
   wallet_main_register : (principal) -> (Result_18);
-  wallet_order_list : () -> (Result_1);
+  wallet_order_list : () -> (Result_2);
   wallet_order_new : (float32) -> (Result_19);
-  wallet_order_notify : (nat64) -> (Result);
+  wallet_order_notify : (nat64) -> (Result_1);
   wallet_tenant_get : () -> (Result_18);
 }

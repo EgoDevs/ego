@@ -20,15 +20,11 @@ export type Result_4 = { 'Ok' : CycleInfo } |
   { 'Err' : string };
 export type Result_5 = { 'Ok' : boolean } |
   { 'Err' : string };
-<<<<<<< HEAD
-export type Result_6 = { 'Ok' : Array<number> } |
-=======
 export type Result_6 = { 'Ok' : Array<string> } |
   { 'Err' : string };
 export type Result_7 = { 'Ok' : [] | [Array<[Principal, string]>] } |
   { 'Err' : string };
 export type Result_8 = { 'Ok' : Uint8Array | number[] } |
->>>>>>> b366927 (ego upgrade)
   { 'Err' : EgoError };
 export type Result_9 = { 'Ok' : boolean } |
   { 'Err' : EgoError };
@@ -59,12 +55,6 @@ export interface _SERVICE {
   'ego_user_add' : ActorMethod<[Principal], Result_1>,
   'ego_user_remove' : ActorMethod<[Principal], Result_1>,
   'ego_user_set' : ActorMethod<[Array<Principal>], Result_1>,
-<<<<<<< HEAD
-  'file_main_read' : ActorMethod<[string], Result_6>,
-  'file_main_write' : ActorMethod<[string, string, Array<number>], Result_7>,
-  'state_persist' : ActorMethod<[], Result_7>,
-  'state_restore' : ActorMethod<[], Result_7>,
-=======
   'file_main_read' : ActorMethod<[string], Result_8>,
   'file_main_write' : ActorMethod<
     [string, string, Uint8Array | number[]],
@@ -72,5 +62,4 @@ export interface _SERVICE {
   >,
   'state_persist' : ActorMethod<[], Result_9>,
   'state_restore' : ActorMethod<[], Result_9>,
->>>>>>> b366927 (ego upgrade)
 }
