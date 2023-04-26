@@ -1,7 +1,7 @@
 use std::collections::BTreeMap;
 
 use candid::candid_method;
-use ic_cdk::{caller, id, storage, trap};
+use ic_cdk::{caller, id, storage};
 use ic_cdk::api::time;
 use ic_cdk::export::candid::{CandidType, Deserialize};
 use ic_cdk::export::Principal;
@@ -21,7 +21,7 @@ use ego_store_mod::state::*;
 use ego_store_mod::state::EGO_STORE;
 use ego_store_mod::store::EgoStore;
 use ego_store_mod::types::*;
-use ego_types::app::{App, AppId, Canister};
+use ego_types::app::{App, AppId};
 use ego_types::app::CashFlow;
 use ego_types::app::EgoError;
 use ego_types::app::UserApp;
@@ -161,11 +161,11 @@ pub async fn wallet_app_install(
 ) -> Result<UserApp, EgoError> {
   info_log_add("ego_store: wallet_app_install");
 
-  info_log_add("1 get app to be install");
+  info_log_add(format!("1 get app [{}] to be install", app_id).as_str());
   let app = EGO_STORE.with(|ego_store| ego_store.borrow().app_main_get(&app_id).clone())?;
 
-  info_log_add("2 get wallet_id");
   let wallet_id = caller();
+  info_log_add(format!("2 get wallet_id {}", wallet_id).as_str());
 
   let ego_tenant = EgoTenantInner::new();
   let ego_canister = EgoCanister::new();
