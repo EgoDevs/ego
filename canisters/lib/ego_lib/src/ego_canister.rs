@@ -20,8 +20,11 @@ pub trait TEgoCanister {
   fn ego_user_set(&self, target_canister_id: Principal, user_ids: Vec<Principal>);
   fn ego_user_add(&self, target_canister_id: Principal, principal: Principal);
   fn ego_user_remove(&self, target_canister_id: Principal, principal: Principal);
+  async fn ego_user_list(&self, target_canister_id: Principal) -> Result<Option<std::collections::BTreeMap<Principal, String>>, String>;
 
   fn ego_op_add(&self, target_canister_id: Principal, user_id: Principal);
+  fn ego_op_remove(&self, target_canister_id: Principal, principal: Principal);
+  async fn ego_op_list(&self, target_canister_id: Principal) -> Result<Option<std::collections::BTreeMap<Principal, String>>, String>;
 
   fn ego_canister_add(&self, target_canister_id: Principal, name: String, principal: Principal);
   fn ego_canister_remove(&self, target_canister_id: Principal, name: String, principal: Principal);
@@ -84,11 +87,11 @@ impl TEgoCanister for EgoCanister {
     match call_result {
       Ok(resp) => match resp.0 {
         Ok(owners) => Ok(owners),
-        Err(msg) => trap(format!("Error calling ego_owners msg: {}", msg).as_str()),
+        Err(msg) => trap(format!("Error calling ego_owner_list msg: {}", msg).as_str()),
       },
       Err((code, msg)) => {
         let code = code as u16;
-        trap(format!("Error calling ego_owners code: {}, msg: {}", code, msg).as_str());
+        trap(format!("Error calling ego_owner_list code: {}, msg: {}", code, msg).as_str());
       }
     }
   }
@@ -105,8 +108,44 @@ impl TEgoCanister for EgoCanister {
     let _result = api::call::notify(target_canister_id, "ego_user_remove", (principal, ));
   }
 
+  async fn ego_user_list(&self, target_canister_id: Principal) -> Result<Option<BTreeMap<Principal, String>>, String> {
+    let call_result = api::call::call(target_canister_id, "ego_user_list", ()).await
+        as Result<(Result<Option<BTreeMap<Principal, String>>, String>, ), (RejectionCode, String)>;
+
+    match call_result {
+      Ok(resp) => match resp.0 {
+        Ok(owners) => Ok(owners),
+        Err(msg) => trap(format!("Error calling ego_user_list msg: {}", msg).as_str()),
+      },
+      Err((code, msg)) => {
+        let code = code as u16;
+        trap(format!("Error calling ego_user_list code: {}, msg: {}", code, msg).as_str());
+      }
+    }
+  }
+
   fn ego_op_add(&self, target_canister_id: Principal, user_id: Principal) {
     let _result = api::call::notify(target_canister_id, "ego_op_add", (user_id, ));
+  }
+
+  fn ego_op_remove(&self, target_canister_id: Principal, principal: Principal) {
+    let _result = api::call::notify(target_canister_id, "ego_op_remove", (principal, ));
+  }
+
+  async fn ego_op_list(&self, target_canister_id: Principal) -> Result<Option<BTreeMap<Principal, String>>, String> {
+    let call_result = api::call::call(target_canister_id, "ego_op_list", ()).await
+        as Result<(Result<Option<BTreeMap<Principal, String>>, String>, ), (RejectionCode, String)>;
+
+    match call_result {
+      Ok(resp) => match resp.0 {
+        Ok(owners) => Ok(owners),
+        Err(msg) => trap(format!("Error calling ego_op_list msg: {}", msg).as_str()),
+      },
+      Err((code, msg)) => {
+        let code = code as u16;
+        trap(format!("Error calling ego_op_list code: {}, msg: {}", code, msg).as_str());
+      }
+    }
   }
 
   fn ego_canister_add(&self, target_canister_id: Principal, name: String, principal: Principal) {

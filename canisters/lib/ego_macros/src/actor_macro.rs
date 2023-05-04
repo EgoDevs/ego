@@ -95,6 +95,12 @@ macro_rules! inject_ego_api {
             Ok(ret)
         }
 
+        #[update(name = "ego_user_list")]
+        #[candid_method(update, rename = "ego_user_list")]
+        pub fn ego_user_list() -> Result<Option<BTreeMap<Principal, String>>, String> {
+            Ok(users())
+        }
+
         #[inline(always)]
         pub fn user_guard() -> Result<(), String> {
             let caller = ic_cdk::api::caller();
@@ -113,6 +119,28 @@ macro_rules! inject_ego_api {
             op_add(principal);
             Ok(())
         }
+
+        #[update(name = "ego_op_remove", guard = "owner_guard")]
+        #[candid_method(update, rename = "ego_op_remove")]
+        pub fn ego_op_remove(principal: Principal) -> Result<(), String> {
+            info_log_add(format!("ego_op_remove {}", principal).as_str());
+            op_remove(principal);
+            Ok(())
+        }
+
+        #[query(name = "ego_is_op")]
+        #[candid_method(query, rename = "ego_is_op")]
+        pub fn ego_is_op() -> Result<bool, String> {
+            let ret = is_op(caller());
+            Ok(ret)
+        }
+
+        #[update(name = "ego_op_list")]
+        #[candid_method(update, rename = "ego_op_list")]
+        pub fn ego_op_list() -> Result<Option<BTreeMap<Principal, String>>, String> {
+            Ok(ops())
+        }
+
 
         #[inline(always)]
         pub fn op_guard() -> Result<(), String> {
@@ -304,8 +332,8 @@ macro_rules! inject_cycle_info_api {
             Ok(())
         }
 
-        #[query(name = "ego_cycle_history", guard = "op_guard")]
-        #[candid_method(query, rename = "ego_cycle_history")]
+        #[update(name = "ego_cycle_history", guard = "op_guard")]
+        #[candid_method(update, rename = "ego_cycle_history")]
         pub fn ego_cycle_history() -> Result<Vec<CycleRecord>, String>  {
             Ok(cycle_record_list())
         }
