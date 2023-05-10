@@ -51,14 +51,17 @@ service : (InitArg) -> {
   ego_controller_set : (vec principal) -> (Result_2);
   ego_cycle_check : () -> (Result_2);
   ego_cycle_estimate_set : (nat64) -> (Result_2);
-  ego_cycle_history : () -> (Result_4) query;
+  ego_cycle_history : () -> (Result_4);
   ego_cycle_info : () -> (Result_5);
   ego_cycle_recharge : (nat) -> (Result_2);
   ego_cycle_threshold_get : () -> (Result_1);
+  ego_is_op : () -> (Result_6) query;
   ego_is_owner : () -> (Result_6) query;
   ego_is_user : () -> (Result_6) query;
   ego_log_list : (nat64) -> (Result_7) query;
   ego_op_add : (principal) -> (Result_2);
+  ego_op_list : () -> (Result_8);
+  ego_op_remove : (principal) -> (Result_2);
   ego_owner_add : (principal) -> (Result_2);
   ego_owner_add_with_name : (text, principal) -> (Result_2);
   ego_owner_list : () -> (Result_8);
@@ -66,6 +69,7 @@ service : (InitArg) -> {
   ego_owner_set : (vec principal) -> (Result_2);
   ego_runtime_cycle_threshold_get : () -> (Result_1);
   ego_user_add : (principal) -> (Result_2);
+  ego_user_list : () -> (Result_8);
   ego_user_remove : (principal) -> (Result_2);
   ego_user_set : (vec principal) -> (Result_2);
 }

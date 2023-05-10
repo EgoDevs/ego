@@ -107,14 +107,17 @@ service : (InitArg) -> {
   ego_controller_set : (vec principal) -> (Result_6);
   ego_cycle_check : () -> (Result_6);
   ego_cycle_estimate_set : (nat64) -> (Result_6);
-  ego_cycle_history : () -> (Result_8) query;
+  ego_cycle_history : () -> (Result_8);
   ego_cycle_info : () -> (Result_9);
   ego_cycle_recharge : (nat) -> (Result_6);
   ego_cycle_threshold_get : () -> (Result_5);
+  ego_is_op : () -> (Result_10) query;
   ego_is_owner : () -> (Result_10) query;
   ego_is_user : () -> (Result_10) query;
   ego_log_list : (nat64) -> (Result_11) query;
   ego_op_add : (principal) -> (Result_6);
+  ego_op_list : () -> (Result_12);
+  ego_op_remove : (principal) -> (Result_6);
   ego_owner_add : (principal) -> (Result_6);
   ego_owner_add_with_name : (text, principal) -> (Result_6);
   ego_owner_list : () -> (Result_12);
@@ -122,6 +125,7 @@ service : (InitArg) -> {
   ego_owner_set : (vec principal) -> (Result_6);
   ego_runtime_cycle_threshold_get : () -> (Result_5);
   ego_user_add : (principal) -> (Result_6);
+  ego_user_list : () -> (Result_12);
   ego_user_remove : (principal) -> (Result_6);
   ego_user_set : (vec principal) -> (Result_6);
   flush_wallet_change_record : () -> ();
