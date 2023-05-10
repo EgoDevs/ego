@@ -31,7 +31,8 @@ use ego_types::user::User;
 
 inject_ego_api!();
 
-pub const CHECK_DURATION: u64 = 60 * 2; // 2 minutes
+pub const CHECK_DURATION: u64 = 60 * 5; // 每 5 分钟，检查有没有需要检查的Canister
+pub const NEXT_CHECK_DURATION: u64 = 1800; // Canister每 30 分钟 回报一次
 
 #[derive(Clone, Debug, CandidType, Deserialize)]
 pub struct InitArg {
@@ -152,7 +153,7 @@ async fn app_main_delete(canister_id: Principal) -> Result<(), EgoError> {
 fn canister_main_track(wallet_id: Principal, canister_id: Principal) -> Result<(), EgoError> {
   info_log_add("ego_tenant: canister_main_track");
 
-  let next_check_time = time().div(1e9 as u64) + 60;  // convert to second
+  let next_check_time = time().div(1e9 as u64) + NEXT_CHECK_DURATION;  // next_check_time
 
   EgoTenantService::canister_main_track(wallet_id, canister_id, next_check_time)?;
   Ok(())
