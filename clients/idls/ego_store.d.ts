@@ -47,9 +47,9 @@ export interface EgoError { 'msg' : string, 'code' : number }
 export interface EgoStoreApp { 'app' : App, 'wasm' : Wasm }
 export interface InitArg { 'init_caller' : [] | [Principal] }
 export interface Order {
-  'to' : Uint8Array | number[],
+  'to' : Array<number>,
   'status' : OrderStatus,
-  'from' : Uint8Array | number[],
+  'from' : Array<number>,
   'memo' : bigint,
   'amount' : number,
   'wallet_id' : Principal,
@@ -121,16 +121,16 @@ export interface Wasm {
 export interface _SERVICE {
   'admin_wallet_app_transfer' : ActorMethod<
     [[] | [Principal], [] | [string], Principal],
-    Result
+    Result,
   >,
   'admin_wallet_cycle_recharge' : ActorMethod<
     [AdminWalletCycleRechargeRequest],
-    Result_1
+    Result_1,
   >,
   'admin_wallet_order_list' : ActorMethod<[], Result_2>,
   'admin_wallet_provider_add' : ActorMethod<
     [AdminWalletProviderAddRequest],
-    Result
+    Result,
   >,
   'app_main_get' : ActorMethod<[string], Result_3>,
   'app_main_list' : ActorMethod<[], Result_4>,

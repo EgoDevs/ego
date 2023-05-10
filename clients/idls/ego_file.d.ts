@@ -6,14 +6,8 @@ export interface CycleInfo {
   'estimate_remaining' : bigint,
 }
 export interface CycleRecord { 'ts' : bigint, 'balance' : bigint }
+export interface EgoError { 'msg' : string, 'code' : number }
 export interface InitArg { 'init_caller' : [] | [Principal] }
-export interface Record {
-  'id' : bigint,
-  'create_at' : bigint,
-  'event' : string,
-  'scope' : string,
-  'message' : string,
-}
 export type Result = { 'Ok' : bigint } |
   { 'Err' : string };
 export type Result_1 = { 'Ok' : null } |
@@ -30,6 +24,10 @@ export type Result_6 = { 'Ok' : Array<string> } |
   { 'Err' : string };
 export type Result_7 = { 'Ok' : [] | [Array<[Principal, string]>] } |
   { 'Err' : string };
+export type Result_8 = { 'Ok' : Array<number> } |
+  { 'Err' : EgoError };
+export type Result_9 = { 'Ok' : boolean } |
+  { 'Err' : EgoError };
 export interface _SERVICE {
   'balance_get' : ActorMethod<[], Result>,
   'ego_canister_add' : ActorMethod<[string, Principal], Result_1>,
@@ -61,12 +59,8 @@ export interface _SERVICE {
   'ego_user_list' : ActorMethod<[], Result_7>,
   'ego_user_remove' : ActorMethod<[Principal], Result_1>,
   'ego_user_set' : ActorMethod<[Array<Principal>], Result_1>,
-  'record_add' : ActorMethod<
-    [string, string, string, [] | [bigint]],
-    undefined,
-  >,
-  'record_amount' : ActorMethod<[], bigint>,
-  'record_list' : ActorMethod<[bigint], Array<Record>>,
-  'record_retain' : ActorMethod<[bigint], undefined>,
-  'record_retain_after' : ActorMethod<[bigint], undefined>,
+  'file_main_read' : ActorMethod<[string], Result_8>,
+  'file_main_write' : ActorMethod<[string, string, Array<number>], Result_9>,
+  'state_persist' : ActorMethod<[], Result_9>,
+  'state_restore' : ActorMethod<[], Result_9>,
 }
