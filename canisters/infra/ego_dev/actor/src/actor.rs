@@ -305,7 +305,7 @@ pub async fn admin_app_create(
     info_log_add("1. developer exists. skip developer registration");
   } else {
     info_log_add("1. developer_main_register");
-    EgoDevService::developer_main_register(caller, "astrox".to_string())?;
+    EgoDevService::developer_main_register(caller, "ego_deployer".to_string())?;
   }
 
   info_log_add("2. developer_app_new");
