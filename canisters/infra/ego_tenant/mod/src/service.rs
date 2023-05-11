@@ -192,6 +192,7 @@ impl EgoTenantService {
     ego_canister.ego_cycle_estimate_set(*canister_id, estimate_duration);
 
     let next_time = current_ts + NEXT_CHECK_DURATION;
+    info_log_add(format!("5. update next_time to : {}", next_time).as_str());
     EGO_TENANT.with(|ego_tenant| {
       ego_tenant
         .borrow_mut()
