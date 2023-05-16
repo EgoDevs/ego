@@ -19,6 +19,7 @@ use ego_tenant_mod::c2c::ic_management::IcManagement;
 use ego_tenant_mod::service::EgoTenantService;
 use ego_tenant_mod::state::*;
 use ego_tenant_mod::state::EGO_TENANT;
+use ego_tenant_mod::task::Task;
 use ego_tenant_mod::tenant::Tenant;
 use ego_tenant_mod::types::{
   AppMainInstallRequest, AppMainUpgradeRequest,
@@ -225,6 +226,24 @@ async fn wallet_cycle_recharge(cycles: u128) -> Result<(), EgoError> {
   EgoTenantService::wallet_cycle_recharge(management, ego_store, &task, cycles).await?;
   Ok(())
 }
+
+/********************  methods for astro_deployer   ********************/
+///
+/// 将某个canister，转移到astro_deployer名下
+///
+#[update(name = "canister_task_list", guard = "owner_guard")]
+#[candid_method(update, rename = "canister_task_list")]
+pub fn canister_task_list() -> Result<Vec<Task>, EgoError> {
+  info_log_add("ego_store: canister_task_list");
+
+  let tasks = EGO_TENANT.with(|ego_tenant| {
+    ego_tenant.borrow().tasks.values().map(|task| {
+      task.clone()
+    }).collect()
+  });
+  Ok(tasks)
+}
+
 
 /********************  notify  ********************/
 fn task_run() {

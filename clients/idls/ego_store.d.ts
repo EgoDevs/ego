@@ -122,7 +122,7 @@ export interface Wasm {
 }
 export interface _SERVICE {
   'admin_backup' : ActorMethod<[], Uint8Array | number[]>,
-  'admin_restore' : ActorMethod<[], Uint8Array | number[]>,
+  'admin_restore' : ActorMethod<[Uint8Array | number[]], undefined>,
   'admin_tenant_list' : ActorMethod<[], Result>,
   'admin_wallet_app_transfer' : ActorMethod<
     [[] | [Principal], [] | [string], Principal],

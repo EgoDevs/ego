@@ -1,13 +1,14 @@
 use std::collections::BTreeMap;
 
 use candid::candid_method;
-use ic_cdk::{caller, id, storage};
+use ic_cdk::{caller, id, storage, trap};
 use ic_cdk::api::time;
 use ic_cdk::export::candid::{CandidType, Deserialize};
 use ic_cdk::export::Principal;
 use ic_cdk_macros::*;
 use ic_ledger_types::Memo;
 use serde::Serialize;
+use serde_bytes::ByteBuf;
 use ego_inner_rpc::ego_record::{EgoRecord, TEgoRecord};
 
 use ego_lib::ego_canister::{EgoCanister};
@@ -493,20 +494,51 @@ async fn admin_backup() -> Vec<u8> {
 
 #[update(name = "admin_restore", guard = "owner_guard")]
 #[candid_method(update, rename = "admin_restore")]
-async fn admin_restore() -> Vec<u8> {
+async fn admin_restore(chunk: ByteBuf) {
   info_log_add("ego_store: admin_restore");
 
-  let ego_store = EGO_STORE.with(|ego_store| ego_store.borrow().clone());
+  let data_opt = std::str::from_utf8(chunk.as_slice());
+  match data_opt {
+    Ok(data) => {
+      // return data.to_string();
+      let deser_result = serde_json::from_str::<PersistState>(&data);
+      match deser_result {
+        Ok(state) => {
+          EGO_STORE.with(|ego_store| *ego_store.borrow_mut() = state.ego_store);
 
-  let state = PersistState {
-    ego_store,
-    users: Some(users_pre_upgrade()),
-    registry: Some(registry_pre_upgrade()),
-    cycle_info: Some(cycle_info_pre_upgrade()),
-  };
+          match state.users {
+            None => {}
+            Some(users) => {
+              users_post_upgrade(users);
+            }
+          }
 
-  serde_json::to_vec(&state).unwrap()
+          match state.registry {
+            None => {}
+            Some(registry) => {
+              registry_post_upgrade(registry);
+            }
+          }
+
+          match state.cycle_info {
+            None => {}
+            Some(cycle_info) => {
+              cycle_info_post_upgrade(cycle_info);
+            }
+          }
+        },
+        Err(_) =>  {
+          trap("deserialize failed")
+        },
+      }
+    }
+
+    Err(_) => {
+      trap("deserialize failed")
+    },
+  }
 }
+
 
 /********************  methods for ego_cycle_threshold_get   ********************/
 pub fn cycle_threshold_get() -> u128 {
