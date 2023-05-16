@@ -21,7 +21,8 @@
         "ego:reinstall:live": "NODE_ENV=production ego --reinstall",
         "ego:upgrade:live": "NODE_ENV=production ego --upgrade",
         "test:live": "NODE_ENV=production jest --verbose -t",
-        "ego:run:live": "pnpm run ego:clean && pnpm run ego:create:live && pnpm run ego:build:live && pnpm run ego:install:live && pnpm run test:live deploy_ego"
+        "ego:run:live": "pnpm run ego:clean && pnpm run ego:create:live && pnpm run ego:build:live && pnpm run ego:install:live && pnpm run test:live deploy_ego",
+        "migrate": "jest --testPathPattern=migrations --verbose -t"
     },
     "author": "egoDevs@github.com",
     "license": "ISC",

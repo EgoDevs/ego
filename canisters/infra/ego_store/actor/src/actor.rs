@@ -458,6 +458,56 @@ pub fn admin_wallet_app_transfer(
   EgoStoreService::admin_wallet_app_transfer(&caller(), wallet, app, canister_id)
 }
 
+///
+/// 返回Tenant列表
+///
+#[update(name = "admin_tenant_list", guard = "owner_guard")]
+#[candid_method(update, rename = "admin_tenant_list")]
+pub fn admin_tenant_list() -> Result<Vec<Principal>, EgoError> {
+  info_log_add("ego_store: admin_tenant_list");
+
+  let tenant_principals = EGO_STORE.with(|store| {
+    store.borrow().tenants.keys().map(|principal| principal.clone()).collect()
+  });
+
+  Ok(tenant_principals)
+}
+
+/********************  数据导出   ********************/
+#[update(name = "admin_backup", guard = "owner_guard")]
+#[candid_method(update, rename = "admin_backup")]
+async fn admin_backup() -> Vec<u8> {
+  info_log_add("ego_store: admin_backup");
+
+  let ego_store = EGO_STORE.with(|ego_store| ego_store.borrow().clone());
+
+  let state = PersistState {
+    ego_store,
+    users: Some(users_pre_upgrade()),
+    registry: Some(registry_pre_upgrade()),
+    cycle_info: Some(cycle_info_pre_upgrade()),
+  };
+
+  serde_json::to_vec(&state).unwrap()
+}
+
+#[update(name = "admin_restore", guard = "owner_guard")]
+#[candid_method(update, rename = "admin_restore")]
+async fn admin_restore() -> Vec<u8> {
+  info_log_add("ego_store: admin_restore");
+
+  let ego_store = EGO_STORE.with(|ego_store| ego_store.borrow().clone());
+
+  let state = PersistState {
+    ego_store,
+    users: Some(users_pre_upgrade()),
+    registry: Some(registry_pre_upgrade()),
+    cycle_info: Some(cycle_info_pre_upgrade()),
+  };
+
+  serde_json::to_vec(&state).unwrap()
+}
+
 /********************  methods for ego_cycle_threshold_get   ********************/
 pub fn cycle_threshold_get() -> u128 {
   1_000_000_000_000
