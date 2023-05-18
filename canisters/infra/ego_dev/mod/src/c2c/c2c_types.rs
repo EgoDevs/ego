@@ -7,6 +7,6 @@ use ego_types::app::{App, Wasm};
 
 #[derive(CandidType, Serialize, Deserialize, Clone, Debug)]
 pub struct EgoStoreApp {
-  pub app: App,
-  pub wasm: Wasm,
+    pub app: App,
+    pub wasm: Wasm,
 }

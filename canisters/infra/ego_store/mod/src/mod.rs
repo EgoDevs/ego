@@ -1,10 +1,10 @@
 pub mod app;
 pub mod c2c;
-pub mod store;
+pub mod order;
 pub mod service;
 pub mod state;
+pub mod store;
 pub mod tenant;
 pub mod types;
 pub mod wallet;
 pub mod wallet_provider;
-pub mod order;

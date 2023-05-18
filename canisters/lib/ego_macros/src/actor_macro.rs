@@ -17,7 +17,13 @@ macro_rules! inject_ego_api {
         #[update(name = "ego_owner_add_with_name", guard = "owner_guard")]
         #[candid_method(update, rename = "ego_owner_add_with_name")]
         pub fn ego_owner_add_with_name(name: String, principal: Principal) -> Result<(), String> {
-            info_log_add(format!("ego_owner_add_with_name name:{}, principal:{}", name, principal).as_str());
+            info_log_add(
+                format!(
+                    "ego_owner_add_with_name name:{}, principal:{}",
+                    name, principal
+                )
+                .as_str(),
+            );
             owner_add_with_name(name, principal);
             Ok(())
         }
@@ -141,7 +147,6 @@ macro_rules! inject_ego_api {
             Ok(ops())
         }
 
-
         #[inline(always)]
         pub fn op_guard() -> Result<(), String> {
             let caller = ic_cdk::api::caller();
@@ -167,21 +172,20 @@ macro_rules! inject_ego_api {
             Ok(())
         }
 
-
         #[update(name = "ego_canister_list", guard = "op_guard")]
         #[candid_method(update, rename = "ego_canister_list")]
         pub fn ego_canister_list() -> Result<BTreeMap<String, Vec<Principal>>, String> {
             Ok(canister_list())
         }
 
-        use ego_lib::ic_management::{controller_set, controller_add, controller_remove};
+        use ego_lib::ic_management::{controller_add, controller_remove, controller_set};
 
         #[update(name = "ego_controller_set", guard = "owner_guard")]
         #[candid_method(update, rename = "ego_controller_set")]
         pub async fn ego_controller_set(principals: Vec<Principal>) -> Result<(), String> {
             match controller_set(ic_cdk::api::id(), principals).await {
                 Ok(_) => Ok(()),
-                Err(e) => Err(e.msg)
+                Err(e) => Err(e.msg),
             }
         }
 
@@ -190,7 +194,7 @@ macro_rules! inject_ego_api {
         pub async fn ego_controller_add(principal: Principal) -> Result<(), String> {
             match controller_add(ic_cdk::api::id(), principal).await {
                 Ok(_) => Ok(()),
-                Err(e) => Err(e.msg)
+                Err(e) => Err(e.msg),
             }
         }
 
@@ -199,26 +203,28 @@ macro_rules! inject_ego_api {
         pub async fn ego_controller_remove(principal: Principal) -> Result<(), String> {
             match controller_remove(ic_cdk::api::id(), principal).await {
                 Ok(_) => Ok(()),
-                Err(e) => Err(e.msg)
+                Err(e) => Err(e.msg),
             }
         }
+
+
 
         // for log
         #[query(name = "ego_log_list", guard = "op_guard")]
         #[candid_method(query, rename = "ego_log_list")]
-        pub fn ego_log_list(amount: usize) -> Result<Vec<String>, String> {
+        pub fn ego_log_list(amount: usize) -> Result<Vec<ego_types::log::LogEntry>, String> {
             Ok(log_list(amount))
         }
-    }
+    };
 }
 
 #[macro_export]
 macro_rules! inject_app_info_api {
     () => {
         // for canister info
-        use ego_types::app_info::AppInfo;
+        use ego_lib::ego_store::{EgoStore, TEgoStore};
         use ego_types::app::{AppId, Version};
-        use ego_lib::ego_store::{TEgoStore, EgoStore};
+        use ego_types::app_info::AppInfo;
 
         #[update(name = "ego_app_info_update", guard = "op_guard")]
         #[candid_method(update, rename = "ego_app_info_update")]
@@ -230,7 +236,7 @@ macro_rules! inject_app_info_api {
 
         #[query(name = "ego_app_info_get", guard = "op_guard")]
         #[candid_method(query, rename = "ego_app_info_get")]
-        pub fn ego_app_info_get() -> Result<AppInfo, String>  {
+        pub fn ego_app_info_get() -> Result<AppInfo, String> {
             Ok(app_info_get())
         }
 
@@ -244,9 +250,9 @@ macro_rules! inject_app_info_api {
             let ego_store_id = canister_get_one("ego_store").unwrap();
             let ego_store = EgoStore::new(ego_store_id);
 
-            let app = match ego_store.app_main_get(app_info.app_id).await{
-              Ok(app) => Ok(app),
-              Err(e) => Err(e.msg)
+            let app = match ego_store.app_main_get(app_info.app_id).await {
+                Ok(app) => Ok(app),
+                Err(e) => Err(e.msg),
             }?;
 
             app_info_update(app_info.wallet_id, app.app_id, app.current_version);
@@ -267,14 +273,16 @@ macro_rules! inject_app_info_api {
             let ego_tenant_id = canister_get_one("ego_tenant").unwrap();
             let _result = match controller_add(ic_cdk::api::id(), ego_tenant_id).await {
                 Ok(_) => Ok(()),
-                Err(e) => Err(e.msg)
+                Err(e) => Err(e.msg),
             };
 
             info_log_add("2 call ego_store to upgrade");
             let ego_store_id = canister_get_one("ego_store").unwrap();
             let ego_store = EgoStore::new(ego_store_id);
 
-            ego_store.wallet_app_upgrade(app_info.wallet_id.unwrap()).await;
+            ego_store
+                .wallet_app_upgrade(app_info.wallet_id.unwrap())
+                .await;
 
             Ok(())
         }
@@ -291,7 +299,7 @@ macro_rules! inject_app_info_api {
             let ego_tenant_id = canister_get_one("ego_tenant").unwrap();
             let _result = match controller_add(ic_cdk::api::id(), ego_tenant_id).await {
                 Ok(_) => Ok(()),
-                Err(e) => Err(e.msg)
+                Err(e) => Err(e.msg),
             };
 
             info_log_add("2 call ego_store to delete");
@@ -309,10 +317,10 @@ macro_rules! inject_app_info_api {
 macro_rules! inject_cycle_info_api {
     () => {
         // for canister cycle info
+        use ego_lib::ego_tenant::{EgoTenant, TEgoTenant};
         use ego_types::cycle_info::{CycleInfo, CycleRecord};
-        use ego_lib::ego_tenant::{TEgoTenant, EgoTenant};
 
-        use std::ops::{Div};
+        use std::ops::Div;
 
         #[update(name = "ego_cycle_check", guard = "op_guard")]
         #[candid_method(update, rename = "ego_cycle_check")]
@@ -334,7 +342,7 @@ macro_rules! inject_cycle_info_api {
 
         #[update(name = "ego_cycle_history", guard = "op_guard")]
         #[candid_method(update, rename = "ego_cycle_history")]
-        pub fn ego_cycle_history() -> Result<Vec<CycleRecord>, String>  {
+        pub fn ego_cycle_history() -> Result<Vec<CycleRecord>, String> {
             Ok(cycle_record_list())
         }
 
@@ -370,15 +378,15 @@ macro_rules! inject_cycle_info_api {
             let ego_tenant_id = canister_get_one("ego_tenant").unwrap();
             let ego_tenant = EgoTenant::new(ego_tenant_id);
 
-            match ego_tenant.wallet_cycle_recharge(cycles).await{
-              Ok(_) => Ok(()),
-              Err(e) => Err(e.msg)
+            match ego_tenant.wallet_cycle_recharge(cycles).await {
+                Ok(_) => Ok(()),
+                Err(e) => Err(e.msg),
             }
         }
 
         #[query(name = "balance_get", guard = "op_guard")]
         #[candid_method(query, rename = "balance_get")]
-        pub fn balance_get() -> Result<u128, String>  {
+        pub fn balance_get() -> Result<u128, String> {
             Ok(ic_cdk::api::canister_balance128())
         }
     };

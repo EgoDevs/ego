@@ -6,4 +6,3 @@ pub mod ego_file;
 pub mod service;
 pub mod state;
 pub mod types;
-

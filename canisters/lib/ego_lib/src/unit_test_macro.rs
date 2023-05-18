@@ -1,6 +1,10 @@
 #[macro_export]
 macro_rules! inject_mock_ego_canister {
   () => {
+    use ego_types::cycle_info::CycleInfo;
+    use ego_types::cycle_info::CycleRecord;
+    use ego_types::log::LogEntry;
+
     mock! {
       Canister {}
 
@@ -48,7 +52,7 @@ macro_rules! inject_mock_ego_canister {
         async fn ego_runtime_cycle_threshold_get(&self, target_canister_id: Principal) -> Result<u128, String>;
         async fn ego_cycle_recharge(&self, target_canister_id: Principal, cycles: u128) -> Result<(), String>;
 
-        async fn ego_log_list(&self, target_canister_id: Principal, amount: usize) -> Result<Vec<String>, String>;
+        async fn ego_log_list(&self, target_canister_id: Principal, amount: usize) -> Result<Vec<LogEntry>, String>;
       }
     }
   }
@@ -56,45 +60,45 @@ macro_rules! inject_mock_ego_canister {
 
 #[macro_export]
 macro_rules! inject_mock_ego_store {
-  () => {
-    mock! {
-      Store {}
+    () => {
+        mock! {
+          Store {}
 
-      #[async_trait]
-      impl TEgoStore for Store {
-        async fn wallet_main_register(&self, user_id: Principal) -> Result<Principal, EgoError>;
+          #[async_trait]
+          impl TEgoStore for Store {
+            async fn wallet_main_register(&self, user_id: Principal) -> Result<Principal, EgoError>;
 
-        async fn wallet_main_new(&self, user_id: Principal) -> Result<UserApp, EgoError>;
+            async fn wallet_main_new(&self, user_id: Principal) -> Result<UserApp, EgoError>;
 
-        async fn app_main_list(&self) -> Result<Vec<App>, EgoError>;
-        async fn app_main_get(&self, app_id: AppId) -> Result<App, EgoError>;
+            async fn app_main_list(&self) -> Result<Vec<App>, EgoError>;
+            async fn app_main_get(&self, app_id: AppId) -> Result<App, EgoError>;
 
-        async fn wallet_app_install(&self, app_id: AppId) -> Result<UserApp, EgoError>;
-        fn wallet_app_upgrade(&self, wallet_id: Principal);
-        fn wallet_app_remove(&self, wallet_id: Principal);
-        async fn wallet_app_list(&self) -> Result<Vec<UserApp>, EgoError>;
+            async fn wallet_app_install(&self, app_id: AppId) -> Result<UserApp, EgoError>;
+            fn wallet_app_upgrade(&self, wallet_id: Principal);
+            fn wallet_app_remove(&self, wallet_id: Principal);
+            async fn wallet_app_list(&self) -> Result<Vec<UserApp>, EgoError>;
 
-        async fn wallet_cycle_balance(&self) -> Result<u128, EgoError>;
-        async fn wallet_cycle_list(&self) -> Result<Vec<ego_types::app::CashFlow>, EgoError>;
+            async fn wallet_cycle_balance(&self) -> Result<u128, EgoError>;
+            async fn wallet_cycle_list(&self) -> Result<Vec<ego_types::app::CashFlow>, EgoError>;
 
-        fn wallet_canister_track(&self, canister_id: Principal);
-        fn wallet_canister_untrack(&self, canister_id: Principal);
-      }
-    }
-  }
+            fn wallet_canister_track(&self, canister_id: Principal);
+            fn wallet_canister_untrack(&self, canister_id: Principal);
+          }
+        }
+    };
 }
 
 #[macro_export]
 macro_rules! inject_mock_ego_tenant {
-  () => {
-    mock! {
-      Tenant {}
+    () => {
+        mock! {
+          Tenant {}
 
-      #[async_trait]
-      pub trait TEgoTenant {
-        fn ego_cycle_check_cb(&self, records: Vec<CycleRecord>, threshold: u128);
-        async fn wallet_cycle_recharge(&self, cycles: u128) -> Result<(), EgoError>;
-      }
-    }
-  }
+          #[async_trait]
+          pub trait TEgoTenant {
+            fn ego_cycle_check_cb(&self, records: Vec<CycleRecord>, threshold: u128);
+            async fn wallet_cycle_recharge(&self, cycles: u128) -> Result<(), EgoError>;
+          }
+        }
+    };
 }

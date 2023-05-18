@@ -9,10 +9,10 @@ inject_cycle_info!();
 
 /********************  methods for ego_registry   ********************/
 fn on_canister_added(name: &str, canister_id: Principal) {
-  let _ = match name {
-    "ego_store" => user_add(canister_id),
-    _ => {}
-  };
+    let _ = match name {
+        "ego_store" => user_add(canister_id),
+        _ => {}
+    };
 }
 
 thread_local! {

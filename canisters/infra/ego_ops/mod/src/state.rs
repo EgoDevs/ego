@@ -9,7 +9,10 @@ inject_cycle_info!();
 
 /********************  methods for ego_registry   ********************/
 fn on_canister_added(name: &str, canister_id: Principal) {
-  info_log_add(&format!("on_canister_added name: {}, canister_id: {}", name, canister_id));
+    info_log_add(&format!(
+        "on_canister_added name: {}, canister_id: {}",
+        name, canister_id
+    ));
 }
 
 thread_local! {

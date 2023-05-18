@@ -5,7 +5,7 @@ use serde::Serialize;
 pub struct EgoOps {}
 
 impl EgoOps {
-  pub fn new() -> Self {
-    EgoOps {}
-  }
+    pub fn new() -> Self {
+        EgoOps {}
+    }
 }

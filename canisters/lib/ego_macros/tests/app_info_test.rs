@@ -559,51 +559,51 @@ fn user_upgrade_ops_test() {
 
 #[test]
 fn users_upgrade_test() {
-  let user_id = Principal::from_text(EXISTS_CANISTER_ID.to_string()).unwrap();
-  let owner_id = Principal::from_text(EXISTS_USER_1.to_string()).unwrap();
-  let ops_id = Principal::from_text(EXISTS_USER_2.to_string()).unwrap();
+    let user_id = Principal::from_text(EXISTS_CANISTER_ID.to_string()).unwrap();
+    let owner_id = Principal::from_text(EXISTS_USER_1.to_string()).unwrap();
+    let ops_id = Principal::from_text(EXISTS_USER_2.to_string()).unwrap();
 
-  // users add with name
-  let _ops_add = op_add_with_name("ops01".to_string(), ops_id);
-  let _user_add = user_add_with_name("user01".to_string(), user_id);
-  let _owner_add = owner_add_with_name("owner01".to_string(), owner_id);
+    // users add with name
+    let _ops_add = op_add_with_name("ops01".to_string(), ops_id);
+    let _user_add = user_add_with_name("user01".to_string(), user_id);
+    let _owner_add = owner_add_with_name("owner01".to_string(), owner_id);
 
-  // check ops isn't empty after user add with name
-  let _ops = ops().unwrap();
-  assert!(_ops.contains_key(&ops_id));
+    // check ops isn't empty after user add with name
+    let _ops = ops().unwrap();
+    assert!(_ops.contains_key(&ops_id));
 
-  let _user = users().unwrap();
-  assert!(_user.contains_key(&user_id));
+    let _user = users().unwrap();
+    assert!(_user.contains_key(&user_id));
 
-  let _owner = owners().unwrap();
-  assert!(_owner.contains_key(&owner_id));
+    let _owner = owners().unwrap();
+    assert!(_owner.contains_key(&owner_id));
 
-  // users pre upgrade
-  let _pre_upgrade = users_pre_upgrade();
-  // println!("{:?}", _pre_upgrade);
+    // users pre upgrade
+    let _pre_upgrade = users_pre_upgrade();
+    // println!("{:?}", _pre_upgrade);
 
-  // ops has been set empty, remove user and owner
-  let user_ = BTreeMap::new();
-  let _ops_set = ops_set(user_);
-  let _user_remove = user_remove(user_id);
-  let _owner_remove = owner_remove(owner_id);
+    // ops has been set empty, remove user and owner
+    let user_ = BTreeMap::new();
+    let _ops_set = ops_set(user_);
+    let _user_remove = user_remove(user_id);
+    let _owner_remove = owner_remove(owner_id);
 
-  // check user, ops and owner after user, ops and owner set empty
-  let _ops = ops().unwrap();
-  assert!(!_ops.contains_key(&ops_id));
-  let _owner = owners().unwrap();
-  assert!(!_owner.contains_key(&owner_id));
-  let _user = users().unwrap();
-  assert!(!_user.contains_key(&user_id));
+    // check user, ops and owner after user, ops and owner set empty
+    let _ops = ops().unwrap();
+    assert!(!_ops.contains_key(&ops_id));
+    let _owner = owners().unwrap();
+    assert!(!_owner.contains_key(&owner_id));
+    let _user = users().unwrap();
+    assert!(!_user.contains_key(&user_id));
 
-  // user post upgrade
-  let _post_upgrade = users_post_upgrade(_pre_upgrade);
+    // user post upgrade
+    let _post_upgrade = users_post_upgrade(_pre_upgrade);
 
-  // user, ops and owner have been recovered
-  let _ops = ops().unwrap();
-  assert!(_ops.contains_key(&ops_id));
-  let _owner = owners().unwrap();
-  assert!(_owner.contains_key(&owner_id));
-  let _user = users().unwrap();
-  assert!(_user.contains_key(&user_id));
+    // user, ops and owner have been recovered
+    let _ops = ops().unwrap();
+    assert!(_ops.contains_key(&ops_id));
+    let _owner = owners().unwrap();
+    assert!(_owner.contains_key(&owner_id));
+    let _user = users().unwrap();
+    assert!(_user.contains_key(&user_id));
 }

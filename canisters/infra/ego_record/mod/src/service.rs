@@ -1,6 +1,6 @@
 use crate::record::Record;
 
-use crate::state::{EGO_RECORD};
+use crate::state::EGO_RECORD;
 
 pub struct RecordService {
     pub records: Vec<Record>,
@@ -8,24 +8,21 @@ pub struct RecordService {
     pub record_st: u64,
 }
 
-
 impl RecordService {
     pub fn record_add(scope: &str, event: &str, message: &str, ts: u64) {
         EGO_RECORD.with(|ego_record| {
-            ego_record.borrow_mut().record_add(scope, event, message, ts);
+            ego_record
+                .borrow_mut()
+                .record_add(scope, event, message, ts);
         });
     }
 
     pub fn record_amount() -> usize {
-        EGO_RECORD.with(|ego_record| {
-            ego_record.borrow().records.len()
-        })
+        EGO_RECORD.with(|ego_record| ego_record.borrow().records.len())
     }
 
     pub fn record_list(amount: usize) -> Vec<Record> {
-        let total_amount = EGO_RECORD.with(|ego_record| {
-            ego_record.borrow().records.len()
-        });
+        let total_amount = EGO_RECORD.with(|ego_record| ego_record.borrow().records.len());
 
         let mut start: usize = 0;
 
@@ -33,17 +30,14 @@ impl RecordService {
             start = total_amount - amount;
         }
 
-        let mut records = EGO_RECORD.with(|ego_record| {
-            ego_record.borrow().records[start..].to_vec()
-        });
+        let mut records =
+            EGO_RECORD.with(|ego_record| ego_record.borrow().records[start..].to_vec());
         records.reverse();
         records
     }
 
     pub fn record_retain(remain_amount: usize) {
-        let total_amount = EGO_RECORD.with(|ego_record| {
-            ego_record.borrow().records.len()
-        });
+        let total_amount = EGO_RECORD.with(|ego_record| ego_record.borrow().records.len());
 
         let mut end = 0;
         if remain_amount < total_amount {
@@ -57,7 +51,10 @@ impl RecordService {
 
     pub fn record_retain_after(end_time: u64) {
         EGO_RECORD.with(|ego_record| {
-            ego_record.borrow_mut().records.retain(|r| r.create_at > end_time)
+            ego_record
+                .borrow_mut()
+                .records
+                .retain(|r| r.create_at > end_time)
         });
     }
 }

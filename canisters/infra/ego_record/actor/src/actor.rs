@@ -1,17 +1,17 @@
-use std::collections::BTreeMap;
-use ic_cdk::export::candid::{CandidType, Deserialize};
 use candid::candid_method;
-use ic_cdk::{caller, storage};
-use ic_cdk::api::time;
-use ic_cdk::export::Principal;
-use ic_cdk_macros::*;
+use ego_macros::{inject_cycle_info_api, inject_ego_api};
 use ego_record_mod::record::{EgoRecord, Record};
 use ego_record_mod::service::RecordService;
 use ego_record_mod::state::*;
 use ego_types::registry::Registry;
 use ego_types::user::User;
+use ic_cdk::api::time;
+use ic_cdk::export::candid::{CandidType, Deserialize};
+use ic_cdk::export::Principal;
+use ic_cdk::{caller, storage};
+use ic_cdk_macros::*;
 use serde::Serialize;
-use ego_macros::{inject_cycle_info_api, inject_ego_api};
+use std::collections::BTreeMap;
 
 inject_ego_api!();
 inject_cycle_info_api!();
@@ -51,15 +51,14 @@ fn pre_upgrade() {
         registry: Some(registry_pre_upgrade()),
         cycle_info: Some(cycle_info_pre_upgrade()),
     };
-    storage::stable_save((state, )).unwrap();
+    storage::stable_save((state,)).unwrap();
 }
-
 
 #[post_upgrade]
 fn post_upgrade() {
     info_log_add("ego_record: post_upgrade");
 
-    let (state, ): (PersistState, ) = storage::stable_restore().unwrap();
+    let (state,): (PersistState,) = storage::stable_restore().unwrap();
     EGO_RECORD.with(|ego_record| *ego_record.borrow_mut() = state.ego_record);
 
     match state.users {
@@ -88,7 +87,12 @@ fn post_upgrade() {
 #[candid_method(update, rename = "record_add")]
 fn record_add(scope: String, event: String, message: String, created_at: Option<u64>) {
     info_log_add("ego_record: record_add");
-    RecordService::record_add(scope.as_str(), event.as_str(), message.as_str(), created_at.unwrap_or(time()));
+    RecordService::record_add(
+        scope.as_str(),
+        event.as_str(),
+        message.as_str(),
+        created_at.unwrap_or(time()),
+    );
 }
 
 #[query(name = "record_amount", guard = "user_guard")]
@@ -118,7 +122,6 @@ fn record_retain_after(end_time: u64) {
     info_log_add(format!("ego_record: record_retain_after {}", end_time).as_str());
     RecordService::record_retain_after(end_time);
 }
-
 
 /********************  methods for ego_cycle_threshold_get   ********************/
 pub fn cycle_threshold_get() -> u128 {

@@ -10,20 +10,20 @@ thread_local! {
 }
 
 pub fn init() {
-  STATE.with(|s| {
-    let mut s = s.borrow_mut();
-    s.clear();
-    s.authorize_unconditionally(caller());
-  });
+    STATE.with(|s| {
+        let mut s = s.borrow_mut();
+        s.clear();
+        s.authorize_unconditionally(caller());
+    });
 }
 
 pub fn pre_upgrade() -> StableState {
-  STATE.with(|s| s.take().into())
+    STATE.with(|s| s.take().into())
 }
 
 pub fn post_upgrade(stable_state: StableState) {
-  STATE.with(|s| {
-    *s.borrow_mut() = State::from(stable_state);
-    set_certified_data(&s.borrow().root_hash());
-  });
+    STATE.with(|s| {
+        *s.borrow_mut() = State::from(stable_state);
+        set_certified_data(&s.borrow().root_hash());
+    });
 }
