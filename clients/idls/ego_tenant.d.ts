@@ -15,6 +15,7 @@ export type CanisterType = { 'BACKEND' : null } |
 export interface CycleRecord { 'ts' : bigint, 'balance' : bigint }
 export interface EgoError { 'msg' : string, 'code' : number }
 export interface InitArg { 'init_caller' : [] | [Principal] }
+export interface LogEntry { 'ts' : bigint, 'msg' : string, 'kind' : string }
 export type Result = { 'Ok' : null } |
   { 'Err' : EgoError };
 export type Result_1 = { 'Ok' : Principal } |
@@ -29,7 +30,7 @@ export type Result_5 = { 'Ok' : Array<[string, Array<Principal>]> } |
   { 'Err' : string };
 export type Result_6 = { 'Ok' : boolean } |
   { 'Err' : string };
-export type Result_7 = { 'Ok' : Array<string> } |
+export type Result_7 = { 'Ok' : Array<LogEntry> } |
   { 'Err' : string };
 export type Result_8 = { 'Ok' : [] | [Array<[Principal, string]>] } |
   { 'Err' : string };

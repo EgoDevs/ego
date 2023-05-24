@@ -77,13 +77,14 @@ export interface EgoDevApp {
 }
 export interface EgoError { 'msg' : string, 'code' : number }
 export interface InitArg { 'init_caller' : [] | [Principal] }
+export interface LogEntry { 'ts' : bigint, 'msg' : string, 'kind' : string }
 export type Result = { 'Ok' : AppVersion } |
   { 'Err' : EgoError };
 export type Result_1 = { 'Ok' : boolean } |
   { 'Err' : EgoError };
 export type Result_10 = { 'Ok' : boolean } |
   { 'Err' : string };
-export type Result_11 = { 'Ok' : Array<string> } |
+export type Result_11 = { 'Ok' : Array<LogEntry> } |
   { 'Err' : string };
 export type Result_12 = { 'Ok' : [] | [Array<[Principal, string]>] } |
   { 'Err' : string };

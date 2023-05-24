@@ -24,8 +24,8 @@
         "ego:run:live": "pnpm run ego:clean && pnpm run ego:create:live && pnpm run ego:build:live && pnpm run ego:install:live && pnpm run test:live deploy_ego",
         "migrate": "jest --testPathPattern=migrations --verbose -t",
         "migrate:live": "NODE_ENV=production jest --testPathPattern=migrations --verbose -t",
-        "ego:deploy": "jest --testPathPattern=post_install --verbose -t",
-        "ego:deploy:live": "NODE_ENV=production jest --testPathPattern=post_install --verbose -t"
+        "ego:release": "jest --testPathPattern=releases --verbose -t",
+        "ego:release:live": "NODE_ENV=production jest --testPathPattern=releases --verbose -t"
     },
     "author": "egoDevs@github.com",
     "license": "ISC",

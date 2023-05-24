@@ -1,8 +1,8 @@
 module.exports = {
   testMatch: [
-    '<rootDir>/clients/post_install/**/*.test.{ts,tsx,js,jsx}',
+    '<rootDir>/clients/deploys/**/*.test.{ts,tsx,js,jsx}',
+    '<rootDir>/clients/releases/**/*.test.{ts,tsx,js,jsx}',
     '<rootDir>/clients/tests/**/*.test.{ts,tsx,js,jsx}',
-    '<rootDir>/clients/migrations/**/*.test.{ts,tsx,js,jsx}'
   ],
   collectCoverage: false,
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'node'],

@@ -4,6 +4,7 @@ type CycleInfo = record {
 };
 type CycleRecord = record { ts : nat64; balance : nat };
 type InitArg = record { init_caller : opt principal };
+type LogEntry = record { ts : nat64; msg : text; kind : text };
 type Record = record {
   id : nat64;
   create_at : nat64;
@@ -17,7 +18,7 @@ type Result_2 = variant { Ok : vec record { text; vec principal }; Err : text };
 type Result_3 = variant { Ok : vec CycleRecord; Err : text };
 type Result_4 = variant { Ok : CycleInfo; Err : text };
 type Result_5 = variant { Ok : bool; Err : text };
-type Result_6 = variant { Ok : vec text; Err : text };
+type Result_6 = variant { Ok : vec LogEntry; Err : text };
 type Result_7 = variant { Ok : opt vec record { principal; text }; Err : text };
 service : (InitArg) -> {
   balance_get : () -> (Result) query;

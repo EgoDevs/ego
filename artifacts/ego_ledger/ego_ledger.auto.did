@@ -12,6 +12,7 @@ type LedgerPaymentAddRequest = record {
   memo : nat64;
   amount : Tokens;
 };
+type LogEntry = record { ts : nat64; msg : text; kind : text };
 type Payment = record {
   to : vec nat8;
   status : PaymentStatus;
@@ -26,7 +27,7 @@ type Result_2 = variant { Ok : vec record { text; vec principal }; Err : text };
 type Result_3 = variant { Ok : vec CycleRecord; Err : text };
 type Result_4 = variant { Ok : CycleInfo; Err : text };
 type Result_5 = variant { Ok : bool; Err : text };
-type Result_6 = variant { Ok : vec text; Err : text };
+type Result_6 = variant { Ok : vec LogEntry; Err : text };
 type Result_7 = variant { Ok : opt vec record { principal; text }; Err : text };
 type Result_8 = variant { Ok; Err : EgoError };
 type Result_9 = variant { Ok : vec Payment; Err : EgoError };

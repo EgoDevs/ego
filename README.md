@@ -82,8 +82,8 @@ There are at least 3 different roles in EGO.
 5. post install
 
 ```bash
-pnpm run ego:post_install
-pnpm run ego:post_install:infra # run infra post_install
-pnpm run ego:post_install:apps # run apps post_install
-pnpm run ego:post_install:project post_wallet # run wallet post_install, please use `post_` prefix to project
+pnpm run ego:deploys
+pnpm run ego:deploys:infra # run infra deploys
+pnpm run ego:deploys:apps # run apps deploys
+pnpm run ego:deploys:project post_wallet # run wallet deploys, please use `post_` prefix to project
 ```

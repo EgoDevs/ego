@@ -15,6 +15,7 @@ export interface LedgerPaymentAddRequest {
   'memo' : bigint,
   'amount' : Tokens,
 }
+export interface LogEntry { 'ts' : bigint, 'msg' : string, 'kind' : string }
 export interface Payment {
   'to' : Uint8Array | number[],
   'status' : PaymentStatus,
@@ -37,7 +38,7 @@ export type Result_4 = { 'Ok' : CycleInfo } |
   { 'Err' : string };
 export type Result_5 = { 'Ok' : boolean } |
   { 'Err' : string };
-export type Result_6 = { 'Ok' : Array<string> } |
+export type Result_6 = { 'Ok' : Array<LogEntry> } |
   { 'Err' : string };
 export type Result_7 = { 'Ok' : [] | [Array<[Principal, string]>] } |
   { 'Err' : string };

@@ -8,6 +8,7 @@ export interface CycleInfo {
 export interface CycleRecord { 'ts' : bigint, 'balance' : bigint }
 export interface EgoError { 'msg' : string, 'code' : number }
 export interface InitArg { 'init_caller' : [] | [Principal] }
+export interface LogEntry { 'ts' : bigint, 'msg' : string, 'kind' : string }
 export type Result = { 'Ok' : bigint } |
   { 'Err' : string };
 export type Result_1 = { 'Ok' : null } |
@@ -20,7 +21,7 @@ export type Result_4 = { 'Ok' : CycleInfo } |
   { 'Err' : string };
 export type Result_5 = { 'Ok' : boolean } |
   { 'Err' : string };
-export type Result_6 = { 'Ok' : Array<string> } |
+export type Result_6 = { 'Ok' : Array<LogEntry> } |
   { 'Err' : string };
 export type Result_7 = { 'Ok' : [] | [Array<[Principal, string]>] } |
   { 'Err' : string };

@@ -106,7 +106,12 @@ export const idlFactory = ({ IDL }) => {
   });
   const Result_9 = IDL.Variant({ 'Ok' : CycleInfo, 'Err' : IDL.Text });
   const Result_10 = IDL.Variant({ 'Ok' : IDL.Bool, 'Err' : IDL.Text });
-  const Result_11 = IDL.Variant({ 'Ok' : IDL.Vec(IDL.Text), 'Err' : IDL.Text });
+  const LogEntry = IDL.Record({
+    'ts' : IDL.Nat64,
+    'msg' : IDL.Text,
+    'kind' : IDL.Text,
+  });
+  const Result_11 = IDL.Variant({ 'Ok' : IDL.Vec(LogEntry), 'Err' : IDL.Text });
   const Result_12 = IDL.Variant({
     'Ok' : IDL.Opt(IDL.Vec(IDL.Tuple(IDL.Principal, IDL.Text))),
     'Err' : IDL.Text,

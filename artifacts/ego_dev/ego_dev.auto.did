@@ -74,10 +74,11 @@ type EgoDevApp = record {
 };
 type EgoError = record { msg : text; code : nat16 };
 type InitArg = record { init_caller : opt principal };
+type LogEntry = record { ts : nat64; msg : text; kind : text };
 type Result = variant { Ok : AppVersion; Err : EgoError };
 type Result_1 = variant { Ok : bool; Err : EgoError };
 type Result_10 = variant { Ok : bool; Err : text };
-type Result_11 = variant { Ok : vec text; Err : text };
+type Result_11 = variant { Ok : vec LogEntry; Err : text };
 type Result_12 = variant {
   Ok : opt vec record { principal; text };
   Err : text;

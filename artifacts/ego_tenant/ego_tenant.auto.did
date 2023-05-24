@@ -8,6 +8,7 @@ type CanisterType = variant { BACKEND; ASSET };
 type CycleRecord = record { ts : nat64; balance : nat };
 type EgoError = record { msg : text; code : nat16 };
 type InitArg = record { init_caller : opt principal };
+type LogEntry = record { ts : nat64; msg : text; kind : text };
 type Result = variant { Ok; Err : EgoError };
 type Result_1 = variant { Ok : principal; Err : EgoError };
 type Result_2 = variant { Ok : bool; Err : EgoError };
@@ -15,7 +16,7 @@ type Result_3 = variant { Ok : vec Task; Err : EgoError };
 type Result_4 = variant { Ok; Err : text };
 type Result_5 = variant { Ok : vec record { text; vec principal }; Err : text };
 type Result_6 = variant { Ok : bool; Err : text };
-type Result_7 = variant { Ok : vec text; Err : text };
+type Result_7 = variant { Ok : vec LogEntry; Err : text };
 type Result_8 = variant { Ok : opt vec record { principal; text }; Err : text };
 type Task = record {
   canister_id : principal;
