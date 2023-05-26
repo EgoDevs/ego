@@ -25,7 +25,9 @@
         "migrate": "jest --testPathPattern=migrations --verbose -t",
         "migrate:live": "NODE_ENV=production jest --testPathPattern=migrations --verbose -t",
         "ego:release": "jest --testPathPattern=releases --verbose -t",
-        "ego:release:live": "NODE_ENV=production jest --testPathPattern=releases --verbose -t"
+        "ego:release:live": "NODE_ENV=production jest --testPathPattern=releases --verbose -t",
+        "migrate": "jest --testPathPattern=migrations --verbose -t",
+        "migrate:live": "NODE_ENV=production jest --testPathPattern=migrations --verbose -t"
     },
     "author": "egoDevs@github.com",
     "license": "ISC",

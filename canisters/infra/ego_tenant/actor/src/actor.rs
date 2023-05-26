@@ -10,6 +10,7 @@ use ic_cdk::timer::set_timer_interval;
 use ic_cdk::{caller, id, storage};
 use ic_cdk_macros::*;
 use serde::Serialize;
+use serde_bytes::ByteBuf;
 
 use ego_lib::ego_canister::{EgoCanister, TEgoCanister};
 use ego_macros::inject_ego_api;
@@ -279,5 +280,49 @@ fn task_run() {
         let ego_canister = EgoCanister::new();
 
         ego_canister.ego_cycle_check(task.canister_id);
+    }
+}
+
+/********************  methods for migrate   ********************/
+#[update(name = "admin_export", guard = "owner_guard")]
+#[candid_method(update, rename = "admin_export")]
+async fn admin_export() -> Vec<u8> {
+    let tasks: Vec<Task> = EGO_TENANT.with(|ego_tenant| {
+        ego_tenant
+          .borrow()
+          .tasks
+          .values()
+          .map(|task| task.clone())
+          .collect()
+    });
+    serde_json::to_vec(&tasks).unwrap()
+}
+
+#[update(name = "admin_import", guard = "owner_guard")]
+#[candid_method(update, rename = "admin_import")]
+async fn admin_import(chunk: ByteBuf) {
+    let data_opt = std::str::from_utf8(chunk.as_slice());
+    match data_opt {
+        Ok(data) => {
+            // return data.to_string();
+            let user_opt = serde_json::from_str::<Vec<Task>>(&data);
+            match user_opt {
+                Ok(tasks) => {
+                    EGO_TENANT.with(|ego_tenant| {
+                        let mut ego_tenant_borrow = ego_tenant.borrow_mut();
+                        tasks.iter().for_each(|task| {
+                            info_log_add(format!("import task canister_id {}", task.canister_id).as_str());
+                            ego_tenant_borrow.tasks.insert(task.canister_id, task.clone());
+                        });
+                    });
+                }
+                Err(err) => {
+                    error_log_add(format!("import tasks error: {}", err).as_str());
+                },
+            }
+        },
+        Err(err) => {
+            error_log_add(format!("import tasks error: {}", err).as_str());
+        },
     }
 }

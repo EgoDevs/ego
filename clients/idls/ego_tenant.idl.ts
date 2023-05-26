@@ -52,6 +52,8 @@ export const idlFactory = ({ IDL }) => {
     'Err' : IDL.Text,
   });
   return IDL.Service({
+    'admin_export' : IDL.Func([], [IDL.Vec(IDL.Nat8)], []),
+    'admin_import' : IDL.Func([IDL.Vec(IDL.Nat8)], [], []),
     'app_main_delete' : IDL.Func([IDL.Principal], [Result], []),
     'app_main_install' : IDL.Func([AppMainInstallRequest], [Result_1], []),
     'app_main_upgrade' : IDL.Func([AppMainUpgradeRequest], [Result_2], []),

@@ -14,6 +14,7 @@ fn main() {
     use ego_types::cycle_info::*;
     use ic_cdk::export::Principal;
     use std::collections::BTreeMap;
+    use serde_bytes::ByteBuf;
 
     candid::export_service!();
     std::print!("{}", __export_service());

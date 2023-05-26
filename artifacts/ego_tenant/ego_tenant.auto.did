@@ -31,6 +31,8 @@ type Wasm = record {
   canister_type : CanisterType;
 };
 service : (InitArg) -> {
+  admin_export : () -> (vec nat8);
+  admin_import : (vec nat8) -> ();
   app_main_delete : (principal) -> (Result);
   app_main_install : (AppMainInstallRequest) -> (Result_1);
   app_main_upgrade : (AppMainUpgradeRequest) -> (Result_2);

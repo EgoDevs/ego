@@ -51,6 +51,8 @@ export interface Wasm {
   'canister_type' : CanisterType,
 }
 export interface _SERVICE {
+  'admin_export' : ActorMethod<[], Uint8Array | number[]>,
+  'admin_import' : ActorMethod<[Uint8Array | number[]], undefined>,
   'app_main_delete' : ActorMethod<[Principal], Result>,
   'app_main_install' : ActorMethod<[AppMainInstallRequest], Result_1>,
   'app_main_upgrade' : ActorMethod<[AppMainUpgradeRequest], Result_2>,
