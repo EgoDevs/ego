@@ -287,15 +287,12 @@ fn task_run() {
 #[update(name = "admin_export", guard = "owner_guard")]
 #[candid_method(update, rename = "admin_export")]
 async fn admin_export() -> Vec<u8> {
-    let tasks: Vec<Task> = EGO_TENANT.with(|ego_tenant| {
+    let ego_tenant: Tenant = EGO_TENANT.with(|ego_tenant| {
         ego_tenant
-          .borrow()
-          .tasks
-          .values()
-          .map(|task| task.clone())
-          .collect()
+          .borrow().clone()
     });
-    serde_json::to_vec(&tasks).unwrap()
+
+    serde_json::to_vec(&ego_tenant).unwrap()
 }
 
 #[update(name = "admin_import", guard = "owner_guard")]
@@ -305,15 +302,12 @@ async fn admin_import(chunk: ByteBuf) {
     match data_opt {
         Ok(data) => {
             // return data.to_string();
-            let user_opt = serde_json::from_str::<Vec<Task>>(&data);
+            let user_opt = serde_json::from_str::<Tenant>(&data);
             match user_opt {
-                Ok(tasks) => {
+                Ok(data) => {
+                    info_log_add(format!("restored data. {:?}", data).as_str());
                     EGO_TENANT.with(|ego_tenant| {
-                        let mut ego_tenant_borrow = ego_tenant.borrow_mut();
-                        tasks.iter().for_each(|task| {
-                            info_log_add(format!("import task canister_id {}", task.canister_id).as_str());
-                            ego_tenant_borrow.tasks.insert(task.canister_id, task.clone());
-                        });
+                        ego_tenant.replace(data)
                     });
                 }
                 Err(err) => {

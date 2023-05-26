@@ -582,3 +582,40 @@ pub fn cycle_threshold_get() -> u128 {
 pub fn runtime_cycle_threshold_get() -> u128 {
     1_000_000_000_000
 }
+
+/********************  methods for migrate   ********************/
+#[update(name = "admin_export", guard = "owner_guard")]
+#[candid_method(update, rename = "admin_export")]
+async fn admin_export() -> Vec<u8> {
+    let ego_store: EgoStore = EGO_STORE.with(|ego_store| {
+        ego_store
+          .borrow().clone()
+    });
+    serde_json::to_vec(&ego_store).unwrap()
+}
+
+#[update(name = "admin_import", guard = "owner_guard")]
+#[candid_method(update, rename = "admin_import")]
+async fn admin_import(chunk: ByteBuf) {
+    let data_opt = std::str::from_utf8(chunk.as_slice());
+    match data_opt {
+        Ok(data) => {
+            // return data.to_string();
+            let user_opt = serde_json::from_str::<EgoStore>(&data);
+            match user_opt {
+                Ok(data) => {
+                    info_log_add(format!("restored data. {:?}", data).as_str());
+                    EGO_STORE.with(|ego_store| {
+                        ego_store.replace(data)
+                    });
+                }
+                Err(err) => {
+                    error_log_add(format!("import ego_store error: {}", err).as_str());
+                },
+            }
+        },
+        Err(err) => {
+            error_log_add(format!("import ego_store error: {}", err).as_str());
+        },
+    }
+}
