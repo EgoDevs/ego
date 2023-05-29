@@ -93,8 +93,8 @@ type Wasm = record {
   canister_type : CanisterType;
 };
 service : (InitArg) -> {
-  admin_backup : () -> (vec nat8);
-  admin_restore : (vec nat8) -> ();
+  admin_export : () -> (vec nat8);
+  admin_import : (vec nat8) -> ();
   admin_tenant_list : () -> (Result);
   admin_wallet_app_transfer : (opt principal, opt text, principal) -> (
       Result_1,

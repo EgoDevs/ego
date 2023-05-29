@@ -13,7 +13,7 @@ describe('ego_store_export', () => {
   it('export', async () => {
     const actor = await egoActor;
 
-    const data = await actor.admin_backup();
+    const data = await actor.admin_export();
 
     const json = JSON.parse(Buffer.from(data).toString()) as { [key: string]: any }[];
     fs.writeFileSync(file_path, JSON.stringify(json));
@@ -31,6 +31,6 @@ describe('ego_store_import', () => {
     const len = json.length;
 
     const jsBuff = Buffer.from(JSON.stringify(json));
-    await actor.admin_restore(Array.from(jsBuff))
+    await actor.admin_import(Array.from(jsBuff))
   });
 });

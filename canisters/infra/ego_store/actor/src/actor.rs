@@ -514,10 +514,10 @@ pub fn admin_tenant_list() -> Result<Vec<Principal>, EgoError> {
 }
 
 /********************  数据导出   ********************/
-#[update(name = "admin_backup", guard = "owner_guard")]
-#[candid_method(update, rename = "admin_backup")]
-async fn admin_backup() -> Vec<u8> {
-    info_log_add("ego_store: admin_backup");
+#[update(name = "admin_export", guard = "owner_guard")]
+#[candid_method(update, rename = "admin_export")]
+async fn admin_export() -> Vec<u8> {
+    info_log_add("ego_store: admin_export");
 
     let ego_store = EGO_STORE.with(|ego_store| ego_store.borrow().clone());
 
@@ -531,10 +531,10 @@ async fn admin_backup() -> Vec<u8> {
     serde_json::to_vec(&state).unwrap()
 }
 
-#[update(name = "admin_restore", guard = "owner_guard")]
-#[candid_method(update, rename = "admin_restore")]
-async fn admin_restore(chunk: ByteBuf) {
-    info_log_add("ego_store: admin_restore");
+#[update(name = "admin_import", guard = "owner_guard")]
+#[candid_method(update, rename = "admin_import")]
+async fn admin_import(chunk: ByteBuf) {
+    info_log_add("ego_store: admin_import");
 
     let data_opt = std::str::from_utf8(chunk.as_slice());
     match data_opt {

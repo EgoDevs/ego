@@ -7,7 +7,7 @@ use ic_cdk::api::time;
 use ic_cdk::export::candid::{CandidType, Deserialize};
 use ic_cdk::export::Principal;
 use ic_cdk::timer::set_timer_interval;
-use ic_cdk::{caller, id, storage};
+use ic_cdk::{caller, id, storage, trap};
 use ic_cdk_macros::*;
 use serde::Serialize;
 use serde_bytes::ByteBuf;
@@ -284,39 +284,55 @@ fn task_run() {
 }
 
 /********************  methods for migrate   ********************/
+/********************  数据导出   ********************/
 #[update(name = "admin_export", guard = "owner_guard")]
 #[candid_method(update, rename = "admin_export")]
 async fn admin_export() -> Vec<u8> {
-    let ego_tenant: Tenant = EGO_TENANT.with(|ego_tenant| {
-        ego_tenant
-          .borrow().clone()
-    });
+    info_log_add("ego_tenant: admin_export");
 
-    serde_json::to_vec(&ego_tenant).unwrap()
+    let ego_tenant = EGO_TENANT.with(|ego_tenant| ego_tenant.borrow().clone());
+
+    let state = PersistState {
+        ego_tenant,
+        users: Some(users_pre_upgrade()),
+        registry: Some(registry_pre_upgrade()),
+    };
+
+    serde_json::to_vec(&state).unwrap()
 }
 
 #[update(name = "admin_import", guard = "owner_guard")]
 #[candid_method(update, rename = "admin_import")]
 async fn admin_import(chunk: ByteBuf) {
+    info_log_add("ego_tenant: admin_import");
+
     let data_opt = std::str::from_utf8(chunk.as_slice());
     match data_opt {
         Ok(data) => {
             // return data.to_string();
-            let user_opt = serde_json::from_str::<Tenant>(&data);
-            match user_opt {
-                Ok(data) => {
-                    info_log_add(format!("restored data. {:?}", data).as_str());
-                    EGO_TENANT.with(|ego_tenant| {
-                        ego_tenant.replace(data)
-                    });
+            let deser_result = serde_json::from_str::<PersistState>(&data);
+            match deser_result {
+                Ok(state) => {
+                    EGO_TENANT.with(|ego_tenant| *ego_tenant.borrow_mut() = state.ego_tenant);
+
+                    match state.users {
+                        None => {}
+                        Some(users) => {
+                            users_post_upgrade(users);
+                        }
+                    }
+
+                    match state.registry {
+                        None => {}
+                        Some(registry) => {
+                            registry_post_upgrade(registry);
+                        }
+                    }
                 }
-                Err(err) => {
-                    error_log_add(format!("import tasks error: {}", err).as_str());
-                },
+                Err(_) => trap("deserialize failed"),
             }
-        },
-        Err(err) => {
-            error_log_add(format!("import tasks error: {}", err).as_str());
-        },
+        }
+
+        Err(_) => trap("deserialize failed"),
     }
 }
