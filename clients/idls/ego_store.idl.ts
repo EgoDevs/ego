@@ -121,8 +121,6 @@ export const idlFactory = ({ IDL }) => {
   const Result_20 = IDL.Variant({ 'Ok' : IDL.Nat64, 'Err' : EgoError });
   return IDL.Service({
     'admin_backup' : IDL.Func([], [IDL.Vec(IDL.Nat8)], []),
-    'admin_export' : IDL.Func([], [IDL.Vec(IDL.Nat8)], []),
-    'admin_import' : IDL.Func([IDL.Vec(IDL.Nat8)], [], []),
     'admin_restore' : IDL.Func([IDL.Vec(IDL.Nat8)], [], []),
     'admin_tenant_list' : IDL.Func([], [Result], []),
     'admin_wallet_app_transfer' : IDL.Func(
