@@ -7,7 +7,6 @@ fn main() {}
 #[allow(dead_code)]
 #[cfg(not(any(target_arch = "wasm32", test)))]
 fn main() {
-    use crate::actor::InitArg;
     use ego_store_mod::app::EgoStoreApp;
     use ego_store_mod::order::Order;
     use ego_store_mod::types::*;

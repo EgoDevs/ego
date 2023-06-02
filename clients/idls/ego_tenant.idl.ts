@@ -1,5 +1,4 @@
 export const idlFactory = ({ IDL }) => {
-  const InitArg = IDL.Record({ 'init_caller' : IDL.Opt(IDL.Principal) });
   const EgoError = IDL.Record({ 'msg' : IDL.Text, 'code' : IDL.Nat16 });
   const Result = IDL.Variant({ 'Ok' : IDL.Null, 'Err' : EgoError });
   const Version = IDL.Record({
@@ -98,7 +97,4 @@ export const idlFactory = ({ IDL }) => {
     'wallet_cycle_recharge' : IDL.Func([IDL.Nat], [Result], []),
   });
 };
-export const init = ({ IDL }) => {
-  const InitArg = IDL.Record({ 'init_caller' : IDL.Opt(IDL.Principal) });
-  return [InitArg];
-};
+export const init = ({ IDL }) => { return []; };

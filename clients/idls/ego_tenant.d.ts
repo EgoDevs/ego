@@ -14,7 +14,6 @@ export type CanisterType = { 'BACKEND' : null } |
   { 'ASSET' : null };
 export interface CycleRecord { 'ts' : bigint, 'balance' : bigint }
 export interface EgoError { 'msg' : string, 'code' : number }
-export interface InitArg { 'init_caller' : [] | [Principal] }
 export interface LogEntry { 'ts' : bigint, 'msg' : string, 'kind' : string }
 export type Result = { 'Ok' : null } |
   { 'Err' : EgoError };

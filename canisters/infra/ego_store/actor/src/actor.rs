@@ -34,15 +34,10 @@ inject_cycle_info_api!();
 
 pub const GIFT_CYCLES_AMOUNT: u128 = 1_000_000_000_000;
 
-#[derive(Clone, Debug, CandidType, Deserialize)]
-pub struct InitArg {
-    init_caller: Option<Principal>,
-}
-
 #[init]
 #[candid_method(init)]
-pub fn init(arg: InitArg) {
-    let caller = arg.init_caller.unwrap_or(caller());
+fn init() {
+    let caller = caller();
     info_log_add(format!("ego_store: init, caller is {}", caller.clone()).as_str());
 
     info_log_add("==> add caller as the owner");

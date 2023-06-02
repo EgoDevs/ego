@@ -34,16 +34,12 @@ inject_ego_api!();
 pub const CHECK_DURATION: u64 = 60 * 5; // 每 5 分钟，检查有没有需要检查的Canister
 pub const NEXT_CHECK_DURATION: u64 = 1800; // Canister每 30 分钟 回报一次
 
-#[derive(Clone, Debug, CandidType, Deserialize)]
-pub struct InitArg {
-    init_caller: Option<Principal>,
-}
 
 #[init]
 #[candid_method(init)]
-pub fn init(arg: InitArg) {
-    let caller = arg.init_caller.unwrap_or(caller());
-    info_log_add(format!("ego-tenant: init, caller is {}", caller.clone()).as_str());
+fn init() {
+    let caller = caller();
+    info_log_add(format!("ego_tenant: init, caller is {}", caller.clone()).as_str());
 
     info_log_add("==> add caller as the owner");
     owner_add(caller.clone());
@@ -63,7 +59,7 @@ struct PersistState {
 
 #[pre_upgrade]
 fn pre_upgrade() {
-    info_log_add("ego-tenant: pre_upgrade");
+    info_log_add("ego_tenant: pre_upgrade");
     let ego_tenant = EGO_TENANT.with(|ego_tenant| ego_tenant.borrow().clone());
 
     let state = PersistState {
@@ -76,7 +72,7 @@ fn pre_upgrade() {
 
 #[post_upgrade]
 fn post_upgrade() {
-    info_log_add("ego-tenant: post_upgrade");
+    info_log_add("ego_tenant: post_upgrade");
     let (state,): (PersistState,) = storage::stable_restore().unwrap();
     EGO_TENANT.with(|ego_tenant| *ego_tenant.borrow_mut() = state.ego_tenant);
 
@@ -256,7 +252,7 @@ async fn wallet_cycle_recharge(cycles: u128) -> Result<(), EgoError> {
 #[update(name = "canister_task_list", guard = "owner_guard")]
 #[candid_method(update, rename = "canister_task_list")]
 pub fn canister_task_list() -> Result<Vec<Task>, EgoError> {
-    info_log_add("ego_store: canister_task_list");
+    info_log_add("ego_tenant: canister_task_list");
 
     let tasks = EGO_TENANT.with(|ego_tenant| {
         ego_tenant
@@ -271,7 +267,7 @@ pub fn canister_task_list() -> Result<Vec<Task>, EgoError> {
 
 /********************  notify  ********************/
 fn task_run() {
-    info_log_add("ego-tenant: task_run");
+    info_log_add("ego_tenant: task_run");
 
     let sentinel = time().div(1e9 as u64); // convert to second
     let tasks = EGO_TENANT.with(|ego_tenant| ego_tenant.borrow_mut().tasks_get(sentinel));

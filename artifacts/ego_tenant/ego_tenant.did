@@ -7,7 +7,6 @@ type AppMainUpgradeRequest = record { canister_id : principal; wasm : Wasm };
 type CanisterType = variant { BACKEND; ASSET };
 type CycleRecord = record { ts : nat64; balance : nat };
 type EgoError = record { msg : text; code : nat16 };
-type InitArg = record { init_caller : opt principal };
 type LogEntry = record { ts : nat64; msg : text; kind : text };
 type Result = variant { Ok; Err : EgoError };
 type Result_1 = variant { Ok : principal; Err : EgoError };
@@ -30,7 +29,7 @@ type Wasm = record {
   app_id : text;
   canister_type : CanisterType;
 };
-service : (InitArg) -> {
+service : () -> {
   admin_export : () -> (vec nat8);
   admin_import : (vec nat8) -> ();
   app_main_delete : (principal) -> (Result);

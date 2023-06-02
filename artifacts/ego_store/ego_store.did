@@ -39,7 +39,6 @@ type CycleInfo = record {
 type CycleRecord = record { ts : nat64; balance : nat };
 type EgoError = record { msg : text; code : nat16 };
 type EgoStoreApp = record { app : App; wasm : Wasm };
-type InitArg = record { init_caller : opt principal };
 type LogEntry = record { ts : nat64; msg : text; kind : text };
 type Order = record {
   to : vec nat8;
@@ -92,7 +91,7 @@ type Wasm = record {
   app_id : text;
   canister_type : CanisterType;
 };
-service : (InitArg) -> {
+service : () -> {
   admin_export : () -> (vec nat8);
   admin_import : (vec nat8) -> ();
   admin_tenant_list : () -> (Result);
