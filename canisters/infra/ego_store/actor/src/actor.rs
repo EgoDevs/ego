@@ -508,6 +508,52 @@ pub fn admin_tenant_list() -> Result<Vec<Principal>, EgoError> {
     Ok(tenant_principals)
 }
 
+///
+/// 返回Wallet列表
+///
+#[update(name = "admin_wallet_list", guard = "owner_guard")]
+#[candid_method(update, rename = "admin_wallet_list")]
+pub fn admin_wallet_list() -> Result<Vec<Principal>, EgoError> {
+    info_log_add("ego_store: admin_wallet_list");
+
+    let wallet_principals = EGO_STORE.with(|store| {
+        store
+          .borrow()
+          .wallets
+          .keys()
+          .map(|principal| principal.clone())
+          .collect()
+    });
+
+    Ok(wallet_principals)
+}
+
+///
+/// 返回某个Wallet已经安装的应用列表
+///
+#[update(name = "admin_wallet_app_list")]
+#[candid_method(update, rename = "admin_wallet_app_list")]
+pub fn admin_wallet_app_list(wallet_id: Principal) -> Result<Vec<UserApp>, EgoError> {
+    info_log_add("ego_store: admin_wallet_app_list");
+    match EgoStoreService::wallet_app_list(&wallet_id) {
+        Ok(apps) => Ok(apps),
+        Err(e) => Err(e),
+    }
+}
+
+///
+/// 返回某个Wallet下的某个UserApp
+///
+#[update(name = "admin_wallet_app_get")]
+#[candid_method(update, rename = "admin_wallet_app_get")]
+pub fn admin_wallet_app_get(wallet_id: Principal, canister_id: Principal) -> Result<UserApp, EgoError> {
+    info_log_add("ego_store: admin_wallet_app_get");
+    match EgoStoreService::wallet_app_get(&wallet_id, &canister_id) {
+        Ok(user_app) => Ok(user_app),
+        Err(e) => Err(e),
+    }
+}
+
 /********************  数据导出   ********************/
 #[update(name = "admin_export", guard = "owner_guard")]
 #[candid_method(update, rename = "admin_export")]
