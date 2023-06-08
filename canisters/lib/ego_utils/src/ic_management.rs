@@ -101,6 +101,13 @@ pub async fn canister_main_delete(canister_id: Principal) -> Result<(), EgoError
     Ok(())
 }
 
+pub async fn canister_code_reinstall(
+    canister_id: Principal,
+    wasm_module: Vec<u8>,
+) -> Result<(), EgoError> {
+    code_install(canister_id, CanisterInstallMode::Reinstall, wasm_module).await
+}
+
 pub async fn canister_code_install(
     canister_id: Principal,
     wasm_module: Vec<u8>,

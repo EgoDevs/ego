@@ -20,6 +20,9 @@ export interface App {
   'current_version' : Version,
   'price' : number,
 }
+export interface AppInstallRequest { 'app_id' : string }
+export interface AppReInstallRequest { 'canister_id' : Principal }
+export interface AppUpgradeRequest { 'wallet_id' : Principal }
 export interface Canister {
   'canister_id' : Principal,
   'canister_type' : CanisterType,
@@ -175,12 +178,24 @@ export interface _SERVICE {
   'ego_user_set' : ActorMethod<[Array<Principal>], Result_9>,
   'flush_wallet_change_record' : ActorMethod<[], undefined>,
   'wallet_app_install' : ActorMethod<[string], Result_1>,
+  'wallet_app_install_v2' : ActorMethod<[AppInstallRequest], Result_1>,
   'wallet_app_list' : ActorMethod<[], Result_2>,
+  'wallet_app_reinstall_by_wallet_v2' : ActorMethod<
+    [AppReInstallRequest],
+    Result_3
+  >,
   'wallet_app_remove' : ActorMethod<[Principal], Result_3>,
   'wallet_app_upgrade' : ActorMethod<[Principal], Result_3>,
   'wallet_app_upgrade_by_wallet' : ActorMethod<[Principal], Result_3>,
+  'wallet_app_upgrade_by_wallet_v2' : ActorMethod<
+    [AppReInstallRequest],
+    Result_3
+  >,
+  'wallet_app_upgrade_v2' : ActorMethod<[AppUpgradeRequest], Result_3>,
   'wallet_canister_track' : ActorMethod<[Principal], Result_3>,
+  'wallet_canister_track_self' : ActorMethod<[Principal], Result_3>,
   'wallet_canister_untrack' : ActorMethod<[Principal], Result_3>,
+  'wallet_canister_untrack_self' : ActorMethod<[Principal], Result_3>,
   'wallet_cycle_balance' : ActorMethod<[], Result_16>,
   'wallet_cycle_charge' : ActorMethod<[WalletCycleChargeRequest], Result_17>,
   'wallet_cycle_list' : ActorMethod<[], Result_18>,

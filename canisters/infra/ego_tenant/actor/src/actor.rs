@@ -23,7 +23,7 @@ use ego_tenant_mod::state::*;
 use ego_tenant_mod::task::Task;
 use ego_tenant_mod::tenant::Tenant;
 use ego_tenant_mod::types::EgoTenantErr::CanisterNotFounded;
-use ego_tenant_mod::types::{AppMainInstallRequest, AppMainUpgradeRequest};
+use ego_tenant_mod::types::{AppMainInstallRequest, AppMainReInstallRequest, AppMainUpgradeRequest};
 use ego_types::app::EgoError;
 use ego_types::cycle_info::CycleRecord;
 use ego_types::registry::Registry;
@@ -138,6 +138,27 @@ async fn app_main_upgrade(req: AppMainUpgradeRequest) -> Result<bool, EgoError> 
         id(),
     )
     .await?;
+    Ok(ret)
+}
+
+#[update(name = "app_main_reinstall", guard = "user_guard")]
+#[candid_method(update, rename = "app_main_reinstall")]
+async fn app_main_reinstall(req: AppMainReInstallRequest) -> Result<bool, EgoError> {
+    info_log_add("ego_tenant: app_main_reinstall");
+    let management = IcManagement::new();
+    let ego_file = EgoFile::new();
+
+    let ego_canister = EgoCanister::new();
+
+    let ret = EgoTenantService::app_main_reinstall(
+        ego_file,
+        management,
+        ego_canister,
+        req.canister_id,
+        req.wasm,
+        id(),
+    )
+      .await?;
     Ok(ret)
 }
 

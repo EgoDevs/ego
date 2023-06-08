@@ -3,6 +3,7 @@ type AppMainInstallRequest = record {
   user_id : principal;
   wallet_id : principal;
 };
+type AppMainReInstallRequest = record { canister_id : principal; wasm : Wasm };
 type AppMainUpgradeRequest = record { canister_id : principal; wasm : Wasm };
 type CanisterType = variant { BACKEND; ASSET };
 type CycleRecord = record { ts : nat64; balance : nat };
@@ -34,6 +35,7 @@ service : () -> {
   admin_import : (vec nat8) -> ();
   app_main_delete : (principal) -> (Result);
   app_main_install : (AppMainInstallRequest) -> (Result_1);
+  app_main_reinstall : (AppMainReInstallRequest) -> (Result_2);
   app_main_upgrade : (AppMainUpgradeRequest) -> (Result_2);
   canister_main_track : (principal, principal) -> (Result);
   canister_main_untrack : (principal) -> (Result);

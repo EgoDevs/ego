@@ -4,3 +4,4 @@ pub mod cycle_info;
 pub mod log;
 pub mod registry;
 pub mod user;
+pub mod types;

@@ -12,6 +12,7 @@ fn main() {
     use ego_store_mod::types::*;
     use ego_types::app::EgoError;
     use ego_types::app::UserApp;
+    use ego_types::types::*;
     use ego_types::app::{App, AppId, CashFlow};
     use ego_types::cycle_info::*;
     use ic_cdk::export::Principal;

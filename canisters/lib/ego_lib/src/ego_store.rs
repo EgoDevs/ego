@@ -5,6 +5,7 @@ use ic_cdk::{api, trap};
 use tracing::error;
 
 use ego_types::app::{App, AppId, CashFlow, EgoError, UserApp};
+use ego_types::types::{AppInstallRequest, AppReInstallRequest, AppUpgradeRequest, WalletUpgradeAppRequest};
 
 #[async_trait]
 pub trait TEgoStore {
@@ -27,7 +28,15 @@ pub trait TEgoStore {
 
     // canister track
     fn wallet_canister_track(&self, canister_id: Principal);
+    fn wallet_canister_track_self(&self, wallet_id: Principal);
     fn wallet_canister_untrack(&self, canister_id: Principal);
+    fn wallet_canister_untrack_self(&self, wallet_id: Principal);
+
+    // v2 interface
+    async fn wallet_app_install_v2(&self, req: AppInstallRequest) -> Result<UserApp, EgoError>;
+    async fn wallet_app_upgrade_v2(&self, req: AppUpgradeRequest);
+    async fn wallet_app_reinstall_by_wallet_v2(&self, req: AppReInstallRequest);
+    async fn wallet_app_upgrade_by_wallet_v2(&self, req: WalletUpgradeAppRequest);
 }
 
 #[derive(Copy, Clone)]
@@ -198,7 +207,7 @@ impl TEgoStore for EgoStore {
                 }
                 Err(e) => trap(
                     format!(
-                        "error calling wallet_app_install code:{}, msg:{}",
+                        "error calling wallet_app_upgrade code:{}, msg:{}",
                         e.code, e.msg
                     )
                     .as_str(),
@@ -302,8 +311,142 @@ impl TEgoStore for EgoStore {
         let _result = api::call::notify(self.canister_id, "wallet_canister_track", (canister_id,));
     }
 
+    fn wallet_canister_track_self(&self, wallet_id: Principal) {
+        let _result = api::call::notify(self.canister_id, "wallet_canister_track_self", (wallet_id,));
+    }
+
     fn wallet_canister_untrack(&self, canister_id: Principal) {
         let _result =
             api::call::notify(self.canister_id, "wallet_canister_untrack", (canister_id,));
+    }
+
+    fn wallet_canister_untrack_self(&self, wallet_id: Principal) {
+        let _result =
+          api::call::notify(self.canister_id, "wallet_canister_untrack_self", (wallet_id,));
+    }
+
+    // v2 interface
+    async fn wallet_app_install_v2(&self, req: AppInstallRequest) -> Result<UserApp, EgoError>{
+        let call_result = api::call::call(self.canister_id, "wallet_app_install_v2", (req,)).await
+          as Result<(Result<UserApp, EgoError>,), (RejectionCode, String)>;
+
+        match call_result {
+            Ok(resp) => match resp.0 {
+                Ok(user_app) => Ok(user_app),
+                Err(e) => trap(
+                    format!(
+                        "error calling wallet_app_install_v2 code:{}, msg:{}",
+                        e.code, e.msg
+                    )
+                      .as_str(),
+                ),
+            },
+            Err((code, msg)) => {
+                let code = code as u16;
+                trap(
+                    format!(
+                        "error calling wallet_app_install_v2 code:{}, msg:{}",
+                        code as u16, msg
+                    )
+                      .as_str(),
+                );
+            }
+        }
+    }
+
+    async fn wallet_app_reinstall_by_wallet_v2(&self, req: AppReInstallRequest) {
+        let call_result = api::call::call(self.canister_id, "wallet_app_reinstall_by_wallet_v2", (req,)).await
+          as Result<(Result<(), EgoError>,), (RejectionCode, String)>;
+
+        match call_result {
+            Ok(resp) => match resp.0 {
+                Ok(_) => {
+                    ic_cdk::println!("wallet_app_reinstall_by_wallet_v2 success");
+                }
+                Err(e) => trap(
+                    format!(
+                        "error calling wallet_app_reinstall_by_wallet_v2 code:{}, msg:{}",
+                        e.code, e.msg
+                    )
+                      .as_str(),
+                ),
+            },
+            Err((code, msg)) => {
+                let code = code as u16;
+                trap(
+                    format!(
+                        "error calling wallet_app_reinstall_by_wallet_v2 code:{}, msg:{}",
+                        code as u16, msg
+                    )
+                      .as_str(),
+                );
+            }
+        }
+    }
+
+    async fn wallet_app_upgrade_v2(&self, req: AppUpgradeRequest){
+        let call_result = api::call::call(self.canister_id, "wallet_app_upgrade_v2", (req,))
+          .await
+          as Result<(Result<(), EgoError>,), (RejectionCode, String)>;
+
+        match call_result {
+            Ok(resp) => match resp.0 {
+                Ok(_) => {
+                    ic_cdk::println!("wallet_app_upgrade_v2 success");
+                }
+                Err(e) => trap(
+                    format!(
+                        "error calling wallet_app_upgrade_v2 code:{}, msg:{}",
+                        e.code, e.msg
+                    )
+                      .as_str(),
+                ),
+            },
+            Err((code, msg)) => {
+                let code = code as u16;
+                trap(
+                    format!(
+                        "error calling wallet_app_upgrade_v2 code:{}, msg:{}",
+                        code as u16, msg
+                    )
+                      .as_str(),
+                );
+            }
+        }
+    }
+
+    async fn wallet_app_upgrade_by_wallet_v2(&self, req: WalletUpgradeAppRequest){
+        let call_result = api::call::call(
+            self.canister_id,
+            "wallet_app_upgrade_by_wallet_v2",
+            (req,),
+        )
+          .await
+          as Result<(Result<(), EgoError>,), (RejectionCode, String)>;
+
+        match call_result {
+            Ok(resp) => match resp.0 {
+                Ok(_) => {
+                    ic_cdk::println!("wallet_app_upgrade_by_wallet_v2 success");
+                }
+                Err(e) => trap(
+                    format!(
+                        "error calling wallet_app_upgrade_by_wallet_v2 code:{}, msg:{}",
+                        e.code, e.msg
+                    )
+                      .as_str(),
+                ),
+            },
+            Err((code, msg)) => {
+                let code = code as u16;
+                trap(
+                    format!(
+                        "error calling wallet_app_upgrade_by_wallet_v2 code:{}, msg:{}",
+                        code as u16, msg
+                    )
+                      .as_str(),
+                );
+            }
+        }
     }
 }

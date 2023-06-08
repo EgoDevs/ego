@@ -1,5 +1,6 @@
 use ic_cdk::export::Principal;
 use std::ops::{Div, Mul};
+use ic_cdk::trap;
 
 use ego_lib::ego_canister::TEgoCanister;
 use ego_types::app::EgoError;
@@ -124,6 +125,66 @@ impl EgoTenantService {
 
         info_log_add("3 remove [ego_tenant] from canister controller");
         ego_canister.ego_controller_remove(canister_id, tenant_id);
+
+        Ok(true)
+    }
+
+    pub async fn app_main_reinstall<F: TEgoFile, M: TIcManagement, EC: TEgoCanister>(
+        ego_file: F,
+        management: M,
+        ego_canister: EC,
+        canister_id: Principal,
+        wasm: Wasm,
+        ego_tenant_id: Principal
+    ) -> Result<bool, EgoError> {
+        let ego_store_id = canister_get_one("ego_store").unwrap();
+        // TODO: checked whether user has add tenant as one of the canister's controller
+
+        if wasm.canister_type == CanisterType::ASSET {
+            return Err(EgoTenantErr::SystemError("not implemented".to_string()).into());
+        }
+
+        info_log_add("1 backup current owners");
+
+        let owners = ego_canister.ego_owner_list(canister_id).await?.unwrap().iter().map(|(principal, _name)| principal.clone()).collect();
+
+        info_log_add("2 load wasm data");
+        let data = match ego_file
+          .file_main_read(wasm.canister_id, wasm.fid())
+          .await {
+            Ok(data) => {
+                data
+            }
+            Err(e) => {
+                trap(format!("error calling load wasm data code, {:?}", e).as_str());
+            }
+        };
+
+
+        info_log_add("3 reinstall code");
+        match management.canister_code_reinstall(canister_id, data).await {
+            Ok(_) => {}
+            Err(e) => {
+                trap(format!("error calling reinstall code, {:?}", e).as_str());
+            }
+        };
+
+        // add ego_store_id to app
+        info_log_add("4 add [ego_store, ego_tenant] to canister");
+        ego_canister.ego_canister_add(canister_id, "ego_store".to_string(), ego_store_id);
+        ego_canister.ego_canister_add(canister_id, "ego_tenant".to_string(), ego_tenant_id);
+
+        info_log_add("5 add [ego_store, ego_tenant] as ops_user");
+        ego_canister.ego_op_add(canister_id, ego_store_id);
+        ego_canister.ego_op_add(canister_id, ego_tenant_id);
+
+        // ego_canister.ego_controller_set(canister_id, vec![wallet_id, user_id, canister_id]).await?;
+
+        info_log_add("6 set canister owner to backup owners");
+        ego_canister.ego_owner_set(canister_id, owners);
+
+        info_log_add("7 remove [ego_tenant] from canister controller");
+        ego_canister.ego_controller_remove(canister_id, ego_tenant_id);
 
         Ok(true)
     }

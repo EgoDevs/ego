@@ -17,6 +17,9 @@ type App = record {
   current_version : Version;
   price : float32;
 };
+type AppInstallRequest = record { app_id : text };
+type AppReInstallRequest = record { canister_id : principal };
+type AppUpgradeRequest = record { wallet_id : principal };
 type Canister = record {
   canister_id : principal;
   canister_type : CanisterType;
@@ -142,12 +145,18 @@ service : () -> {
   ego_user_set : (vec principal) -> (Result_9);
   flush_wallet_change_record : () -> ();
   wallet_app_install : (text) -> (Result_1);
+  wallet_app_install_v2 : (AppInstallRequest) -> (Result_1);
   wallet_app_list : () -> (Result_2);
+  wallet_app_reinstall_by_wallet_v2 : (AppReInstallRequest) -> (Result_3);
   wallet_app_remove : (principal) -> (Result_3);
   wallet_app_upgrade : (principal) -> (Result_3);
   wallet_app_upgrade_by_wallet : (principal) -> (Result_3);
+  wallet_app_upgrade_by_wallet_v2 : (AppReInstallRequest) -> (Result_3);
+  wallet_app_upgrade_v2 : (AppUpgradeRequest) -> (Result_3);
   wallet_canister_track : (principal) -> (Result_3);
+  wallet_canister_track_self : (principal) -> (Result_3);
   wallet_canister_untrack : (principal) -> (Result_3);
+  wallet_canister_untrack_self : (principal) -> (Result_3);
   wallet_cycle_balance : () -> (Result_16);
   wallet_cycle_charge : (WalletCycleChargeRequest) -> (Result_17);
   wallet_cycle_list : () -> (Result_18);

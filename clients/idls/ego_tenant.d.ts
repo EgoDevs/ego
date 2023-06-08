@@ -6,6 +6,10 @@ export interface AppMainInstallRequest {
   'user_id' : Principal,
   'wallet_id' : Principal,
 }
+export interface AppMainReInstallRequest {
+  'canister_id' : Principal,
+  'wasm' : Wasm,
+}
 export interface AppMainUpgradeRequest {
   'canister_id' : Principal,
   'wasm' : Wasm,
@@ -54,6 +58,7 @@ export interface _SERVICE {
   'admin_import' : ActorMethod<[Uint8Array | number[]], undefined>,
   'app_main_delete' : ActorMethod<[Principal], Result>,
   'app_main_install' : ActorMethod<[AppMainInstallRequest], Result_1>,
+  'app_main_reinstall' : ActorMethod<[AppMainReInstallRequest], Result_2>,
   'app_main_upgrade' : ActorMethod<[AppMainUpgradeRequest], Result_2>,
   'canister_main_track' : ActorMethod<[Principal, Principal], Result>,
   'canister_main_untrack' : ActorMethod<[Principal], Result>,

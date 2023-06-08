@@ -85,7 +85,15 @@ macro_rules! inject_mock_ego_store {
 
             // canister track
             fn wallet_canister_track(&self, canister_id: Principal);
+            fn wallet_canister_track_self(&self, wallet_id: Principal);
             fn wallet_canister_untrack(&self, canister_id: Principal);
+            fn wallet_canister_untrack_self(&self, wallet_id: Principal);
+
+            // v2 interface
+            async fn wallet_app_install_v2(&self, req: AppInstallRequest) -> Result<UserApp, EgoError>;
+            async fn wallet_app_upgrade_v2(&self, req: AppUpgradeRequest);
+            async fn wallet_app_reinstall_by_wallet_v2(&self, req: AppReInstallRequest) -> Result<UserApp, EgoError>;
+            async fn wallet_app_upgrade_by_wallet_v2(&self, req: WalletUpgradeAppRequest);
           }
         }
     };

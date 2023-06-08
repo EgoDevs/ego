@@ -1,6 +1,6 @@
 [package]
 name = "ego_macros"
-version = "0.2.4"
+version = "0.2.6"
 edition = "2021"
 license = "MIT"
 description = "ego's macro to inject function into mod and actor"
@@ -12,5 +12,5 @@ path = "src/lib.rs"
 candid = "0.8.4"
 ic-cdk = "0.7.4"
 serde = "1.0"
-#ego_types = "0.2.2"
+#ego_types = "0.2.3"
 ego_types = { path = "../ego_types" }

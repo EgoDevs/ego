@@ -5,7 +5,7 @@ use ic_cdk::export::Principal;
 use ego_types::app::EgoError;
 use ego_types::app::Wasm;
 
-use crate::c2c::c2c_types::{AppMainInstallRequest, AppMainUpgradeRequest};
+use crate::c2c::c2c_types::{AppMainInstallRequest, AppMainReInstallRequest, AppMainUpgradeRequest};
 
 #[async_trait]
 pub trait TEgoTenant {
@@ -17,6 +17,12 @@ pub trait TEgoTenant {
         wasm: &Wasm,
     ) -> Result<Principal, EgoError>;
     async fn app_main_upgrade(
+        &self,
+        ego_tenant_id: Principal,
+        canister_id: Principal,
+        wasm: &Wasm,
+    ) -> Result<bool, EgoError>;
+    async fn app_main_reinstall(
         &self,
         ego_tenant_id: Principal,
         canister_id: Principal,
@@ -83,6 +89,32 @@ impl TEgoTenant for EgoTenant {
 
         let call_result = api::call::call(ego_tenant_id, "app_main_upgrade", (req,)).await
             as Result<(Result<bool, EgoError>,), _>;
+
+        match call_result {
+            Ok(resp) => match resp.0 {
+                Ok(ret) => Ok(ret),
+                Err(e) => Err(e),
+            },
+            Err((code, msg)) => {
+                let code = code as u16;
+                Err(EgoError { code, msg })
+            }
+        }
+    }
+
+    async fn app_main_reinstall(
+        &self,
+        ego_tenant_id: Principal,
+        canister_id: Principal,
+        wasm: &Wasm,
+    ) -> Result<bool, EgoError> {
+        let req = AppMainReInstallRequest {
+            canister_id,
+            wasm: wasm.clone(),
+        };
+
+        let call_result = api::call::call(ego_tenant_id, "app_main_reinstall", (req,)).await
+          as Result<(Result<bool, EgoError>,), _>;
 
         match call_result {
             Ok(resp) => match resp.0 {

@@ -22,11 +22,15 @@ export const idlFactory = ({ IDL }) => {
     'wallet_id' : IDL.Principal,
   });
   const Result_1 = IDL.Variant({ 'Ok' : IDL.Principal, 'Err' : EgoError });
-  const AppMainUpgradeRequest = IDL.Record({
+  const AppMainReInstallRequest = IDL.Record({
     'canister_id' : IDL.Principal,
     'wasm' : Wasm,
   });
   const Result_2 = IDL.Variant({ 'Ok' : IDL.Bool, 'Err' : EgoError });
+  const AppMainUpgradeRequest = IDL.Record({
+    'canister_id' : IDL.Principal,
+    'wasm' : Wasm,
+  });
   const Task = IDL.Record({
     'canister_id' : IDL.Principal,
     'next_check_time' : IDL.Nat64,
@@ -55,6 +59,7 @@ export const idlFactory = ({ IDL }) => {
     'admin_import' : IDL.Func([IDL.Vec(IDL.Nat8)], [], []),
     'app_main_delete' : IDL.Func([IDL.Principal], [Result], []),
     'app_main_install' : IDL.Func([AppMainInstallRequest], [Result_1], []),
+    'app_main_reinstall' : IDL.Func([AppMainReInstallRequest], [Result_2], []),
     'app_main_upgrade' : IDL.Func([AppMainUpgradeRequest], [Result_2], []),
     'canister_main_track' : IDL.Func(
         [IDL.Principal, IDL.Principal],

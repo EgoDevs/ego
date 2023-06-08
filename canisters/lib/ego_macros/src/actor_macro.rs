@@ -225,6 +225,7 @@ macro_rules! inject_app_info_api {
         use ego_lib::ego_store::{EgoStore, TEgoStore};
         use ego_types::app::{AppId, Version};
         use ego_types::app_info::AppInfo;
+        use ego_types::types::{AppUpgradeRequest, AppReInstallRequest};
 
         #[update(name = "ego_app_info_update", guard = "op_guard")]
         #[candid_method(update, rename = "ego_app_info_update")]
@@ -281,7 +282,7 @@ macro_rules! inject_app_info_api {
             let ego_store = EgoStore::new(ego_store_id);
 
             ego_store
-                .wallet_app_upgrade(app_info.wallet_id.unwrap())
+                .wallet_app_upgrade_v2(AppUpgradeRequest{wallet_id: app_info.wallet_id.unwrap()})
                 .await;
 
             Ok(())
@@ -307,6 +308,40 @@ macro_rules! inject_app_info_api {
             let ego_store = EgoStore::new(ego_store_id);
 
             ego_store.wallet_app_remove(app_info.wallet_id.unwrap());
+
+            Ok(())
+        }
+
+        // track canister
+        #[update(name = "ego_canister_track", guard = "owner_guard")]
+        #[candid_method(update, rename = "ego_canister_track")]
+        pub async fn ego_canister_track() -> Result<(), String> {
+            let app_info = app_info_get();
+
+            info_log_add("ego_canister_track");
+
+            info_log_add("2 call ego_store to track");
+            let ego_store_id = canister_get_one("ego_store").unwrap();
+            let ego_store = EgoStore::new(ego_store_id);
+
+            ego_store.wallet_canister_track_self(app_info.wallet_id.unwrap());
+
+            Ok(())
+        }
+
+        // untrack canister
+        #[update(name = "ego_canister_untrack", guard = "owner_guard")]
+        #[candid_method(update, rename = "ego_canister_untrack")]
+        pub async fn ego_canister_untrack() -> Result<(), String> {
+            let app_info = app_info_get();
+
+            info_log_add("ego_canister_untrack");
+
+            info_log_add("2 call ego_store to untrack");
+            let ego_store_id = canister_get_one("ego_store").unwrap();
+            let ego_store = EgoStore::new(ego_store_id);
+
+            ego_store.wallet_canister_untrack_self(app_info.wallet_id.unwrap());
 
             Ok(())
         }

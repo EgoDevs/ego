@@ -1,4 +1,5 @@
 use ic_cdk::export::Principal;
+use ic_cdk::trap;
 use ic_ledger_types::Memo;
 
 use ego_lib::ego_canister::TEgoCanister;
@@ -108,12 +109,19 @@ impl EgoStoreService {
         let user_app = EgoStoreService::wallet_app_get(wallet_id, canister_id)?;
 
         info_log_add("2 get app to be upgrade");
-        let ego_store_app = EGO_STORE.with(|ego_store| {
+        let ego_store_app = match EGO_STORE.with(|ego_store| {
             ego_store
                 .borrow()
                 .app_main_get(&user_app.app.app_id)
                 .clone()
-        })?;
+        }) {
+            Ok(ego_store_app) => {
+                ego_store_app
+            }
+            Err(e) => {
+                trap(format!("error calling wallet_app_upgrade, {:?}", e).as_str());
+            }
+        } ;
 
         info_log_add(
             format!(
@@ -153,13 +161,83 @@ impl EgoStoreService {
         Ok(())
     }
 
+    pub async fn wallet_app_reinstall<T: TEgoTenant, EC: TEgoCanister>(
+        ego_tenant: T,
+        ego_canister: EC,
+        wallet_id: &Principal,
+        canister_id: &Principal,
+    ) -> Result<(), EgoError> {
+        info_log_add("1 get user_app to be reinstall");
+
+        let user_app = EgoStoreService::wallet_app_get(wallet_id, canister_id)?;
+
+        info_log_add("2 get app to be reinstall");
+        let ego_store_app = match EGO_STORE.with(|ego_store| {
+            ego_store
+              .borrow()
+              .app_main_get(&user_app.app.app_id)
+              .clone()
+        }) {
+            Ok(ego_store_app) => {
+                ego_store_app
+            }
+            Err(e) => {
+                trap(format!("error calling wallet_app_reinstall, {:?}", e).as_str());
+            }
+        };
+
+        info_log_add(
+            format!(
+                "3 current version is {:?}, next version is {:?}",
+                user_app.app.current_version, ego_store_app.app.current_version
+            )
+              .as_str(),
+        );
+
+        info_log_add("4 get ego tenant id relative to wallet");
+        let ego_tenant_id =
+          EGO_STORE.with(|ego_store| ego_store.borrow().wallet_tenant_get(&wallet_id).clone())?;
+
+        info_log_add("5 call ego tenant to reinstall canister");
+        ego_tenant
+          .app_main_reinstall(
+              ego_tenant_id,
+              user_app.canister.canister_id,
+              &ego_store_app.wasm,
+          )
+          .await?;
+
+        EGO_STORE.with(|ego_store| {
+            ego_store
+              .borrow_mut()
+              .wallet_app_upgrade(&wallet_id, &user_app, &ego_store_app);
+        });
+
+        info_log_add("6 set app info");
+        ego_canister.ego_app_info_update(
+            canister_id.clone(),
+            None,
+            ego_store_app.app.app_id,
+            ego_store_app.app.current_version,
+        );
+
+        Ok(())
+    }
+
     pub fn wallet_app_remove<T: TEgoTenant>(
         ego_tenant: T,
         wallet_id: &Principal,
         canister_id: &Principal,
     ) -> Result<(), EgoError> {
         info_log_add("1 get user_app to be delete");
-        let user_app = EgoStoreService::wallet_app_get(wallet_id, canister_id)?;
+        let user_app = match EgoStoreService::wallet_app_get(wallet_id, canister_id){
+            Ok(user_app) => {
+                user_app
+            }
+            Err(e) => {
+                trap(format!("error calling wallet_app_remove, {:?}", e).as_str());
+            }
+        };
 
         info_log_add("2 get ego tenant id relative to wallet");
         let ego_tenant_id =
@@ -187,13 +265,18 @@ impl EgoStoreService {
 
         info_log_add("2 get user app");
         // confirm user app exists
-        let _user_app = EGO_STORE
-            .with(|ego_store| ego_store.borrow().wallet_app_get(&wallet_id, &canister_id))?;
+        match EGO_STORE
+            .with(|ego_store| ego_store.borrow().wallet_app_get(&wallet_id, &canister_id)) {
+            Ok(_user_app) => {
+                info_log_add("3 track canister");
+                ego_tenant.canister_main_track(ego_tenant_id, wallet_id, canister_id);
 
-        info_log_add("3 track canister");
-        ego_tenant.canister_main_track(ego_tenant_id, wallet_id, canister_id);
-
-        Ok(())
+                Ok(())
+            }
+            Err(e) => {
+                trap(format!("error calling wallet_canister_track, {:?}", e).as_str());
+            }
+        }
     }
 
     pub fn wallet_canister_untrack<T: TEgoTenant>(
@@ -207,13 +290,18 @@ impl EgoStoreService {
 
         info_log_add("2 get user app");
         // confirm user app exists
-        let _user_app = EGO_STORE
-            .with(|ego_store| ego_store.borrow().wallet_app_get(&wallet_id, &canister_id))?;
+        match EGO_STORE
+            .with(|ego_store| ego_store.borrow().wallet_app_get(&wallet_id, &canister_id)) {
+            Ok(_user_app) => {
+                info_log_add("3 untrack canister");
+                ego_tenant.canister_main_untrack(ego_tenant_id, canister_id);
 
-        info_log_add("3 untrack canister");
-        ego_tenant.canister_main_untrack(ego_tenant_id, canister_id);
-
-        Ok(())
+                Ok(())
+            }
+            Err(e) => {
+                trap(format!("error calling wallet_canister_untrack, {:?}", e).as_str());
+            }
+        }
     }
 
     pub fn wallet_order_list(wallet_id: Principal) -> Result<Vec<Order>, EgoError> {

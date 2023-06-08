@@ -92,6 +92,9 @@ export const idlFactory = ({ IDL }) => {
     'Ok' : IDL.Opt(IDL.Vec(IDL.Tuple(IDL.Principal, IDL.Text))),
     'Err' : IDL.Text,
   });
+  const AppInstallRequest = IDL.Record({ 'app_id' : IDL.Text });
+  const AppReInstallRequest = IDL.Record({ 'canister_id' : IDL.Principal });
+  const AppUpgradeRequest = IDL.Record({ 'wallet_id' : IDL.Principal });
   const Result_16 = IDL.Variant({ 'Ok' : IDL.Nat, 'Err' : EgoError });
   const WalletCycleChargeRequest = IDL.Record({
     'cycle' : IDL.Nat,
@@ -184,12 +187,26 @@ export const idlFactory = ({ IDL }) => {
     'ego_user_set' : IDL.Func([IDL.Vec(IDL.Principal)], [Result_9], []),
     'flush_wallet_change_record' : IDL.Func([], [], []),
     'wallet_app_install' : IDL.Func([IDL.Text], [Result_1], []),
+    'wallet_app_install_v2' : IDL.Func([AppInstallRequest], [Result_1], []),
     'wallet_app_list' : IDL.Func([], [Result_2], []),
+    'wallet_app_reinstall_by_wallet_v2' : IDL.Func(
+        [AppReInstallRequest],
+        [Result_3],
+        [],
+      ),
     'wallet_app_remove' : IDL.Func([IDL.Principal], [Result_3], []),
     'wallet_app_upgrade' : IDL.Func([IDL.Principal], [Result_3], []),
     'wallet_app_upgrade_by_wallet' : IDL.Func([IDL.Principal], [Result_3], []),
+    'wallet_app_upgrade_by_wallet_v2' : IDL.Func(
+        [AppReInstallRequest],
+        [Result_3],
+        [],
+      ),
+    'wallet_app_upgrade_v2' : IDL.Func([AppUpgradeRequest], [Result_3], []),
     'wallet_canister_track' : IDL.Func([IDL.Principal], [Result_3], []),
+    'wallet_canister_track_self' : IDL.Func([IDL.Principal], [Result_3], []),
     'wallet_canister_untrack' : IDL.Func([IDL.Principal], [Result_3], []),
+    'wallet_canister_untrack_self' : IDL.Func([IDL.Principal], [Result_3], []),
     'wallet_cycle_balance' : IDL.Func([], [Result_16], []),
     'wallet_cycle_charge' : IDL.Func(
         [WalletCycleChargeRequest],

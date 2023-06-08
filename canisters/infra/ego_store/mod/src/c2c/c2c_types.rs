@@ -28,3 +28,9 @@ pub struct AppMainUpgradeRequest {
     pub canister_id: Principal,
     pub wasm: Wasm,
 }
+
+#[derive(CandidType, Deserialize, Serialize)]
+pub struct AppMainReInstallRequest {
+    pub canister_id: Principal,
+    pub wasm: Wasm,
+}

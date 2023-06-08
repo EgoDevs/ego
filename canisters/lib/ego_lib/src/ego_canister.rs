@@ -68,6 +68,8 @@ pub trait TEgoCanister {
     // canister relative
     fn ego_canister_upgrade(&self, target_canister_id: Principal);
     fn ego_canister_delete(&self, target_canister_id: Principal);
+    fn ego_canister_track(&self, target_canister_id: Principal);
+    fn ego_canister_untrack(&self, target_canister_id: Principal);
 
     // canister cycle info
     fn ego_cycle_check(&self, target_canister_id: Principal);
@@ -379,11 +381,11 @@ impl TEgoCanister for EgoCanister {
         //   Ok(resp) => {
         //     match resp.0 {
         //       Ok(app) => {},
-        //       Err(msg) => trap(format!("error calling balance_get msg:{}", msg).as_str())
+        //       Err(msg) => trap(format!("error calling ego_canister_upgrade msg:{}", msg).as_str())
         //     }
         //   }
         //   Err((code, msg)) => {
-        //     trap(format!("error calling balance_get code:{}, msg:{}", code as u16, msg).as_str());
+        //     trap(format!("error calling ego_canister_upgrade code:{}, msg:{}", code as u16, msg).as_str());
         //   }
         // }
         let _result = api::call::notify(target_canister_id, "ego_canister_upgrade", ());
@@ -391,6 +393,14 @@ impl TEgoCanister for EgoCanister {
 
     fn ego_canister_delete(&self, target_canister_id: Principal) {
         let _result = api::call::notify(target_canister_id, "ego_canister_delete", ());
+    }
+
+    fn ego_canister_track(&self, target_canister_id: Principal) {
+        let _result = api::call::notify(target_canister_id, "ego_canister_track", ());
+    }
+
+    fn ego_canister_untrack(&self, target_canister_id: Principal) {
+        let _result = api::call::notify(target_canister_id, "ego_canister_untrack", ());
     }
 
     // canister cycle info
