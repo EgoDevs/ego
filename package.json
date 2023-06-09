@@ -17,6 +17,15 @@
         "ego:deploy": "jest --testPathPattern=deploys --verbose -t",
         "ego:run": "pnpm run ego:create && pnpm run ego:install && pnpm run ego:deploy deploy_ego",
 
+        "ego:create:aws": "ego --create --env=custom",
+        "ego:install:aws": "ego --install --env=custom",
+        "ego:reinstall:aws": "ego --reinstall --env=custom",
+        "ego:upgrade:aws": "ego --upgrade --env=custom",
+        "migrate:aws": "NODE_ENV=custom jest --testPathPattern=migrations --verbose -t",
+        "ego:deploy:aws": "NODE_ENV=custom jest --testPathPattern=deploys --verbose -t",
+        "ego:script:aws": "NODE_ENV=custom jest --testPathPattern=scripts --verbose -t",
+        "ego:postPatch:aws": "ego --postPatch --env=custom",
+
         "ego:create:staging": "ego --create --env=testnet",
         "ego:install:staging": "ego --install --env=testnet",
         "ego:reinstall:staging": "ego --reinstall --env=testnet",
@@ -24,8 +33,6 @@
         "migrate:staging": "NODE_ENV=testnet jest --testPathPattern=migrations --verbose -t",
         "ego:deploy:staging": "NODE_ENV=testnet jest --testPathPattern=deploys --verbose -t",
         "ego:script:staging": "NODE_ENV=testnet jest --testPathPattern=scripts --verbose -t",
-        "ego:run:staging": "pnpm run ego:create:staging && pnpm run ego:install:staging && pnpm run ego:deploy:staging deploy_ego",
-        "ego:postPatch:staging": "ego --postPatch --env=testnet",
 
         "ego:create:main": "ego --create --env=mainnet",
         "ego:install:main": "ego --install --env=mainnet",
@@ -33,8 +40,7 @@
         "ego:upgrade:main": "ego --upgrade --env=mainnet",
         "migrate:main": "NODE_ENV=mainnet jest --testPathPattern=migrations --verbose -t",
         "ego:deploy:main": "NODE_ENV=mainnet jest --testPathPattern=deploys --verbose -t",
-        "ego:script:main": "NODE_ENV=mainnet jest --testPathPattern=scripts --verbose -t",
-        "ego:run:main": "pnpm run ego:create:main && pnpm run ego:install:main && pnpm run ego:deploy:main deploy_ego"
+        "ego:script:main": "NODE_ENV=mainnet jest --testPathPattern=scripts --verbose -t"
     },
     "author": "egoDevs@github.com",
     "license": "ISC",
