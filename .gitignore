@@ -59,7 +59,7 @@ canisters/.pnpm-debug.log
 
 # configs
 # configs/ego*.json
-!configs/constant.json
+configs/local.json
 
 
 # lock files
