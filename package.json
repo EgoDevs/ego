@@ -8,8 +8,8 @@
         "ego:clean": "ego --clean",
         "ego:build": "ego --build",
         "ego:build:debug": "ego --build --featurs=debug",
-        "switch::mac": "cp configs/mac.json configs/local.json",
-        "switch::aws": "cp configs/aws.json configs/local.json",
+        "switch:mac": "cp configs/mac.json configs/local.json",
+        "switch:aws": "cp configs/aws.json configs/local.json",
 
         "ego:create": "ego --create",
         "ego:install": "ego --install",
