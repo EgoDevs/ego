@@ -153,7 +153,7 @@ impl EgoStoreService {
         info_log_add("6 set app info");
         ego_canister.ego_app_info_update(
             canister_id.clone(),
-            None,
+            Some(wallet_id.clone()),
             ego_store_app.app.app_id,
             ego_store_app.app.current_version,
         );
