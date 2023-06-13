@@ -8,6 +8,7 @@ fn main() {}
 #[cfg(not(any(target_arch = "wasm32", test)))]
 fn main() {
     use ego_store_mod::app::EgoStoreApp;
+    use ego_store_mod::wallet_provider::WalletProvider;
     use ego_store_mod::order::Order;
     use ego_store_mod::types::*;
     use ego_types::app::EgoError;

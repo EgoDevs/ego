@@ -22,6 +22,7 @@ use ego_store_mod::state::EGO_STORE;
 use ego_store_mod::state::*;
 use ego_store_mod::store::EgoStore;
 use ego_store_mod::types::*;
+use ego_store_mod::wallet_provider::WalletProvider;
 use ego_types::app::CashFlow;
 use ego_types::app::EgoError;
 use ego_types::app::UserApp;
@@ -466,20 +467,6 @@ pub fn wallet_order_notify(memo: Memo) -> Result<bool, EgoError> {
 }
 
 /******************** owner methods  ********************/
-#[update(name = "admin_wallet_provider_add", guard = "owner_guard")]
-#[candid_method(update, rename = "admin_wallet_provider_add")]
-pub fn admin_wallet_provider_add(req: AdminWalletProviderAddRequest) -> Result<(), EgoError> {
-    info_log_add("ego_store: admin_wallet_provider_add");
-
-    info_log_add(&format!(
-        "wallet_provider: {}, app_id: {}",
-        req.wallet_provider, req.wallet_app_id
-    ));
-
-    EgoStoreService::admin_wallet_provider_add(&req.wallet_provider, &req.wallet_app_id);
-    Ok(())
-}
-
 #[update(name = "admin_wallet_cycle_recharge", guard = "owner_guard")]
 #[candid_method(update, rename = "admin_wallet_cycle_recharge")]
 pub fn admin_wallet_cycle_recharge(req: AdminWalletCycleRechargeRequest) -> Result<bool, EgoError> {
@@ -658,6 +645,38 @@ pub fn admin_wallet_app_get(wallet_id: Principal, canister_id: Principal) -> Res
         Ok(user_app) => Ok(user_app),
         Err(e) => Err(e),
     }
+}
+
+///
+/// 返回wallet_provider列表
+///
+#[update(name = "admin_wallet_provider_list", guard = "owner_guard")]
+#[candid_method(update, rename = "admin_wallet_provider_list")]
+pub fn admin_wallet_provider_list() -> Result<Vec<WalletProvider>, EgoError> {
+    info_log_add("ego_store: admin_wallet_provider_list");
+
+    let wallet_providers = EGO_STORE.with(|ego_store| {
+        ego_store
+          .borrow().wallet_providers.iter().map(|(_, provider)| provider.clone()).collect()
+    });
+    Ok(wallet_providers)
+}
+
+///
+/// 添加wallet_provider
+///
+#[update(name = "admin_wallet_provider_add", guard = "owner_guard")]
+#[candid_method(update, rename = "admin_wallet_provider_add")]
+pub fn admin_wallet_provider_add(req: AdminWalletProviderAddRequest) -> Result<(), EgoError> {
+    info_log_add("ego_store: admin_wallet_provider_add");
+
+    info_log_add(&format!(
+        "wallet_provider: {}, app_id: {}",
+        req.wallet_provider, req.wallet_app_id
+    ));
+
+    EgoStoreService::admin_wallet_provider_add(&req.wallet_provider, &req.wallet_app_id);
+    Ok(())
 }
 
 /********************  数据导出   ********************/

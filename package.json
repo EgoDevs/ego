@@ -18,7 +18,7 @@
         "migrate": "jest --testPathPattern=migrations --verbose -t",
         "ego:script": "jest --testPathPattern=scripts --verbose -t",
         "ego:deploy": "jest --testPathPattern=deploys --verbose -t",
-        "ego:run": "pnpm run ego:create && pnpm run ego:install && pnpm run ego:deploy deploy_ego",
+        "ego:run": "pnpm run ego:create && pnpm run ego:install && pnpm run ego:deploy",
 
         "ego:create:aws": "ego --create --env=custom",
         "ego:install:aws": "ego --install --env=custom",
