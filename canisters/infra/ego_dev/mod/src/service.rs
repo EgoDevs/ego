@@ -40,6 +40,12 @@ impl EgoDevService {
         )
     }
 
+    pub fn developer_app_transfer(developer_id: Principal, app_id: AppId) -> Result<(), EgoError> {
+        EGO_DEV.with(
+            |ego_dev|  ego_dev.borrow_mut().developer_app_transfer(&developer_id, &app_id)
+        )
+    }
+
     pub fn developer_app_new(
         caller: Principal,
         app_id: AppId,

@@ -15,10 +15,7 @@ use ego_dev_mod::ego_dev::EgoDev;
 use ego_dev_mod::service::*;
 use ego_dev_mod::state::EGO_DEV;
 use ego_dev_mod::state::*;
-use ego_dev_mod::types::{
-    AdminAppCreateBackendRequest, AppMainNewRequest, AppVersionSetFrontendAddressRequest,
-    AppVersionUploadWasmRequest, UserRoleSetRequest,
-};
+use ego_dev_mod::types::{AdminAppCreateBackendRequest, AppMainNewRequest, AppVersionSetFrontendAddressRequest, AppVersionUploadWasmRequest, UserRoleSetRequest};
 use ego_macros::{inject_cycle_info_api, inject_ego_api};
 use ego_types::app::EgoError;
 use ego_types::app::{AppId, Version};
@@ -333,6 +330,28 @@ pub async fn admin_app_create(
     let ego_store = EgoStore::new(ego_store_id);
 
     EgoDevService::app_version_release(caller, request.app_id.clone(), request.version, ego_store)
+}
+
+#[update(name = "admin_app_transfer", guard = "owner_guard")]
+#[candid_method(update, rename = "admin_app_transfer")]
+pub async fn admin_app_transfer(app_id: AppId) -> Result<(), EgoError> {
+    info_log_add("ego-dev: admin_app_transfer");
+
+    let caller = ic_cdk::caller();
+
+    if EGO_DEV.with(|ego_dev| ego_dev.borrow().developers.contains_key(&caller)) {
+        info_log_add("1. developer exists. skip developer registration");
+    } else {
+        info_log_add("1. developer_main_register");
+        EgoDevService::developer_main_register(caller, "ego_deployer".to_string())?;
+    }
+
+    info_log_add("2. transfer app");
+
+    EgoDevService::developer_app_transfer(
+        caller,
+        app_id.clone()
+    )
 }
 
 /********************  guard  ********************/

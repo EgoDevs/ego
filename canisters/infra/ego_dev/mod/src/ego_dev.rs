@@ -149,6 +149,20 @@ impl EgoDev {
         }
     }
 
+    pub fn developer_app_transfer(
+        &mut self,
+        developer_id: &Principal,
+        app_id: &AppId,
+    ) -> Result<(), EgoError> {
+        match self.apps.get_mut(app_id) {
+            None => Err(EgoDevErr::AppNotExists.into()),
+            Some(app) => {
+                app.developer_id = developer_id.clone();
+                Ok(())
+            }
+        }
+    }
+
     pub fn developer_app_list(&self, user_id: Principal) -> Result<Vec<EgoDevApp>, EgoError> {
         let developer = self.developer_main_get(user_id)?;
 

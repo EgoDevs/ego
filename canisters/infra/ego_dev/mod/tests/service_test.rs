@@ -219,6 +219,37 @@ fn developer_app_new_fail_with_exists_app_id() {
 }
 
 #[test]
+fn developer_app_transfer() {
+    set_up();
+
+    let caller = Principal::from_text(TEST_PRINCIPAL_ID.to_string()).unwrap();
+    let result = EgoDevService::developer_app_new(
+        caller,
+        EXIST_APP_ID.to_string(),
+        EXIST_APP_NAME.to_string(),
+        APP_LOGO.to_string(),
+        APP_DESCRIPTION.to_string(),
+        Category::Vault,
+        0f32,
+    );
+
+    assert_eq!(1001, result.unwrap_err().code);
+
+    let _ = EgoDevService::developer_app_transfer(caller, EXIST_APP_ID.to_string());
+    let result = EgoDevService::developer_app_new(
+        caller,
+        EXIST_APP_ID.to_string(),
+        EXIST_APP_NAME.to_string(),
+        APP_LOGO.to_string(),
+        APP_DESCRIPTION.to_string(),
+        Category::Vault,
+        0f32,
+    );
+
+    assert!(result.is_ok());
+}
+
+#[test]
 fn developer_app_new_fail_with_none_register_developer() {
     set_up();
 
