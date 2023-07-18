@@ -28,7 +28,6 @@ describe('ego_store_import', () => {
 
     const data = fs.readFileSync(file_path);
     const json = JSON.parse(data.toString()) as any[];
-    const len = json.length;
 
     const jsBuff = Buffer.from(JSON.stringify(json));
     await actor.admin_import(Array.from(jsBuff))

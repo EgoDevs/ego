@@ -420,12 +420,12 @@ impl EgoStoreService {
         let ego_store_app =
             EGO_STORE.with(|ego_store| ego_store.borrow().app_main_get(&app_id).clone())?;
 
-        info_log_add("4 call ego tenant to install code");
+        info_log_add(format!("4 call ego tenant {} to install code", ego_tenant_id).as_str());
         let canister_id = ego_tenant
             .app_main_install(ego_tenant_id, wallet_provider, user_id, &ego_store_app.wasm)
             .await?;
 
-        info_log_add("5 register wallet to ego_store");
+        info_log_add(format!("5 register wallet {}, to ego_store", canister_id).as_str());
         let _result = EGO_STORE.with(|ego_store| {
             ego_store
                 .borrow_mut()

@@ -1,5 +1,5 @@
 use async_trait::async_trait;
-use ic_cdk::api;
+use ic_cdk::{api, trap};
 use ic_cdk::export::Principal;
 
 use ego_types::app::EgoError;
@@ -67,11 +67,11 @@ impl TEgoTenant for EgoTenant {
         match call_result {
             Ok(resp) => match resp.0 {
                 Ok(canister_id) => Ok(canister_id),
-                Err(e) => Err(e),
+                Err(e) => trap(format!("Error calling app_main_install msg: {}", e.msg).as_str()),
             },
             Err((code, msg)) => {
                 let code = code as u16;
-                Err(EgoError { code, msg })
+                trap(format!("Error calling app_main_install code: {}, msg: {}", code, msg).as_str());
             }
         }
     }
