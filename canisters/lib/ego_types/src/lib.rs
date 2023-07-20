@@ -5,3 +5,4 @@ pub mod log;
 pub mod registry;
 pub mod user;
 pub mod types;
+pub mod seq;

@@ -4,12 +4,10 @@ use std::time::Duration;
 
 use candid::candid_method;
 use ic_cdk::api::time;
-use ic_cdk::export::candid::{CandidType, Deserialize};
 use ic_cdk::export::Principal;
 use ic_cdk::timer::set_timer_interval;
-use ic_cdk::{caller, id, storage, trap};
+use ic_cdk::{caller, id};
 use ic_cdk_macros::*;
-use serde::Serialize;
 use serde_bytes::ByteBuf;
 
 use ego_lib::ego_canister::{EgoCanister, TEgoCanister};
@@ -17,22 +15,18 @@ use ego_macros::inject_ego_api;
 use ego_tenant_mod::c2c::ego_file::EgoFile;
 use ego_tenant_mod::c2c::ego_store::EgoStore;
 use ego_tenant_mod::c2c::ic_management::IcManagement;
-use ego_tenant_mod::service::EgoTenantService;
-use ego_tenant_mod::state::EGO_TENANT;
+use ego_tenant_mod::service::{EgoTenantService, NEXT_CHECK_DURATION};
 use ego_tenant_mod::state::*;
-use ego_tenant_mod::task::Task;
 use ego_tenant_mod::tenant::Tenant;
 use ego_tenant_mod::types::EgoTenantErr::CanisterNotFounded;
-use ego_tenant_mod::types::{AppMainInstallRequest, AppMainReInstallRequest, AppMainUpgradeRequest};
+use ego_tenant_mod::types::{AppMainInstallRequest, AppMainReInstallRequest, AppMainUpgradeRequest, StableState, Task};
 use ego_types::app::EgoError;
 use ego_types::cycle_info::CycleRecord;
-use ego_types::registry::Registry;
-use ego_types::user::User;
+
 
 inject_ego_api!();
 
-pub const CHECK_DURATION: u64 = 60 * 5; // 每 5 分钟，检查有没有需要检查的Canister
-pub const NEXT_CHECK_DURATION: u64 = 1800; // Canister每 30 分钟 回报一次
+pub const CHECK_DURATION: u64 = 60; // 每 5 分钟，检查有没有需要检查的Canister
 
 
 #[init]
@@ -50,45 +44,17 @@ fn init() {
     });
 }
 
-#[derive(CandidType, Deserialize, Serialize)]
-struct PersistState {
-    ego_tenant: Tenant,
-    users: Option<User>,
-    registry: Option<Registry>,
-}
-
 #[pre_upgrade]
 fn pre_upgrade() {
     info_log_add("ego_tenant: pre_upgrade");
-    let ego_tenant = EGO_TENANT.with(|ego_tenant| ego_tenant.borrow().clone());
 
-    let state = PersistState {
-        ego_tenant,
-        users: Some(users_pre_upgrade()),
-        registry: Some(registry_pre_upgrade()),
-    };
-    storage::stable_save((state,)).unwrap();
+    ego_tenant_mod::state::pre_upgrade();
 }
 
 #[post_upgrade]
 fn post_upgrade() {
     info_log_add("ego_tenant: post_upgrade");
-    let (state,): (PersistState,) = storage::stable_restore().unwrap();
-    EGO_TENANT.with(|ego_tenant| *ego_tenant.borrow_mut() = state.ego_tenant);
-
-    match state.users {
-        None => {}
-        Some(users) => {
-            users_post_upgrade(users);
-        }
-    }
-
-    match state.registry {
-        None => {}
-        Some(registry) => {
-            registry_post_upgrade(registry);
-        }
-    }
+    ego_tenant_mod::state::post_upgrade();
 
     let duration = Duration::new(CHECK_DURATION, 0);
     set_timer_interval(duration, || {
@@ -211,15 +177,13 @@ async fn ego_cycle_check_cb(records: Vec<CycleRecord>, threshold: u128) -> Resul
     let ego_canister = EgoCanister::new();
 
     info_log_add("1. get task by canister_id");
-    let task = EGO_TENANT.with(
-        |ego_tenant| match ego_tenant.borrow().tasks.get(&canister_id) {
-            None => {
-                info_log_add("ego_tenant error, can not find task");
-                Err(EgoError::from(CanisterNotFounded))
-            }
-            Some(task) => Ok(task.clone()),
-        },
-    )?;
+    let task = match Tenant::task_get(canister_id) {
+        None => {
+            info_log_add("ego_tenant error, can not find task");
+            Err(EgoError::from(CanisterNotFounded))
+        }
+        Some(task) => Ok(task.clone()),
+    }?;
 
     EgoTenantService::ego_cycle_check_cb(
         management,
@@ -243,7 +207,7 @@ async fn wallet_cycle_recharge(cycles: u128) -> Result<(), EgoError> {
             "ego_tenant: wallet_cycle_recharge, canister_id: {}",
             canister_id
         )
-        .as_str(),
+          .as_str(),
     );
 
     let management = IcManagement::new();
@@ -252,15 +216,13 @@ async fn wallet_cycle_recharge(cycles: u128) -> Result<(), EgoError> {
     let ego_store = EgoStore::new(ego_store_id);
 
     info_log_add("1. get task by canister_id");
-    let task = EGO_TENANT.with(
-        |ego_tenant| match ego_tenant.borrow().tasks.get(&canister_id) {
-            None => {
-                info_log_add("ego_tenant error, can not find task");
-                Err(EgoError::from(CanisterNotFounded))
-            }
-            Some(task) => Ok(task.clone()),
-        },
-    )?;
+    let task = match Tenant::task_get(canister_id) {
+        None => {
+            info_log_add("ego_tenant error, can not find task");
+            Err(EgoError::from(CanisterNotFounded))
+        }
+        Some(task) => Ok(task.clone()),
+    }?;
 
     EgoTenantService::wallet_cycle_recharge(management, ego_store, &task, cycles).await?;
     Ok(())
@@ -272,14 +234,7 @@ async fn wallet_cycle_recharge(cycles: u128) -> Result<(), EgoError> {
 pub fn canister_task_list() -> Result<Vec<Task>, EgoError> {
     info_log_add("ego_tenant: canister_task_list");
 
-    let tasks = EGO_TENANT.with(|ego_tenant| {
-        ego_tenant
-            .borrow()
-            .tasks
-            .values()
-            .map(|task| task.clone())
-            .collect()
-    });
+    let tasks = Tenant::task_all();
     Ok(tasks)
 }
 
@@ -288,7 +243,7 @@ fn task_run() {
     info_log_add("ego_tenant: task_run");
 
     let sentinel = time().div(1e9 as u64); // convert to second
-    let tasks = EGO_TENANT.with(|ego_tenant| ego_tenant.borrow_mut().tasks_get(sentinel));
+    let tasks = Tenant::task_filter(sentinel);
 
     for task in tasks {
         let ego_canister = EgoCanister::new();
@@ -305,13 +260,7 @@ fn task_run() {
 async fn admin_export() -> Vec<u8> {
     info_log_add("ego_tenant: admin_export");
 
-    let ego_tenant = EGO_TENANT.with(|ego_tenant| ego_tenant.borrow().clone());
-
-    let state = PersistState {
-        ego_tenant,
-        users: Some(users_pre_upgrade()),
-        registry: Some(registry_pre_upgrade()),
-    };
+    let state = StableState::default();
 
     serde_json::to_vec(&state).unwrap()
 }
@@ -320,34 +269,4 @@ async fn admin_export() -> Vec<u8> {
 #[candid_method(update, rename = "admin_import")]
 async fn admin_import(chunk: ByteBuf) {
     info_log_add("ego_tenant: admin_import");
-
-    let data_opt = std::str::from_utf8(chunk.as_slice());
-    match data_opt {
-        Ok(data) => {
-            // return data.to_string();
-            let deser_result = serde_json::from_str::<PersistState>(&data);
-            match deser_result {
-                Ok(state) => {
-                    EGO_TENANT.with(|ego_tenant| *ego_tenant.borrow_mut() = state.ego_tenant);
-
-                    match state.users {
-                        None => {}
-                        Some(users) => {
-                            users_post_upgrade(users);
-                        }
-                    }
-
-                    match state.registry {
-                        None => {}
-                        Some(registry) => {
-                            registry_post_upgrade(registry);
-                        }
-                    }
-                }
-                Err(_) => trap("deserialize failed"),
-            }
-        }
-
-        Err(_) => trap("deserialize failed"),
-    }
 }

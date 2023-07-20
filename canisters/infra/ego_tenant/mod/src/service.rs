@@ -10,16 +10,15 @@ use ego_types::cycle_info::{CycleRecord, DEFAULT_ESTIMATE};
 use crate::c2c::ego_file::TEgoFile;
 use crate::c2c::ego_store::TEgoStore;
 use crate::c2c::ic_management::TIcManagement;
-use crate::state::{canister_get_one, info_log_add, EGO_TENANT};
-use crate::task::Task;
-use crate::types::EgoTenantErr;
+use crate::state::{canister_get_one, info_log_add};
+use crate::tenant::Tenant;
+use crate::types::{EgoTenantErr, Task};
 use crate::types::EgoTenantErr::CycleNotEnough;
 
 pub struct EgoTenantService {}
 
 pub const NEXT_CHECK_DURATION: u64 = 60 * 60; // 1 hour
 pub const CREATE_CANISTER_CYCLES_FEE: u128 = 100_000_000_000;
-// pub const CREATE_CANISTER_CYCLES_FEE: u128 = 200_000_000_000;
 
 impl EgoTenantService {
     pub fn canister_main_track(
@@ -27,15 +26,11 @@ impl EgoTenantService {
         canister_id: Principal,
         next_check_time: u64,
     ) -> Result<(), EgoError> {
-        EGO_TENANT.with(|ego_tenant| {
-            ego_tenant
-                .borrow_mut()
-                .canister_main_track(wallet_id, canister_id, next_check_time)
-        })
+        Tenant::canister_main_track(wallet_id, canister_id, next_check_time)
     }
 
     pub fn canister_main_untrack(canister_id: Principal) -> Result<(), EgoError> {
-        EGO_TENANT.with(|ego_tenant| ego_tenant.borrow_mut().canister_main_untrack(canister_id))
+        Tenant::canister_main_untrack(canister_id)
     }
 
     pub async fn app_main_install<F: TEgoFile, M: TIcManagement, EC: TEgoCanister>(
@@ -279,11 +274,8 @@ impl EgoTenantService {
 
         let next_time = current_ts + NEXT_CHECK_DURATION;
         info_log_add(format!("5. update next_time to : {}", next_time).as_str());
-        EGO_TENANT.with(|ego_tenant| {
-            ego_tenant
-                .borrow_mut()
-                .task_update(task.canister_id, next_time, current_cycle)
-        });
+
+        Tenant::task_update(task.wallet_id, task.canister_id, next_time, current_cycle);
 
         Ok(())
     }

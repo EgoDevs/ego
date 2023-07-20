@@ -242,3 +242,28 @@ macro_rules! inject_ego_data {
         }
     };
 }
+
+#[macro_export]
+macro_rules! inject_seq_info {
+    () => {
+        thread_local! {
+          pub static SEQ: RefCell<Seq> = RefCell::new(Seq::default());
+        }
+
+        use ego_types::seq::Seq;
+
+        pub fn next_number(key: &str, current_max: u64) -> u64{
+            SEQ.with(|seq| {
+                seq.borrow_mut().next_number(key, current_max)
+            })
+        }
+
+        pub fn seq_pre_upgrade() -> Seq {
+            SEQ.with(|s| s.borrow().clone())
+        }
+
+        pub fn seq_post_upgrade(stable_state: Seq) {
+            SEQ.with(|s| s.replace(stable_state));
+        }
+    };
+}

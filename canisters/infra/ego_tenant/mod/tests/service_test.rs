@@ -39,27 +39,36 @@ mock! {
   impl TIcManagement for Management {
     async fn canister_main_create(&self, cycles_to_use: Cycles) -> Result<Principal, EgoError>;
 
+    async fn canister_code_reinstall(
+        &self,
+        canister_id: Principal,
+        wasm_module: Vec<u8>,
+    ) -> Result<(), EgoError>;
     async fn canister_code_install(
-      &self,
-      canister_id: Principal,
-      wasm_module: Vec<u8>,
+        &self,
+        canister_id: Principal,
+        wasm_module: Vec<u8>,
     ) -> Result<(), EgoError>;
 
     async fn canister_code_upgrade(
-      &self,
-      canister_id: Principal,
-      wasm_module: Vec<u8>,
+        &self,
+        canister_id: Principal,
+        wasm_module: Vec<u8>,
     ) -> Result<(), EgoError>;
 
     async fn canister_cycle_top_up(
-      &self,
-      canister_id: Principal,
-      cycles_to_use: Cycles,
+        &self,
+        canister_id: Principal,
+        cycles_to_use: Cycles,
     ) -> Result<(), EgoError>;
 
     async fn canister_main_delete(&self, canister_id: Principal) -> Result<(), EgoError>;
 
-    async fn controllers_update(&self, canister_id: Principal, controllers: Vec<Principal>) -> Result<(), EgoError>;
+    async fn controllers_update(
+        &self,
+        canister_id: Principal,
+        controllers: Vec<Principal>,
+    ) -> Result<(), EgoError>;
   }
 }
 
