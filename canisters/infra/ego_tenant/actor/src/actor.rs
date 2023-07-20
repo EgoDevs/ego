@@ -267,10 +267,7 @@ async fn wallet_cycle_recharge(cycles: u128) -> Result<(), EgoError> {
 }
 
 /********************  methods for astro_deployer   ********************/
-///
-/// 将某个canister，转移到astro_deployer名下
-///
-#[update(name = "canister_task_list", guard = "owner_guard")]
+#[update(name = "canister_task_list", guard = "user_guard")]
 #[candid_method(update, rename = "canister_task_list")]
 pub fn canister_task_list() -> Result<Vec<Task>, EgoError> {
     info_log_add("ego_tenant: canister_task_list");
@@ -295,6 +292,7 @@ fn task_run() {
 
     for task in tasks {
         let ego_canister = EgoCanister::new();
+        info_log_add(format!("calling ego_cycle_check on {}", task.canister_id).as_str());
 
         ego_canister.ego_cycle_check(task.canister_id);
     }

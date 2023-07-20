@@ -282,7 +282,7 @@ impl EgoTenantService {
         EGO_TENANT.with(|ego_tenant| {
             ego_tenant
                 .borrow_mut()
-                .task_update(task.canister_id, next_time)
+                .task_update(task.canister_id, next_time, current_cycle)
         });
 
         Ok(())

@@ -7,6 +7,7 @@ pub struct Task {
     pub wallet_id: Principal,
     pub canister_id: Principal,
     pub next_check_time: u64, // second
+    pub last_cycle: Option<u128>
 }
 
 impl Task {
@@ -15,6 +16,7 @@ impl Task {
             wallet_id,
             canister_id,
             next_check_time,
+            last_cycle: None
         }
     }
 }

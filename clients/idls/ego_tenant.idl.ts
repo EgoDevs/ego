@@ -34,6 +34,7 @@ export const idlFactory = ({ IDL }) => {
   const Task = IDL.Record({
     'canister_id' : IDL.Principal,
     'next_check_time' : IDL.Nat64,
+    'last_cycle' : IDL.Opt(IDL.Nat),
     'wallet_id' : IDL.Principal,
   });
   const Result_3 = IDL.Variant({ 'Ok' : IDL.Vec(Task), 'Err' : EgoError });

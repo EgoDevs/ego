@@ -21,6 +21,7 @@ type Result_8 = variant { Ok : opt vec record { principal; text }; Err : text };
 type Task = record {
   canister_id : principal;
   next_check_time : nat64;
+  last_cycle : opt nat;
   wallet_id : principal;
 };
 type Version = record { major : nat32; minor : nat32; patch : nat32 };

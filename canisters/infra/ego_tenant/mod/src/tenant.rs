@@ -47,9 +47,10 @@ impl Tenant {
             .collect()
     }
 
-    pub fn task_update(&mut self, canister_id: Principal, next_check_time: u64) {
+    pub fn task_update(&mut self, canister_id: Principal, next_check_time: u64, last_cycle: u128) {
         self.tasks.entry(canister_id).and_modify(|task| {
             task.next_check_time = next_check_time;
+            task.last_cycle = Some(last_cycle);
         });
     }
 }

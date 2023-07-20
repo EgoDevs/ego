@@ -40,6 +40,7 @@ export type Result_8 = { 'Ok' : [] | [Array<[Principal, string]>] } |
 export interface Task {
   'canister_id' : Principal,
   'next_check_time' : bigint,
+  'last_cycle' : [] | [bigint],
   'wallet_id' : Principal,
 }
 export interface Version {
