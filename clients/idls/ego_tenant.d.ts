@@ -19,13 +19,13 @@ export type CanisterType = { 'BACKEND' : null } |
 export interface CycleRecord { 'ts' : bigint, 'balance' : bigint }
 export interface EgoError { 'msg' : string, 'code' : number }
 export interface LogEntry { 'ts' : bigint, 'msg' : string, 'kind' : string }
-export type Result = { 'Ok' : Array<Task> } |
+export type Result = { 'Ok' : null } |
   { 'Err' : EgoError };
-export type Result_1 = { 'Ok' : null } |
+export type Result_1 = { 'Ok' : Principal } |
   { 'Err' : EgoError };
-export type Result_2 = { 'Ok' : Principal } |
+export type Result_2 = { 'Ok' : boolean } |
   { 'Err' : EgoError };
-export type Result_3 = { 'Ok' : boolean } |
+export type Result_3 = { 'Ok' : Array<Task> } |
   { 'Err' : EgoError };
 export type Result_4 = { 'Ok' : null } |
   { 'Err' : string };
@@ -40,7 +40,6 @@ export type Result_8 = { 'Ok' : [] | [Array<[Principal, string]>] } |
 export interface Task {
   'canister_id' : Principal,
   'next_check_time' : bigint,
-  'last_update' : bigint,
   'last_cycle' : [] | [bigint],
   'wallet_id' : Principal,
 }
@@ -57,21 +56,21 @@ export interface Wasm {
 }
 export interface _SERVICE {
   'admin_export' : ActorMethod<[], Uint8Array | number[]>,
-  'admin_task_add' : ActorMethod<[Array<Task>], undefined>,
-  'admin_task_list' : ActorMethod<[bigint], Result>,
-  'app_main_delete' : ActorMethod<[Principal], Result_1>,
-  'app_main_install' : ActorMethod<[AppMainInstallRequest], Result_2>,
-  'app_main_reinstall' : ActorMethod<[AppMainReInstallRequest], Result_3>,
-  'app_main_upgrade' : ActorMethod<[AppMainUpgradeRequest], Result_3>,
-  'canister_main_track' : ActorMethod<[Principal, Principal], Result_1>,
-  'canister_main_untrack' : ActorMethod<[Principal], Result_1>,
+  'admin_import' : ActorMethod<[Uint8Array | number[]], undefined>,
+  'app_main_delete' : ActorMethod<[Principal], Result>,
+  'app_main_install' : ActorMethod<[AppMainInstallRequest], Result_1>,
+  'app_main_reinstall' : ActorMethod<[AppMainReInstallRequest], Result_2>,
+  'app_main_upgrade' : ActorMethod<[AppMainUpgradeRequest], Result_2>,
+  'canister_main_track' : ActorMethod<[Principal, Principal], Result>,
+  'canister_main_untrack' : ActorMethod<[Principal], Result>,
+  'canister_task_list' : ActorMethod<[], Result_3>,
   'ego_canister_add' : ActorMethod<[string, Principal], Result_4>,
   'ego_canister_list' : ActorMethod<[], Result_5>,
   'ego_canister_remove' : ActorMethod<[string, Principal], Result_4>,
   'ego_controller_add' : ActorMethod<[Principal], Result_4>,
   'ego_controller_remove' : ActorMethod<[Principal], Result_4>,
   'ego_controller_set' : ActorMethod<[Array<Principal>], Result_4>,
-  'ego_cycle_check_cb' : ActorMethod<[Array<CycleRecord>, bigint], Result_1>,
+  'ego_cycle_check_cb' : ActorMethod<[Array<CycleRecord>, bigint], Result>,
   'ego_is_op' : ActorMethod<[], Result_6>,
   'ego_is_owner' : ActorMethod<[], Result_6>,
   'ego_is_user' : ActorMethod<[], Result_6>,
@@ -88,5 +87,5 @@ export interface _SERVICE {
   'ego_user_list' : ActorMethod<[], Result_8>,
   'ego_user_remove' : ActorMethod<[Principal], Result_4>,
   'ego_user_set' : ActorMethod<[Array<Principal>], Result_4>,
-  'wallet_cycle_recharge' : ActorMethod<[bigint], Result_1>,
+  'wallet_cycle_recharge' : ActorMethod<[bigint], Result>,
 }

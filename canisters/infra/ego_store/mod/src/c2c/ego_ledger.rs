@@ -3,7 +3,7 @@ use ic_cdk::export::Principal;
 use ic_ledger_types::Tokens;
 
 use crate::c2c::c2c_types::LedgerPaymentAddRequest;
-use crate::order::Order;
+use crate::types::order::Order;
 
 pub trait TEgoLedger {
     fn ledger_payment_add(&self, order: &Order);

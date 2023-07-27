@@ -183,14 +183,16 @@ pub struct UserApp {
     pub app: App,
     pub canister: Canister,
     pub latest_version: Version,
+    pub wallet_id: Option<Principal>
 }
 
 impl UserApp {
-    pub fn new(app: &App, canister: Canister) -> Self {
+    pub fn new(app: &App, canister: Canister, wallet_id: Option<Principal>) -> Self {
         UserApp {
             app: app.clone(),
             latest_version: app.current_version.clone(),
             canister,
+            wallet_id
         }
     }
 }

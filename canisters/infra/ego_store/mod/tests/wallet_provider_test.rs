@@ -11,7 +11,7 @@ use ego_store_mod::order::Order;
 use ego_store_mod::service::EgoStoreService;
 use ego_store_mod::state::EGO_STORE;
 use ego_store_mod::tenant::Tenant;
-use ego_store_mod::wallet::Wallet;
+use ego_store_mod::types::wallet::Wallet;
 use ego_types::app::CanisterType::BACKEND;
 use ego_types::app::EgoError;
 use ego_types::app::Version;
@@ -159,7 +159,7 @@ fn admin_wallet_cycle_recharge() {
     let operator = Principal::from_text(EXISTS_USER_ID).unwrap();
 
     // before recharge
-    let cycle_list = EgoStoreService::wallet_cycle_list(wallet_id);
+    let cycle_list = EgoStoreService::wallet_cash_flow_list(wallet_id);
     assert_eq!(0, cycle_list.unwrap().len());
 
     let result = EgoStoreService::admin_wallet_cycle_recharge(
@@ -172,7 +172,7 @@ fn admin_wallet_cycle_recharge() {
     assert!(result.is_ok());
 
     // after recharge
-    let cycle_list = EgoStoreService::wallet_cycle_list(wallet_id);
+    let cycle_list = EgoStoreService::wallet_cash_flow_list(wallet_id);
     assert_eq!(1, cycle_list.unwrap().len());
 }
 
