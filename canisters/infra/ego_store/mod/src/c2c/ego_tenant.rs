@@ -1,6 +1,6 @@
 use async_trait::async_trait;
 use ic_cdk::{api, trap};
-use ic_cdk::export::Principal;
+use candid::{Principal};
 
 use ego_types::app::EgoError;
 use ego_types::app::Wasm;

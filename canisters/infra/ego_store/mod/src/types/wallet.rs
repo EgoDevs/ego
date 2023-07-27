@@ -2,8 +2,7 @@ use std::borrow::Cow;
 use candid::{Decode, Encode};
 use ic_cdk::api::time;
 
-use ic_cdk::export::candid::{CandidType, Deserialize};
-use ic_cdk::export::Principal;
+use candid::{CandidType, Deserialize, Principal};
 use ic_stable_structures::{BoundedStorable, Storable};
 use ic_stable_structures::storable::Blob;
 use serde::Serialize;

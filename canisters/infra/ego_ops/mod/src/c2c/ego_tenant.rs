@@ -1,5 +1,5 @@
 use ic_cdk::api;
-use ic_cdk::export::Principal;
+use candid::{Principal};
 
 pub trait TEgoTenant {
     fn canister_main_track(

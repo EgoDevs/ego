@@ -1,5 +1,4 @@
-use ic_cdk::export::Principal;
-
+use candid::Principal;
 use ego_types::app::{AppId, Category, EgoError, Version};
 
 use crate::c2c::ego_dev::TEgoDev;

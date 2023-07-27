@@ -1,4 +1,4 @@
-use ic_cdk::export::candid::{CandidType, Deserialize};
+use candid::{CandidType, Deserialize};
 use ic_ledger_types::{AccountIdentifier, BlockIndex, Memo, Tokens};
 use serde::Serialize;
 

@@ -1,8 +1,8 @@
 use std::borrow::Cow;
 use std::cmp::Ordering;
-use candid::{Decode, Encode, Principal};
+use candid::{Decode, Encode};
 use ic_stable_structures::{BoundedStorable, Storable};
-use ic_cdk::export::candid::{CandidType, Deserialize};
+use candid::{CandidType, Deserialize, Principal};
 use ic_stable_structures::storable::Blob;
 use serde::Serialize;
 use crate::memory::{TENANTS};

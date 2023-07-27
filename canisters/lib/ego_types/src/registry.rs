@@ -1,8 +1,6 @@
 use std::collections::BTreeMap;
 
-use candid::CandidType;
-use ic_cdk::export::candid::Deserialize;
-use ic_cdk::export::Principal;
+use candid::{CandidType, Deserialize, Principal};
 use serde::Serialize;
 
 #[derive(CandidType, Serialize, Deserialize, Clone, Debug)]

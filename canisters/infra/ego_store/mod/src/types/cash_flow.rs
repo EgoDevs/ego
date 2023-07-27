@@ -1,8 +1,8 @@
 use std::borrow::Cow;
-use candid::{Decode, Encode, Principal};
+use candid::{Decode, Encode};
 use ic_cdk::api::time;
 use ic_stable_structures::{BoundedStorable, Storable};
-use ic_cdk::export::candid::{CandidType, Deserialize};
+use candid::{CandidType, Deserialize, Principal};
 use serde::Serialize;
 use ego_types::app::CashFlowType;
 use crate::memory::CASH_FLOWS;

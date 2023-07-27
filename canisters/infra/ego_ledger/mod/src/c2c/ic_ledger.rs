@@ -1,5 +1,5 @@
 use async_trait::async_trait;
-use ic_cdk::export::Principal;
+use candid::Principal;
 use ic_ledger_types::{query_blocks, Block, BlockIndex, GetBlocksArgs};
 
 use ego_types::app::EgoError;

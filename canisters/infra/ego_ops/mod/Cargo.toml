@@ -7,18 +7,23 @@ edition = "2021"
 path = "src/mod.rs"
 
 [dependencies]
-candid = "0.8.4"
-ic-cdk = "0.7.4"
-ic-cdk-macros = "0.6.8"
-ic-certified-map = "0.3.0"
-serde = "1.0.136"
-async-trait = "0.1.57"
-md5 = "0.7.0"
-ego_types = { path = "../../../lib/ego_types" }
-ego_macros = { path = "../../../lib/ego_macros" }
-ego_lib = { path = "../../../lib/ego_lib" }
+candid =  { workspace = true }
+ic-cdk =  { workspace = true }
+ic-cdk-macros =  { workspace = true }
+serde =  { workspace = true }
+serde_json =  { workspace = true }
+serde_bytes =  { workspace = true }
+ic-ledger-types =  { workspace = true }
+ego_types =  { workspace = true }
+ego_macros =  { workspace = true }
+ego_lib =  { workspace = true }
 
+ic-stable-structures = { workspace = true }
+ciborium = { workspace = true }
+
+async-trait = { workspace = true }
+md5 = { workspace = true }
 
 [dev-dependencies]
-mockall = "0.11.2"
-tokio = { version = "1.21.0", features = ["full"] }
+mockall = { workspace = true }
+tokio = { workspace = true }

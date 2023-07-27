@@ -1,5 +1,5 @@
 use ic_cdk::api;
-use ic_cdk::export::Principal;
+use candid::{Principal};
 use ic_ledger_types::Tokens;
 
 use crate::c2c::c2c_types::LedgerPaymentAddRequest;

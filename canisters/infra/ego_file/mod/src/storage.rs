@@ -4,7 +4,7 @@ use ic_cdk::api::{
     stable::{stable64_grow, stable64_read, stable64_write},
     trap,
 };
-use ic_cdk::export::candid::{CandidType, Deserialize};
+use candid::{CandidType, Deserialize};
 
 use ego_types::app::EgoError;
 use ego_types::app::FileId;

@@ -2,8 +2,7 @@ use std::fmt;
 use std::str::FromStr;
 
 use ic_cdk::api::call::RejectionCode;
-use ic_cdk::export::candid::{CandidType, Deserialize};
-use ic_cdk::export::Principal;
+use candid::{CandidType, Deserialize, Principal};
 use serde::Serialize;
 
 #[derive(Clone, Debug, CandidType, Deserialize, Serialize)]

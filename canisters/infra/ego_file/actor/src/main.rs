@@ -11,7 +11,7 @@ fn main() {
     use ego_types::app::EgoError;
     use ego_types::app::FileId;
     use ego_types::cycle_info::*;
-    use ic_cdk::export::Principal;
+    use candid::Principal;
     use std::collections::BTreeMap;
 
     candid::export_service!();

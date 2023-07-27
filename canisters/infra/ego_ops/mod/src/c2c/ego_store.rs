@@ -1,5 +1,5 @@
 use ic_cdk::api;
-use ic_cdk::export::Principal;
+use candid::{Principal};
 
 use ego_types::app::AppId;
 

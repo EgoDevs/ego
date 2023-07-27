@@ -3,11 +3,10 @@ use std::convert::AsRef;
 use std::ops::Deref;
 use std::rc::Rc;
 
-use ic_cdk::export::candid::{
-    types::{internal::Type, Serializer},
-    CandidType, Deserialize,
-};
+use candid::{CandidType, Deserialize};
+use candid::types::Type;
 use serde::de::Deserializer;
+use serde::Serializer;
 use serde_bytes::ByteBuf;
 
 #[derive(Clone, Debug, Default)]

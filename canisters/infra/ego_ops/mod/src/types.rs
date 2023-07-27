@@ -1,7 +1,6 @@
 use std::collections::BTreeMap;
 
-use ic_cdk::export::candid::{CandidType, Deserialize};
-use ic_cdk::export::Principal;
+use candid::{CandidType, Deserialize, Principal};
 
 use ego_types::app::{AppId, Category, Version};
 

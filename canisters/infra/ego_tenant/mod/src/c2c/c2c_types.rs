@@ -1,5 +1,4 @@
-use ic_cdk::export::candid::{CandidType, Deserialize};
-use ic_cdk::export::Principal;
+use candid::{CandidType, Deserialize, Principal};
 use serde::Serialize;
 
 // type for ego_store

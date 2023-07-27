@@ -1,7 +1,6 @@
 use std::cmp::Ordering;
 
-use ic_cdk::export::candid::{CandidType, Deserialize};
-use ic_cdk::export::Principal;
+use candid::{CandidType, Deserialize, Principal};
 use serde::Serialize;
 
 #[derive(CandidType, Serialize, Deserialize, Clone, Debug)]

@@ -1,6 +1,6 @@
 use std::borrow::Cow;
 use candid::{Decode, Encode};
-use ic_cdk::export::candid::{CandidType, Deserialize};
+use candid::{CandidType, Deserialize};
 use ic_stable_structures::{BoundedStorable, Storable};
 use serde::Serialize;
 use ego_types::cycle_info::CycleInfo;

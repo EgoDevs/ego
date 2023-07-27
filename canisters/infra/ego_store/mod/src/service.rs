@@ -1,4 +1,4 @@
-use ic_cdk::export::Principal;
+use candid::{Principal};
 use ic_cdk::trap;
 use ic_ledger_types::Memo;
 

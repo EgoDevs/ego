@@ -1,6 +1,5 @@
-use candid::{Principal};
 use ego_types::app::{AppId, CashFlow, EgoError, UserApp};
-use ic_cdk::export::candid::{CandidType, Deserialize};
+use candid::{CandidType, Deserialize, Principal};
 use serde::Serialize;
 
 pub mod app_key;

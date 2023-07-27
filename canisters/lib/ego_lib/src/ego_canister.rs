@@ -1,9 +1,8 @@
 use async_trait::async_trait;
 use ic_cdk::api::call::RejectionCode;
-use ic_cdk::export::Principal;
+use candid::{Principal};
 use ic_cdk::{api, trap};
 use std::collections::BTreeMap;
-use tracing::error;
 
 use ego_types::app::{App, AppId, Version};
 use ego_types::app_info::AppInfo;
@@ -306,13 +305,7 @@ impl TEgoCanister for EgoCanister {
                 Ok(balance) => Ok(balance),
                 Err(msg) => Err(msg),
             },
-            Err((code, msg)) => {
-                let code = code as u16;
-                error!(
-                    error_code = code,
-                    error_message = msg.as_str(),
-                    "Error calling balance_get"
-                );
+            Err((_code, msg)) => {
                 Err(msg)
             }
         }

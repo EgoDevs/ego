@@ -1,7 +1,7 @@
 use std::collections::BTreeMap;
 
 use candid::candid_method;
-use ic_cdk::export::Principal;
+use candid::{Principal};
 use ic_cdk::{caller, id};
 use ic_cdk_macros::*;
 use ic_ledger_types::Memo;

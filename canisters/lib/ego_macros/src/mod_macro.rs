@@ -156,7 +156,7 @@ macro_rules! inject_ego_data {
 
         use ego_types::user::User;
         use ic_cdk::caller;
-        use ic_cdk::export::Principal;
+        use candid::{Principal};
 
         /* owner relative methods */
         pub fn is_owner(user_id: Principal) -> bool {

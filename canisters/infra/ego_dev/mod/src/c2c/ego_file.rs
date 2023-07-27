@@ -1,8 +1,7 @@
 use async_trait::async_trait;
+use candid::Principal;
 use ic_cdk::api;
 use ic_cdk::api::call::RejectionCode;
-use ic_cdk::export::Principal;
-use tracing::error;
 
 use ego_types::app::EgoError;
 use ego_types::app::FileId;
@@ -49,11 +48,6 @@ impl TEgoFile for EgoFile {
                 let code = code as u16;
                 error_log_add(
                     format!("Error calling file_main_write code: {}, msg: {}", code, msg).as_str(),
-                );
-                error!(
-                    error_code = code,
-                    error_message = msg.as_str(),
-                    "Error calling file_main_write"
                 );
                 Err(EgoError { code, msg })
             }

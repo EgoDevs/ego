@@ -1,8 +1,6 @@
-use candid::candid_method;
-use candid::CandidType;
+use candid::{candid_method, Principal, CandidType, Deserialize};
 use ic_cdk::api::{data_certificate, set_certified_data, time};
-use ic_cdk::export::candid::Deserialize;
-use ic_cdk::export::Principal;
+
 use ic_cdk::{caller, trap};
 use ic_cdk_macros::*;
 

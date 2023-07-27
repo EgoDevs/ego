@@ -1,11 +1,8 @@
 use std::collections::BTreeMap;
-use std::time::Duration;
 
 use candid::candid_method;
-use ic_cdk::export::candid::{CandidType, Deserialize};
-use ic_cdk::export::Principal;
-use ic_cdk::timer::set_timer_interval;
-use ic_cdk::{api, caller, id, storage};
+use candid::{CandidType, Deserialize, Principal};
+use ic_cdk::{caller, storage};
 use ic_cdk_macros::*;
 use ic_ledger_types::MAINNET_LEDGER_CANISTER_ID;
 use serde::Serialize;

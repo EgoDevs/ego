@@ -3,8 +3,7 @@ use ego_types::app::EgoError;
 use ego_types::cycle_info::CycleRecord;
 use ic_cdk::api;
 use ic_cdk::api::call::RejectionCode;
-use ic_cdk::export::Principal;
-use tracing::error;
+use candid::{Principal};
 
 #[async_trait]
 pub trait TEgoTenant {
@@ -44,11 +43,6 @@ impl TEgoTenant for EgoTenant {
             },
             Err((code, msg)) => {
                 let code = code as u16;
-                error!(
-                    error_code = code,
-                    error_message = msg.as_str(),
-                    "Error calling wallet_cycle_recharge"
-                );
                 Err(EgoError { code, msg })
             }
         }

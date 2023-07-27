@@ -1,5 +1,4 @@
-use ic_cdk::export::candid::CandidType;
-use ic_cdk::export::candid::Deserialize;
+use candid::{CandidType, Deserialize};
 use serde::Serialize;
 
 pub const DEFAULT_ESTIMATE: u64 = 86400 * 7;

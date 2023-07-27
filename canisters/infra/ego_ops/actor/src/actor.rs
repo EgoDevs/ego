@@ -1,8 +1,7 @@
 use std::collections::BTreeMap;
 
 use candid::candid_method;
-use ic_cdk::export::candid::{CandidType, Deserialize};
-use ic_cdk::export::Principal;
+use candid::{CandidType, Deserialize, Principal};
 use ic_cdk::{caller, id, storage};
 use ic_cdk_macros::*;
 use serde::Serialize;

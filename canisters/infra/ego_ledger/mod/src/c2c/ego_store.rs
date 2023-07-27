@@ -1,5 +1,5 @@
+use candid::Principal;
 use ic_cdk::api;
-use ic_cdk::export::Principal;
 use ic_ledger_types::Memo;
 
 pub trait TEgoStore {

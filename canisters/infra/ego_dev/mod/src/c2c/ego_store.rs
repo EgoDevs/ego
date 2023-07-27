@@ -1,6 +1,7 @@
 use async_trait::async_trait;
+use candid::Principal;
 use ic_cdk::api;
-use ic_cdk::export::Principal;
+
 
 use ego_types::app::{App, Wasm};
 

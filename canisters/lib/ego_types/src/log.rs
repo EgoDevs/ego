@@ -1,5 +1,4 @@
-use ic_cdk::export::candid::CandidType;
-use ic_cdk::export::candid::Deserialize;
+use candid::{CandidType, Deserialize};
 use serde::{Serialize};
 use std::cmp::min;
 

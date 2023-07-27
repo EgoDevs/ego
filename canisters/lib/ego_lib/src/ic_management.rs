@@ -2,8 +2,7 @@ use ic_cdk::api::management_canister::main::{
     canister_status, update_settings, CanisterIdRecord, CanisterSettings, CanisterStatusResponse,
     UpdateSettingsArgument,
 };
-use ic_cdk::export::Principal;
-use tracing::error;
+use candid::{Principal};
 
 use ego_types::app::EgoError;
 
@@ -25,11 +24,6 @@ pub async fn controllers_update(
         Ok(_) => Ok(()),
         Err((code, msg)) => {
             let code = code as u16;
-            error!(
-                error_code = code,
-                error_message = msg.as_str(),
-                "Error calling controllers_update"
-            );
             Err(EgoError { code, msg })
         }
     }
@@ -42,11 +36,6 @@ pub async fn canister_status_get(
         Ok(result) => Ok(result.0),
         Err((code, msg)) => {
             let code = code as u16;
-            error!(
-                error_code = code,
-                error_message = msg.as_str(),
-                "Error calling canister_status_get"
-            );
             Err(EgoError { code, msg })
         }
     }

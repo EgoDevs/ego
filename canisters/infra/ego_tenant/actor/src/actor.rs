@@ -4,8 +4,7 @@ use std::time::Duration;
 
 use candid::candid_method;
 use ic_cdk::api::time;
-use ic_cdk::export::Principal;
-use ic_cdk::timer::set_timer_interval;
+use candid::{Principal};
 use ic_cdk::{caller, id};
 use ic_cdk_macros::*;
 
@@ -37,10 +36,8 @@ fn init() {
     info_log_add("==> add caller as the owner");
     owner_add(caller.clone());
 
-    let duration = Duration::new(CHECK_DURATION, 0);
-    set_timer_interval(duration, || {
-        task_run();
-    });
+    let duration = Duration::from_secs(CHECK_DURATION);
+    ic_cdk_timers::set_timer_interval(duration, task_run);
 }
 
 #[pre_upgrade]
@@ -55,10 +52,8 @@ fn post_upgrade() {
     info_log_add("post_upgrade");
     ego_tenant_mod::state::post_upgrade();
 
-    let duration = Duration::new(CHECK_DURATION, 0);
-    set_timer_interval(duration, || {
-        task_run();
-    });
+    let duration = Duration::from_secs(CHECK_DURATION);
+    ic_cdk_timers::set_timer_interval(duration, task_run);
 }
 
 /********************  methods for ego_store   ********************/

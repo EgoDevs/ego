@@ -1,6 +1,6 @@
 use async_trait::async_trait;
 use ego_lib::ic_management::controllers_update;
-use ic_cdk::export::Principal;
+use candid::{Principal};
 
 use ego_types::app::EgoError;
 use ego_utils::ic_management::{canister_code_install, canister_code_reinstall, canister_code_upgrade, canister_cycle_top_up, canister_main_create, canister_main_delete, Cycles};

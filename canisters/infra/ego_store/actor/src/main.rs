@@ -17,7 +17,7 @@ fn main() {
     use ego_types::app::{App, AppId, CashFlow};
     use ego_store_mod::types::wallet::Wallet;
     use ego_types::cycle_info::*;
-    use ic_cdk::export::Principal;
+    use candid::Principal;
     use std::collections::BTreeMap;
 
     use ic_ledger_types::Memo;

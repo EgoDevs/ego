@@ -10,7 +10,7 @@ fn main() {
     use ego_tenant_mod::types::*;
     use ego_types::app::EgoError;
     use ego_types::cycle_info::*;
-    use ic_cdk::export::Principal;
+    use candid::Principal;
     use std::collections::BTreeMap;
     use ego_tenant_mod::types::task::Task;
 

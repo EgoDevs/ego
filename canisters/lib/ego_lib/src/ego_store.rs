@@ -1,8 +1,7 @@
 use async_trait::async_trait;
 use ic_cdk::api::call::RejectionCode;
-use ic_cdk::export::Principal;
+use candid::{Principal};
 use ic_cdk::{api, trap};
-use tracing::error;
 
 use ego_types::app::{App, AppId, CashFlow, EgoError, UserApp};
 use ego_types::types::{AppInstallRequest, AppReInstallRequest, AppUpgradeRequest, WalletUpgradeAppRequest};
@@ -136,11 +135,6 @@ impl TEgoStore for EgoStore {
             },
             Err((code, msg)) => {
                 let code = code as u16;
-                error!(
-                    error_code = code,
-                    error_message = msg.as_str(),
-                    "Error calling app_main_get"
-                );
                 Err(EgoError { code, msg })
             }
         }
@@ -157,11 +151,6 @@ impl TEgoStore for EgoStore {
             },
             Err((code, msg)) => {
                 let code = code as u16;
-                error!(
-                    error_code = code,
-                    error_message = msg.as_str(),
-                    "Error calling wallet_app_list"
-                );
                 Err(EgoError { code, msg })
             }
         }
@@ -276,11 +265,6 @@ impl TEgoStore for EgoStore {
             },
             Err((code, msg)) => {
                 let code = code as u16;
-                error!(
-                    error_code = code,
-                    error_message = msg.as_str(),
-                    "Error calling wallet_cycle_balance"
-                );
                 Err(EgoError { code, msg })
             }
         }
@@ -297,11 +281,6 @@ impl TEgoStore for EgoStore {
             },
             Err((code, msg)) => {
                 let code = code as u16;
-                error!(
-                    error_code = code,
-                    error_message = msg.as_str(),
-                    "Error calling wallet_cycle_list"
-                );
                 Err(EgoError { code, msg })
             }
         }

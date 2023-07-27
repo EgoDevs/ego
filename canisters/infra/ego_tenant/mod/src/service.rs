@@ -1,4 +1,4 @@
-use ic_cdk::export::Principal;
+use candid::{Principal};
 use std::ops::{Div, Mul};
 use ic_cdk::trap;
 

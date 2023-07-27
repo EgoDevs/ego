@@ -1,7 +1,7 @@
 use async_trait::async_trait;
 use ic_cdk::api;
 use ic_cdk::api::call::RejectionCode;
-use ic_cdk::export::Principal;
+use candid::{Principal};
 
 use ego_types::app::EgoError;
 

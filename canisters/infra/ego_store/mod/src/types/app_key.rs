@@ -2,7 +2,7 @@ use std::borrow::Cow;
 use std::cmp::Ordering;
 use candid::{Decode, Encode};
 use ic_stable_structures::{BoundedStorable, Storable};
-use ic_cdk::export::candid::{CandidType, Deserialize};
+use candid::{CandidType, Deserialize};
 use serde::Serialize;
 use ego_types::app::AppId;
 

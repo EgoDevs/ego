@@ -9,8 +9,7 @@ description = "ego's macro to inject function into mod and actor"
 path = "src/lib.rs"
 
 [dependencies]
-candid = "0.8.4"
-ic-cdk = "0.7.4"
-serde = "1.0"
-#ego_types = "0.2.3"
-ego_types = { path = "../ego_types" }
+candid = { workspace = true }
+ic-cdk = { workspace = true }
+serde = { workspace = true }
+ego_types = { workspace = true }

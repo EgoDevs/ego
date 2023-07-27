@@ -10,7 +10,7 @@ fn main() {
     use crate::actor::InitArg;
     use ego_record_mod::record::*;
     use ego_types::cycle_info::*;
-    use ic_cdk::export::Principal;
+    use candid::Principal;
     use std::collections::BTreeMap;
 
     candid::export_service!();

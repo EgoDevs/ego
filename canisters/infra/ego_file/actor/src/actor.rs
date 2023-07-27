@@ -2,8 +2,7 @@ use std::collections::BTreeMap;
 
 use candid::{candid_method, Decode, Encode};
 use ic_cdk::api::stable::{stable64_grow, stable64_read, stable64_write};
-use ic_cdk::export::candid::{CandidType, Deserialize};
-use ic_cdk::export::Principal;
+use candid::{CandidType, Deserialize, Principal};
 use ic_cdk::{caller, trap};
 use ic_cdk_macros::*;
 

@@ -1,6 +1,6 @@
 use async_trait::async_trait;
 use ic_cdk::api;
-use ic_cdk::export::Principal;
+use candid::{Principal};
 
 #[async_trait]
 pub trait TEgoRecord {
