@@ -17,6 +17,13 @@ describe('ego_tenant_export', () => {
     const data = await actor.admin_export();
 
     const json = JSON.parse(Buffer.from(data).toString()) as { [key: string]: any }[];
+
+    let tasks = []
+    Object.entries(json['ego_tenant']['tasks']).forEach(([key, task]) => {
+      tasks.push(task)
+    })
+
+    json['ego_tenant']['tasks'] = tasks
     fs.writeFileSync(file_path, JSON.stringify(json));
   });
 });
@@ -30,8 +37,9 @@ describe('ego_tenant_import', () => {
     const data = fs.readFileSync(file_path);
     const json = JSON.parse(data.toString()) as any[];
 
-    console.log('1. restore users')
+    const task_offset = 0
 
+    console.log('1. restore users')
     Object.entries(json['users']['owners']).forEach(([key, value]) => {
       actor.ego_owner_add(Principal.fromText(value))
     })
@@ -51,9 +59,13 @@ describe('ego_tenant_import', () => {
     })
 
     console.log('3. restore tasks')
-    Object.entries(json['ego_tenant']['tasks']).forEach(([key, task]) => {
-      console.log(key + " / " + task)
-      actor.canister_main_track(Principal.fromText(task['wallet_id']), Principal.fromText(task['canister_id']))
+    let tasks = json['ego_tenant']['tasks']
+    tasks.forEach(task => {
+      task['wallet_id'] = Principal.fromText(task['wallet_id'])
+      task['canister_id'] = Principal.fromText(task['canister_id'])
+      task['last_update'] = 0
+      task['last_cycle'] = []
     })
+    await actor.admin_task_add(tasks)
   });
 });

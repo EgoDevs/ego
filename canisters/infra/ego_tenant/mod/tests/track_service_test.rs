@@ -29,7 +29,7 @@ pub fn set_up() {
     let wallet_principal = Principal::from_text(EXISTS_WALLET_ID.to_string()).unwrap();
     let canister_principal = Principal::from_text(EXISTS_CANISTER_ID.to_string()).unwrap();
 
-    let _ = Tenant::canister_main_track(wallet_principal, canister_principal, 0);
+    // let _ = Tenant::canister_main_track(wallet_principal, canister_principal, 0);
 }
 
 mock! {

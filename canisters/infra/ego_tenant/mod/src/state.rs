@@ -2,8 +2,7 @@ use std::cell::RefCell;
 
 use ego_macros::{inject_cycle_info, inject_ego_data};
 use crate::memory::CONFIG;
-
-use crate::types::StableState;
+use crate::types::stable_state::StableState;
 
 inject_ego_data!();
 inject_cycle_info!();

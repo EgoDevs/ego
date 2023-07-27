@@ -8,7 +8,6 @@ use ic_cdk::export::Principal;
 use ic_cdk::timer::set_timer_interval;
 use ic_cdk::{caller, id};
 use ic_cdk_macros::*;
-use serde_bytes::ByteBuf;
 
 use ego_lib::ego_canister::{EgoCanister, TEgoCanister};
 use ego_macros::inject_ego_api;
@@ -17,23 +16,23 @@ use ego_tenant_mod::c2c::ego_store::EgoStore;
 use ego_tenant_mod::c2c::ic_management::IcManagement;
 use ego_tenant_mod::service::{EgoTenantService, NEXT_CHECK_DURATION};
 use ego_tenant_mod::state::*;
-use ego_tenant_mod::tenant::Tenant;
 use ego_tenant_mod::types::EgoTenantErr::CanisterNotFounded;
-use ego_tenant_mod::types::{AppMainInstallRequest, AppMainReInstallRequest, AppMainUpgradeRequest, StableState, Task};
+use ego_tenant_mod::types::{AppMainInstallRequest, AppMainReInstallRequest, AppMainUpgradeRequest};
+use ego_tenant_mod::types::task::Task;
 use ego_types::app::EgoError;
 use ego_types::cycle_info::CycleRecord;
 
 
 inject_ego_api!();
 
-pub const CHECK_DURATION: u64 = 60; // 每 5 分钟，检查有没有需要检查的Canister
+pub const CHECK_DURATION: u64 = 600; // 每 10 分钟，检查有没有需要检查的Canister
 
 
 #[init]
 #[candid_method(init)]
 fn init() {
     let caller = caller();
-    info_log_add(format!("ego_tenant: init, caller is {}", caller.clone()).as_str());
+    info_log_add(format!("init, caller is {}", caller.clone()).as_str());
 
     info_log_add("==> add caller as the owner");
     owner_add(caller.clone());
@@ -46,14 +45,14 @@ fn init() {
 
 #[pre_upgrade]
 fn pre_upgrade() {
-    info_log_add("ego_tenant: pre_upgrade");
+    info_log_add("pre_upgrade");
 
     ego_tenant_mod::state::pre_upgrade();
 }
 
 #[post_upgrade]
 fn post_upgrade() {
-    info_log_add("ego_tenant: post_upgrade");
+    info_log_add("post_upgrade");
     ego_tenant_mod::state::post_upgrade();
 
     let duration = Duration::new(CHECK_DURATION, 0);
@@ -66,7 +65,7 @@ fn post_upgrade() {
 #[update(name = "app_main_install", guard = "user_guard")]
 #[candid_method(update, rename = "app_main_install")]
 async fn app_main_install(req: AppMainInstallRequest) -> Result<Principal, EgoError> {
-    info_log_add("ego_tenant: app_main_install");
+    info_log_add("app_main_install");
 
     let ego_tenant_id = id();
     let management = IcManagement::new();
@@ -89,7 +88,7 @@ async fn app_main_install(req: AppMainInstallRequest) -> Result<Principal, EgoEr
 #[update(name = "app_main_upgrade", guard = "user_guard")]
 #[candid_method(update, rename = "app_main_upgrade")]
 async fn app_main_upgrade(req: AppMainUpgradeRequest) -> Result<bool, EgoError> {
-    info_log_add("ego_tenant: app_main_upgrade");
+    info_log_add("app_main_upgrade");
     let management = IcManagement::new();
     let ego_file = EgoFile::new();
 
@@ -110,7 +109,7 @@ async fn app_main_upgrade(req: AppMainUpgradeRequest) -> Result<bool, EgoError> 
 #[update(name = "app_main_reinstall", guard = "user_guard")]
 #[candid_method(update, rename = "app_main_reinstall")]
 async fn app_main_reinstall(req: AppMainReInstallRequest) -> Result<bool, EgoError> {
-    info_log_add("ego_tenant: app_main_reinstall");
+    info_log_add("app_main_reinstall");
     let management = IcManagement::new();
     let ego_file = EgoFile::new();
 
@@ -131,7 +130,7 @@ async fn app_main_reinstall(req: AppMainReInstallRequest) -> Result<bool, EgoErr
 #[update(name = "app_main_delete", guard = "user_guard")]
 #[candid_method(update, rename = "app_main_delete")]
 async fn app_main_delete(canister_id: Principal) -> Result<(), EgoError> {
-    info_log_add("ego_tenant: app_main_delete");
+    info_log_add("app_main_delete");
     let management = IcManagement::new();
 
     EgoTenantService::app_main_delete(management, &canister_id).await
@@ -140,20 +139,20 @@ async fn app_main_delete(canister_id: Principal) -> Result<(), EgoError> {
 #[update(name = "canister_main_track", guard = "user_guard")]
 #[candid_method(update, rename = "canister_main_track")]
 fn canister_main_track(wallet_id: Principal, canister_id: Principal) -> Result<(), EgoError> {
-    info_log_add("ego_tenant: canister_main_track");
+    info_log_add("canister_main_track");
 
     let next_check_time = time().div(1e9 as u64) + NEXT_CHECK_DURATION; // next_check_time
 
-    EgoTenantService::canister_main_track(wallet_id, canister_id, next_check_time)?;
+    EgoTenantService::canister_main_track(&wallet_id, &canister_id, next_check_time);
     Ok(())
 }
 
 #[update(name = "canister_main_untrack", guard = "user_guard")]
 #[candid_method(update, rename = "canister_main_untrack")]
 fn canister_main_untrack(canister_id: Principal) -> Result<(), EgoError> {
-    info_log_add("ego_tenant: canister_main_untrack");
+    info_log_add("canister_main_untrack");
 
-    EgoTenantService::canister_main_untrack(canister_id)?;
+    EgoTenantService::canister_main_untrack(&canister_id);
     Ok(())
 }
 
@@ -163,7 +162,7 @@ async fn ego_cycle_check_cb(records: Vec<CycleRecord>, threshold: u128) -> Resul
     let canister_id = caller();
     info_log_add(
         format!(
-            "ego_tenant: ego_cycle_check_cb, canister_id: {}",
+            "ego_cycle_check_cb, canister_id: {}",
             canister_id
         )
         .as_str(),
@@ -177,7 +176,7 @@ async fn ego_cycle_check_cb(records: Vec<CycleRecord>, threshold: u128) -> Resul
     let ego_canister = EgoCanister::new();
 
     info_log_add("1. get task by canister_id");
-    let task = match Tenant::task_get(canister_id) {
+    let mut task = match Task::get(&canister_id) {
         None => {
             info_log_add("ego_tenant error, can not find task");
             Err(EgoError::from(CanisterNotFounded))
@@ -189,7 +188,7 @@ async fn ego_cycle_check_cb(records: Vec<CycleRecord>, threshold: u128) -> Resul
         management,
         ego_store,
         ego_canister,
-        &task,
+        &mut task,
         &canister_id,
         &records,
         threshold,
@@ -204,7 +203,7 @@ async fn wallet_cycle_recharge(cycles: u128) -> Result<(), EgoError> {
     let canister_id = caller();
     info_log_add(
         format!(
-            "ego_tenant: wallet_cycle_recharge, canister_id: {}",
+            "wallet_cycle_recharge, canister_id: {}",
             canister_id
         )
           .as_str(),
@@ -216,7 +215,7 @@ async fn wallet_cycle_recharge(cycles: u128) -> Result<(), EgoError> {
     let ego_store = EgoStore::new(ego_store_id);
 
     info_log_add("1. get task by canister_id");
-    let task = match Tenant::task_get(canister_id) {
+    let task = match Task::get(&canister_id) {
         None => {
             info_log_add("ego_tenant error, can not find task");
             Err(EgoError::from(CanisterNotFounded))
@@ -229,21 +228,34 @@ async fn wallet_cycle_recharge(cycles: u128) -> Result<(), EgoError> {
 }
 
 /********************  methods for astro_deployer   ********************/
-#[update(name = "canister_task_list", guard = "user_guard")]
-#[candid_method(update, rename = "canister_task_list")]
-pub fn canister_task_list() -> Result<Vec<Task>, EgoError> {
-    info_log_add("ego_tenant: canister_task_list");
+#[update(name = "admin_task_list", guard = "owner_guard")]
+#[candid_method(update, rename = "admin_task_list")]
+pub fn admin_task_list(last_update: u64) -> Result<Vec<Task>, EgoError> {
+    info_log_add("canister_task_list");
 
-    let tasks = Tenant::task_all();
+    let tasks = Task::by_last_update(last_update);
     Ok(tasks)
 }
 
+#[update(name = "admin_task_add", guard = "owner_guard")]
+#[candid_method(update, rename = "admin_task_add")]
+pub fn admin_task_add(tasks: Vec<Task>)  {
+    info_log_add("admin_task_add");
+
+    tasks.iter().for_each(|task| {
+        info_log_add(format!("task added canister_id:{}", task.canister_id).as_str());
+        let mut t = Task::new(&task.wallet_id, &task.canister_id, task.next_check_time, None);
+        t.save();
+    });
+}
+
+
 /********************  notify  ********************/
 fn task_run() {
-    info_log_add("ego_tenant: task_run");
+    info_log_add("task_run");
 
     let sentinel = time().div(1e9 as u64); // convert to second
-    let tasks = Tenant::task_filter(sentinel);
+    let tasks = Task::by_sentinel(sentinel);
 
     for task in tasks {
         let ego_canister = EgoCanister::new();
@@ -258,15 +270,5 @@ fn task_run() {
 #[update(name = "admin_export", guard = "owner_guard")]
 #[candid_method(update, rename = "admin_export")]
 async fn admin_export() -> Vec<u8> {
-    info_log_add("ego_tenant: admin_export");
-
-    let state = StableState::default();
-
-    serde_json::to_vec(&state).unwrap()
-}
-
-#[update(name = "admin_import", guard = "owner_guard")]
-#[candid_method(update, rename = "admin_import")]
-async fn admin_import(chunk: ByteBuf) {
-    info_log_add("ego_tenant: admin_import");
+ vec![]
 }

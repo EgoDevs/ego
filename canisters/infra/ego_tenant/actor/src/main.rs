@@ -12,7 +12,7 @@ fn main() {
     use ego_types::cycle_info::*;
     use ic_cdk::export::Principal;
     use std::collections::BTreeMap;
-    use serde_bytes::ByteBuf;
+    use ego_tenant_mod::types::task::Task;
 
     candid::export_service!();
     std::print!("{}", __export_service());

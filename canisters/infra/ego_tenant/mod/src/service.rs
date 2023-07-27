@@ -11,9 +11,9 @@ use crate::c2c::ego_file::TEgoFile;
 use crate::c2c::ego_store::TEgoStore;
 use crate::c2c::ic_management::TIcManagement;
 use crate::state::{canister_get_one, info_log_add};
-use crate::tenant::Tenant;
-use crate::types::{EgoTenantErr, Task};
+use crate::types::EgoTenantErr;
 use crate::types::EgoTenantErr::CycleNotEnough;
+use crate::types::task::Task;
 
 pub struct EgoTenantService {}
 
@@ -22,15 +22,17 @@ pub const CREATE_CANISTER_CYCLES_FEE: u128 = 100_000_000_000;
 
 impl EgoTenantService {
     pub fn canister_main_track(
-        wallet_id: Principal,
-        canister_id: Principal,
+        wallet_id: &Principal,
+        canister_id: &Principal,
         next_check_time: u64,
-    ) -> Result<(), EgoError> {
-        Tenant::canister_main_track(wallet_id, canister_id, next_check_time)
+    ) {
+        let mut task = Task::new(wallet_id, canister_id, next_check_time, None);
+        task.save();
     }
 
-    pub fn canister_main_untrack(canister_id: Principal) -> Result<(), EgoError> {
-        Tenant::canister_main_untrack(canister_id)
+    pub fn canister_main_untrack(canister_id: &Principal) {
+        let task = Task::get(canister_id).expect("task not exists");
+        task.remove();
     }
 
     pub async fn app_main_install<F: TEgoFile, M: TIcManagement, EC: TEgoCanister>(
@@ -195,7 +197,7 @@ impl EgoTenantService {
         management: M,
         ego_store: S,
         ego_canister: EC,
-        task: &Task,
+        task: &mut Task,
         canister_id: &Principal,
         records: &Vec<CycleRecord>,
         threshold: u128,
@@ -275,7 +277,9 @@ impl EgoTenantService {
         let next_time = current_ts + NEXT_CHECK_DURATION;
         info_log_add(format!("5. update next_time to : {}", next_time).as_str());
 
-        Tenant::task_update(task.wallet_id, task.canister_id, next_time, current_cycle);
+        task.next_check_time = next_time;
+        task.last_cycle = Some(current_cycle);
+        task.save();
 
         Ok(())
     }
