@@ -1,7 +1,6 @@
 use std::collections::BTreeMap;
 
 use candid::candid_method;
-use ic_cdk::api::time;
 use ic_cdk::export::Principal;
 use ic_cdk::{caller, id};
 use ic_cdk_macros::*;
@@ -394,7 +393,6 @@ pub fn wallet_cycle_charge(
         &request.wallet_id,
         request.cycle,
         &operator,
-        time(),
         request.comment,
     ) {
         Ok(_) => Ok(WalletCycleChargeResponse { ret: true }),
@@ -423,7 +421,7 @@ pub fn wallet_order_notify(memo: Memo) -> Result<bool, EgoError> {
     // the ego_ledger id
     let operator = caller();
 
-    match EgoStoreService::wallet_order_notify(memo, &operator, ic_cdk::api::time()) {
+    match EgoStoreService::wallet_order_notify(memo, &operator) {
         Ok(_) => Ok(true),
         Err(e) => Err(e),
     }
@@ -444,7 +442,6 @@ pub fn admin_wallet_cycle_recharge(req: AdminWalletCycleRechargeRequest) -> Resu
         &wallet_id,
         req.cycle,
         &operator,
-        time(),
         req.comment,
     )?;
 
@@ -486,7 +483,6 @@ pub async fn wallet_main_new(user_id: Principal) -> Result<UserApp, EgoError> {
         &canister_id,
         GIFT_CYCLES_AMOUNT,
         &id(),
-        time(),
         "Register Account".to_string(),
     );
 
@@ -563,7 +559,8 @@ pub fn admin_wallet_add(wallets: Vec<WalletImport>) {
         });
 
         wallet.cash_flows.iter().for_each(|cash_flow| {
-            let c_f = cash_flow::CashFlow::new(wallet.wallet_id, cash_flow.cash_flow_type.clone(), cash_flow.cycles, cash_flow.balance, &cash_flow.operator, cash_flow.created_at, cash_flow.comment.clone());
+            let mut c_f = cash_flow::CashFlow::new(wallet.wallet_id, cash_flow.cash_flow_type.clone(), cash_flow.cycles, cash_flow.balance, &cash_flow.operator, cash_flow.comment.clone());
+            c_f.created_at = cash_flow.created_at / 1000000000;
             c_f.save();
         })
     });

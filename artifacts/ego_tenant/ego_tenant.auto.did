@@ -24,6 +24,7 @@ type Task = record {
   last_update : nat64;
   last_cycle : opt nat;
   wallet_id : principal;
+  try_count : nat8;
 };
 type Version = record { major : nat32; minor : nat32; patch : nat32 };
 type Wasm = record {

@@ -5,6 +5,7 @@ export const idlFactory = ({ IDL }) => {
     'last_update' : IDL.Nat64,
     'last_cycle' : IDL.Opt(IDL.Nat),
     'wallet_id' : IDL.Principal,
+    'try_count' : IDL.Nat8,
   });
   const EgoError = IDL.Record({ 'msg' : IDL.Text, 'code' : IDL.Nat16 });
   const Result = IDL.Variant({ 'Ok' : IDL.Vec(Task), 'Err' : EgoError });

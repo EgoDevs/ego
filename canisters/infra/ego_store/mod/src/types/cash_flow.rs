@@ -1,5 +1,6 @@
 use std::borrow::Cow;
 use candid::{Decode, Encode, Principal};
+use ic_cdk::api::time;
 use ic_stable_structures::{BoundedStorable, Storable};
 use ic_cdk::export::candid::{CandidType, Deserialize};
 use serde::Serialize;
@@ -27,7 +28,6 @@ impl CashFlow {
     cycles: u128,
     balance: u128,
     operator: &Principal,
-    created_at: u64,
     comment: String,
   ) -> Self {
     let next_id = SEQ.with(|cell| cell.borrow_mut().next_number("cash_flow", 0));
@@ -37,7 +37,7 @@ impl CashFlow {
       cash_flow_type,
       cycles,
       balance,
-      created_at,
+      created_at: 0,
       operator: operator.clone(),
       comment,
     }
@@ -65,10 +65,12 @@ impl CashFlow {
     })
   }
 
-  pub fn save(&self) {
+  pub fn save(&mut self) {
     CASH_FLOWS.with(|cell| {
       let mut inst = cell.borrow_mut();
-
+      if self.created_at == 0 {
+        self.created_at = time() / 1000000000;
+      }
       inst.insert(self.id, self.clone());
     });
   }

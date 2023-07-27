@@ -59,6 +59,7 @@ type Order = record {
   from : vec nat8;
   memo : nat64;
   amount : float32;
+  last_update : nat64;
   wallet_id : principal;
 };
 type OrderStatus = variant { NEW; SUCCESS };
@@ -100,17 +101,17 @@ type UserApp = record {
 };
 type UserApp_1 = record {
   app : App;
-  updated_at : nat64;
   canister : Canister;
+  last_update : nat64;
   latest_version : Version;
   wallet_id : opt principal;
 };
 type Version = record { major : nat32; minor : nat32; patch : nat32 };
 type Wallet = record {
-  updated_at : nat64;
   user_id : principal;
   tenant_id : principal;
   cycles : nat;
+  last_update : nat64;
   wallet_id : principal;
 };
 type WalletCycleChargeRequest = record {

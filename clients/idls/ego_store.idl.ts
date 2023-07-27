@@ -51,8 +51,8 @@ export const idlFactory = ({ IDL }) => {
   });
   const UserApp_1 = IDL.Record({
     'app' : App,
-    'updated_at' : IDL.Nat64,
     'canister' : Canister,
+    'last_update' : IDL.Nat64,
     'latest_version' : Version,
     'wallet_id' : IDL.Opt(IDL.Principal),
   });
@@ -79,10 +79,10 @@ export const idlFactory = ({ IDL }) => {
   });
   const Result_2 = IDL.Variant({ 'Ok' : IDL.Bool, 'Err' : EgoError });
   const Wallet = IDL.Record({
-    'updated_at' : IDL.Nat64,
     'user_id' : IDL.Principal,
     'tenant_id' : IDL.Principal,
     'cycles' : IDL.Nat,
+    'last_update' : IDL.Nat64,
     'wallet_id' : IDL.Principal,
   });
   const Result_3 = IDL.Variant({ 'Ok' : IDL.Vec(Wallet), 'Err' : EgoError });
@@ -160,6 +160,7 @@ export const idlFactory = ({ IDL }) => {
     'from' : IDL.Vec(IDL.Nat8),
     'memo' : IDL.Nat64,
     'amount' : IDL.Float32,
+    'last_update' : IDL.Nat64,
     'wallet_id' : IDL.Principal,
   });
   const Result_22 = IDL.Variant({ 'Ok' : IDL.Vec(Order), 'Err' : EgoError });

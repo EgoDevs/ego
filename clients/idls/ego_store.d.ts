@@ -65,6 +65,7 @@ export interface Order {
   'from' : Uint8Array | number[],
   'memo' : bigint,
   'amount' : number,
+  'last_update' : bigint,
   'wallet_id' : Principal,
 }
 export type OrderStatus = { 'NEW' : null } |
@@ -125,8 +126,8 @@ export interface UserApp {
 }
 export interface UserApp_1 {
   'app' : App,
-  'updated_at' : bigint,
   'canister' : Canister,
+  'last_update' : bigint,
   'latest_version' : Version,
   'wallet_id' : [] | [Principal],
 }
@@ -136,10 +137,10 @@ export interface Version {
   'patch' : number,
 }
 export interface Wallet {
-  'updated_at' : bigint,
   'user_id' : Principal,
   'tenant_id' : Principal,
   'cycles' : bigint,
+  'last_update' : bigint,
   'wallet_id' : Principal,
 }
 export interface WalletCycleChargeRequest {

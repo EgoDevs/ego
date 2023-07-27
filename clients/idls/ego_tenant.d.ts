@@ -43,6 +43,7 @@ export interface Task {
   'last_update' : bigint,
   'last_cycle' : [] | [bigint],
   'wallet_id' : Principal,
+  'try_count' : number,
 }
 export interface Version {
   'major' : number,

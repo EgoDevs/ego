@@ -15,7 +15,7 @@ pub struct UserApp {
   pub canister: Canister,
   pub latest_version: Version,
   pub wallet_id: Option<Principal>,
-  pub updated_at: u64
+  pub last_update: u64 // second
 }
 
 impl UserApp {
@@ -25,7 +25,7 @@ impl UserApp {
       latest_version: app.current_version.clone(),
       canister,
       wallet_id,
-      updated_at: 0,
+      last_update: 0,
     }
   }
 
@@ -33,7 +33,7 @@ impl UserApp {
     USER_APPS.with(|cell| {
       let inst = cell.borrow();
       inst.iter()
-        .filter(|(_, user_app)| user_app.updated_at > last_update)
+        .filter(|(_, user_app)| user_app.last_update > last_update)
         .map(|(_, mut user_app)| {
           let ego_store_app = EgoStoreApp::get(&user_app.app.app_id).expect("ego store app not exists");
           user_app.latest_version = ego_store_app.app.current_version;
@@ -69,7 +69,7 @@ impl UserApp {
     USER_APPS.with(|cell| {
       let mut inst = cell.borrow_mut();
       let key = Blob::try_from(self.canister.canister_id.as_slice()).unwrap();
-      self.updated_at = time();
+      self.last_update = time() / 1000000000;
       inst.insert(key, self.clone());
     });
   }

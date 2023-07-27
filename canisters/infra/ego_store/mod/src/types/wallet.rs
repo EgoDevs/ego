@@ -13,7 +13,6 @@ use crate::memory::{WALLETS};
 use crate::types::cash_flow::CashFlow;
 use crate::types::EgoStoreErr;
 
-use crate::types::order::Order;
 use crate::types::user_app::UserApp;
 
 #[derive(CandidType, Serialize, Deserialize, Clone, Debug)]
@@ -22,7 +21,7 @@ pub struct Wallet {
     pub wallet_id: Principal,
     pub user_id: Principal,
     pub cycles: u128,
-    pub updated_at: u64
+    pub last_update: u64    // second
 }
 
 impl Wallet {
@@ -32,7 +31,7 @@ impl Wallet {
             wallet_id: wallet_id.clone(),
             user_id: user_id.clone(),
             cycles: 0,
-            updated_at: 0
+            last_update: 0
         }
     }
 
@@ -49,31 +48,22 @@ impl Wallet {
         user_app.remove();
     }
 
-    pub fn order_new(&mut self, store_id: &Principal, amount: f32) -> Order {
-        let order = Order::new(&self.wallet_id, store_id, amount);
-        order.save();
-
-        order
-    }
-
     pub fn cycle_charge(
         &mut self,
         cycle: u128,
         operator: &Principal,
-        ts: u64,
         comment: String,
     ) -> Result<(), EgoError> {
         if self.cycles > cycle {
             self.cycles -= cycle;
             self.save();
 
-            let cash_flow = CashFlow::new(
+            let mut cash_flow = CashFlow::new(
                 self.wallet_id,
                 CashFlowType::CHARGE,
                 cycle,
                 self.cycles,
                 operator,
-                ts,
                 comment,
             );
             cash_flow.save();
@@ -88,19 +78,17 @@ impl Wallet {
         &mut self,
         cycle: u128,
         operator: &Principal,
-        ts: u64,
         comment: String,
     ) -> Result<(), EgoError> {
         self.cycles += cycle;
         self.save();
 
-        let cash_flow = CashFlow::new(
+        let mut cash_flow = CashFlow::new(
             self.wallet_id,
             CashFlowType::RECHARGE,
             cycle,
             self.cycles,
             operator,
-            ts,
             comment,
         );
         cash_flow.save();
@@ -111,7 +99,7 @@ impl Wallet {
         WALLETS.with(|cell| {
             let inst = cell.borrow();
             inst.iter()
-              .filter(|(_, wallet)| wallet.updated_at > last_update)
+              .filter(|(_, wallet)| wallet.last_update > last_update)
               .map(|(_, wallet)| {
                   wallet
               }).collect()
@@ -138,7 +126,7 @@ impl Wallet {
         WALLETS.with(|cell| {
             let mut inst = cell.borrow_mut();
             let key = Blob::try_from(self.wallet_id.as_slice()).unwrap();
-            self.updated_at = time();
+            self.last_update = time() / 1000000000;
             inst.insert(key, self.clone());
         });
     }

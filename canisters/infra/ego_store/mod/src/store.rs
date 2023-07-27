@@ -142,7 +142,7 @@ impl EgoStore {
                 Err(EgoStoreErr::WalletNotExists.into())
             }
             Some(_) => {
-                let order = Order::new(wallet_id, store_id, amount);
+                let mut order = Order::new(wallet_id, store_id, amount);
                 order.save();
                 Ok(order)
             }
@@ -152,7 +152,6 @@ impl EgoStore {
     pub fn wallet_order_notify(
         memo: Memo,
         operator: &Principal,
-        ts: u64,
     ) -> Result<(), EgoError> {
         match Order::get(memo) {
             None => {
@@ -173,7 +172,6 @@ impl EgoStore {
                         wallet.cycle_recharge(
                             cycle,
                             operator,
-                            ts,
                             format!("wallet cycle recharge, order memo {}", memo.0)
                         )
                     }
@@ -198,7 +196,6 @@ impl EgoStore {
         wallet_id: &Principal,
         cycle: u128,
         operator: &Principal,
-        ts: u64,
         comment: String,
     ) -> Result<(), EgoError> {
         match Wallet::get(wallet_id) {
@@ -207,7 +204,7 @@ impl EgoStore {
                 Err(EgoStoreErr::WalletNotExists.into())
             }
             Some(mut wallet) => {
-                wallet.cycle_charge(cycle, operator, ts, comment)
+                wallet.cycle_charge(cycle, operator, comment)
             }
         }
     }
@@ -216,7 +213,6 @@ impl EgoStore {
         wallet_id: &Principal,
         cycle: u128,
         operator: &Principal,
-        ts: u64,
         comment: String,
     ) -> Result<(), EgoError> {
         match Wallet::get(wallet_id) {
@@ -225,7 +221,7 @@ impl EgoStore {
                 Err(EgoStoreErr::WalletNotExists.into())
             }
             Some(mut wallet) => {
-                wallet.cycle_recharge(cycle, operator, ts, comment)
+                wallet.cycle_recharge(cycle, operator, comment)
             }
         }
     }

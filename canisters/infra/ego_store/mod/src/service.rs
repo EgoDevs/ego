@@ -306,19 +306,18 @@ impl EgoStoreService {
         Ok(balance)
     }
 
-    pub fn wallet_order_notify(memo: Memo, operator: &Principal, ts: u64) -> Result<(), EgoError> {
-      EgoStore::wallet_order_notify(memo, operator, ts)
+    pub fn wallet_order_notify(memo: Memo, operator: &Principal) -> Result<(), EgoError> {
+      EgoStore::wallet_order_notify(memo, operator)
     }
 
     pub fn wallet_cycle_charge(
         wallet_id: &Principal,
         cycle: u128,
         operator: &Principal,
-        ts: u64,
         comment: String,
     ) -> Result<(), EgoError> {
         if cycle > 0 {
-          EgoStore::wallet_cycle_charge(wallet_id, cycle, operator, ts, comment)
+          EgoStore::wallet_cycle_charge(wallet_id, cycle, operator, comment)
         } else {
             Err(EgoStoreErr::CyclesNotEnouth.into())
         }
@@ -328,7 +327,6 @@ impl EgoStoreService {
         wallet_id: &Principal,
         cycle: u128,
         operator: &Principal,
-        ts: u64,
         comment: String,
     ) -> Result<(), EgoError> {
         info_log_add(
@@ -339,7 +337,7 @@ impl EgoStoreService {
             .as_str(),
         );
         if cycle > 0 {
-          EgoStore::wallet_cycle_recharge(wallet_id, cycle, operator, ts, comment)
+          EgoStore::wallet_cycle_recharge(wallet_id, cycle, operator, comment)
         } else {
             Ok(())
         }

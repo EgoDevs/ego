@@ -1,5 +1,6 @@
 use std::borrow::Cow;
 use candid::{Decode, Encode, Principal};
+use ic_cdk::api::time;
 use ic_ledger_types::{AccountIdentifier, Memo, Subaccount};
 use ic_stable_structures::{BoundedStorable, Storable};
 use ic_cdk::export::candid::{CandidType, Deserialize};
@@ -23,6 +24,7 @@ pub struct Order {
   pub amount: f32,
   pub memo: Memo,
   pub status: OrderStatus,
+  pub last_update: u64  // second
 }
 
 #[derive(CandidType, Serialize, Deserialize, Clone, Debug, PartialEq)]
@@ -52,6 +54,7 @@ impl Order {
       amount,
       memo: Memo(memo),
       status: OrderStatus::NEW,
+      last_update: 0
     }
   }
 
@@ -74,9 +77,10 @@ impl Order {
     })
   }
 
-  pub fn save(&self) {
+  pub fn save(&mut self) {
     ORDERS.with(|cell| {
       let mut inst = cell.borrow_mut();
+      self.last_update = time() / 1000000000;
 
       inst.insert(self.memo.0, self.clone());
     });

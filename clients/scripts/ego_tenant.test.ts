@@ -65,6 +65,7 @@ describe('ego_tenant_import', () => {
       task['canister_id'] = Principal.fromText(task['canister_id'])
       task['last_update'] = 0
       task['last_cycle'] = []
+      task['try_count'] = 0
     })
     await actor.admin_task_add(tasks)
   });

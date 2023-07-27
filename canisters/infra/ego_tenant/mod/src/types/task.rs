@@ -17,7 +17,7 @@ pub struct Task {
   pub canister_id: Principal,
   pub next_check_time: u64, // second
   pub last_cycle: Option<u128>,
-  pub last_update: u64,
+  pub last_update: u64, // second
   pub try_count: u8
 }
 
@@ -71,7 +71,7 @@ impl Task {
     TASKS.with(|cell| {
       let mut inst = cell.borrow_mut();
       let key = Blob::try_from(self.canister_id.as_slice()).unwrap();
-      self.last_update = time();
+      self.last_update = time() / 1000000000;
       inst.insert(key, self.clone())
     });
   }
