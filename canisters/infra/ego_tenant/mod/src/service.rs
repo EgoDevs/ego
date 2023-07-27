@@ -279,6 +279,7 @@ impl EgoTenantService {
 
         task.next_check_time = next_time;
         task.last_cycle = Some(current_cycle);
+        task.try_count = 0;
         task.save();
 
         Ok(())

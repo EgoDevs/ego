@@ -8,6 +8,8 @@ use ic_stable_structures::{BoundedStorable, Storable};
 use ic_stable_structures::storable::Blob;
 use crate::memory::TASKS;
 
+const MAX_TRY_COUNT:u8 = 5; // 4M
+
 // Task
 #[derive(CandidType, Deserialize, Serialize, Clone, Debug)]
 pub struct Task {
@@ -16,6 +18,7 @@ pub struct Task {
   pub next_check_time: u64, // second
   pub last_cycle: Option<u128>,
   pub last_update: u64,
+  pub try_count: u8
 }
 
 impl Task {
@@ -25,7 +28,8 @@ impl Task {
       canister_id: canister_id.clone(),
       next_check_time,
       last_cycle,
-      last_update: 0
+      last_update: 0,
+      try_count: 0
     }
   }
 
@@ -43,7 +47,7 @@ impl Task {
   pub fn by_sentinel(sentinel: u64) -> Vec<Task> {
     TASKS.with(|cell| {
       let inst = cell.borrow();
-      inst.iter().filter(|(_, task)| task.next_check_time <= sentinel)
+      inst.iter().filter(|(_, task)| task.next_check_time <= sentinel && task.try_count < MAX_TRY_COUNT)
         .map(|(_, task)| task.clone()).collect()
     })
   }
@@ -62,7 +66,6 @@ impl Task {
       inst.get(&key)
     })
   }
-
 
   pub fn save(&mut self) {
     TASKS.with(|cell| {

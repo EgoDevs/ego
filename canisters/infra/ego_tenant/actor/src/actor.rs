@@ -257,11 +257,13 @@ fn task_run() {
     let sentinel = time().div(1e9 as u64); // convert to second
     let tasks = Task::by_sentinel(sentinel);
 
-    for task in tasks {
+    for mut task in tasks {
         let ego_canister = EgoCanister::new();
         info_log_add(format!("calling ego_cycle_check on {}", task.canister_id).as_str());
 
         ego_canister.ego_cycle_check(task.canister_id);
+        task.try_count += 1;
+        task.save();
     }
 }
 
