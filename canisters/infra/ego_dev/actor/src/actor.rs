@@ -1,121 +1,71 @@
 use std::collections::BTreeMap;
 
 use candid::candid_method;
-use candid::{CandidType, Deserialize, Principal};
-use ic_cdk::{api, caller, storage, trap};
+use candid::{Principal};
+use ic_cdk::{api, caller, trap};
 use ic_cdk_macros::*;
-use serde::Serialize;
 
-use ego_dev_mod::app::{AppVersion, EgoDevApp};
 use ego_dev_mod::c2c::ego_file::EgoFile;
 use ego_dev_mod::c2c::ego_store::EgoStore;
-use ego_dev_mod::developer::Developer;
-use ego_dev_mod::ego_dev::EgoDev;
+use ego_dev_mod::types::developer::Developer;
 use ego_dev_mod::service::*;
-use ego_dev_mod::state::EGO_DEV;
 use ego_dev_mod::state::*;
-use ego_dev_mod::types::{AdminAppCreateBackendRequest, AppMainNewRequest, AppVersionSetFrontendAddressRequest, AppVersionUploadWasmRequest, UserRoleSetRequest};
+use ego_dev_mod::types::{AdminAppCreateBackendRequest, AppMainNewRequest, AppVersionSetFrontendAddressRequest, AppVersionUploadWasmRequest, developer, DevExport, DevImportV1, ego_file, EgoDevErr, UserRoleSetRequest};
+use ego_dev_mod::types::app_version::AppVersion;
+use ego_dev_mod::types::ego_dev_app::EgoDevApp;
+use ego_dev_mod::types::stable_state::StableState;
 use ego_macros::{inject_cycle_info_api, inject_ego_api};
 use ego_types::app::EgoError;
 use ego_types::app::{AppId, Version};
-use ego_types::registry::Registry;
-use ego_types::user::User;
 
 inject_ego_api!();
 inject_cycle_info_api!();
 
-#[derive(Clone, Debug, CandidType, Deserialize)]
-pub struct InitArg {
-    init_caller: Option<Principal>,
-}
-
 #[init]
 #[candid_method(init)]
-pub fn init(arg: InitArg) {
-    let caller = arg.init_caller.unwrap_or(caller());
-    info_log_add(format!("ego-dev: init, caller is {}", caller.clone()).as_str());
+pub fn init() {
+    let caller = caller();
+    info_log_add(format!("init, caller is {}", caller.clone()).as_str());
 
     info_log_add("==> add caller as the owner");
     owner_add(caller.clone());
 
     info_log_add("==> caller register as an developer");
-    match EgoDevService::developer_main_register(caller.clone(), "admin".to_string()) {
-        _ => {}
-    }
-    match EgoDevService::user_role_set(caller.clone(), true, true) {
-        _ => {}
-    }
-}
-
-#[derive(CandidType, Deserialize, Serialize)]
-struct PersistState {
-    pub ego_dev: EgoDev,
-    users: Option<User>,
-    registry: Option<Registry>,
-    cycle_info: Option<CycleInfo>,
+    EgoDevService::developer_main_register(&caller, "admin").expect("register developer admin failed");
+    EgoDevService::user_role_set(&caller, true, true).expect("admin role set failed");
 }
 
 #[pre_upgrade]
 fn pre_upgrade() {
-    info_log_add("ego-dev: pre_upgrade");
-    let ego_dev = EGO_DEV.with(|ego_dev| ego_dev.borrow().clone());
-
-    let state = PersistState {
-        ego_dev,
-        users: Some(users_pre_upgrade()),
-        registry: Some(registry_pre_upgrade()),
-        cycle_info: Some(cycle_info_pre_upgrade()),
-    };
-    storage::stable_save((state,)).unwrap();
+    info_log_add("pre_upgrade");
+    ego_dev_mod::state::pre_upgrade();
 }
 
 #[post_upgrade]
 fn post_upgrade() {
-    info_log_add("ego-dev: post_upgrade");
-    let (state,): (PersistState,) = storage::stable_restore().unwrap();
-    EGO_DEV.with(|ego_dev| *ego_dev.borrow_mut() = state.ego_dev);
-
-    match state.users {
-        None => {}
-        Some(users) => {
-            users_post_upgrade(users);
-        }
-    }
-
-    match state.registry {
-        None => {}
-        Some(registry) => {
-            registry_post_upgrade(registry);
-        }
-    }
-
-    match state.cycle_info {
-        None => {}
-        Some(cycle_info) => {
-            cycle_info_post_upgrade(cycle_info);
-        }
-    }
+    info_log_add("post_upgrade");
+    ego_dev_mod::state::post_upgrade();
 }
 
 /********************  anonymous  ********************/
-
 // 注册开发者账号
 #[update(name = "developer_main_register")]
 #[candid_method(update, rename = "developer_main_register")]
 pub async fn developer_main_register(name: String) -> Result<Developer, EgoError> {
-    info_log_add("ego-dev: developer_main_register");
-    let developer = EgoDevService::developer_main_register(ic_cdk::caller(), name)?;
+    let caller = caller();
+    info_log_add(format!("developer_main_register {}", caller).as_str());
+    let developer = EgoDevService::developer_main_register(&caller, &name)?;
     Ok(developer)
 }
 
 /********************  developer  ********************/
-
 // 获取个人信息
 #[query(name = "developer_main_get")]
 #[candid_method(query, rename = "developer_main_get")]
 pub fn developer_main_get() -> Result<Developer, EgoError> {
-    info_log_add("ego-dev: developer_main_get");
-    let developer = EgoDevService::developer_main_get(ic_cdk::caller())?;
+    info_log_add("developer_main_get");
+
+    let developer = Developer::get(&caller()).ok_or(EgoError::from(EgoDevErr::NotADeveloper))?;
     Ok(developer)
 }
 
@@ -123,8 +73,10 @@ pub fn developer_main_get() -> Result<Developer, EgoError> {
 #[query(name = "developer_app_list", guard = "developer_guard")]
 #[candid_method(query, rename = "developer_app_list")]
 pub fn developer_app_list() -> Result<Vec<EgoDevApp>, EgoError> {
-    info_log_add("ego-dev: developer_app_list");
-    let apps = EgoDevService::developer_app_list(ic_cdk::caller())?;
+    info_log_add("developer_app_list");
+    let developer = Developer::get(&caller()).expect("developer not exists");
+    let apps = developer.developer_app_list();
+
     Ok(apps)
 }
 
@@ -132,22 +84,29 @@ pub fn developer_app_list() -> Result<Vec<EgoDevApp>, EgoError> {
 #[query(name = "developer_app_get", guard = "developer_guard")]
 #[candid_method(query, rename = "developer_app_get")]
 pub fn developer_app_get(app_id: AppId) -> Result<EgoDevApp, EgoError> {
-    info_log_add("ego-dev: developer_app_get");
-    let app = EgoDevService::developer_app_get(ic_cdk::caller(), app_id)?;
-    Ok(app)
-}
+    info_log_add("developer_app_get");
 
-// TODO: developer_cycle_list
+    let ego_dev_app = EgoDevApp::get(&app_id).expect("app not exists");
+
+    match ego_dev_app.developer_id == caller() {
+        true => {
+            Ok(ego_dev_app)
+        }
+        false => {
+            Err(EgoDevErr::UnAuthorized.into())
+        }
+    }
+}
 
 // 新建App
 #[update(name = "developer_app_new", guard = "developer_guard")]
 #[candid_method(update, rename = "developer_app_new")]
 pub fn developer_app_new(request: AppMainNewRequest) -> Result<EgoDevApp, EgoError> {
-    info_log_add("ego-dev: developer_app_new");
+    info_log_add("developer_app_new");
 
     let app = EgoDevService::developer_app_new(
-        ic_cdk::caller(),
-        request.app_id,
+        &caller(),
+        &request.app_id,
         request.name,
         request.logo,
         request.description,
@@ -161,22 +120,22 @@ pub fn developer_app_new(request: AppMainNewRequest) -> Result<EgoDevApp, EgoErr
 #[update(name = "app_version_new", guard = "developer_guard")]
 #[candid_method(update, rename = "app_version_new")]
 pub fn app_version_new(app_id: AppId, version: Version) -> Result<AppVersion, EgoError> {
-    info_log_add("ego-dev: new_app_version");
+    info_log_add("new_app_version");
 
-    let app_version = EgoDevService::app_version_new(ic_cdk::caller(), app_id, version)?;
+    let app_version = EgoDevService::app_version_new(&caller(), &app_id, version)?;
     Ok(app_version)
 }
 
 #[update(name = "app_version_upload_wasm", guard = "developer_guard")]
 #[candid_method(update, rename = "app_version_upload_wasm")]
 async fn app_version_upload_wasm(request: AppVersionUploadWasmRequest) -> Result<bool, EgoError> {
-    info_log_add("ego-dev: app_version_upload_wasm");
+    info_log_add("app_version_upload_wasm");
 
     let ret = EgoDevService::app_version_upload_wasm(
         EgoFile::new(),
-        ic_cdk::caller(),
-        request.app_id,
-        request.version,
+        &caller(),
+        &request.app_id,
+        &request.version,
         request.data,
         request.hash,
     )
@@ -190,13 +149,13 @@ pub fn app_version_set_frontend_address(
     request: AppVersionSetFrontendAddressRequest,
 ) -> Result<bool, EgoError> {
     info_log_add(&format!(
-        "ego-dev: app_version_set_frontend_address: {}",
+        "app_version_set_frontend_address: {}",
         request.canister_id
     ));
     let ret = EgoDevService::app_version_set_frontend_address(
-        ic_cdk::caller(),
-        request.app_id,
-        request.version,
+        &caller(),
+        &request.app_id,
+        &request.version,
         request.canister_id,
     )?;
     Ok(ret)
@@ -206,8 +165,8 @@ pub fn app_version_set_frontend_address(
 #[update(name = "app_version_submit", guard = "developer_guard")]
 #[candid_method(update, rename = "app_version_submit")]
 pub fn app_version_submit(app_id: AppId, version: Version) -> Result<AppVersion, EgoError> {
-    info_log_add("ego-dev: app_version_submit");
-    let app_version = EgoDevService::app_version_submit(ic_cdk::caller(), app_id, version)?;
+    info_log_add("app_version_submit");
+    let app_version = EgoDevService::app_version_submit(&caller(), &app_id, &version)?;
     Ok(app_version)
 }
 
@@ -215,8 +174,8 @@ pub fn app_version_submit(app_id: AppId, version: Version) -> Result<AppVersion,
 #[update(name = "app_version_revoke", guard = "developer_guard")]
 #[candid_method(update, rename = "app_version_revoke")]
 pub fn app_version_revoke(app_id: AppId, version: Version) -> Result<AppVersion, EgoError> {
-    info_log_add("ego-dev: app_version_revoke");
-    let app_version = EgoDevService::app_version_revoke(ic_cdk::caller(), app_id, version)?;
+    info_log_add("app_version_revoke");
+    let app_version = EgoDevService::app_version_revoke(&caller(), &app_id, &version)?;
     Ok(app_version)
 }
 
@@ -224,22 +183,24 @@ pub fn app_version_revoke(app_id: AppId, version: Version) -> Result<AppVersion,
 #[update(name = "app_version_release", guard = "developer_guard")]
 #[candid_method(update, rename = "app_version_release")]
 pub async fn app_version_release(app_id: AppId, version: Version) -> Result<AppVersion, EgoError> {
-    info_log_add("ego-dev: app_version_release");
+    info_log_add("app_version_release");
     let caller = caller();
 
     let ego_store_id = canister_get_one("ego_store").unwrap();
     let ego_store = EgoStore::new(ego_store_id);
-    EgoDevService::app_version_release(caller, app_id, version, ego_store)
+    EgoDevService::app_version_release(&caller, &app_id, &version, ego_store)
 }
+
+// TODO: developer_cycle_list
 
 /********************  auditor  ********************/
 // 待审核应用列表
 #[query(name = "app_version_wait_for_audit", guard = "auditor_guard")]
 #[candid_method(query, rename = "app_version_wait_for_audit")]
 pub fn app_version_wait_for_audit() -> Result<Vec<EgoDevApp>, EgoError> {
-    info_log_add("ego-dev: app_version_wait_for_audit");
+    info_log_add("app_version_wait_for_audit");
 
-    let wait_for_audit_apps = EgoDevService::app_version_wait_for_audit();
+    let wait_for_audit_apps = EgoDevApp::version_wait_for_audit();
     Ok(wait_for_audit_apps)
 }
 
@@ -247,8 +208,8 @@ pub fn app_version_wait_for_audit() -> Result<Vec<EgoDevApp>, EgoError> {
 #[update(name = "app_version_approve", guard = "auditor_guard")]
 #[candid_method(update, rename = "app_version_approve")]
 pub fn app_version_approve(app_id: AppId, version: Version) -> Result<AppVersion, EgoError> {
-    info_log_add("ego-dev: app_version_approve");
-    let app_version = EgoDevService::app_version_approve(app_id, version)?;
+    info_log_add("app_version_approve");
+    let app_version = EgoDevService::app_version_approve(&app_id, &version)?;
     Ok(app_version)
 }
 
@@ -256,8 +217,8 @@ pub fn app_version_approve(app_id: AppId, version: Version) -> Result<AppVersion
 #[update(name = "app_version_reject", guard = "auditor_guard")]
 #[candid_method(update, rename = "app_version_reject")]
 pub fn app_version_reject(app_id: AppId, version: Version) -> Result<AppVersion, EgoError> {
-    info_log_add("ego-dev: app_version_reject");
-    let app_version = EgoDevService::app_version_reject(app_id, version)?;
+    info_log_add("app_version_reject");
+    let app_version = EgoDevService::app_version_reject(&app_id, &version)?;
     Ok(app_version)
 }
 
@@ -265,17 +226,17 @@ pub fn app_version_reject(app_id: AppId, version: Version) -> Result<AppVersion,
 #[query(name = "user_main_list", guard = "manager_guard")]
 #[candid_method(query, rename = "user_main_list")]
 pub fn user_main_list(name: String) -> Result<Vec<Developer>, EgoError> {
-    info_log_add("ego-dev: user_main_list");
-    let users = EgoDevService::user_main_list(name);
+    info_log_add("user_main_list");
+    let users = Developer::get_by_name(&name);
     Ok(users)
 }
 
 #[update(name = "user_role_set", guard = "manager_guard")]
 #[candid_method(update, rename = "user_role_set")]
 pub fn user_role_set(request: UserRoleSetRequest) -> Result<bool, EgoError> {
-    info_log_add("ego-dev: user_role_set");
+    info_log_add("user_role_set");
     let ret =
-        EgoDevService::user_role_set(request.user_id, request.is_app_auditor, request.is_manager)?;
+        EgoDevService::user_role_set(&request.user_id, request.is_app_auditor, request.is_manager)?;
     Ok(ret)
 }
 
@@ -288,21 +249,23 @@ pub fn user_role_set(request: UserRoleSetRequest) -> Result<bool, EgoError> {
 pub async fn admin_app_create(
     request: AdminAppCreateBackendRequest,
 ) -> Result<AppVersion, EgoError> {
-    info_log_add("ego-dev: admin_app_create");
+    info_log_add("admin_app_create");
 
     let caller = ic_cdk::caller();
 
-    if EGO_DEV.with(|ego_dev| ego_dev.borrow().developers.contains_key(&caller)) {
-        info_log_add("1. developer exists. skip developer registration");
-    } else {
-        info_log_add("1. developer_main_register");
-        EgoDevService::developer_main_register(caller, "ego_deployer".to_string())?;
+    match Developer::get(&caller) {
+        None => {
+            EgoDevService::developer_main_register(&caller, "ego_deployer")?;
+        }
+        Some(_) => {
+            info_log_add("1. developer exists. skip developer registration");
+        }
     }
 
     info_log_add("2. developer_app_new");
     EgoDevService::developer_app_new(
-        caller,
-        request.app_id.clone(),
+        &caller,
+        &request.app_id,
         request.name,
         request.logo,
         request.description,
@@ -311,14 +274,14 @@ pub async fn admin_app_create(
     )?;
 
     info_log_add("3. app_version_new");
-    EgoDevService::app_version_new(caller, request.app_id.clone(), request.version)?;
+    EgoDevService::app_version_new(&caller, &request.app_id, request.version)?;
 
     info_log_add("4. app_version_upload_wasm");
     EgoDevService::app_version_upload_wasm(
         EgoFile::new(),
-        ic_cdk::caller(),
-        request.app_id.clone(),
-        request.version,
+        &caller,
+        &request.app_id,
+        &request.version,
         request.backend_data,
         request.backend_data_hash,
     )
@@ -328,56 +291,164 @@ pub async fn admin_app_create(
     let ego_store_id = canister_get_one("ego_store").unwrap();
     let ego_store = EgoStore::new(ego_store_id);
 
-    EgoDevService::app_version_release(caller, request.app_id.clone(), request.version, ego_store)
+    EgoDevService::app_version_release(&caller, &request.app_id, &request.version, ego_store)
 }
 
 #[update(name = "admin_app_transfer", guard = "owner_guard")]
 #[candid_method(update, rename = "admin_app_transfer")]
 pub async fn admin_app_transfer(app_id: AppId) -> Result<(), EgoError> {
-    info_log_add("ego-dev: admin_app_transfer");
+    info_log_add("admin_app_transfer");
 
     let caller = ic_cdk::caller();
 
-    if EGO_DEV.with(|ego_dev| ego_dev.borrow().developers.contains_key(&caller)) {
-        info_log_add("1. developer exists. skip developer registration");
-    } else {
-        info_log_add("1. developer_main_register");
-        EgoDevService::developer_main_register(caller, "ego_deployer".to_string())?;
+    match Developer::get(&caller) {
+        None => {
+            EgoDevService::developer_main_register(&caller, "ego_deployer")?;
+        }
+        Some(_) => {
+            info_log_add("1. developer exists. skip developer registration");
+        }
     }
 
     info_log_add("2. transfer app");
 
-    EgoDevService::developer_app_transfer(
-        caller,
-        app_id.clone()
-    )
+    match EgoDevApp::get(&app_id) {
+        None => Err(EgoDevErr::AppNotExists.into()),
+        Some(mut ego_dev_app) => {
+            info_log_add("3. remove app from previous developer");
+            let mut previous_developer = Developer::get(&ego_dev_app.developer_id).expect("developer not exists");
+            previous_developer.created_apps.retain(|exists_app_id| app_id != *exists_app_id);
+            previous_developer.save();
+
+            info_log_add("4. add app to current developer");
+            let mut curr_developer = Developer::get(&caller).expect("developer not exists");
+            curr_developer.created_apps.push(app_id);
+            curr_developer.save();
+
+            info_log_add("5. update ego_dev_app's developer id to current developer");
+            ego_dev_app.developer_id = caller;
+            ego_dev_app.save();
+            Ok(())
+        }
+    }
+}
+
+/********************  数据导出   ********************/
+#[update(name = "admin_export", guard = "owner_guard")]
+#[candid_method(update, rename = "admin_export")]
+fn admin_export() -> Vec<u8> {
+    info_log_add("admin_export");
+
+    let state = StableState {
+        users: Some(users_pre_upgrade()),
+        registry: Some(registry_pre_upgrade()),
+        cycle_info: Some(cycle_info_pre_upgrade()),
+        seq: Some(seq_pre_upgrade())
+    };
+
+    let dev_export = DevExport{
+        state,
+        ego_dev_apps: EgoDevApp::list(),
+        files: ego_file::EgoFile::list(),
+        developers: Developer::list(),
+        app_versions: AppVersion::list(),
+    };
+
+    serde_json::to_vec(&dev_export).unwrap()
+}
+
+#[update(name = "admin_import", guard = "owner_guard")]
+#[candid_method(update, rename = "admin_import")]
+fn admin_import(request: DevImportV1) {
+    info_log_add("admin_import");
+
+    request.ego_files.iter().for_each(|e_f| {
+        let ego_file = ego_file::EgoFile{
+            wasm_count: e_f.wasm_count,
+            canister_id: e_f.canister_id,
+        };
+        ego_file.save();
+    });
+
+    request.developers.iter().for_each(|d| {
+        let developer = developer::Developer{
+            developer_id: d.developer_id.clone(),
+            name: d.name.clone(),
+            is_app_auditor: d.is_app_auditor,
+            is_manager: d.is_manager,
+            created_apps: d.created_apps.clone(),
+        };
+        developer.save();
+    });
+
+    request.apps.iter().for_each(|app| {
+        let mut ids = vec![];
+        app.versions.iter().for_each(|app_version_v1| {
+            let mut app_version = AppVersion::new(&app_version_v1.app_id, &app_version_v1.file_id, &app_version_v1.version);
+            app_version.wasm = app_version_v1.wasm.clone();
+            app_version.status = app_version_v1.status;
+            app_version.save();
+            ids.push(app_version.id);
+        });
+        let ego_dev_app = EgoDevApp{
+            app: app.app.clone(),
+            developer_id: app.developer_id,
+            versions: ids,
+            audit_version: app.audit_version,
+        };
+
+        ego_dev_app.save();
+    });
 }
 
 /********************  guard  ********************/
 #[inline(always)]
 pub fn manager_guard() -> Result<(), String> {
-    if EGO_DEV.with(|ego_dev| ego_dev.borrow().is_manager(api::caller())) {
-        Ok(())
-    } else {
-        trap(&format!("{} unauthorized", api::caller()));
+    match Developer::get(&caller()) {
+        None => {
+            trap(&format!("{} unauthorized", api::caller()));
+        }
+        Some(user) => {
+            match user.is_manager {
+                true => {
+                    Ok(())
+                }
+                false => {
+                    trap(&format!("{} unauthorized", api::caller()));
+                }
+            }
+        },
     }
 }
 
 #[inline(always)]
 pub fn auditor_guard() -> Result<(), String> {
-    if EGO_DEV.with(|ego_dev| ego_dev.borrow().is_app_auditor(api::caller())) {
-        Ok(())
-    } else {
-        trap(&format!("{} unauthorized", api::caller()));
+    match Developer::get(&caller()) {
+        None => {
+            trap(&format!("{} unauthorized", api::caller()));
+        }
+        Some(user) => {
+            match user.is_app_auditor {
+                true => {
+                    Ok(())
+                }
+                false => {
+                    trap(&format!("{} unauthorized", api::caller()));
+                }
+            }
+        },
     }
 }
 
 #[inline(always)]
 pub fn developer_guard() -> Result<(), String> {
-    if EGO_DEV.with(|ego_dev| ego_dev.borrow().is_app_developer(api::caller())) {
-        Ok(())
-    } else {
-        trap(&format!("{} unauthorized", api::caller()));
+    match Developer::get(&caller()) {
+        None => {
+            trap(&format!("{} unauthorized", api::caller()));
+        }
+        Some(_) => {
+            Ok(())
+        },
     }
 }
 

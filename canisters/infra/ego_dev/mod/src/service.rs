@@ -3,244 +3,260 @@ use ego_types::app::EgoError;
 use ego_types::app::Version;
 use ego_types::app::{AppId, Category};
 
-use crate::app::*;
 use crate::c2c::ego_file::TEgoFile;
 use crate::c2c::ego_store::TEgoStore;
-use crate::developer::Developer;
-use crate::state::EGO_DEV;
-use crate::types::*;
+use crate::types::app_version::{AppVersion, AppVersionStatus};
+use crate::types::developer::Developer;
+use crate::types::ego_dev_app::EgoDevApp;
+use crate::types::ego_file::EgoFile;
+use crate::types::EgoDevErr;
 
 pub struct EgoDevService {}
 
 impl EgoDevService {
-    pub fn developer_main_register(caller: Principal, name: String) -> Result<Developer, EgoError> {
-        EGO_DEV.with(|ego_dev| ego_dev.borrow_mut().developer_main_register(caller, name))
+    pub fn developer_main_register(caller: &Principal, name: &str) -> Result<Developer, EgoError> {
+        match Developer::get(caller) {
+            None => {
+                match Developer::get_by_name(name).is_empty() {
+                    true => {
+                        let developer = Developer::new(caller, name);
+                        developer.save();
+                        Ok(developer)
+                    }
+                    false => {
+                        Err(EgoDevErr::UserExists.into())
+                    }
+                }
+            }
+            Some(developer) => Ok(developer),
+        }
     }
 
-    pub fn developer_main_get(caller: Principal) -> Result<Developer, EgoError> {
-        EGO_DEV.with(
-            |ego_dev| match ego_dev.borrow().developer_main_get(caller) {
-                Ok(developer) => Ok(developer.clone()),
-                Err(e) => Err(e),
-            },
-        )
-    }
-
-    pub fn developer_app_list(caller: Principal) -> Result<Vec<EgoDevApp>, EgoError> {
-        EGO_DEV.with(|ego_dev| ego_dev.borrow().developer_app_list(caller))
-    }
-
-    pub fn developer_app_get(caller: Principal, app_id: AppId) -> Result<EgoDevApp, EgoError> {
-        EGO_DEV.with(
-            |ego_dev| match ego_dev.borrow().developer_app_get(&caller, &app_id) {
-                Ok(app) => Ok(app.clone()),
-                Err(e) => Err(e),
-            },
-        )
-    }
-
-    pub fn developer_app_transfer(developer_id: Principal, app_id: AppId) -> Result<(), EgoError> {
-        EGO_DEV.with(
-            |ego_dev|  ego_dev.borrow_mut().developer_app_transfer(&developer_id, &app_id)
-        )
+    pub fn developer_app_transfer(developer_id: &Principal, app_id: &AppId) -> Result<(), EgoError> {
+        match EgoDevApp::get(app_id) {
+            None => Err(EgoDevErr::AppNotExists.into()),
+            Some(mut ego_dev_app) => {
+                ego_dev_app.developer_id = developer_id.clone();
+                ego_dev_app.save();
+                Ok(())
+            }
+        }
     }
 
     pub fn developer_app_new(
-        caller: Principal,
-        app_id: AppId,
+        caller: &Principal,
+        app_id: &AppId,
         name: String,
         logo: String,
         description: String,
         category: Category,
         price: f32,
     ) -> Result<EgoDevApp, EgoError> {
-        EGO_DEV.with(|ego_dev| {
-            ego_dev.borrow_mut().developer_app_new(
-                caller,
-                app_id.clone(),
-                name,
-                logo,
-                description,
-                category,
-                price,
-            )
-        })
+        match EgoDevApp::get_developer_app(caller, app_id)? {
+            None => {
+                let mut developer = Developer::get(caller).expect("developer not exists");
+
+                let ego_dev_app = EgoDevApp::new(
+                    caller,
+                    app_id,
+                    name,
+                    logo,
+                    description,
+                    category,
+                    price,
+                );
+                ego_dev_app.save();
+
+                developer.created_apps.push(app_id.clone());
+                developer.save();
+
+                Ok(ego_dev_app)
+            }
+            Some(ego_dev_app) => {
+                Ok(ego_dev_app)
+            }
+        }
     }
 
     pub fn app_version_new(
-        caller: Principal,
-        app_id: AppId,
+        caller: &Principal,
+        app_id: &AppId,
         version: Version,
     ) -> Result<AppVersion, EgoError> {
-        EGO_DEV.with(|ego_dev| {
-            let mut ego_borrow = ego_dev.borrow_mut();
-            let ego_file_canister_id = ego_borrow.file_get()?;
-            match ego_borrow.developer_app_get_mut(&caller, &app_id) {
-                Ok(app) => app.version_new(ego_file_canister_id, version),
-                Err(e) => Err(e),
+        match EgoDevApp::get_developer_app(caller, app_id)? {
+            None => {
+                Err(EgoDevErr::AppNotExists.into())
             }
-        })
+            Some(mut ego_dev_app) => {
+                let ego_file_canister_id = EgoDevService::ego_file_get()?;
+                let app_version = ego_dev_app.version_new(&ego_file_canister_id, &version)?;
+                app_version.save();
+                ego_dev_app.save();
+
+                Ok(app_version)
+            }
+        }
     }
 
     pub async fn app_version_upload_wasm<F: TEgoFile>(
-        ego_dev: F,
-        caller: Principal,
-        app_id: AppId,
-        version: Version,
+        ego_file: F,
+        caller: &Principal,
+        app_id: &AppId,
+        version: &Version,
         data: Vec<u8>,
         hash: String,
     ) -> Result<bool, EgoError> {
-        match EGO_DEV.with(|ego_dev| {
-            match ego_dev.borrow_mut().developer_app_get_mut(&caller, &app_id) {
-                Ok(app) => match app.version_get_mut(version) {
-                    Some(app_version) => {
+        match EgoDevApp::get_developer_app(caller, app_id)? {
+            None => {
+                Err(EgoDevErr::AppNotExists.into())
+            }
+            Some(ego_dev_app) => {
+                match ego_dev_app.version_get(version)  {
+                    Some(mut app_version) => {
                         if app_version.status == AppVersionStatus::RELEASED {
                             Err(EgoDevErr::OperationNotPermitted.into())
                         } else {
-                            Ok(app_version.backend_update())
+                            app_version.backend_update();
+                            app_version.save();
+                            ego_file
+                              .file_main_write(app_version.wasm.clone().unwrap().canister_id, app_version.wasm.clone().unwrap().fid(), hash, data)
+                              .await
                         }
                     }
                     None => Err(EgoDevErr::VersionNotExists.into()),
-                },
-                Err(e) => Err(e),
+                }
             }
-        }) {
-            Ok(wasm) => {
-                ego_dev
-                    .file_main_write(wasm.canister_id, wasm.fid(), hash, data)
-                    .await
-            }
-            Err(e) => Err(e),
         }
     }
 
     pub fn app_version_set_frontend_address(
-        caller: Principal,
-        app_id: AppId,
-        version: Version,
+        caller: &Principal,
+        app_id: &AppId,
+        version: &Version,
         canister_id: Principal,
     ) -> Result<bool, EgoError> {
-        EGO_DEV.with(
-            |ego_dev| match ego_dev.borrow_mut().developer_app_get_mut(&caller, &app_id) {
-                Ok(app) => match app.version_get_mut(version) {
-                    Some(app_version) => {
+        match EgoDevApp::get_developer_app(caller, app_id)? {
+            None => {
+                Err(EgoDevErr::AppNotExists.into())
+            }
+            Some(ego_dev_app) => {
+                match ego_dev_app.version_get(version)  {
+                    Some(mut app_version) => {
                         app_version.frontend_update(canister_id);
+                        app_version.save();
                         Ok(true)
                     }
-                    None => Err(EgoError::from(EgoDevErr::VersionNotExists)),
-                },
-                Err(e) => Err(e),
-            },
-        )
+                    None => Err(EgoDevErr::VersionNotExists.into()),
+                }
+            }
+        }
     }
 
     pub fn app_version_submit(
-        caller: Principal,
-        app_id: AppId,
-        version: Version,
+        caller: &Principal,
+        app_id: &AppId,
+        version: &Version,
     ) -> Result<AppVersion, EgoError> {
-        EGO_DEV.with(
-            |ego_dev| match ego_dev.borrow_mut().developer_app_get_mut(&caller, &app_id) {
-                Ok(app) => app.version_submit(version),
-                Err(e) => Err(e),
-            },
-        )
+        match EgoDevApp::get_developer_app(caller, app_id)? {
+            None => {
+                Err(EgoDevErr::AppNotExists.into())
+            }
+            Some(mut ego_dev_app) => {
+                let app_version = ego_dev_app.version_submit(version)?;
+                app_version.save();
+                ego_dev_app.save();
+                Ok(app_version)
+            }
+        }
     }
 
     pub fn app_version_revoke(
-        caller: Principal,
-        app_id: AppId,
-        version: Version,
+        caller: &Principal,
+        app_id: &AppId,
+        version: &Version,
     ) -> Result<AppVersion, EgoError> {
-        EGO_DEV.with(
-            |ego_dev| match ego_dev.borrow_mut().developer_app_get_mut(&caller, &app_id) {
-                Ok(app) => app.version_revoke(version),
-                Err(e) => Err(e),
-            },
-        )
+        match EgoDevApp::get_developer_app(caller, app_id)? {
+            None => {
+                Err(EgoDevErr::AppNotExists.into())
+            }
+            Some(mut ego_dev_app) => {
+                let app_version = ego_dev_app.version_revoke(version)?;
+                app_version.save();
+                ego_dev_app.save();
+                Ok(app_version)
+            }
+        }
     }
 
     pub fn app_version_release<S: TEgoStore>(
-        caller: Principal,
-        app_id: AppId,
-        version: Version,
+        caller: &Principal,
+        app_id: &AppId,
+        version: &Version,
         ego_store: S,
     ) -> Result<AppVersion, EgoError> {
-        let app_version = EGO_DEV.with(|ego_dev| {
-            match ego_dev.borrow_mut().developer_app_get_mut(&caller, &app_id) {
-                Ok(app) => app.version_release(version),
-                Err(e) => Err(e),
+        match EgoDevApp::get_developer_app(caller, app_id)? {
+            None => {
+                Err(EgoDevErr::AppNotExists.into())
             }
-        })?;
+            Some(mut ego_dev_app) => {
+                let app_version = ego_dev_app.version_release(version)?;
+                app_version.save();
 
-        let ego_dev_app = EGO_DEV.with(|ego_dev| {
-            match ego_dev.borrow_mut().developer_app_get(&caller, &app_id) {
-                Ok(ego_dev_app) => Ok(ego_dev_app.clone()),
-                Err(e) => Err(e),
+                ego_dev_app.app.app_hash_update();
+                ego_dev_app.save();
+
+                ego_store.app_main_release(ego_dev_app.app, app_version.clone().wasm.unwrap());
+
+                Ok(app_version)
             }
-        })?;
+        }
+    }
 
-        let mut app = ego_dev_app.app;
-        app.app_hash_update();
+    pub fn app_version_approve(app_id: &AppId, version: &Version) -> Result<AppVersion, EgoError> {
+        let mut ego_dev_app = EgoDevApp::get(app_id).ok_or(EgoError::from(EgoDevErr::AppNotExists))?;
+        let app_version = ego_dev_app.version_approve(version)?;
+        app_version.save();
 
-        ego_store.app_main_release(app, app_version.clone().wasm.unwrap());
-
+        ego_dev_app.save();
         Ok(app_version)
     }
 
-    pub fn app_version_wait_for_audit() -> Vec<EgoDevApp> {
-        EGO_DEV.with(|ego_dev| ego_dev.borrow().version_wait_for_audit())
-    }
+    pub fn app_version_reject(app_id: &AppId, version: &Version) -> Result<AppVersion, EgoError> {
+        let mut ego_dev_app = EgoDevApp::get(app_id).ok_or(EgoError::from(EgoDevErr::AppNotExists))?;
+        let app_version = ego_dev_app.version_reject(version)?;
+        app_version.save();
 
-    pub fn app_version_approve(app_id: AppId, version: Version) -> Result<AppVersion, EgoError> {
-        EGO_DEV.with(|ego_dev| match ego_dev.borrow_mut().apps.get_mut(&app_id) {
-            Some(app) => app.version_approve(version),
-            None => Err(EgoDevErr::AppNotExists.into()),
-        })
-    }
-
-    pub fn app_version_reject(app_id: AppId, version: Version) -> Result<AppVersion, EgoError> {
-        EGO_DEV.with(|ego_dev| match ego_dev.borrow_mut().apps.get_mut(&app_id) {
-            Some(app) => app.version_reject(version),
-            None => Err(EgoDevErr::AppNotExists.into()),
-        })
+        ego_dev_app.save();
+        Ok(app_version)
     }
 
     pub fn user_role_set(
-        user_id: Principal,
+        user_id: &Principal,
         is_app_auditer: bool,
         is_manager: bool,
     ) -> Result<bool, EgoError> {
-        EGO_DEV.with(
-            |ego_dev| match ego_dev.borrow_mut().developer_main_get_mut(user_id) {
-                Ok(user) => {
-                    user.is_app_auditor = is_app_auditer;
-                    user.is_manager = is_manager;
-                    Ok(true)
-                }
-                Err(e) => Err(e),
-            },
-        )
+        let mut developer = Developer::get(user_id).ok_or(EgoError::from(EgoDevErr::NotADeveloper))?;
+        developer.is_app_auditor = is_app_auditer;
+        developer.is_manager = is_manager;
+        developer.save();
+        Ok(true)
     }
 
-    pub fn user_main_list(name: String) -> Vec<Developer> {
-        EGO_DEV.with(|ego_dev| {
-            ego_dev
-                .borrow()
-                .developers
-                .values()
-                .filter_map(|user| {
-                    if user.name == name {
-                        Some(user.clone())
-                    } else {
-                        None
-                    }
-                })
-                .collect()
-        })
+    pub fn admin_ego_file_add(file_id: &Principal) {
+        let ego_file = EgoFile::new(file_id);
+        ego_file.save();
     }
 
-    pub fn admin_ego_file_add(file_id: Principal) {
-        EGO_DEV.with(|ego_dev| ego_dev.borrow_mut().admin_file_add(file_id))
+    pub fn ego_file_get() -> Result<Principal, EgoError> {
+        let ego_files = EgoFile::list();
+
+        if ego_files.is_empty() {
+            Err(EgoDevErr::NoFile.into())
+        } else {
+            let mut file = ego_files.iter().min().unwrap().clone();
+            file.wasm_count += 1;
+            file.save();
+            Ok(file.canister_id)
+        }
     }
 }

@@ -56,10 +56,11 @@ impl EgoStore {
         wallet_id: &Principal,
         user_id: &Principal,
     ) -> Result<Principal, EgoError> {
-        let tenant_id = EgoStore::tenant_get()?;
-        let mut wallet = Wallet::new(&tenant_id, wallet_id, user_id);
+        let ego_tenant_id = EgoStore::tenant_get()?;
+
+        let mut wallet = Wallet::new(&ego_tenant_id, wallet_id, user_id);
         wallet.save();
-        Ok(tenant_id)
+        Ok(ego_tenant_id)
     }
 
     pub fn wallet_app_list(wallet_id: &Principal) -> Vec<UserApp> {
@@ -237,7 +238,10 @@ impl EgoStore {
             error_log_add("tenant_get: no tenant");
             Err(EgoStoreErr::NoTenant.into())
         } else {
-            Ok(tenants.iter().min().unwrap().canister_id)
+            let mut tenant = tenants.iter().min().unwrap().clone();
+            tenant.wallet_count += 1;
+            tenant.save();
+            Ok(tenant.canister_id)
         }
     }
 }

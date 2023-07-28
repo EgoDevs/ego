@@ -25,13 +25,6 @@
     },
     {
         "category": "infra",
-        "package": "ego_assets",
-        "bin_name": "ego-assets",
-        "post_install_sequence": 100,
-        "no_deploy": true
-    },
-    {
-        "category": "infra",
         "package": "ego_ops",
         "bin_name": "ego-ops",
         "post_install_sequence": 100

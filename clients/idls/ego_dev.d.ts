@@ -30,6 +30,7 @@ export interface AppMainNewRequest {
   'price' : number,
 }
 export interface AppVersion {
+  'id' : bigint,
   'status' : AppVersionStatus,
   'wasm' : [] | [Wasm],
   'version' : Version,
@@ -62,6 +63,11 @@ export interface CycleInfo {
   'estimate_remaining' : bigint,
 }
 export interface CycleRecord { 'ts' : bigint, 'balance' : bigint }
+export interface DevImportV1 {
+  'apps' : Array<EgoDevAppV1>,
+  'ego_files' : Array<EgoFile>,
+  'developers' : Array<Developer>,
+}
 export interface Developer {
   'name' : string,
   'is_app_auditor' : boolean,
@@ -72,11 +78,17 @@ export interface Developer {
 export interface EgoDevApp {
   'app' : App,
   'developer_id' : Principal,
+  'versions' : BigUint64Array | bigint[],
+  'audit_version' : [] | [Version],
+}
+export interface EgoDevAppV1 {
+  'app' : App,
+  'developer_id' : Principal,
   'versions' : Array<AppVersion>,
   'audit_version' : [] | [Version],
 }
 export interface EgoError { 'msg' : string, 'code' : number }
-export interface InitArg { 'init_caller' : [] | [Principal] }
+export interface EgoFile { 'canister_id' : Principal, 'wasm_count' : number }
 export interface LogEntry { 'ts' : bigint, 'msg' : string, 'kind' : string }
 export type Result = { 'Ok' : AppVersion } |
   { 'Err' : EgoError };
@@ -127,6 +139,8 @@ export interface Wasm {
 export interface _SERVICE {
   'admin_app_create' : ActorMethod<[AdminAppCreateBackendRequest], Result>,
   'admin_app_transfer' : ActorMethod<[string], Result_1>,
+  'admin_export' : ActorMethod<[], Uint8Array | number[]>,
+  'admin_import' : ActorMethod<[DevImportV1], undefined>,
   'app_version_approve' : ActorMethod<[string, Version], Result>,
   'app_version_new' : ActorMethod<[string, Version], Result>,
   'app_version_reject' : ActorMethod<[string, Version], Result>,

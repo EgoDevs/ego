@@ -80,7 +80,10 @@ describe('ego_store_import', () => {
 
     console.log('3. restore apps')
     Object.entries(json['ego_store']['apps']).forEach(([key, value]) => {
-      value['app']['category'] = {'System': null}
+      let category = {}
+      category[value['app']['category']] = null
+      value['app']['category'] = category
+
       value['wasm']['canister_id'] = Principal.fromText(value['wasm']['canister_id'])
       value['wasm']['canister_type'] = {'BACKEND': null}
       actor.app_main_release(value)

@@ -1,5 +1,4 @@
 export const idlFactory = ({ IDL }) => {
-  const InitArg = IDL.Record({ 'init_caller' : IDL.Opt(IDL.Principal) });
   const Version = IDL.Record({
     'major' : IDL.Nat32,
     'minor' : IDL.Nat32,
@@ -35,6 +34,7 @@ export const idlFactory = ({ IDL }) => {
     'canister_type' : CanisterType,
   });
   const AppVersion = IDL.Record({
+    'id' : IDL.Nat64,
     'status' : AppVersionStatus,
     'wasm' : IDL.Opt(Wasm),
     'version' : Version,
@@ -44,6 +44,38 @@ export const idlFactory = ({ IDL }) => {
   const EgoError = IDL.Record({ 'msg' : IDL.Text, 'code' : IDL.Nat16 });
   const Result = IDL.Variant({ 'Ok' : AppVersion, 'Err' : EgoError });
   const Result_1 = IDL.Variant({ 'Ok' : IDL.Null, 'Err' : EgoError });
+  const App = IDL.Record({
+    'logo' : IDL.Text,
+    'name' : IDL.Text,
+    'description' : IDL.Text,
+    'app_id' : IDL.Text,
+    'app_hash' : IDL.Text,
+    'category' : Category,
+    'current_version' : Version,
+    'price' : IDL.Float32,
+  });
+  const EgoDevAppV1 = IDL.Record({
+    'app' : App,
+    'developer_id' : IDL.Principal,
+    'versions' : IDL.Vec(AppVersion),
+    'audit_version' : IDL.Opt(Version),
+  });
+  const EgoFile = IDL.Record({
+    'canister_id' : IDL.Principal,
+    'wasm_count' : IDL.Nat16,
+  });
+  const Developer = IDL.Record({
+    'name' : IDL.Text,
+    'is_app_auditor' : IDL.Bool,
+    'developer_id' : IDL.Principal,
+    'created_apps' : IDL.Vec(IDL.Text),
+    'is_manager' : IDL.Bool,
+  });
+  const DevImportV1 = IDL.Record({
+    'apps' : IDL.Vec(EgoDevAppV1),
+    'ego_files' : IDL.Vec(EgoFile),
+    'developers' : IDL.Vec(Developer),
+  });
   const AppVersionSetFrontendAddressRequest = IDL.Record({
     'canister_id' : IDL.Principal,
     'version' : Version,
@@ -56,20 +88,10 @@ export const idlFactory = ({ IDL }) => {
     'version' : Version,
     'app_id' : IDL.Text,
   });
-  const App = IDL.Record({
-    'logo' : IDL.Text,
-    'name' : IDL.Text,
-    'description' : IDL.Text,
-    'app_id' : IDL.Text,
-    'app_hash' : IDL.Text,
-    'category' : Category,
-    'current_version' : Version,
-    'price' : IDL.Float32,
-  });
   const EgoDevApp = IDL.Record({
     'app' : App,
     'developer_id' : IDL.Principal,
-    'versions' : IDL.Vec(AppVersion),
+    'versions' : IDL.Vec(IDL.Nat64),
     'audit_version' : IDL.Opt(Version),
   });
   const Result_3 = IDL.Variant({ 'Ok' : IDL.Vec(EgoDevApp), 'Err' : EgoError });
@@ -82,13 +104,6 @@ export const idlFactory = ({ IDL }) => {
     'app_id' : IDL.Text,
     'category' : Category,
     'price' : IDL.Float32,
-  });
-  const Developer = IDL.Record({
-    'name' : IDL.Text,
-    'is_app_auditor' : IDL.Bool,
-    'developer_id' : IDL.Principal,
-    'created_apps' : IDL.Vec(IDL.Text),
-    'is_manager' : IDL.Bool,
   });
   const Result_6 = IDL.Variant({ 'Ok' : Developer, 'Err' : EgoError });
   const Result_7 = IDL.Variant({ 'Ok' : IDL.Null, 'Err' : IDL.Text });
@@ -129,6 +144,8 @@ export const idlFactory = ({ IDL }) => {
   return IDL.Service({
     'admin_app_create' : IDL.Func([AdminAppCreateBackendRequest], [Result], []),
     'admin_app_transfer' : IDL.Func([IDL.Text], [Result_1], []),
+    'admin_export' : IDL.Func([], [IDL.Vec(IDL.Nat8)], []),
+    'admin_import' : IDL.Func([DevImportV1], [], []),
     'app_version_approve' : IDL.Func([IDL.Text, Version], [Result], []),
     'app_version_new' : IDL.Func([IDL.Text, Version], [Result], []),
     'app_version_reject' : IDL.Func([IDL.Text, Version], [Result], []),
@@ -189,7 +206,4 @@ export const idlFactory = ({ IDL }) => {
     'user_role_set' : IDL.Func([UserRoleSetRequest], [Result_2], []),
   });
 };
-export const init = ({ IDL }) => {
-  const InitArg = IDL.Record({ 'init_caller' : IDL.Opt(IDL.Principal) });
-  return [InitArg];
-};
+export const init = ({ IDL }) => { return []; };

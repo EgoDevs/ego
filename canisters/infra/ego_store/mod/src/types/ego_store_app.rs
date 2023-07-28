@@ -42,13 +42,6 @@ impl EgoStoreApp {
             inst.insert(AppKey::new(&self.app.app_id), self.clone());
         });
     }
-
-    pub fn count() -> u64{
-        EGO_STORE_APPS.with(|cell| {
-            let inst = cell.borrow();
-            inst.len()
-        })
-    }
 }
 
 impl Storable for EgoStoreApp {

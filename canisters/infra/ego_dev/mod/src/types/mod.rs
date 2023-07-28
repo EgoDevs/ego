@@ -1,12 +1,22 @@
 use candid::{CandidType, Deserialize, Principal};
 use serde::Serialize;
 
-use ego_types::app::EgoError;
+use ego_types::app::{App, EgoError};
 use ego_types::app::Version;
 use ego_types::app::{AppId, Category, FileId};
 
-use crate::app::*;
-use crate::developer::Developer;
+use developer::Developer;
+use crate::types::app_version::{AppVersion};
+use crate::types::ego_dev_app::EgoDevApp;
+use crate::types::ego_file::EgoFile;
+use crate::types::stable_state::StableState;
+
+pub mod stable_state;
+pub mod ego_file;
+pub mod app_key;
+pub mod ego_dev_app;
+pub mod developer;
+pub mod app_version;
 
 #[derive(CandidType, Deserialize, Serialize)]
 pub enum EgoDevErr {
@@ -147,3 +157,37 @@ pub struct AdminAppCreateBackendRequest {
 pub struct AdminAppCreateResponse {
     pub app_version: AppVersion,
 }
+
+#[derive(CandidType, Deserialize, Serialize)]
+pub struct DevExport {
+    pub state: StableState,
+    pub ego_dev_apps: Vec<EgoDevApp>,
+    pub files: Vec<EgoFile>,
+    pub developers: Vec<Developer>,
+    pub app_versions: Vec<AppVersion>,
+}
+
+#[derive(CandidType, Deserialize, Serialize)]
+pub struct DevImport {
+    pub ego_dev_apps: Vec<EgoDevApp>,
+    pub files: Vec<EgoFile>,
+    pub developers: Vec<Developer>,
+    pub app_versions: Vec<AppVersion>,
+}
+
+// for import
+#[derive(CandidType, Deserialize, Serialize)]
+pub struct DevImportV1 {
+    pub apps: Vec<EgoDevAppV1>,
+    pub ego_files: Vec<EgoFile>,
+    pub developers: Vec<Developer>
+}
+
+#[derive(CandidType, Deserialize, Serialize)]
+pub struct EgoDevAppV1 {
+    pub app: App,
+    pub developer_id: Principal,
+    pub versions: Vec<AppVersion>,
+    pub audit_version: Option<Version>,
+}
+
