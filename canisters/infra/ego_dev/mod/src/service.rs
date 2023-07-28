@@ -17,7 +17,7 @@ impl EgoDevService {
     pub fn developer_main_register(caller: &Principal, name: &str) -> Result<Developer, EgoError> {
         match Developer::get(caller) {
             None => {
-                match Developer::get_by_name(name).is_empty() {
+                match Developer::list_by_name(name).is_empty() {
                     true => {
                         let developer = Developer::new(caller, name);
                         developer.save();
@@ -38,6 +38,7 @@ impl EgoDevService {
             Some(mut ego_dev_app) => {
                 ego_dev_app.developer_id = developer_id.clone();
                 ego_dev_app.save();
+
                 Ok(())
             }
         }
@@ -46,17 +47,17 @@ impl EgoDevService {
     pub fn developer_app_new(
         caller: &Principal,
         app_id: &AppId,
-        name: String,
-        logo: String,
-        description: String,
-        category: Category,
+        name: &str,
+        logo: &str,
+        description: &str,
+        category: &Category,
         price: f32,
     ) -> Result<EgoDevApp, EgoError> {
         match EgoDevApp::get_developer_app(caller, app_id)? {
             None => {
                 let mut developer = Developer::get(caller).expect("developer not exists");
 
-                let ego_dev_app = EgoDevApp::new(
+                let mut ego_dev_app = EgoDevApp::new(
                     caller,
                     app_id,
                     name,
@@ -81,7 +82,7 @@ impl EgoDevService {
     pub fn app_version_new(
         caller: &Principal,
         app_id: &AppId,
-        version: Version,
+        version: &Version,
     ) -> Result<AppVersion, EgoError> {
         match EgoDevApp::get_developer_app(caller, app_id)? {
             None => {
@@ -133,7 +134,7 @@ impl EgoDevService {
         caller: &Principal,
         app_id: &AppId,
         version: &Version,
-        canister_id: Principal,
+        canister_id: &Principal,
     ) -> Result<bool, EgoError> {
         match EgoDevApp::get_developer_app(caller, app_id)? {
             None => {

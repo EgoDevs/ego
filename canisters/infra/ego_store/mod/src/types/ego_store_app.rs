@@ -5,6 +5,7 @@ use ic_stable_structures::{BoundedStorable, Storable};
 use serde::Serialize;
 
 use ego_types::app::{App, AppId, Wasm};
+use ego_utils::util::time;
 use crate::memory::EGO_STORE_APPS;
 use crate::types::app_key::AppKey;
 
@@ -12,6 +13,7 @@ use crate::types::app_key::AppKey;
 pub struct EgoStoreApp {
     pub app: App,
     pub wasm: Wasm,
+    pub last_update: u64,
 }
 
 impl EgoStoreApp {
@@ -25,7 +27,7 @@ impl EgoStoreApp {
 
 impl EgoStoreApp {
     pub fn new(app: &App, wasm: &Wasm) -> Self {
-        EgoStoreApp { app: app.clone(), wasm: wasm.clone() }
+        EgoStoreApp { app: app.clone(), wasm: wasm.clone(), last_update: 0 }
     }
 
     pub fn list() -> Vec<EgoStoreApp> {
@@ -45,10 +47,10 @@ impl EgoStoreApp {
         })
     }
 
-    pub fn save(&self) {
+    pub fn save(&mut self) {
         EGO_STORE_APPS.with(|cell| {
             let mut inst = cell.borrow_mut();
-
+            self.last_update = time() / 1000000000;
             inst.insert(AppKey::new(&self.app.app_id), self.clone());
         });
     }

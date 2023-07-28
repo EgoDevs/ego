@@ -51,7 +51,7 @@ type CycleInfo = record {
 };
 type CycleRecord = record { ts : nat64; balance : nat };
 type EgoError = record { msg : text; code : nat16 };
-type EgoStoreApp = record { app : App; wasm : Wasm };
+type EgoStoreApp = record { app : App; wasm : Wasm; last_update : nat64 };
 type LogEntry = record { ts : nat64; msg : text; kind : text };
 type Order = record {
   to : vec nat8;

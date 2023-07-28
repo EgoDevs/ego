@@ -404,10 +404,10 @@ pub fn wallet_cycle_charge(
 /********************  methods for ego_dev  ********************/
 #[update(name = "app_main_release", guard = "user_guard")]
 #[candid_method(update, rename = "app_main_release")]
-pub async fn app_main_release(app: EgoStoreApp) -> Result<bool, EgoError> {
+pub async fn app_main_release(mut app: EgoStoreApp) -> Result<bool, EgoError> {
     info_log_add(format!("app_main_release, app_id {}", app.app.app_id).as_str());
 
-    match EgoStoreService::app_main_release(app) {
+    match EgoStoreService::app_main_release(&mut app) {
         Ok(ret) => Ok(ret),
         Err(e) => Err(e),
     }

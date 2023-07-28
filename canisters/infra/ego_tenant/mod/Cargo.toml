@@ -30,4 +30,4 @@ mockall = { workspace = true }
 tokio = { workspace = true }
 
 [features]
-test_mode = ["ego_types/test_mode"]
+test_mode = ["ego_types/test_mode", "ego_utils/test_mode"]

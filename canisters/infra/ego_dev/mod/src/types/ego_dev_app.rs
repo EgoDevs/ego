@@ -7,6 +7,7 @@ use ego_types::app::Version;
 use ego_types::app::{App, AppId, Category};
 use crate::types::EgoDevErr;
 use ic_stable_structures::{BoundedStorable, Storable};
+use ego_utils::util::time;
 use crate::memory::EGO_DEV_APPS;
 use crate::types::app_key::AppKey;
 use crate::types::app_version::{AppVersion, AppVersionStatus};
@@ -19,6 +20,7 @@ pub struct EgoDevApp {
     pub developer_id: Principal,
     pub versions: Vec<u64>,
     pub audit_version: Option<Version>,
+    pub last_update: u64    // second
 }
 
 impl EgoDevApp {
@@ -38,25 +40,26 @@ impl EgoDevApp {
     pub fn new(
         user_id: &Principal,
         app_id: &AppId,
-        name: String,
-        logo: String,
-        description: String,
-        category: Category,
+        name: &str,
+        logo: &str,
+        description: &str,
+        category: &Category,
         price: f32,
     ) -> Self {
         EgoDevApp {
             app: App::new(
                 app_id.clone(),
-                name,
-                category,
-                logo,
-                description,
+                name.to_string(),
+                category.clone(),
+                logo.to_string(),
+                description.to_string(),
                 Version::default(),
                 price,
             ),
             developer_id: user_id.clone(),
             audit_version: None,
             versions: vec![],
+            last_update: 0,
         }
     }
 
@@ -212,17 +215,18 @@ impl EgoDevApp {
                         Ok(Some(ego_dev_app))
                     }
                     false => {
-                        Err(EgoDevErr::AppExists.into())
+                        Err(EgoDevErr::UnAuthorized.into())
                     }
                 }
             }
         }
     }
 
-    pub fn save(&self) {
+    pub fn save(&mut self) {
         EGO_DEV_APPS.with(|cell| {
             let mut inst = cell.borrow_mut();
             let key = AppKey::new(&self.app.app_id);
+            self.last_update = time() / 1000000000;
             inst.insert(key, self.clone());
         });
     }

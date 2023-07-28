@@ -79,6 +79,7 @@ export interface EgoDevApp {
   'app' : App,
   'developer_id' : Principal,
   'versions' : BigUint64Array | bigint[],
+  'last_update' : bigint,
   'audit_version' : [] | [Version],
 }
 export interface EgoDevAppV1 {

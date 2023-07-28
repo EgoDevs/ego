@@ -11,6 +11,7 @@ ic-cdk-macros = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
 serde_bytes = { workspace = true }
-#tracing = "0.1.29"
-
 ego_types = { workspace = true }
+
+[features]
+test_mode = []

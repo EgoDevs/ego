@@ -107,7 +107,11 @@ export const idlFactory = ({ IDL }) => {
     'app_id' : IDL.Text,
     'canister_type' : CanisterType,
   });
-  const EgoStoreApp = IDL.Record({ 'app' : App, 'wasm' : Wasm });
+  const EgoStoreApp = IDL.Record({
+    'app' : App,
+    'wasm' : Wasm,
+    'last_update' : IDL.Nat64,
+  });
   const Result_8 = IDL.Variant({ 'Ok' : IDL.Nat, 'Err' : IDL.Text });
   const Result_9 = IDL.Variant({ 'Ok' : IDL.Null, 'Err' : IDL.Text });
   const Result_10 = IDL.Variant({

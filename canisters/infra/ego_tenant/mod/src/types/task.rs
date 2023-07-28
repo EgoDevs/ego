@@ -1,10 +1,10 @@
 use std::borrow::Cow;
 use candid::{Decode, Encode};
-use ic_cdk::api::time;
 use candid::{CandidType, Deserialize, Principal};
 use serde::Serialize;
 use ic_stable_structures::{BoundedStorable, Storable};
 use ic_stable_structures::storable::Blob;
+use ego_utils::util::time;
 use crate::memory::TASKS;
 
 const MAX_TRY_COUNT:u8 = 5; // 4M

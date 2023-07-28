@@ -107,10 +107,10 @@ pub fn developer_app_new(request: AppMainNewRequest) -> Result<EgoDevApp, EgoErr
     let app = EgoDevService::developer_app_new(
         &caller(),
         &request.app_id,
-        request.name,
-        request.logo,
-        request.description,
-        request.category,
+        &request.name,
+        &request.logo,
+        &request.description,
+        &request.category,
         request.price,
     )?;
     Ok(app)
@@ -122,7 +122,7 @@ pub fn developer_app_new(request: AppMainNewRequest) -> Result<EgoDevApp, EgoErr
 pub fn app_version_new(app_id: AppId, version: Version) -> Result<AppVersion, EgoError> {
     info_log_add("new_app_version");
 
-    let app_version = EgoDevService::app_version_new(&caller(), &app_id, version)?;
+    let app_version = EgoDevService::app_version_new(&caller(), &app_id, &version)?;
     Ok(app_version)
 }
 
@@ -156,7 +156,7 @@ pub fn app_version_set_frontend_address(
         &caller(),
         &request.app_id,
         &request.version,
-        request.canister_id,
+        &request.canister_id,
     )?;
     Ok(ret)
 }
@@ -227,7 +227,7 @@ pub fn app_version_reject(app_id: AppId, version: Version) -> Result<AppVersion,
 #[candid_method(query, rename = "user_main_list")]
 pub fn user_main_list(name: String) -> Result<Vec<Developer>, EgoError> {
     info_log_add("user_main_list");
-    let users = Developer::get_by_name(&name);
+    let users = Developer::list_by_name(&name);
     Ok(users)
 }
 
@@ -266,15 +266,15 @@ pub async fn admin_app_create(
     EgoDevService::developer_app_new(
         &caller,
         &request.app_id,
-        request.name,
-        request.logo,
-        request.description,
-        request.category,
+        &request.name,
+        &request.logo,
+        &request.description,
+        &request.category,
         0f32,
     )?;
 
     info_log_add("3. app_version_new");
-    EgoDevService::app_version_new(&caller, &request.app_id, request.version)?;
+    EgoDevService::app_version_new(&caller, &request.app_id, &request.version)?;
 
     info_log_add("4. app_version_upload_wasm");
     EgoDevService::app_version_upload_wasm(
@@ -390,11 +390,12 @@ fn admin_import(request: DevImportV1) {
             app_version.save();
             ids.push(app_version.id);
         });
-        let ego_dev_app = EgoDevApp{
+        let mut ego_dev_app = EgoDevApp{
             app: app.app.clone(),
             developer_id: app.developer_id,
             versions: ids,
             audit_version: app.audit_version,
+            last_update: 0,
         };
 
         ego_dev_app.save();

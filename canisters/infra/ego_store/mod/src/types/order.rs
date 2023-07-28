@@ -1,10 +1,10 @@
 use std::borrow::Cow;
 use candid::{Decode, Encode};
-use ic_cdk::api::time;
 use ic_ledger_types::{AccountIdentifier, Memo, Subaccount};
 use ic_stable_structures::{BoundedStorable, Storable};
 use candid::{CandidType, Deserialize, Principal};
 use serde::Serialize;
+use ego_utils::util::time;
 use crate::memory::ORDERS;
 use crate::state::SEQ;
 

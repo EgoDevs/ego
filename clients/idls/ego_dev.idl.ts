@@ -92,6 +92,7 @@ export const idlFactory = ({ IDL }) => {
     'app' : App,
     'developer_id' : IDL.Principal,
     'versions' : IDL.Vec(IDL.Nat64),
+    'last_update' : IDL.Nat64,
     'audit_version' : IDL.Opt(Version),
   });
   const Result_3 = IDL.Variant({ 'Ok' : IDL.Vec(EgoDevApp), 'Err' : EgoError });

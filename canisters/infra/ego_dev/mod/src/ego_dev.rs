@@ -42,10 +42,10 @@ impl EgoDev {
         &mut self,
         user_id: &Principal,
         app_id: &AppId,
-        name: String,
-        logo: String,
-        description: String,
-        category: Category,
+        name: &str,
+        logo: &str,
+        description: &str,
+        category: &Category,
         price: f32,
     ) -> Result<EgoDevApp, EgoError> {
         if self.apps.contains_key(app_id) {

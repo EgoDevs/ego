@@ -1,8 +1,6 @@
-use ic_cdk::export::Principal;
-
-use ego_store_mod::app::EgoStoreApp;
+use candid::Principal;
 use ego_store_mod::service::EgoStoreService;
-use ego_store_mod::state::EGO_STORE;
+use ego_store_mod::types::ego_store_app::EgoStoreApp;
 use ego_types::app::CanisterType::BACKEND;
 use ego_types::app::Version;
 use ego_types::app::{App, Category, Wasm};
@@ -24,27 +22,21 @@ pub fn set_up() {
 
     let version = Version::new(1, 0, 0);
 
-    EGO_STORE.with(|ego_store| {
-        // add app
-        let wasm = Wasm::new(EXISTS_APP_ID.to_string(), version, BACKEND, file_canister);
-        let app = App {
-            app_id: EXISTS_APP_ID.to_string(),
-            name: EXISTS_APP_NAME.to_string(),
-            category: Category::Vault,
-            logo: EXISTS_APP_LOGO.to_string(),
-            description: EXISTS_APP_DESCRIPTION.to_string(),
-            current_version: version,
-            price: 0.0,
-            app_hash: "".to_string(),
-        };
+    // add app
+    let wasm = Wasm::new(EXISTS_APP_ID.to_string(), version, BACKEND, file_canister);
+    let app = App {
+        app_id: EXISTS_APP_ID.to_string(),
+        name: EXISTS_APP_NAME.to_string(),
+        category: Category::Vault,
+        logo: EXISTS_APP_LOGO.to_string(),
+        description: EXISTS_APP_DESCRIPTION.to_string(),
+        current_version: version,
+        price: 0.0,
+        app_hash: "".to_string(),
+    };
 
-        let ego_store_app = EgoStoreApp::new(app, wasm);
-
-        ego_store
-            .borrow_mut()
-            .apps
-            .insert(EXISTS_APP_ID.to_string(), ego_store_app);
-    });
+    let mut ego_store_app = EgoStoreApp::new(&app, &wasm);
+    ego_store_app.save();
 }
 
 #[test]
@@ -72,9 +64,9 @@ fn app_main_release_new_app() {
         app_hash: "".to_string(),
     };
 
-    let ego_store_app = EgoStoreApp::new(app, wasm);
+    let mut ego_store_app = EgoStoreApp::new(&app, &wasm);
 
-    let result = EgoStoreService::app_main_release(ego_store_app);
+    let result = EgoStoreService::app_main_release(&mut ego_store_app);
     assert!(result.is_ok());
 
     let apps = EgoStoreService::app_main_list().unwrap();
@@ -108,9 +100,9 @@ fn app_main_release_new_app_version() {
         app_hash: "".to_string(),
     };
 
-    let app = EgoStoreApp::new(app, wasm);
+    let mut ego_store_app = EgoStoreApp::new(&app, &wasm);
 
-    let result = EgoStoreService::app_main_release(app);
+    let result = EgoStoreService::app_main_release(&mut ego_store_app);
     assert!(result.is_ok());
 
     let apps = EgoStoreService::app_main_list().unwrap();

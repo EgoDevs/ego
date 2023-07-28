@@ -55,7 +55,7 @@ impl Developer {
         })
     }
 
-    pub fn get_by_name(name: &str) -> Vec<Developer> {
+    pub fn list_by_name(name: &str) -> Vec<Developer> {
         DEVELOPERS.with(|cell| {
             let inst = cell.borrow();
             inst.iter().filter(|(_, developer)| developer.name == *name).map(|(_, developer)| developer).collect()

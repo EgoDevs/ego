@@ -1,5 +1,5 @@
 use async_trait::async_trait;
-use ic_cdk::export::Principal;
+use candid::Principal;
 use mockall::mock;
 
 use ego_lib::ego_canister::TEgoCanister;

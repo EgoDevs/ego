@@ -1,12 +1,12 @@
 use std::borrow::Cow;
 use candid::{Decode, Encode};
-use ic_cdk::api::time;
 
 use candid::{CandidType, Deserialize, Principal};
 use ic_stable_structures::{BoundedStorable, Storable};
 use ic_stable_structures::storable::Blob;
 use serde::Serialize;
 use ego_types::app::{CashFlowType, EgoError, Version};
+use ego_utils::util::time;
 
 use crate::memory::{WALLETS};
 use crate::types::cash_flow::CashFlow;
@@ -39,7 +39,7 @@ impl Wallet {
     }
 
     pub fn app_upgrade(&mut self, user_app: &mut UserApp, latest_version: &Version) {
-        user_app.latest_version = latest_version.clone();
+        user_app.app.current_version = latest_version.clone();
         user_app.save();
     }
 

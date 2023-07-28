@@ -49,13 +49,13 @@ impl AppVersion {
     }
   }
 
-  pub fn frontend_update(&mut self, frontend_id: Principal) {
+  pub fn frontend_update(&mut self, frontend_id: &Principal) {
     if self.wasm.is_none() {
       self.wasm = Some(Wasm::new(
         self.app_id.clone(),
         self.version,
         ASSET,
-        frontend_id,
+        frontend_id.clone(),
       ));
     }
   }

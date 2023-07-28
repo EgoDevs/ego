@@ -76,6 +76,7 @@ type EgoDevApp = record {
   app : App;
   developer_id : principal;
   versions : vec nat64;
+  last_update : nat64;
   audit_version : opt Version;
 };
 type EgoDevAppV1 = record {

@@ -57,7 +57,11 @@ export interface CycleInfo {
 }
 export interface CycleRecord { 'ts' : bigint, 'balance' : bigint }
 export interface EgoError { 'msg' : string, 'code' : number }
-export interface EgoStoreApp { 'app' : App, 'wasm' : Wasm }
+export interface EgoStoreApp {
+  'app' : App,
+  'wasm' : Wasm,
+  'last_update' : bigint,
+}
 export interface LogEntry { 'ts' : bigint, 'msg' : string, 'kind' : string }
 export interface Order {
   'to' : Uint8Array | number[],
