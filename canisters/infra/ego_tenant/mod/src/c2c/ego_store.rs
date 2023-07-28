@@ -11,7 +11,7 @@ use crate::c2c::c2c_types::{WalletCycleChargeRequest, WalletCycleChargeResponse}
 pub trait TEgoStore {
   async fn wallet_cycle_charge(
     &self,
-    wallet_id: Principal,
+    canister_id: Principal,
     cycle: u128,
     comment: String,
   ) -> Result<bool, EgoError>;
@@ -31,12 +31,12 @@ impl EgoStore {
 impl TEgoStore for EgoStore {
   async fn wallet_cycle_charge(
     &self,
-    wallet_id: Principal,
+    canister_id: Principal,
     cycle: u128,
     comment: String,
   ) -> Result<bool, EgoError> {
     let req = WalletCycleChargeRequest {
-      wallet_id,
+      canister_id,
       cycle,
       comment,
     };

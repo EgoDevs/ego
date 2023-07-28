@@ -23,7 +23,6 @@ type Task = record {
   next_check_time : nat64;
   last_update : nat64;
   last_cycle : opt nat;
-  wallet_id : principal;
   try_count : nat8;
 };
 type Version = record { major : nat32; minor : nat32; patch : nat32 };
@@ -41,7 +40,7 @@ service : () -> {
   app_main_install : (AppMainInstallRequest) -> (Result_2);
   app_main_reinstall : (AppMainReInstallRequest) -> (Result_3);
   app_main_upgrade : (AppMainUpgradeRequest) -> (Result_3);
-  canister_main_track : (principal, principal) -> (Result_1);
+  canister_main_track : (principal) -> (Result_1);
   canister_main_untrack : (principal) -> (Result_1);
   ego_canister_add : (text, principal) -> (Result_4);
   ego_canister_list : () -> (Result_5);

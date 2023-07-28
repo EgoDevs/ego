@@ -115,9 +115,9 @@ type Wallet = record {
   wallet_id : principal;
 };
 type WalletCycleChargeRequest = record {
+  canister_id : principal;
   cycle : nat;
   comment : text;
-  wallet_id : principal;
 };
 type WalletCycleChargeResponse = record { ret : bool };
 type WalletImport = record {

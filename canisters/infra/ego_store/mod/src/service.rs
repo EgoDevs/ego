@@ -97,7 +97,7 @@ impl EgoStoreService {
     wallet.app_install(&mut user_app);
 
     info_log_add("6 track canister");
-    ego_tenant.canister_main_track(ego_tenant_id, &wallet_id, &canister_id);
+    ego_tenant.canister_main_track(ego_tenant_id, &canister_id);
 
     info_log_add("7 set app info");
     ego_canister.ego_app_info_update(
@@ -241,7 +241,7 @@ impl EgoStoreService {
     let _ = EgoStoreService::wallet_app_get(wallet_id, canister_id)?;
 
     info_log_add("3 track canister");
-    ego_tenant.canister_main_track(ego_tenant_id, wallet_id, canister_id);
+    ego_tenant.canister_main_track(ego_tenant_id, canister_id);
     Ok(())
   }
 
@@ -320,6 +320,26 @@ impl EgoStoreService {
     }
   }
 
+  pub fn canister_cycle_charge(canister_id: &Principal,
+                               cycle: u128,
+                               operator: &Principal,
+                               comment: String) -> Result<(), EgoError> {
+    let user_app = UserApp::get(canister_id).ok_or(EgoError::from(EgoStoreErr::AppNotExists))?;
+    match user_app.wallet_id {
+      None => {
+        Err(EgoError::from(EgoStoreErr::WalletNotExists))
+      }
+      Some(wallet_id) => {
+        EgoStoreService::wallet_cycle_charge(
+          &wallet_id,
+          cycle,
+          &operator,
+          comment,
+        )
+      }
+    }
+  }
+
   pub fn wallet_cycle_charge(
     wallet_id: &Principal,
     cycle: u128,
@@ -327,7 +347,7 @@ impl EgoStoreService {
     comment: String,
   ) -> Result<(), EgoError> {
     if cycle > 0 {
-      let mut wallet = EgoStoreService::wallet_main_get(wallet_id)?;
+      let mut wallet = EgoStoreService::wallet_main_get(&wallet_id)?;
       wallet.cycle_charge(cycle, operator, comment)
     } else {
       Err(EgoStoreErr::CyclesNotEnouth.into())
@@ -390,7 +410,7 @@ impl EgoStoreService {
     wallet.app_install(&mut user_app);
 
     info_log_add("7 track canister");
-    ego_tenant.canister_main_track(ego_tenant_id, &canister_id, &canister_id);
+    ego_tenant.canister_main_track(ego_tenant_id, &canister_id);
 
     info_log_add("8 set app info");
     ego_canister.ego_app_info_update(
@@ -418,7 +438,6 @@ impl EgoStoreService {
     user_apps.iter().for_each(|user_app| {
       ego_tenant.canister_main_track(
         ego_tenant_id,
-        &wallet_id,
         &user_app.canister.canister_id,
       );
     });

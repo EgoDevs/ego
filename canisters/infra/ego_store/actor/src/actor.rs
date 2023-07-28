@@ -1,7 +1,7 @@
 use std::collections::BTreeMap;
 
-use candid::Principal;
 use candid::candid_method;
+use candid::Principal;
 use ic_cdk::{caller, id};
 use ic_cdk_macros::*;
 use ic_ledger_types::Memo;
@@ -390,8 +390,8 @@ pub fn wallet_cycle_charge(
   // the tenant id or something else
   let operator = caller();
 
-  match EgoStoreService::wallet_cycle_charge(
-    &request.wallet_id,
+  match EgoStoreService::canister_cycle_charge(
+    &request.canister_id,
     request.cycle,
     &operator,
     request.comment,

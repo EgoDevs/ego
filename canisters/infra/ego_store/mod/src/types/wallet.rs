@@ -1,17 +1,17 @@
 use std::borrow::Cow;
-use candid::{Decode, Encode};
 
+use candid::{Decode, Encode};
 use candid::{CandidType, Deserialize, Principal};
 use ic_stable_structures::{BoundedStorable, Storable};
 use ic_stable_structures::storable::Blob;
 use serde::Serialize;
+
 use ego_types::app::{CashFlowType, EgoError, Version};
 use ego_utils::util::time;
 
-use crate::memory::{WALLETS};
+use crate::memory::WALLETS;
 use crate::types::cash_flow::CashFlow;
 use crate::types::EgoStoreErr;
-
 use crate::types::user_app::UserApp;
 
 #[derive(CandidType, Serialize, Deserialize, Clone, Debug)]

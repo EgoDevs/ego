@@ -133,12 +133,12 @@ async fn app_main_delete(canister_id: Principal) -> Result<(), EgoError> {
 
 #[update(name = "canister_main_track", guard = "user_guard")]
 #[candid_method(update, rename = "canister_main_track")]
-fn canister_main_track(wallet_id: Principal, canister_id: Principal) -> Result<(), EgoError> {
+fn canister_main_track(canister_id: Principal) -> Result<(), EgoError> {
   info_log_add("canister_main_track");
 
   let next_check_time = time().div(1e9 as u64) + NEXT_CHECK_DURATION; // next_check_time
 
-  EgoTenantService::canister_main_track(&wallet_id, &canister_id, next_check_time);
+  EgoTenantService::canister_main_track(&canister_id, next_check_time);
   Ok(())
 }
 
@@ -239,7 +239,7 @@ pub fn admin_task_add(tasks: Vec<Task>) {
 
   tasks.iter().for_each(|task| {
     info_log_add(format!("task added canister_id:{}", task.canister_id).as_str());
-    let mut t = Task::new(&task.wallet_id, &task.canister_id, task.next_check_time, None);
+    let mut t = Task::new(&task.canister_id, task.next_check_time, None);
     t.save();
   });
 }

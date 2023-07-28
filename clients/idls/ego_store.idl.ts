@@ -146,9 +146,9 @@ export const idlFactory = ({ IDL }) => {
   const AppUpgradeRequest = IDL.Record({ 'wallet_id' : IDL.Principal });
   const Result_18 = IDL.Variant({ 'Ok' : IDL.Nat, 'Err' : EgoError });
   const WalletCycleChargeRequest = IDL.Record({
+    'canister_id' : IDL.Principal,
     'cycle' : IDL.Nat,
     'comment' : IDL.Text,
-    'wallet_id' : IDL.Principal,
   });
   const WalletCycleChargeResponse = IDL.Record({ 'ret' : IDL.Bool });
   const Result_19 = IDL.Variant({

@@ -153,7 +153,7 @@ fn wallet_cycle_charge() {
     &ledger_id,
     "charge cycle".to_string(),
   );
-
+  println!("{:?}", result);
   assert!(result.is_ok());
   let wallet = Wallet::get(&wallet_id).unwrap();
   assert_eq!(128, wallet.cycles);

@@ -45,7 +45,6 @@ mock! {
     fn canister_main_track(
         &self,
         ego_tenant_id: Principal,
-        wallet_id: &Principal,
         canister_id: &Principal,
     );
     fn canister_main_untrack(&self, ego_tenant_id: Principal, canister_id: &Principal);
@@ -190,7 +189,7 @@ async fn wallet_controller_install() {
 
   ego_tenant
     .expect_canister_main_track()
-    .returning(|_, _, _| ());
+    .returning(|_, _| ());
 
   let mut ego_canister = MockCanister::new();
   ego_canister

@@ -66,7 +66,6 @@ mock! {
     fn canister_main_track(
         &self,
         ego_tenant_id: Principal,
-        wallet_id: &Principal,
         canister_id: &Principal,
     );
     fn canister_main_untrack(&self, ego_tenant_id: Principal, canister_id: &Principal);
@@ -228,7 +227,7 @@ async fn wallet_app_install_success() {
 
   ego_tenant
     .expect_canister_main_track()
-    .returning(|_, _, _| ());
+    .returning(|_, _| ());
 
   let mut ego_canister = MockCanister::new();
   ego_canister
@@ -448,7 +447,7 @@ async fn wallet_canister_track_wallet_not_exists() {
   let mut ego_tenant = MockTenant::new();
   ego_tenant
     .expect_canister_main_track()
-    .returning(|_, _, _| ());
+    .returning(|_, _| ());
   // ego-store wallet not exists
   let canister_track =
     EgoStoreService::wallet_canister_track(ego_tenant, &wallet_id, &backend_principal);
@@ -469,7 +468,7 @@ async fn wallet_canister_track_wallet_app_not_install() {
   let mut ego_tenant = MockTenant::new();
   ego_tenant
     .expect_canister_main_track()
-    .returning(|_, _, _| ());
+    .returning(|_, _| ());
   //ego-store app not install
   let canister_track =
     EgoStoreService::wallet_canister_track(ego_tenant, &wallet_id, &fake_principal);
@@ -489,7 +488,7 @@ async fn wallet_canister_track_success() {
   let mut ego_tenant = MockTenant::new();
   ego_tenant
     .expect_canister_main_track()
-    .returning(|_, _, _| ());
+    .returning(|_, _| ());
   // wallet canister track success
   let canister_track =
     EgoStoreService::wallet_canister_track(ego_tenant, &wallet_id, &backend_principal);
@@ -560,13 +559,13 @@ fn wallet_user_apps_track() {
   let mut ego_tenant = MockTenant::new();
   ego_tenant
     .expect_canister_main_track()
-    .returning(move |_, &w_id, &canister_id| {
-      assert_eq!(wallet_id, w_id);
+    .returning(move |_, &canister_id| {
       assert_eq!(backend_principal, canister_id);
       ()
     });
   // wallet canister track success
   let canister_track = EgoStoreService::wallet_user_apps_track(ego_tenant, &wallet_id);
+  println!("{:?}", canister_track);
   assert!(canister_track.is_ok());
 }
 

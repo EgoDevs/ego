@@ -148,9 +148,9 @@ export interface Wallet {
   'wallet_id' : Principal,
 }
 export interface WalletCycleChargeRequest {
+  'canister_id' : Principal,
   'cycle' : bigint,
   'comment' : string,
-  'wallet_id' : Principal,
 }
 export interface WalletCycleChargeResponse { 'ret' : boolean }
 export interface WalletImport {

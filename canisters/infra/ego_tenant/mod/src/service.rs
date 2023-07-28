@@ -24,11 +24,10 @@ pub const CREATE_CANISTER_CYCLES_FEE: u128 = 100_000_000_000;
 
 impl EgoTenantService {
   pub fn canister_main_track(
-    wallet_id: &Principal,
     canister_id: &Principal,
     next_check_time: u64,
   ) {
-    let mut task = Task::new(wallet_id, canister_id, next_check_time, None);
+    let mut task = Task::new(&canister_id,  next_check_time, None);
     task.save();
   }
 
@@ -295,7 +294,7 @@ impl EgoTenantService {
   ) -> Result<(), EgoError> {
     let charge_ret = ego_store
       .wallet_cycle_charge(
-        task.wallet_id,
+        task.canister_id,
         cycles,
         format!(
           "wallet cycle charge, top up canister id {}",

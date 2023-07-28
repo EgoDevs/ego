@@ -15,7 +15,6 @@ const MAX_TRY_COUNT: u8 = 5; // 4M
 // Task
 #[derive(CandidType, Deserialize, Serialize, Clone, Debug)]
 pub struct Task {
-  pub wallet_id: Principal,
   pub canister_id: Principal,
   pub next_check_time: u64,
   // second
@@ -26,9 +25,8 @@ pub struct Task {
 }
 
 impl Task {
-  pub fn new(wallet_id: &Principal, canister_id: &Principal, next_check_time: u64, last_cycle: Option<u128>) -> Self {
+  pub fn new(canister_id: &Principal, next_check_time: u64, last_cycle: Option<u128>) -> Self {
     Task {
-      wallet_id: wallet_id.clone(),
       canister_id: canister_id.clone(),
       next_check_time,
       last_cycle,

@@ -19,17 +19,15 @@ static STORE_CANISTER_ID: &str = "qhbym-qaaaa-aaaaa-aaafq-cai";
 static EXISTS_WALLET_ID: &str = "22fyd-yaaaa-aaaaf-aml4q-cai";
 static EXISTS_CANISTER_ID: &str = "223xb-saaaa-aaaaf-arlqa-cai";
 
-static TEST_WALLET_ID: &str = "22aq5-waaaa-aaaaf-aobwq-cai";
 static TEST_CANISTER_ID: &str = "224jh-lqaaa-aaaad-qaxda-cai";
 
 pub fn set_up() {
   let store_canister_id = Principal::from_text(STORE_CANISTER_ID.to_string()).unwrap();
   canister_add("ego_store".to_string(), store_canister_id);
 
-  let wallet_principal = Principal::from_text(EXISTS_WALLET_ID.to_string()).unwrap();
   let canister_principal = Principal::from_text(EXISTS_CANISTER_ID.to_string()).unwrap();
 
-  let _ = EgoTenantService::canister_main_track(&wallet_principal, &canister_principal, 0);
+  let _ = EgoTenantService::canister_main_track( &canister_principal, 0);
 }
 
 mock! {
@@ -79,7 +77,7 @@ mock! {
   impl TEgoStore for Store {
     async fn wallet_cycle_charge(
       &self,
-      wallet_id: Principal,
+      canister_id: Principal,
       cycle: u128,
       comment: String,
     ) -> Result<bool, EgoError>;
@@ -92,11 +90,10 @@ inject_mock_ego_canister!();
 fn canister_main_track() {
   set_up();
 
-  let wallet_principal = Principal::from_text(TEST_WALLET_ID.to_string()).unwrap();
   let canister_principal = Principal::from_text(TEST_CANISTER_ID.to_string()).unwrap();
 
   let len_before = Task::list().len();
-  EgoTenantService::canister_main_track(&wallet_principal, &canister_principal, 0);
+  EgoTenantService::canister_main_track(&canister_principal, 0);
   let len_after = Task::list().len();
   assert!(len_after == len_before + 1);
 }
@@ -127,7 +124,6 @@ fn canister_main_untrack_not_exists_task() {
 async fn canister_cycles_check_first_time() {
   set_up();
 
-  let wallet_principal = Principal::from_text(EXISTS_WALLET_ID.to_string()).unwrap();
   let canister_principal = Principal::from_text(EXISTS_CANISTER_ID.to_string()).unwrap();
 
   let ts = 10u64;
@@ -143,8 +139,8 @@ async fn canister_cycles_check_first_time() {
 
   ego_store
     .expect_wallet_cycle_charge()
-    .returning(move |wallet_id, cycle, _comment| {
-      assert_eq!(wallet_principal, wallet_id);
+    .returning(move |canister_id, cycle, _comment| {
+      assert_eq!(canister_id, canister_principal);
       assert_eq!(2_000_000, cycle);
       Ok(true)
     });
@@ -253,7 +249,6 @@ async fn canister_cycles_check_second_time_zero_cycle_consumption() {
 async fn canister_cycles_check_second_time_none_zero_cycle_consumption() {
   set_up();
 
-  let wallet_principal = Principal::from_text(EXISTS_WALLET_ID.to_string()).unwrap();
   let canister_principal = Principal::from_text(EXISTS_CANISTER_ID.to_string()).unwrap();
 
   let ts1 = 10u64;
@@ -280,8 +275,8 @@ async fn canister_cycles_check_second_time_none_zero_cycle_consumption() {
 
   ego_store
     .expect_wallet_cycle_charge()
-    .returning(move |wallet_id, cycle, _comment| {
-      assert_eq!(wallet_principal, wallet_id);
+    .returning(move |canister_id, cycle, _comment| {
+      assert_eq!(canister_principal, canister_id);
       assert_eq!(1_000_000, cycle);
       Ok(true)
     });

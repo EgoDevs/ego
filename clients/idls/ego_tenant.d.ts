@@ -42,7 +42,6 @@ export interface Task {
   'next_check_time' : bigint,
   'last_update' : bigint,
   'last_cycle' : [] | [bigint],
-  'wallet_id' : Principal,
   'try_count' : number,
 }
 export interface Version {
@@ -64,7 +63,7 @@ export interface _SERVICE {
   'app_main_install' : ActorMethod<[AppMainInstallRequest], Result_2>,
   'app_main_reinstall' : ActorMethod<[AppMainReInstallRequest], Result_3>,
   'app_main_upgrade' : ActorMethod<[AppMainUpgradeRequest], Result_3>,
-  'canister_main_track' : ActorMethod<[Principal, Principal], Result_1>,
+  'canister_main_track' : ActorMethod<[Principal], Result_1>,
   'canister_main_untrack' : ActorMethod<[Principal], Result_1>,
   'ego_canister_add' : ActorMethod<[string, Principal], Result_4>,
   'ego_canister_list' : ActorMethod<[], Result_5>,

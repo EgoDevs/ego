@@ -51,17 +51,17 @@ impl Log {
     }
 }
 
-fn time() -> u64 {
-    #[cfg(feature = "test_mode")]
+pub fn time() -> u64 {
+    #[cfg(not(target_arch = "wasm32"))]
     {
         std::time::SystemTime::now()
-            .duration_since(std::time::UNIX_EPOCH)
-            .expect("Failed to get timestamp")
-            .as_secs()
+          .duration_since(std::time::UNIX_EPOCH)
+          .expect("Failed to get timestamp")
+          .as_secs()
     }
 
-    #[cfg(not(feature = "test_mode"))]
+    #[cfg(target_arch = "wasm32")]
     {
-        ic_cdk::api::time() / 1000000
+        ic_cdk::api::time()
     }
 }

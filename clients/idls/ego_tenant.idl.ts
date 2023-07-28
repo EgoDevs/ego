@@ -4,7 +4,6 @@ export const idlFactory = ({ IDL }) => {
     'next_check_time' : IDL.Nat64,
     'last_update' : IDL.Nat64,
     'last_cycle' : IDL.Opt(IDL.Nat),
-    'wallet_id' : IDL.Principal,
     'try_count' : IDL.Nat8,
   });
   const EgoError = IDL.Record({ 'msg' : IDL.Text, 'code' : IDL.Nat16 });
@@ -65,11 +64,7 @@ export const idlFactory = ({ IDL }) => {
     'app_main_install' : IDL.Func([AppMainInstallRequest], [Result_2], []),
     'app_main_reinstall' : IDL.Func([AppMainReInstallRequest], [Result_3], []),
     'app_main_upgrade' : IDL.Func([AppMainUpgradeRequest], [Result_3], []),
-    'canister_main_track' : IDL.Func(
-        [IDL.Principal, IDL.Principal],
-        [Result_1],
-        [],
-      ),
+    'canister_main_track' : IDL.Func([IDL.Principal], [Result_1], []),
     'canister_main_untrack' : IDL.Func([IDL.Principal], [Result_1], []),
     'ego_canister_add' : IDL.Func([IDL.Text, IDL.Principal], [Result_4], []),
     'ego_canister_list' : IDL.Func([], [Result_5], []),
