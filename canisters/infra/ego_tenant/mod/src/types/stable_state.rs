@@ -1,13 +1,15 @@
 use std::borrow::Cow;
+
 use candid::{Decode, Encode};
 use candid::{CandidType, Deserialize};
-use serde::Serialize;
 use ic_stable_structures::{BoundedStorable, Storable};
+use serde::Serialize;
+
 use ego_types::cycle_info::CycleInfo;
 use ego_types::registry::Registry;
 use ego_types::user::User;
 
-const STATE_SIZE:u32 = 4 * 1024 * 1024; // 4M
+const STATE_SIZE: u32 = 4 * 1024 * 1024; // 4M
 
 // stable state
 #[derive(CandidType, Deserialize, Serialize)]
@@ -32,7 +34,7 @@ impl Storable for StableState {
     Cow::Owned(Encode!(self).unwrap())
   }
 
-  fn from_bytes(bytes: Cow<[u8]>) -> Self  {
+  fn from_bytes(bytes: Cow<[u8]>) -> Self {
     Decode!(bytes.as_ref(), Self).unwrap()
   }
 }

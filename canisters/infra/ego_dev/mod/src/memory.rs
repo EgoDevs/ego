@@ -1,11 +1,13 @@
-use ic_stable_structures::{memory_manager::{MemoryId, MemoryManager, VirtualMemory}, DefaultMemoryImpl, StableBTreeMap, RestrictedMemory, StableCell, storable::Blob};
-use std::cell::{RefCell};
-use crate::types::stable_state::StableState;
+use std::cell::RefCell;
+
+use ic_stable_structures::{DefaultMemoryImpl, memory_manager::{MemoryId, MemoryManager, VirtualMemory}, RestrictedMemory, StableBTreeMap, StableCell, storable::Blob};
+
 use crate::types::app_key::AppKey;
+use crate::types::app_version::AppVersion;
 use crate::types::developer::Developer;
 use crate::types::ego_dev_app::EgoDevApp;
 use crate::types::ego_file::EgoFile;
-use crate::types::app_version::AppVersion;
+use crate::types::stable_state::StableState;
 
 pub const MB: u32 = 1024 * 1024;
 
@@ -14,7 +16,8 @@ const FILE_MEM_ID: MemoryId = MemoryId::new(1);
 const DEVELOPER_MEM_ID: MemoryId = MemoryId::new(2);
 const APP_VERSION_MEM_ID: MemoryId = MemoryId::new(3);
 
-const METADATA_PAGES: u64 = 64; // 4M
+const METADATA_PAGES: u64 = 64;
+// 4M
 const WASM_PAGE_SIZE: u64 = 65536;
 
 /// The maximum number of stable memory pages a canister can address.

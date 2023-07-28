@@ -1,11 +1,13 @@
 use std::borrow::Cow;
 use std::cmp::Ordering;
+
 use candid::{Decode, Encode};
-use ic_stable_structures::{BoundedStorable, Storable};
 use candid::{CandidType, Deserialize, Principal};
+use ic_stable_structures::{BoundedStorable, Storable};
 use ic_stable_structures::storable::Blob;
 use serde::Serialize;
-use crate::memory::{TENANTS};
+
+use crate::memory::TENANTS;
 
 #[derive(CandidType, Serialize, Deserialize, Clone, Debug)]
 pub struct Tenant {
@@ -73,7 +75,7 @@ impl Storable for Tenant {
     Cow::Owned(Encode!(self).unwrap())
   }
 
-  fn from_bytes(bytes: Cow<[u8]>) -> Self  {
+  fn from_bytes(bytes: Cow<[u8]>) -> Self {
     Decode!(bytes.as_ref(), Self).unwrap()
   }
 }

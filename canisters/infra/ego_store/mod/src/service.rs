@@ -8,9 +8,9 @@ use ego_types::app::EgoError;
 use crate::c2c::ego_ledger::TEgoLedger;
 use crate::c2c::ego_tenant::TEgoTenant;
 use crate::state::{error_log_add, info_log_add};
-use crate::types::EgoStoreErr;
 use crate::types::cash_flow::CashFlow;
 use crate::types::ego_store_app::EgoStoreApp;
+use crate::types::EgoStoreErr;
 use crate::types::order::{Order, OrderStatus};
 use crate::types::tenant::Tenant;
 use crate::types::user_app::UserApp;
@@ -89,9 +89,9 @@ impl EgoStoreService {
       .await?;
 
     let mut user_app = UserApp::new(
-        &ego_store_app.app,
-        Canister::new(canister_id, ego_store_app.wasm.canister_type.clone()),
-        Some(wallet_id.clone()),
+      &ego_store_app.app,
+      Canister::new(canister_id, ego_store_app.wasm.canister_type.clone()),
+      Some(wallet_id.clone()),
     );
 
     wallet.app_install(&mut user_app);
@@ -310,9 +310,9 @@ impl EgoStoreService {
           Some(mut wallet) => {
             let cycle = (order.amount.clone() * 1_000_000f32) as u128;
             wallet.cycle_recharge(
-                cycle,
-                operator,
-                format!("wallet cycle recharge, order memo {}", memo.0),
+              cycle,
+              operator,
+              format!("wallet cycle recharge, order memo {}", memo.0),
             )
           }
         }
@@ -382,8 +382,8 @@ impl EgoStoreService {
     let _result = EgoStoreService::wallet_main_register(&canister_id, &user_id);
 
     let mut user_app = UserApp::new(
-        &ego_store_app.app,
-        Canister::new(canister_id, ego_store_app.wasm.canister_type), Some(wallet_provider),
+      &ego_store_app.app,
+      Canister::new(canister_id, ego_store_app.wasm.canister_type), Some(wallet_provider),
     );
 
     let mut wallet = EgoStoreService::wallet_main_get(&canister_id)?;

@@ -1,14 +1,16 @@
 use std::borrow::Cow;
 use std::cmp::Ordering;
+
 use candid::{Decode, Encode};
-use ic_stable_structures::{BoundedStorable, Storable};
 use candid::{CandidType, Deserialize};
+use ic_stable_structures::{BoundedStorable, Storable};
 use serde::Serialize;
+
 use ego_types::app::AppId;
 
 #[derive(CandidType, Serialize, Deserialize, Clone, Debug)]
 pub struct AppKey {
-  pub app_id: AppId
+  pub app_id: AppId,
 }
 
 impl Eq for AppKey {}
@@ -44,7 +46,7 @@ impl Storable for AppKey {
     Cow::Owned(Encode!(self).unwrap())
   }
 
-  fn from_bytes(bytes: Cow<[u8]>) -> Self  {
+  fn from_bytes(bytes: Cow<[u8]>) -> Self {
     Decode!(bytes.as_ref(), Self).unwrap()
   }
 }

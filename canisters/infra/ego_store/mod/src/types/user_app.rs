@@ -1,11 +1,14 @@
 use std::borrow::Cow;
+
 use candid::{Decode, Encode};
-use ic_stable_structures::{BoundedStorable, Storable};
-use ego_types::app::{App, Canister, Version};
 use candid::{CandidType, Deserialize, Principal};
+use ic_stable_structures::{BoundedStorable, Storable};
 use ic_stable_structures::storable::Blob;
 use serde::Serialize;
+
+use ego_types::app::{App, Canister, Version};
 use ego_utils::util::time;
+
 use crate::memory::USER_APPS;
 use crate::types::ego_store_app::EgoStoreApp;
 
@@ -15,7 +18,7 @@ pub struct UserApp {
   pub canister: Canister,
   pub latest_version: Version,
   pub wallet_id: Option<Principal>,
-  pub last_update: u64 // second
+  pub last_update: u64, // second
 }
 
 impl UserApp {
@@ -93,7 +96,7 @@ impl UserApp {
   }
 
   pub fn into_ego_user_app(&self) -> ego_types::app::UserApp {
-    ego_types::app::UserApp{
+    ego_types::app::UserApp {
       app: self.app.clone(),
       canister: self.canister.clone(),
       latest_version: self.latest_version,
@@ -107,7 +110,7 @@ impl Storable for UserApp {
     Cow::Owned(Encode!(self).unwrap())
   }
 
-  fn from_bytes(bytes: Cow<[u8]>) -> Self  {
+  fn from_bytes(bytes: Cow<[u8]>) -> Self {
     Decode!(bytes.as_ref(), Self).unwrap()
   }
 }

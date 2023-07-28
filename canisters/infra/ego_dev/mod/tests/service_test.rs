@@ -809,89 +809,89 @@ fn app_version_revoke_fail() {
 
 #[tokio::test]
 async fn app_version_release_fail() {
-    set_up();
-    let caller_test = Principal::from_text(TEST_PRINCIPAL_ID.to_string()).unwrap();
-    // let caller_dev = Principal::from_text(DEVELOPER_PRINCIPAL_ID.to_string()).unwrap();
-    let version = Version::new(1, 0, 1);
-    // let new_version = Version::new(1, 0, 0);
+  set_up();
+  let caller_test = Principal::from_text(TEST_PRINCIPAL_ID.to_string()).unwrap();
+  // let caller_dev = Principal::from_text(DEVELOPER_PRINCIPAL_ID.to_string()).unwrap();
+  let version = Version::new(1, 0, 1);
+  // let new_version = Version::new(1, 0, 0);
 
-    // approve version
-    let result = EgoDevService::app_version_approve(&EXIST_APP_ID.to_string(), &version);
-    assert!(result.is_ok());
+  // approve version
+  let result = EgoDevService::app_version_approve(&EXIST_APP_ID.to_string(), &version);
+  assert!(result.is_ok());
 
-    // app not exists
-    let mut ego_store = MockStore::new();
-    let _result = ego_store.expect_app_main_release();
-    let version_release = EgoDevService::app_version_release(
-      &caller_test,
-      &TEST_APP_ID.to_string(),
-      &version,
-        ego_store,
-    );
-    assert!(version_release.is_err());
-    let version_release = version_release.unwrap_err();
-    assert_eq!(version_release.code, 1002);
+  // app not exists
+  let mut ego_store = MockStore::new();
+  let _result = ego_store.expect_app_main_release();
+  let version_release = EgoDevService::app_version_release(
+    &caller_test,
+    &TEST_APP_ID.to_string(),
+    &version,
+    ego_store,
+  );
+  assert!(version_release.is_err());
+  let version_release = version_release.unwrap_err();
+  assert_eq!(version_release.code, 1002);
 
-    // test caller unauthorized
-    let mut ego_store = MockStore::new();
-    let _result = ego_store.expect_app_main_release();
-    let caller_unauthorized = EgoDevService::app_version_release(
-      &caller_test,
-      &EXIST_APP_ID.to_string(),
-      &version,
-        ego_store,
-    );
-    assert!(caller_unauthorized.is_err());
-    assert_eq!(1007, caller_unauthorized.unwrap_err().code);
+  // test caller unauthorized
+  let mut ego_store = MockStore::new();
+  let _result = ego_store.expect_app_main_release();
+  let caller_unauthorized = EgoDevService::app_version_release(
+    &caller_test,
+    &EXIST_APP_ID.to_string(),
+    &version,
+    ego_store,
+  );
+  assert!(caller_unauthorized.is_err());
+  assert_eq!(1007, caller_unauthorized.unwrap_err().code);
 }
 
 #[test]
 fn app_version_approve_fail() {
-    set_up();
-    let version = Version::new(1, 0, 1);
-    let new_version = Version::new(1, 0, 0);
+  set_up();
+  let version = Version::new(1, 0, 1);
+  let new_version = Version::new(1, 0, 0);
 
-    let caller = Principal::from_text(DEVELOPER_PRINCIPAL_ID.to_string()).unwrap();
-    let get_app = EgoDevApp::get_developer_app(&caller, &EXIST_APP_ID.to_string());
-    assert!(get_app.is_ok());
+  let caller = Principal::from_text(DEVELOPER_PRINCIPAL_ID.to_string()).unwrap();
+  let get_app = EgoDevApp::get_developer_app(&caller, &EXIST_APP_ID.to_string());
+  assert!(get_app.is_ok());
 
-    // version not exists
-    let version_not_exists =
-        EgoDevService::app_version_approve(&EXIST_APP_ID.to_string(), &new_version);
-    assert!(version_not_exists.is_err());
-    let version_not_exists = version_not_exists.unwrap_err();
-    assert_eq!(1004, version_not_exists.code);
-    assert_eq!("ego-dev: version not exists", version_not_exists.msg);
+  // version not exists
+  let version_not_exists =
+    EgoDevService::app_version_approve(&EXIST_APP_ID.to_string(), &new_version);
+  assert!(version_not_exists.is_err());
+  let version_not_exists = version_not_exists.unwrap_err();
+  assert_eq!(1004, version_not_exists.code);
+  assert_eq!("ego-dev: version not exists", version_not_exists.msg);
 
-    // app not exists
-    let appid_not_exists = EgoDevService::app_version_approve(&"EXIST_APP_ID".to_string(), &version);
-    let appid_not_exists = appid_not_exists.unwrap_err();
-    assert_eq!("ego-dev: app not exists", appid_not_exists.msg);
+  // app not exists
+  let appid_not_exists = EgoDevService::app_version_approve(&"EXIST_APP_ID".to_string(), &version);
+  let appid_not_exists = appid_not_exists.unwrap_err();
+  assert_eq!("ego-dev: app not exists", appid_not_exists.msg);
 
-    // approve success
-    let approve_success = EgoDevService::app_version_approve(&EXIST_APP_ID.to_string(), &version);
-    assert!(approve_success.is_ok());
+  // approve success
+  let approve_success = EgoDevService::app_version_approve(&EXIST_APP_ID.to_string(), &version);
+  assert!(approve_success.is_ok());
 
-    let approve_success = approve_success.unwrap();
-    assert_eq!(AppVersionStatus::APPROVED, approve_success.status);
+  let approve_success = approve_success.unwrap();
+  assert_eq!(AppVersionStatus::APPROVED, approve_success.status);
 }
 
 #[test]
 fn app_version_reject_fail() {
-    set_up();
-    let version = Version::new(1, 0, 1);
-    let new_version = Version::new(1, 0, 0);
+  set_up();
+  let version = Version::new(1, 0, 1);
+  let new_version = Version::new(1, 0, 0);
 
-    // version not exists
-    let version_not_exists =
-        EgoDevService::app_version_reject(&EXIST_APP_ID.to_string(), &new_version);
-    assert!(version_not_exists.is_err());
-    let version_not_exists = version_not_exists.unwrap_err();
-    assert_eq!("ego-dev: version not exists", version_not_exists.msg);
+  // version not exists
+  let version_not_exists =
+    EgoDevService::app_version_reject(&EXIST_APP_ID.to_string(), &new_version);
+  assert!(version_not_exists.is_err());
+  let version_not_exists = version_not_exists.unwrap_err();
+  assert_eq!("ego-dev: version not exists", version_not_exists.msg);
 
-    // app not exists
-    let app_not_exists = EgoDevService::app_version_reject(&"EXIST_APP_ID".to_string(), &version);
-    assert!(app_not_exists.is_err());
-    let app_not_exists = app_not_exists.unwrap_err();
-    assert_eq!("ego-dev: app not exists", app_not_exists.msg);
+  // app not exists
+  let app_not_exists = EgoDevService::app_version_reject(&"EXIST_APP_ID".to_string(), &version);
+  assert!(app_not_exists.is_err());
+  let app_not_exists = app_not_exists.unwrap_err();
+  assert_eq!("ego-dev: app not exists", app_not_exists.msg);
 }

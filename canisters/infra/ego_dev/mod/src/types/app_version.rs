@@ -1,10 +1,13 @@
 /********************  app version  ********************/
 use std::borrow::Cow;
+
 use candid::{CandidType, Decode, Deserialize, Encode, Principal};
-use serde::Serialize;
 use ic_stable_structures::{BoundedStorable, Storable};
+use serde::Serialize;
+
 use ego_types::app::{AppId, Version, Wasm};
 use ego_types::app::CanisterType::{ASSET, BACKEND};
+
 use crate::memory::APP_VERSIONS;
 use crate::state::SEQ;
 
@@ -102,7 +105,7 @@ impl Storable for AppVersion {
     Cow::Owned(Encode!(self).unwrap())
   }
 
-  fn from_bytes(bytes: Cow<[u8]>) -> Self  {
+  fn from_bytes(bytes: Cow<[u8]>) -> Self {
     Decode!(bytes.as_ref(), Self).unwrap()
   }
 }

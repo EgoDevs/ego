@@ -1,23 +1,28 @@
 use std::borrow::Cow;
+
 use candid::{Decode, Encode};
 use candid::{CandidType, Deserialize, Principal};
-use serde::Serialize;
 use ic_stable_structures::{BoundedStorable, Storable};
 use ic_stable_structures::storable::Blob;
+use serde::Serialize;
+
 use ego_utils::util::time;
+
 use crate::memory::TASKS;
 
-const MAX_TRY_COUNT:u8 = 5; // 4M
+const MAX_TRY_COUNT: u8 = 5; // 4M
 
 // Task
 #[derive(CandidType, Deserialize, Serialize, Clone, Debug)]
 pub struct Task {
   pub wallet_id: Principal,
   pub canister_id: Principal,
-  pub next_check_time: u64, // second
+  pub next_check_time: u64,
+  // second
   pub last_cycle: Option<u128>,
-  pub last_update: u64, // second
-  pub try_count: u8
+  pub last_update: u64,
+  // second
+  pub try_count: u8,
 }
 
 impl Task {
@@ -28,11 +33,11 @@ impl Task {
       next_check_time,
       last_cycle,
       last_update: 0,
-      try_count: 0
+      try_count: 0,
     }
   }
 
-  pub fn by_last_update(last_update: u64)  -> Vec<Task> {
+  pub fn by_last_update(last_update: u64) -> Vec<Task> {
     TASKS.with(|cell| {
       let inst = cell.borrow();
       inst.iter()
@@ -89,7 +94,7 @@ impl Storable for Task {
     Cow::Owned(Encode!(self).unwrap())
   }
 
-  fn from_bytes(bytes: Cow<[u8]>) -> Self  {
+  fn from_bytes(bytes: Cow<[u8]>) -> Self {
     Decode!(bytes.as_ref(), Self).unwrap()
   }
 }

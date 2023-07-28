@@ -1,10 +1,13 @@
-use ic_stable_structures::{memory_manager::{MemoryId, MemoryManager, VirtualMemory}, DefaultMemoryImpl, StableBTreeMap, RestrictedMemory, StableCell, storable::Blob};
-use std::cell::{RefCell};
+use std::cell::RefCell;
+
+use ic_stable_structures::{DefaultMemoryImpl, memory_manager::{MemoryId, MemoryManager, VirtualMemory}, RestrictedMemory, StableBTreeMap, StableCell, storable::Blob};
+
 use crate::types::stable_state::StableState;
 use crate::types::task::Task;
 
 const TASK_MEM_ID: MemoryId = MemoryId::new(0);
-const METADATA_PAGES: u64 = 64; // 4M
+const METADATA_PAGES: u64 = 64;
+// 4M
 const WASM_PAGE_SIZE: u64 = 65536;
 
 /// The maximum number of stable memory pages a canister can address.

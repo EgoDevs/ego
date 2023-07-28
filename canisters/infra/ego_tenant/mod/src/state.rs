@@ -1,6 +1,7 @@
 use std::cell::RefCell;
 
 use ego_macros::{inject_cycle_info, inject_ego_data};
+
 use crate::memory::CONFIG;
 use crate::types::stable_state::StableState;
 
@@ -13,10 +14,10 @@ fn on_canister_added(name: &str, canister_id: Principal) {
     "on_canister_added name: {}, canister_id: {}",
     name, canister_id
   ));
-    let _ = match name {
-        "ego_store" => user_add(canister_id),
-        _ => {}
-    };
+  let _ = match name {
+    "ego_store" => user_add(canister_id),
+    _ => {}
+  };
 }
 
 pub fn pre_upgrade() {
@@ -35,7 +36,7 @@ pub fn pre_upgrade() {
 pub fn post_upgrade() {
   CONFIG.with(|config| {
     let config_borrow = config.borrow();
-    let state =  config_borrow.get();
+    let state = config_borrow.get();
 
     match &state.users {
       None => {}

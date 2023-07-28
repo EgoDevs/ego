@@ -1,10 +1,13 @@
 use std::borrow::Cow;
+
 use candid::{Decode, Encode};
+use candid::{CandidType, Deserialize, Principal};
 use ic_ledger_types::{AccountIdentifier, Memo, Subaccount};
 use ic_stable_structures::{BoundedStorable, Storable};
-use candid::{CandidType, Deserialize, Principal};
 use serde::Serialize;
+
 use ego_utils::util::time;
+
 use crate::memory::ORDERS;
 use crate::state::SEQ;
 
@@ -24,7 +27,7 @@ pub struct Order {
   pub amount: f32,
   pub memo: Memo,
   pub status: OrderStatus,
-  pub last_update: u64  // second
+  pub last_update: u64,  // second
 }
 
 #[derive(CandidType, Serialize, Deserialize, Clone, Debug, PartialEq)]
@@ -54,7 +57,7 @@ impl Order {
       amount,
       memo: Memo(memo),
       status: OrderStatus::NEW,
-      last_update: 0
+      last_update: 0,
     }
   }
 
@@ -79,7 +82,7 @@ impl Order {
     })
   }
 
-  pub fn get(memo: Memo) -> Option<Order>{
+  pub fn get(memo: Memo) -> Option<Order> {
     ORDERS.with(|cell| {
       let inst = cell.borrow_mut();
 
@@ -102,7 +105,7 @@ impl Storable for Order {
     Cow::Owned(Encode!(self).unwrap())
   }
 
-  fn from_bytes(bytes: Cow<[u8]>) -> Self  {
+  fn from_bytes(bytes: Cow<[u8]>) -> Self {
     Decode!(bytes.as_ref(), Self).unwrap()
   }
 }

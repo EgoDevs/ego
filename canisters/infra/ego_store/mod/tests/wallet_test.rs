@@ -1,4 +1,5 @@
 use candid::Principal;
+
 use ego_store_mod::service::EgoStoreService;
 use ego_store_mod::types::tenant::Tenant;
 use ego_store_mod::types::wallet::Wallet;
@@ -29,16 +30,10 @@ fn new() {
 }
 
 #[test]
-fn app_install() {
-
-}
+fn app_install() {}
 
 #[test]
-fn app_upgrade() {
-
-}
+fn app_upgrade() {}
 
 #[test]
-fn app_remove() {
-
-}
+fn app_remove() {}

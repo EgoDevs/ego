@@ -1,14 +1,16 @@
-use ic_stable_structures::{memory_manager::{MemoryId, MemoryManager, VirtualMemory}, DefaultMemoryImpl, StableBTreeMap, RestrictedMemory, StableCell, storable::Blob};
-use std::cell::{RefCell};
-use crate::types::wallet_provider::WalletProvider;
-use crate::types::wallet::Wallet;
-use crate::types::stable_state::StableState;
+use std::cell::RefCell;
+
+use ic_stable_structures::{DefaultMemoryImpl, memory_manager::{MemoryId, MemoryManager, VirtualMemory}, RestrictedMemory, StableBTreeMap, StableCell, storable::Blob};
+
+use crate::types::app_key::AppKey;
+use crate::types::cash_flow::CashFlow;
 use crate::types::ego_store_app::EgoStoreApp;
+use crate::types::order::Order;
+use crate::types::stable_state::StableState;
 use crate::types::tenant::Tenant;
 use crate::types::user_app::UserApp;
-use crate::types::order::Order;
-use crate::types::cash_flow::CashFlow;
-use crate::types::app_key::AppKey;
+use crate::types::wallet::Wallet;
+use crate::types::wallet_provider::WalletProvider;
 
 pub const MB: u32 = 1024 * 1024;
 
@@ -20,7 +22,8 @@ const USER_APP_MEM_ID: MemoryId = MemoryId::new(4);
 const ORDER_MEM_ID: MemoryId = MemoryId::new(5);
 const CASH_FLOW_MEM_ID: MemoryId = MemoryId::new(6);
 
-const METADATA_PAGES: u64 = 64; // 4M
+const METADATA_PAGES: u64 = 64;
+// 4M
 const WASM_PAGE_SIZE: u64 = 65536;
 
 /// The maximum number of stable memory pages a canister can address.

@@ -1,10 +1,13 @@
 use std::borrow::Cow;
+
 use candid::{Decode, Encode};
-use ic_stable_structures::{BoundedStorable, Storable};
 use candid::{CandidType, Deserialize, Principal};
+use ic_stable_structures::{BoundedStorable, Storable};
 use serde::Serialize;
+
 use ego_types::app::CashFlowType;
 use ego_utils::util::time;
+
 use crate::memory::CASH_FLOWS;
 use crate::state::SEQ;
 
@@ -53,7 +56,7 @@ impl CashFlow {
     })
   }
 
-  pub fn by_last_update(last_update: u64)  -> Vec<CashFlow> {
+  pub fn by_last_update(last_update: u64) -> Vec<CashFlow> {
     CASH_FLOWS.with(|cell| {
       let inst = cell.borrow();
       inst.iter()
@@ -86,7 +89,7 @@ impl CashFlow {
   }
 
   pub fn into_ego_cash_flow(&self) -> ego_types::app::CashFlow {
-    ego_types::app::CashFlow{
+    ego_types::app::CashFlow {
       cash_flow_type: self.cash_flow_type.clone(),
       cycles: self.cycles,
       balance: self.balance,
@@ -102,7 +105,7 @@ impl Storable for CashFlow {
     Cow::Owned(Encode!(self).unwrap())
   }
 
-  fn from_bytes(bytes: Cow<[u8]>) -> Self  {
+  fn from_bytes(bytes: Cow<[u8]>) -> Self {
     Decode!(bytes.as_ref(), Self).unwrap()
   }
 }

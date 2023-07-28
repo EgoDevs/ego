@@ -1,6 +1,8 @@
-use ego_types::app::{AppId, CashFlow, EgoError, UserApp};
 use candid::{CandidType, Deserialize, Principal};
 use serde::Serialize;
+
+use ego_types::app::{AppId, CashFlow, EgoError, UserApp};
+
 use crate::types::ego_store_app::EgoStoreApp;
 use crate::types::order::Order;
 use crate::types::stable_state::StableState;
@@ -33,7 +35,7 @@ pub enum EgoStoreErr {
   WalletExists,
   WalletProviderExists,
   WalletProviderNotExists,
-  CyclesNotEnouth
+  CyclesNotEnouth,
 }
 
 impl From<EgoStoreErr> for EgoError {
@@ -106,19 +108,19 @@ pub struct WalletImport {
   pub cycles: u128,
   pub user_id: Principal,
   pub user_apps: Vec<UserApp>,
-  pub cash_flows: Vec<CashFlow>
+  pub cash_flows: Vec<CashFlow>,
 }
 
 #[derive(CandidType, Deserialize, Serialize)]
 pub struct AdminWalletAppListRequest {
   pub wallet_id: Option<Principal>,
-  pub ts: u64
+  pub ts: u64,
 }
 
 #[derive(CandidType, Deserialize, Serialize)]
 pub struct AdminWalletCashFlowListRequest {
   pub wallet_id: Option<Principal>,
-  pub ts: u64
+  pub ts: u64,
 }
 
 // for export
