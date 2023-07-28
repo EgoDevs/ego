@@ -159,16 +159,8 @@ pub struct AdminAppCreateResponse {
 }
 
 #[derive(CandidType, Deserialize, Serialize)]
-pub struct DevExport {
+pub struct DataExport {
     pub state: StableState,
-    pub ego_dev_apps: Vec<EgoDevApp>,
-    pub files: Vec<EgoFile>,
-    pub developers: Vec<Developer>,
-    pub app_versions: Vec<AppVersion>,
-}
-
-#[derive(CandidType, Deserialize, Serialize)]
-pub struct DevImport {
     pub ego_dev_apps: Vec<EgoDevApp>,
     pub files: Vec<EgoFile>,
     pub developers: Vec<Developer>,

@@ -2,6 +2,7 @@ use candid::{CandidType, Deserialize, Principal};
 use serde::Serialize;
 use ego_types::app::EgoError;
 use ego_types::app::Wasm;
+use crate::types::stable_state::StableState;
 
 pub mod task;
 pub mod stable_state;
@@ -56,4 +57,11 @@ pub struct AppMainUpgradeRequest {
 pub struct AppMainReInstallRequest {
     pub canister_id: Principal,
     pub wasm: Wasm,
+}
+
+// for export
+#[derive(CandidType, Deserialize, Serialize)]
+pub struct DataExport {
+    pub state: StableState,
+    pub tasks: Vec<task::Task>,
 }

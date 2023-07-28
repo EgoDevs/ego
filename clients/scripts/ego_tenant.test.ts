@@ -18,12 +18,6 @@ describe('ego_tenant_export', () => {
 
     const json = JSON.parse(Buffer.from(data).toString()) as { [key: string]: any }[];
 
-    let tasks = []
-    Object.entries(json['ego_tenant']['tasks']).forEach(([key, task]) => {
-      tasks.push(task)
-    })
-
-    json['ego_tenant']['tasks'] = tasks
     fs.writeFileSync(file_path, JSON.stringify(json));
   });
 });
@@ -59,14 +53,17 @@ describe('ego_tenant_import', () => {
     })
 
     console.log('3. restore tasks')
-    let tasks = json['ego_tenant']['tasks']
-    tasks.forEach(task => {
+    let tasks = []
+    for(let task of Object.values(json['ego_tenant']['tasks'])) {
       task['wallet_id'] = Principal.fromText(task['wallet_id'])
       task['canister_id'] = Principal.fromText(task['canister_id'])
       task['last_update'] = 0
       task['last_cycle'] = []
       task['try_count'] = 0
-    })
+
+      tasks.push(task)
+    }
+
     await actor.admin_task_add(tasks)
   });
 });

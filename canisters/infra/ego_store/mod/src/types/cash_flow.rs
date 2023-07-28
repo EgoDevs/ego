@@ -43,6 +43,16 @@ impl CashFlow {
     }
   }
 
+  pub fn list() -> Vec<CashFlow> {
+    CASH_FLOWS.with(|cell| {
+      let inst = cell.borrow();
+      inst.iter()
+        .map(|(_, cash_flow)| {
+          cash_flow
+        }).collect()
+    })
+  }
+
   pub fn by_last_update(last_update: u64)  -> Vec<CashFlow> {
     CASH_FLOWS.with(|cell| {
       let inst = cell.borrow();

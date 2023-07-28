@@ -28,6 +28,16 @@ impl EgoStoreApp {
         EgoStoreApp { app: app.clone(), wasm: wasm.clone() }
     }
 
+    pub fn list() -> Vec<EgoStoreApp> {
+        EGO_STORE_APPS.with(|cell| {
+            let inst = cell.borrow();
+            inst.iter()
+              .map(|(_, ego_store_app)| {
+                  ego_store_app
+              }).collect()
+        })
+    }
+
     pub fn get(app_id: &AppId) -> Option<EgoStoreApp> {
         EGO_STORE_APPS.with(|cell| {
             let inst = cell.borrow_mut();

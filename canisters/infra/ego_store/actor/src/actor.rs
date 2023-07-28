@@ -15,6 +15,7 @@ use ego_store_mod::state::*;
 use ego_store_mod::types::*;
 use ego_store_mod::types::ego_store_app::EgoStoreApp;
 use ego_store_mod::types::order::Order;
+use ego_store_mod::types::stable_state::StableState;
 use ego_store_mod::types::wallet::Wallet;
 use ego_store_mod::types::wallet_provider::WalletProvider;
 use ego_types::app::CashFlow;
@@ -596,7 +597,26 @@ pub fn admin_wallet_cash_flow_list(last_update: u64) -> Result<Vec<cash_flow::Ca
 #[candid_method(update, rename = "admin_export")]
 fn admin_export() -> Vec<u8> {
     info_log_add("admin_export");
-    vec![]
+
+    let state = StableState {
+        users: Some(users_pre_upgrade()),
+        registry: Some(registry_pre_upgrade()),
+        cycle_info: Some(cycle_info_pre_upgrade()),
+        seq: Some(seq_pre_upgrade())
+    };
+
+    let data_export = DataExport{
+        state,
+        ego_store_apps: ego_store_app::EgoStoreApp::list(),
+        tenants: tenant::Tenant::list(),
+        wallet_providers: wallet_provider::WalletProvider::list(),
+        wallets: wallet::Wallet::list(),
+        user_apps: user_app::UserApp::list(),
+        orders: order::Order::list(),
+        cash_flows: cash_flow::CashFlow::list(),
+    };
+
+    serde_json::to_vec(&data_export).unwrap()
 }
 
 /********************  methods for ego_cycle_threshold_get   ********************/

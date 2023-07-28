@@ -58,6 +58,16 @@ impl Order {
     }
   }
 
+  pub fn list() -> Vec<Order> {
+    ORDERS.with(|cell| {
+      let inst = cell.borrow();
+      inst.iter()
+        .map(|(_, order)| {
+          order
+        }).collect()
+    })
+  }
+
   pub fn by_wallet_id(wallet_id: &Principal) -> Vec<Order> {
     ORDERS.with(|cell| {
       let inst = cell.borrow();

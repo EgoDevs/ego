@@ -1,6 +1,12 @@
 use ego_types::app::{AppId, CashFlow, EgoError, UserApp};
 use candid::{CandidType, Deserialize, Principal};
 use serde::Serialize;
+use crate::types::ego_store_app::EgoStoreApp;
+use crate::types::order::Order;
+use crate::types::stable_state::StableState;
+use crate::types::tenant::Tenant;
+use crate::types::wallet::Wallet;
+use crate::types::wallet_provider::WalletProvider;
 
 pub mod app_key;
 pub mod cash_flow;
@@ -113,4 +119,17 @@ pub struct AdminWalletAppListRequest {
 pub struct AdminWalletCashFlowListRequest {
   pub wallet_id: Option<Principal>,
   pub ts: u64
+}
+
+// for export
+#[derive(CandidType, Deserialize, Serialize)]
+pub struct DataExport {
+  pub state: StableState,
+  pub ego_store_apps: Vec<EgoStoreApp>,
+  pub tenants: Vec<Tenant>,
+  pub wallet_providers: Vec<WalletProvider>,
+  pub wallets: Vec<Wallet>,
+  pub user_apps: Vec<user_app::UserApp>,
+  pub orders: Vec<Order>,
+  pub cash_flows: Vec<cash_flow::CashFlow>,
 }

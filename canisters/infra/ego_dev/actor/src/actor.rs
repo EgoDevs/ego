@@ -10,7 +10,7 @@ use ego_dev_mod::c2c::ego_store::EgoStore;
 use ego_dev_mod::types::developer::Developer;
 use ego_dev_mod::service::*;
 use ego_dev_mod::state::*;
-use ego_dev_mod::types::{AdminAppCreateBackendRequest, AppMainNewRequest, AppVersionSetFrontendAddressRequest, AppVersionUploadWasmRequest, developer, DevExport, DevImportV1, ego_file, EgoDevErr, UserRoleSetRequest};
+use ego_dev_mod::types::{AdminAppCreateBackendRequest, AppMainNewRequest, AppVersionSetFrontendAddressRequest, AppVersionUploadWasmRequest, developer, DataExport, DevImportV1, ego_file, EgoDevErr, UserRoleSetRequest};
 use ego_dev_mod::types::app_version::AppVersion;
 use ego_dev_mod::types::ego_dev_app::EgoDevApp;
 use ego_dev_mod::types::stable_state::StableState;
@@ -346,7 +346,7 @@ fn admin_export() -> Vec<u8> {
         seq: Some(seq_pre_upgrade())
     };
 
-    let dev_export = DevExport{
+    let dev_export = DataExport {
         state,
         ego_dev_apps: EgoDevApp::list(),
         files: ego_file::EgoFile::list(),

@@ -16,7 +16,8 @@ use ego_tenant_mod::c2c::ic_management::IcManagement;
 use ego_tenant_mod::service::{EgoTenantService, NEXT_CHECK_DURATION};
 use ego_tenant_mod::state::*;
 use ego_tenant_mod::types::EgoTenantErr::CanisterNotFounded;
-use ego_tenant_mod::types::{AppMainInstallRequest, AppMainReInstallRequest, AppMainUpgradeRequest};
+use ego_tenant_mod::types::{AppMainInstallRequest, AppMainReInstallRequest, AppMainUpgradeRequest, DataExport, task};
+use ego_tenant_mod::types::stable_state::StableState;
 use ego_tenant_mod::types::task::Task;
 use ego_types::app::EgoError;
 use ego_types::cycle_info::CycleRecord;
@@ -267,5 +268,18 @@ fn task_run() {
 #[update(name = "admin_export", guard = "owner_guard")]
 #[candid_method(update, rename = "admin_export")]
 async fn admin_export() -> Vec<u8> {
- vec![]
+    info_log_add("admin_export");
+
+    let state = StableState {
+        users: Some(users_pre_upgrade()),
+        registry: Some(registry_pre_upgrade()),
+        cycle_info: Some(cycle_info_pre_upgrade())
+    };
+
+    let data_export = DataExport{
+        state,
+        tasks: task::Task::list(),
+    };
+
+    serde_json::to_vec(&data_export).unwrap()
 }

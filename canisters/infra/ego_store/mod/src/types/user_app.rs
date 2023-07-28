@@ -29,6 +29,16 @@ impl UserApp {
     }
   }
 
+  pub fn list() -> Vec<UserApp> {
+    USER_APPS.with(|cell| {
+      let inst = cell.borrow();
+      inst.iter()
+        .map(|(_, user_app)| {
+          user_app
+        }).collect()
+    })
+  }
+
   pub fn by_last_update(last_update: u64) -> Vec<UserApp> {
     USER_APPS.with(|cell| {
       let inst = cell.borrow();

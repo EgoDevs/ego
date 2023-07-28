@@ -18,32 +18,6 @@ describe('ego_store_export', () => {
 
     const json = JSON.parse(Buffer.from(data).toString()) as { [key: string]: any }[];
 
-    let wallets = json['ego_store']['wallets']
-    let walls = []
-
-    for (let wallet of Object.values(wallets)) {
-      console.log('5.2. wallet.user_apps')
-      let apps = wallet['apps']
-      let user_apps = []
-      for (let app_id in apps) {
-        let user_app = apps[app_id]
-        user_apps.push(user_app)
-      }
-      wallet['apps'] = user_apps
-
-
-      console.log('5.3. wallet.cash_flows')
-      let cash_flowes = wallet['cash_flowes']
-      let cash_flows = []
-      for (let cash_flow of cash_flowes) {
-        cash_flows.push(cash_flow)
-      }
-      wallet['cash_flowes'] = cash_flows
-
-      walls.push(wallet)
-    }
-    json['ego_store']['wallets'] = walls
-
     fs.writeFileSync(file_path, JSON.stringify(json));
   });
 });
@@ -98,15 +72,17 @@ describe('ego_store_import', () => {
 
     console.log('5. wallets')
     let wallets = json['ego_store']['wallets']
+    let walls = []
 
-    for (let wallet of wallets) {
+    for (let wallet of Object.values(wallets)) {
       wallet['user_id'] = Principal.fromText(wallet['user_id'])
       wallet['tenant_id'] = Principal.fromText(wallet['tenant_id'])
       wallet['wallet_id'] = Principal.fromText(wallet['wallet_id'])
 
       let apps = wallet['apps']
       let user_apps = []
-      for (let user_app of apps) {
+
+      for (let user_app of Object.values(apps)) {
         let category = {}
         category[user_app['app']['category']] = null
         user_app['app']['category'] = category
@@ -121,7 +97,6 @@ describe('ego_store_import', () => {
       }
       wallet['user_apps'] = user_apps
 
-
       let cash_flowes = wallet['cash_flowes']
       let cash_flows = []
       for (let cash_flow of cash_flowes) {
@@ -133,45 +108,9 @@ describe('ego_store_import', () => {
         cash_flows.push(cash_flow)
       }
       wallet['cash_flows'] = cash_flows
-    }
 
-    await actor.admin_wallet_add(wallets)
+      walls.push(wallet)
+    }
+    await actor.admin_wallet_add(walls)
   });
 });
-
-// function import_wallet(actor, wallet) {
-//   let apps = wallet['apps']
-//   let user_apps = []
-//   for (let user_app of apps) {
-//     let category = {}
-//     category[user_app['app']['category']] = null
-//     user_app['app']['category'] = category
-//
-//     let canister_type = {}
-//     canister_type[user_app['canister']['canister_type']] = null
-//     user_app['canister']['canister_type'] = canister_type
-//     user_app['canister']['canister_id'] = Principal.fromText(user_app['canister']['canister_id'])
-//
-//     user_app['wallet_id'] = []
-//     user_apps.push(user_app)
-//   }
-//
-//   let cash_flowes = wallet['cash_flowes']
-//   let cash_flows = []
-//   for (let cash_flow of cash_flowes) {
-//     let cash_flow_type = {}
-//     cash_flow_type[cash_flow['cash_flow_type']] = null
-//     cash_flow['cash_flow_type'] = cash_flow_type
-//
-//     cash_flow['operator'] = Principal.fromText(cash_flow['operator'])
-//     cash_flows.push(cash_flow)
-//   }
-//   await actor.admin_wallet_add({
-//     user_id: Principal.fromText(wallet['user_id']),
-//     tenant_id: Principal.fromText(wallet['tenant_id']),
-//     cycles: wallet['cycles'],
-//     wallet_id: Principal.fromText(wallet['wallet_id']),
-//     user_apps: user_apps,
-//     cash_flows: cash_flows,
-//   })
-// }
