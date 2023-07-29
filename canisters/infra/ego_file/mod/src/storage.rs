@@ -10,6 +10,7 @@ use ego_types::app::EgoError;
 use ego_types::app::FileId;
 
 use crate::file::File;
+use crate::state::{error_log_add, info_log_add};
 use crate::types::EgoFileError;
 
 const KB: u64 = 1024;
@@ -85,14 +86,19 @@ impl Storage {
         hash: &str,
         data: Vec<u8>,
     ) -> Result<bool, EgoError> {
+        info_log_add("1. check file size");
         if data.len() > DEFAULT_FILE_SIZE as usize {
+            error_log_add("file too large");
             return Err(EgoFileError::FileTooLarge.into());
         }
 
+        info_log_add("2. check md5");
         if get_md5(&data) != hash {
+            error_log_add("hash mismatch");
             return Err(EgoFileError::InvalidFileHash.into());
         }
 
+        info_log_add(format!("3. get file by fid:{}", fid).as_str());
         let file = match self.files.get(fid) {
             Some(file) => file,
             None => {
@@ -106,12 +112,10 @@ impl Storage {
         //write file
         let file_offset = HEADER_SIZE + file.file_num * DEFAULT_FILE_SIZE;
 
-        ic_cdk::println!(
-            "==> write file to file_num: {}, offset: {}, with len: {}",
-            file.file_num,
-            file_offset,
-            data.len()
-        );
+        info_log_add(format!("==> write file to file_num: {}, offset: {}, with len: {}",
+                             file.file_num,
+                             file_offset,
+                             data.len()).as_str());
         stable64_write(file_offset, &data);
         Ok(true)
     }
@@ -126,16 +130,17 @@ impl Storage {
                 let mut buf = vec![0; DEFAULT_FILE_SIZE as usize];
                 let len = file.file_size;
                 stable64_read(file_offset, &mut buf); // file length
-                ic_cdk::println!(
-                    "==> read file from file_num: {}, offset: {}, with len: {}",
-                    file.file_num,
-                    file_offset,
-                    len
-                );
+                info_log_add(format!("==> read file from file_num: {}, offset: {}, with len: {}",
+                                     file.file_num,
+                                     file_offset,
+                                     len).as_str());
                 let data = buf[0..len].to_vec();
                 Ok(data)
             }
-            None => Err(EgoFileError::FidNotFound.into()),
+            None => {
+                error_log_add(format!("error reading file fid:{}", fid).as_str());
+                Err(EgoFileError::FidNotFound.into())
+            },
         }
     }
 }

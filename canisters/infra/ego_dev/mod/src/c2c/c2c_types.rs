@@ -9,4 +9,5 @@ use ego_types::app::{App, Wasm};
 pub struct EgoStoreApp {
   pub app: App,
   pub wasm: Wasm,
+  pub last_update: u64,
 }

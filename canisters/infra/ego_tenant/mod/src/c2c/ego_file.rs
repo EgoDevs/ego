@@ -5,6 +5,7 @@ use ic_cdk::api::call::RejectionCode;
 
 use ego_types::app::EgoError;
 use ego_types::app::WasmId;
+use crate::state::error_log_add;
 
 #[async_trait]
 pub trait TEgoFile {
@@ -36,10 +37,14 @@ impl TEgoFile for EgoFile {
     match call_result {
       Ok(resp) => match resp.0 {
         Ok(data) => Ok(data),
-        Err(e) => Err(e),
+        Err(e) => {
+          error_log_add(format!("file_main_read failed, err: {:?}", e).as_str());
+          Err(e)
+        },
       },
       Err((code, msg)) => {
         let code = code as u16;
+        error_log_add(format!("file_main_read failed, code: {}, msg: {}", code, msg).as_str());
         Err(EgoError { code, msg })
       }
     }

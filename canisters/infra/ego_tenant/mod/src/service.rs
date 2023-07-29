@@ -11,7 +11,7 @@ use ego_types::cycle_info::{CycleRecord, DEFAULT_ESTIMATE};
 use crate::c2c::ego_file::TEgoFile;
 use crate::c2c::ego_store::TEgoStore;
 use crate::c2c::ic_management::TIcManagement;
-use crate::state::{canister_get_one, info_log_add};
+use crate::state::{canister_get_one, error_log_add, info_log_add};
 use crate::types::EgoTenantErr;
 use crate::types::EgoTenantErr::CycleNotEnough;
 use crate::types::task::Task;
@@ -20,7 +20,7 @@ pub struct EgoTenantService {}
 
 pub const NEXT_CHECK_DURATION: u64 = 60 * 60;
 // 1 hour
-pub const CREATE_CANISTER_CYCLES_FEE: u128 = 100_000_000_000;
+pub const CREATE_CANISTER_CYCLES_FEE: u128 = 200_000_000_000;
 
 impl EgoTenantService {
   pub fn canister_main_track(
@@ -52,18 +52,23 @@ impl EgoTenantService {
       return Err(EgoTenantErr::SystemError("not implemented".to_string()).into());
     }
 
+    info_log_add(format!("1 load wasm data from ego_file:{}，fid:{}", wasm.canister_id, wasm.fid()).as_str());
+    let data = ego_file
+      .file_main_read(wasm.canister_id, wasm.fid())
+      .await.expect("should read data from ego_file");
+    info_log_add(format!("1.1 file size is {}", data.len()).as_str());
+
     let canister_id = management
       .canister_main_create(CREATE_CANISTER_CYCLES_FEE)
       .await?;
-    info_log_add(format!("1 create canister {}", canister_id).as_str());
-
-    info_log_add(format!("2 load wasm data {}", wasm.fid()).as_str());
-    let data = ego_file
-      .file_main_read(wasm.canister_id, wasm.fid())
-      .await?;
+    info_log_add(format!("2 create canister {}", canister_id).as_str());
 
     info_log_add("3 install code");
-    management.canister_code_install(canister_id, data).await?;
+    let result = management.canister_code_install(canister_id, data).await;
+    if result.is_err() {
+      error_log_add(format!("error install code. err: {:?}", result.unwrap_err()).as_str());
+      trap("failed");
+    }
 
     // add ego_store_id to app
     info_log_add("4 add [ego_store, ego_tenant] to canister");
