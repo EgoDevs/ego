@@ -60,6 +60,7 @@ describe('ego_store_import', () => {
 
       value['wasm']['canister_id'] = Principal.fromText(value['wasm']['canister_id'])
       value['wasm']['canister_type'] = {'BACKEND': null}
+      value['last_update'] = 0
       actor.app_main_release(value)
     })
 

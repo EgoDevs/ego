@@ -4,11 +4,12 @@ import {ActorSubclass} from "@dfinity/agent";
 import {idlFactory} from "@/idls/ego_ops.idl";
 import {Principal} from "@dfinity/principal";
 
-describe('admin_wallet_provider_add', () => {
-    test('admin_wallet_provider_add', async () => {
-        let actor = await getOperator<EgoStoreService>('ego_store');
-        let resp = await actor.admin_wallet_provider_add({wallet_provider: Principal.fromText("q3fc5-haaaa-aaaaa-aaahq-cai"), wallet_app_id: "card_controller"})
-        console.log(resp)
+describe('get_owners', () => {
+    test('get_owners', async () => {
+        let actor = await getOperator<EgoStoreService>('ego_tenant');
+        let resp = await actor.ego_owner_list()
+
+        console.log(resp.Ok)
     });
 });
 
