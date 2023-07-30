@@ -20,7 +20,7 @@ impl EgoDevService {
       None => {
         match Developer::list_by_name(name).is_empty() {
           true => {
-            let developer = Developer::new(caller, name);
+            let mut developer = Developer::new(caller, name);
             developer.save();
             Ok(developer)
           }
@@ -91,7 +91,7 @@ impl EgoDevService {
       }
       Some(mut ego_dev_app) => {
         let ego_file_canister_id = EgoDevService::ego_file_get()?;
-        let app_version = ego_dev_app.version_new(&ego_file_canister_id, &version)?;
+        let mut app_version = ego_dev_app.version_new(&ego_file_canister_id, &version)?;
         app_version.save();
         ego_dev_app.save();
 
@@ -164,7 +164,7 @@ impl EgoDevService {
         Err(EgoDevErr::AppNotExists.into())
       }
       Some(mut ego_dev_app) => {
-        let app_version = ego_dev_app.version_submit(version)?;
+        let mut app_version = ego_dev_app.version_submit(version)?;
         app_version.save();
         ego_dev_app.save();
         Ok(app_version)
@@ -182,7 +182,7 @@ impl EgoDevService {
         Err(EgoDevErr::AppNotExists.into())
       }
       Some(mut ego_dev_app) => {
-        let app_version = ego_dev_app.version_revoke(version)?;
+        let mut app_version = ego_dev_app.version_revoke(version)?;
         app_version.save();
         ego_dev_app.save();
         Ok(app_version)
@@ -201,7 +201,7 @@ impl EgoDevService {
         Err(EgoDevErr::AppNotExists.into())
       }
       Some(mut ego_dev_app) => {
-        let app_version = ego_dev_app.version_release(version)?;
+        let mut app_version = ego_dev_app.version_release(version)?;
         app_version.save();
 
         ego_dev_app.app.app_hash_update();
@@ -216,7 +216,7 @@ impl EgoDevService {
 
   pub fn app_version_approve(app_id: &AppId, version: &Version) -> Result<AppVersion, EgoError> {
     let mut ego_dev_app = EgoDevApp::get(app_id).ok_or(EgoError::from(EgoDevErr::AppNotExists))?;
-    let app_version = ego_dev_app.version_approve(version)?;
+    let mut app_version = ego_dev_app.version_approve(version)?;
     app_version.save();
 
     ego_dev_app.save();
@@ -225,7 +225,7 @@ impl EgoDevService {
 
   pub fn app_version_reject(app_id: &AppId, version: &Version) -> Result<AppVersion, EgoError> {
     let mut ego_dev_app = EgoDevApp::get(app_id).ok_or(EgoError::from(EgoDevErr::AppNotExists))?;
-    let app_version = ego_dev_app.version_reject(version)?;
+    let mut app_version = ego_dev_app.version_reject(version)?;
     app_version.save();
 
     ego_dev_app.save();

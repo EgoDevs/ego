@@ -2,12 +2,14 @@ use std::collections::BTreeMap;
 
 use candid::candid_method;
 use candid::Principal;
+use ego_backup::inject_backup_api;
 use ic_cdk::{caller, id};
 use ic_cdk_macros::*;
 use ic_ledger_types::Memo;
 
 use ego_lib::ego_canister::EgoCanister;
 use ego_macros::{inject_cycle_info_api, inject_ego_api};
+use ego_store_mod::backup::*;
 use ego_store_mod::c2c::ego_ledger::EgoLedger;
 use ego_store_mod::c2c::ego_tenant::EgoTenant as EgoTenantInner;
 use ego_store_mod::service::*;
@@ -26,6 +28,7 @@ use ego_types::types::{AppInstallRequest, AppReInstallRequest, AppUpgradeRequest
 
 inject_ego_api!();
 inject_cycle_info_api!();
+inject_backup_api!();
 
 pub const GIFT_CYCLES_AMOUNT: u128 = 1_000_000_000_000;
 
@@ -492,17 +495,6 @@ pub async fn wallet_main_new(user_id: Principal) -> Result<UserApp, EgoError> {
 
 /********************  methods for astro_deployer   ********************/
 ///
-/// 返回wallet_provider列表
-///
-#[update(name = "admin_wallet_provider_list", guard = "owner_guard")]
-#[candid_method(update, rename = "admin_wallet_provider_list")]
-pub fn admin_wallet_provider_list() -> Result<Vec<WalletProvider>, EgoError> {
-  info_log_add("admin_wallet_provider_list");
-
-  Ok(WalletProvider::list())
-}
-
-///
 /// 添加wallet_provider
 ///
 #[update(name = "admin_wallet_provider_add", guard = "owner_guard")]
@@ -530,18 +522,7 @@ pub fn admin_wallet_provider_delete(wallet_provider_id: Principal) -> Result<(),
 }
 
 ///
-/// 返回Wallet列表
-///
-#[update(name = "admin_wallet_list", guard = "owner_guard")]
-#[candid_method(update, rename = "admin_wallet_list")]
-pub fn admin_wallet_list(last_update: u64) -> Result<Vec<Wallet>, EgoError> {
-  info_log_add(format!("admin_wallet_list after {}", last_update).as_str());
-
-  Ok(Wallet::by_last_update(last_update))
-}
-
-///
-/// 添加用户钱包
+/// 导入
 ///
 #[update(name = "admin_wallet_add", guard = "owner_guard")]
 #[candid_method(update, rename = "admin_wallet_add")]
@@ -570,27 +551,14 @@ pub fn admin_wallet_add(wallets: Vec<WalletImport>) {
 
 
 ///
-/// 返回某个Wallet已经安装的应用列表
+/// 返回某个Canister
 ///
-#[update(name = "admin_wallet_app_list", guard = "owner_guard")]
-#[candid_method(update, rename = "admin_wallet_app_list")]
-pub fn admin_wallet_app_list(last_update: u64) -> Result<Vec<user_app::UserApp>, EgoError> {
-  info_log_add(format!("admin_wallet_app_list after {}", last_update).as_str());
+#[update(name = "admin_wallet_app_get", guard = "owner_guard")]
+#[candid_method(update, rename = "admin_wallet_app_get")]
+pub fn admin_wallet_app_get(canister_id: Principal) -> Result<Option<user_app::UserApp>, EgoError> {
+  info_log_add(format!("admin_wallet_app_get canister_id: {}", canister_id).as_str());
 
-  let user_apps = user_app::UserApp::by_last_update(last_update);
-  Ok(user_apps)
-}
-
-///
-/// 返回某个Wallet已经安装的应用列表
-///
-#[update(name = "admin_wallet_cash_flow_list", guard = "owner_guard")]
-#[candid_method(update, rename = "admin_wallet_cash_flow_list")]
-pub fn admin_wallet_cash_flow_list(last_update: u64) -> Result<Vec<cash_flow::CashFlow>, EgoError> {
-  info_log_add(format!("admin_wallet_cash_flow_list after {}", last_update).as_str());
-
-  let cash_flows = cash_flow::CashFlow::by_last_update(last_update);
-  Ok(cash_flows)
+  Ok(user_app::UserApp::get(&canister_id))
 }
 
 /********************  数据导出   ********************/
@@ -603,6 +571,7 @@ fn admin_export() -> Vec<u8> {
     users: Some(users_pre_upgrade()),
     registry: Some(registry_pre_upgrade()),
     cycle_info: Some(cycle_info_pre_upgrade()),
+    backup_info: Some(backup_info_pre_upgrade()),
     seq: Some(seq_pre_upgrade()),
   };
 

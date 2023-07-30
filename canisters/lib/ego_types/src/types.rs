@@ -1,7 +1,7 @@
 use candid::{CandidType, Deserialize, Principal};
 use serde::Serialize;
 
-use crate::app::{AppId};
+use crate::app::AppId;
 
 // for ego_store v2 api
 #[derive(CandidType, Deserialize, Serialize)]

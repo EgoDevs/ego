@@ -27,7 +27,7 @@ pub struct Order {
   pub amount: f32,
   pub memo: Memo,
   pub status: OrderStatus,
-  pub last_update: u64,  // second
+  pub last_update: u64,  // mini second
 }
 
 #[derive(CandidType, Serialize, Deserialize, Clone, Debug, PartialEq)]
@@ -82,6 +82,17 @@ impl Order {
     })
   }
 
+  pub fn by_last_update(last_update: u64) -> Vec<Order> {
+    ORDERS.with(|cell| {
+      let inst = cell.borrow();
+      inst.iter()
+        .filter(|(_, order)| order.last_update > last_update)
+        .map(|(_, order)| {
+          order
+        }).collect()
+    })
+  }
+
   pub fn get(memo: Memo) -> Option<Order> {
     ORDERS.with(|cell| {
       let inst = cell.borrow_mut();
@@ -93,7 +104,7 @@ impl Order {
   pub fn save(&mut self) {
     ORDERS.with(|cell| {
       let mut inst = cell.borrow_mut();
-      self.last_update = time() / 1000000000;
+      self.last_update = time();
 
       inst.insert(self.memo.0, self.clone());
     });

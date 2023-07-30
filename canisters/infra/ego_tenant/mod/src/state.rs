@@ -1,5 +1,7 @@
 use std::cell::RefCell;
 
+use ego_backup::inject_backup_data;
+
 use ego_macros::{inject_cycle_info, inject_ego_data};
 
 use crate::memory::CONFIG;
@@ -7,6 +9,7 @@ use crate::types::stable_state::StableState;
 
 inject_ego_data!();
 inject_cycle_info!();
+inject_backup_data!();
 
 /********************  methods for ego_registry   ********************/
 fn on_canister_added(name: &str, canister_id: Principal) {
@@ -26,6 +29,7 @@ pub fn pre_upgrade() {
     users: Some(users_pre_upgrade()),
     registry: Some(registry_pre_upgrade()),
     cycle_info: Some(cycle_info_pre_upgrade()),
+    backup_info: Some(backup_info_pre_upgrade()),
   };
 
   CONFIG.with(|config| {
@@ -56,6 +60,13 @@ pub fn post_upgrade() {
       None => {}
       Some(cycle_info) => {
         cycle_info_post_upgrade(cycle_info.clone());
+      }
+    }
+
+    match &state.backup_info {
+      None => {}
+      Some(backup_info) => {
+        backup_info_post_upgrade(backup_info.clone());
       }
     }
   });

@@ -1,15 +1,15 @@
 use std::collections::BTreeMap;
-use std::ops::Div;
 use std::time::Duration;
 
-use candid::Principal;
 use candid::candid_method;
+use candid::Principal;
+use ego_backup::inject_backup_api;
 use ic_cdk::{caller, id};
-use ic_cdk::api::time;
 use ic_cdk_macros::*;
 
 use ego_lib::ego_canister::{EgoCanister, TEgoCanister};
-use ego_macros::inject_ego_api;
+use ego_macros::{inject_cycle_info_api, inject_ego_api};
+use ego_tenant_mod::backup::*;
 use ego_tenant_mod::c2c::ego_file::EgoFile;
 use ego_tenant_mod::c2c::ego_store::EgoStore;
 use ego_tenant_mod::c2c::ic_management::IcManagement;
@@ -20,9 +20,11 @@ use ego_tenant_mod::types::EgoTenantErr::CanisterNotFounded;
 use ego_tenant_mod::types::stable_state::StableState;
 use ego_tenant_mod::types::task::Task;
 use ego_types::app::EgoError;
-use ego_types::cycle_info::CycleRecord;
+use ego_utils::util::time;
 
 inject_ego_api!();
+inject_cycle_info_api!();
+inject_backup_api!();
 
 pub const CHECK_DURATION: u64 = 600; // 每 10 分钟，检查有没有需要检查的Canister
 
@@ -136,7 +138,7 @@ async fn app_main_delete(canister_id: Principal) -> Result<(), EgoError> {
 fn canister_main_track(canister_id: Principal) -> Result<(), EgoError> {
   info_log_add("canister_main_track");
 
-  let next_check_time = time().div(1e9 as u64) + NEXT_CHECK_DURATION; // next_check_time
+  let next_check_time = time() / 1000 + NEXT_CHECK_DURATION; // next_check_time
 
   EgoTenantService::canister_main_track(&canister_id, next_check_time);
   Ok(())
@@ -249,7 +251,7 @@ pub fn admin_task_add(tasks: Vec<Task>) {
 fn task_run() {
   info_log_add("task_run");
 
-  let sentinel = time().div(1e9 as u64); // convert to second
+  let sentinel = time() / 1000; // convert to second
   let tasks = Task::by_sentinel(sentinel);
 
   for mut task in tasks {
@@ -273,6 +275,7 @@ async fn admin_export() -> Vec<u8> {
     users: Some(users_pre_upgrade()),
     registry: Some(registry_pre_upgrade()),
     cycle_info: Some(cycle_info_pre_upgrade()),
+    backup_info: Some(backup_info_pre_upgrade()),
   };
 
   let data_export = DataExport {
@@ -281,4 +284,13 @@ async fn admin_export() -> Vec<u8> {
   };
 
   serde_json::to_vec(&data_export).unwrap()
+}
+
+/********************  methods for ego_cycle_threshold_get   ********************/
+pub fn cycle_threshold_get() -> u128 {
+  10_000_000_000_000
+}
+
+pub fn runtime_cycle_threshold_get() -> u128 {
+  10_000_000_000_000
 }

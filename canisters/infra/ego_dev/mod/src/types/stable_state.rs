@@ -2,6 +2,7 @@ use std::borrow::Cow;
 
 use candid::{Decode, Encode};
 use candid::{CandidType, Deserialize};
+use ego_backup::backup_info::BackupInfo;
 use ic_stable_structures::{BoundedStorable, Storable};
 use serde::Serialize;
 
@@ -17,6 +18,7 @@ pub struct StableState {
   pub users: Option<User>,
   pub registry: Option<Registry>,
   pub cycle_info: Option<CycleInfo>,
+  pub backup_info: Option<BackupInfo>,
   pub seq: Option<Seq>,
 }
 
@@ -26,6 +28,7 @@ impl Default for StableState {
       users: None,
       registry: None,
       cycle_info: None,
+      backup_info: None,
       seq: None,
     }
   }

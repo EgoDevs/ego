@@ -13,14 +13,14 @@ name = "ego-file"
 path = "src/main.rs"
 
 [dependencies]
-candid =  { workspace = true }
-ic-cdk =  { workspace = true }
-ic-cdk-macros =  { workspace = true }
-serde =  { workspace = true }
-serde_json =  { workspace = true }
-serde_bytes =  { workspace = true }
-ego_types =  { workspace = true }
-ego_macros =  { workspace = true }
-ego_lib =  { workspace = true }
+candid = { workspace = true }
+ic-cdk = { workspace = true }
+ic-cdk-macros = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+serde_bytes = { workspace = true }
+ego_types = { workspace = true }
+ego_macros = { workspace = true }
+ego_lib = { workspace = true }
 
 ego_file_mod = { path = "../mod" }

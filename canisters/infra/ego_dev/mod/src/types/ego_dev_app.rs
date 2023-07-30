@@ -21,7 +21,7 @@ pub struct EgoDevApp {
   pub developer_id: Principal,
   pub versions: Vec<u64>,
   pub audit_version: Option<Version>,
-  pub last_update: u64,    // second
+  pub last_update: u64,    // mini second
 }
 
 impl EgoDevApp {
@@ -185,6 +185,17 @@ impl EgoDevApp {
     })
   }
 
+  pub fn by_last_update(last_update: u64) -> Vec<EgoDevApp> {
+    EGO_DEV_APPS.with(|cell| {
+      let inst = cell.borrow();
+      inst.iter()
+        .filter(|(_, ego_dev_app)| ego_dev_app.last_update > last_update)
+        .map(|(_, ego_dev_app)| {
+          ego_dev_app
+        }).collect()
+    })
+  }
+
   pub fn version_wait_for_audit() -> Vec<EgoDevApp> {
     EGO_DEV_APPS.with(|cell| {
       let inst = cell.borrow();
@@ -227,7 +238,7 @@ impl EgoDevApp {
     EGO_DEV_APPS.with(|cell| {
       let mut inst = cell.borrow_mut();
       let key = AppKey::new(&self.app.app_id);
-      self.last_update = time() / 1000000000;
+      self.last_update = time();
       inst.insert(key, self.clone());
     });
   }

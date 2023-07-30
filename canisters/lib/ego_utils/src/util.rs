@@ -1,5 +1,6 @@
 use candid::Principal;
 
+// return mini seconds
 pub fn time() -> u64 {
   #[cfg(not(target_arch = "wasm32"))]
   {
@@ -11,7 +12,7 @@ pub fn time() -> u64 {
 
   #[cfg(target_arch = "wasm32")]
   {
-    ic_cdk::api::time()
+    ic_cdk::api::time() / 1000000
   }
 }
 
@@ -25,4 +26,21 @@ pub fn caller() -> Principal {
   {
     ic_cdk::api::caller()
   }
+}
+
+pub fn id() -> Principal {
+  #[cfg(not(target_arch = "wasm32"))]
+  {
+    Principal::from_text("qhbym-qaaaa-aaaaa-aaafq-cai".to_string()).unwrap()
+  }
+
+  #[cfg(target_arch = "wasm32")]
+  {
+    ic_cdk::api::id()
+  }
+}
+
+pub fn get_md5(data: &Vec<u8>) -> String {
+  let digest = md5::compute(data);
+  return format!("{:?}", digest);
 }

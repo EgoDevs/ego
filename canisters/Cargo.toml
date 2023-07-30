@@ -37,8 +37,8 @@ ego_types = { path = "lib/ego_types" }
 ego_macros = { path = "lib/ego_macros" }
 ego_lib = { path = "lib/ego_lib" }
 ego_utils = { path = "lib/ego_utils" }
-ego_inner_rpc = { path ="lib/ego_inner_rpc" }
-ego_backup = {path="../../astrox-rs/ego_backup"}
+ego_inner_rpc = { path = "lib/ego_inner_rpc" }
+ego_backup = { path = "../../astrox-rs/ego_backup" }
 
 async-trait = "0.1.57"
 

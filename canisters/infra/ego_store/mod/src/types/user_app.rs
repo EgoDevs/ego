@@ -18,7 +18,7 @@ pub struct UserApp {
   pub canister: Canister,
   pub latest_version: Version,
   pub wallet_id: Option<Principal>,
-  pub last_update: u64, // second
+  pub last_update: u64, // mini second
 }
 
 impl UserApp {
@@ -82,7 +82,7 @@ impl UserApp {
     USER_APPS.with(|cell| {
       let mut inst = cell.borrow_mut();
       let key = Blob::try_from(self.canister.canister_id.as_slice()).unwrap();
-      self.last_update = time() / 1000000000;
+      self.last_update = time();
       inst.insert(key, self.clone());
     });
   }

@@ -3,3 +3,4 @@ pub mod service;
 pub mod state;
 pub mod memory;
 pub mod types;
+pub mod backup;

@@ -27,7 +27,7 @@ pub fn set_up() {
 
   let canister_principal = Principal::from_text(EXISTS_CANISTER_ID.to_string()).unwrap();
 
-  let _ = EgoTenantService::canister_main_track( &canister_principal, 0);
+  let _ = EgoTenantService::canister_main_track(&canister_principal, 0);
 }
 
 mock! {

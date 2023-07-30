@@ -7,6 +7,7 @@ use serde::Serialize;
 
 use ego_types::app::{AppId, Version, Wasm};
 use ego_types::app::CanisterType::{ASSET, BACKEND};
+use ego_utils::util::time;
 
 use crate::memory::APP_VERSIONS;
 use crate::state::SEQ;
@@ -19,6 +20,7 @@ pub struct AppVersion {
   pub status: AppVersionStatus,
   pub file_id: Principal,
   pub wasm: Option<Wasm>,
+  pub last_update: u64,    // mini second
 }
 
 #[derive(
@@ -49,6 +51,7 @@ impl AppVersion {
       status: AppVersionStatus::NEW,
       file_id: ego_file_canister_id.clone(),
       wasm: None,
+      last_update: 0,
     }
   }
 
@@ -84,6 +87,17 @@ impl AppVersion {
     })
   }
 
+  pub fn by_last_update(last_update: u64) -> Vec<AppVersion> {
+    APP_VERSIONS.with(|cell| {
+      let inst = cell.borrow();
+      inst.iter()
+        .filter(|(_, app_version)| app_version.last_update > last_update)
+        .map(|(_, app_version)| {
+          app_version
+        }).collect()
+    })
+  }
+
   pub fn get(id: &u64) -> Option<AppVersion> {
     APP_VERSIONS.with(|cell| {
       let inst = cell.borrow_mut();
@@ -91,10 +105,10 @@ impl AppVersion {
     })
   }
 
-  pub fn save(&self) {
+  pub fn save(&mut self) {
     APP_VERSIONS.with(|cell| {
       let mut inst = cell.borrow_mut();
-
+      self.last_update = time();
       inst.insert(self.id, self.clone());
     });
   }

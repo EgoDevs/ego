@@ -15,6 +15,7 @@ fn main() {
   use ego_types::cycle_info::*;
   use candid::Principal;
   use std::collections::BTreeMap;
+  use ego_backup::backup_info::*;
 
   candid::export_service!();
   std::print!("{}", __export_service());

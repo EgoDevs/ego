@@ -15,7 +15,7 @@ use crate::types::app_key::AppKey;
 pub struct EgoStoreApp {
   pub app: App,
   pub wasm: Wasm,
-  pub last_update: u64,
+  pub last_update: u64, // mini second
 }
 
 impl EgoStoreApp {
@@ -42,6 +42,17 @@ impl EgoStoreApp {
     })
   }
 
+  pub fn by_last_update(last_update: u64) -> Vec<EgoStoreApp> {
+    EGO_STORE_APPS.with(|cell| {
+      let inst = cell.borrow();
+      inst.iter()
+        .filter(|(_, ego_store_app)| ego_store_app.last_update > last_update)
+        .map(|(_, ego_store_app)| {
+          ego_store_app
+        }).collect()
+    })
+  }
+
   pub fn get(app_id: &AppId) -> Option<EgoStoreApp> {
     EGO_STORE_APPS.with(|cell| {
       let inst = cell.borrow_mut();
@@ -52,7 +63,7 @@ impl EgoStoreApp {
   pub fn save(&mut self) {
     EGO_STORE_APPS.with(|cell| {
       let mut inst = cell.borrow_mut();
-      self.last_update = time() / 1000000000;
+      self.last_update = time();
       inst.insert(AppKey::new(&self.app.app_id), self.clone());
     });
   }

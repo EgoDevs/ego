@@ -8,11 +8,11 @@ use ego_tenant_mod::c2c::ego_file::TEgoFile;
 use ego_tenant_mod::c2c::ic_management::TIcManagement;
 use ego_tenant_mod::service::EgoTenantService;
 use ego_tenant_mod::state::canister_add;
+use ego_types::app::{App, AppId};
+use ego_types::app::{Wasm, WasmId};
 use ego_types::app::CanisterType::BACKEND;
 use ego_types::app::EgoError;
 use ego_types::app::Version;
-use ego_types::app::{App, AppId};
-use ego_types::app::{Wasm, WasmId};
 use ego_types::app_info::AppInfo;
 use ego_utils::ic_management::Cycles;
 

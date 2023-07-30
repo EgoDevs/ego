@@ -23,5 +23,6 @@ serde_bytes = { workspace = true }
 ego_types = { workspace = true }
 ego_macros = { workspace = true }
 ego_lib = { workspace = true }
+ego_backup = { workspace = true }
 
 ego_dev_mod = { path = "../mod" }

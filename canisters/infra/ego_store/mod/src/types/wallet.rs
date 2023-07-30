@@ -20,7 +20,7 @@ pub struct Wallet {
   pub wallet_id: Principal,
   pub user_id: Principal,
   pub cycles: u128,
-  pub last_update: u64,    // second
+  pub last_update: u64,    // mini second
 }
 
 impl Wallet {
@@ -125,7 +125,7 @@ impl Wallet {
     WALLETS.with(|cell| {
       let mut inst = cell.borrow_mut();
       let key = Blob::try_from(self.wallet_id.as_slice()).unwrap();
-      self.last_update = time() / 1000000000;
+      self.last_update = time();
       inst.insert(key, self.clone());
     });
   }

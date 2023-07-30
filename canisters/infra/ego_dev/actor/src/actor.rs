@@ -1,10 +1,12 @@
 use std::collections::BTreeMap;
 
-use candid::Principal;
 use candid::candid_method;
+use candid::Principal;
+use ego_backup::inject_backup_api;
 use ic_cdk::{api, caller, trap};
 use ic_cdk_macros::*;
 
+use ego_dev_mod::backup::*;
 use ego_dev_mod::c2c::ego_file::EgoFile;
 use ego_dev_mod::c2c::ego_store::EgoStore;
 use ego_dev_mod::service::*;
@@ -20,6 +22,7 @@ use ego_types::app::EgoError;
 
 inject_ego_api!();
 inject_cycle_info_api!();
+inject_backup_api!();
 
 #[init]
 #[candid_method(init)]
@@ -343,6 +346,7 @@ fn admin_export() -> Vec<u8> {
     users: Some(users_pre_upgrade()),
     registry: Some(registry_pre_upgrade()),
     cycle_info: Some(cycle_info_pre_upgrade()),
+    backup_info: Some(backup_info_pre_upgrade()),
     seq: Some(seq_pre_upgrade()),
   };
 
@@ -371,12 +375,13 @@ fn admin_import(request: DevImportV1) {
   });
 
   request.developers.iter().for_each(|d| {
-    let developer = developer::Developer {
+    let mut developer = developer::Developer {
       developer_id: d.developer_id.clone(),
       name: d.name.clone(),
       is_app_auditor: d.is_app_auditor,
       is_manager: d.is_manager,
       created_apps: d.created_apps.clone(),
+      last_update: d.last_update,
     };
     developer.save();
   });

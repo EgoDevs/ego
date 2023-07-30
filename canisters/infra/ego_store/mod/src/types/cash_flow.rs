@@ -20,6 +20,7 @@ pub struct CashFlow {
   pub balance: u128,
   // balance after the operation
   pub created_at: u64,
+  // mini second
   pub operator: Principal,
   pub comment: String,
 }
@@ -82,7 +83,7 @@ impl CashFlow {
     CASH_FLOWS.with(|cell| {
       let mut inst = cell.borrow_mut();
       if self.created_at == 0 {
-        self.created_at = time() / 1000000000;
+        self.created_at = time();
       }
       inst.insert(self.id, self.clone());
     });

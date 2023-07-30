@@ -5,7 +5,6 @@ use ic_cdk::api;
 use ego_types::app::{App, Wasm};
 
 use crate::c2c::c2c_types::EgoStoreApp;
-use crate::state::info_log_add;
 
 #[async_trait]
 pub trait TEgoStore {

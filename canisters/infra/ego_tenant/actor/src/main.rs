@@ -13,6 +13,7 @@ fn main() {
   use candid::Principal;
   use std::collections::BTreeMap;
   use ego_tenant_mod::types::task::Task;
+  use ego_backup::backup_info::*;
 
   candid::export_service!();
   std::print!("{}", __export_service());

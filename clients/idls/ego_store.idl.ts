@@ -57,50 +57,20 @@ export const idlFactory = ({ IDL }) => {
     'wallet_id' : IDL.Opt(IDL.Principal),
   });
   const EgoError = IDL.Record({ 'msg' : IDL.Text, 'code' : IDL.Nat16 });
-  const Result = IDL.Variant({ 'Ok' : IDL.Vec(UserApp_1), 'Err' : EgoError });
-  const CashFlow_1 = IDL.Record({
-    'id' : IDL.Nat64,
-    'balance' : IDL.Nat,
-    'operator' : IDL.Principal,
-    'created_at' : IDL.Nat64,
-    'comment' : IDL.Text,
-    'cycles' : IDL.Nat,
-    'cash_flow_type' : CashFlowType,
-    'wallet_id' : IDL.Principal,
-  });
-  const Result_1 = IDL.Variant({
-    'Ok' : IDL.Vec(CashFlow_1),
-    'Err' : EgoError,
-  });
+  const Result = IDL.Variant({ 'Ok' : IDL.Opt(UserApp_1), 'Err' : EgoError });
   const AdminWalletCycleRechargeRequest = IDL.Record({
     'cycle' : IDL.Nat,
     'comment' : IDL.Text,
     'wallet_id' : IDL.Principal,
   });
-  const Result_2 = IDL.Variant({ 'Ok' : IDL.Bool, 'Err' : EgoError });
-  const Wallet = IDL.Record({
-    'user_id' : IDL.Principal,
-    'tenant_id' : IDL.Principal,
-    'cycles' : IDL.Nat,
-    'last_update' : IDL.Nat64,
-    'wallet_id' : IDL.Principal,
-  });
-  const Result_3 = IDL.Variant({ 'Ok' : IDL.Vec(Wallet), 'Err' : EgoError });
+  const Result_1 = IDL.Variant({ 'Ok' : IDL.Bool, 'Err' : EgoError });
   const AdminWalletProviderAddRequest = IDL.Record({
     'wallet_provider' : IDL.Principal,
     'wallet_app_id' : IDL.Text,
   });
-  const Result_4 = IDL.Variant({ 'Ok' : IDL.Null, 'Err' : EgoError });
-  const WalletProvider = IDL.Record({
-    'app_id' : IDL.Text,
-    'wallet_provider' : IDL.Principal,
-  });
-  const Result_5 = IDL.Variant({
-    'Ok' : IDL.Vec(WalletProvider),
-    'Err' : EgoError,
-  });
-  const Result_6 = IDL.Variant({ 'Ok' : App, 'Err' : EgoError });
-  const Result_7 = IDL.Variant({ 'Ok' : IDL.Vec(App), 'Err' : EgoError });
+  const Result_2 = IDL.Variant({ 'Ok' : IDL.Null, 'Err' : EgoError });
+  const Result_3 = IDL.Variant({ 'Ok' : App, 'Err' : EgoError });
+  const Result_4 = IDL.Variant({ 'Ok' : IDL.Vec(App), 'Err' : EgoError });
   const Wasm = IDL.Record({
     'canister_id' : IDL.Principal,
     'version' : Version,
@@ -112,14 +82,22 @@ export const idlFactory = ({ IDL }) => {
     'wasm' : Wasm,
     'last_update' : IDL.Nat64,
   });
+  const BackupStatus = IDL.Variant({
+    'MAINTAINING' : IDL.Null,
+    'RUNNING' : IDL.Null,
+  });
+  const Result_5 = IDL.Variant({ 'Ok' : IDL.Null, 'Err' : IDL.Text });
+  const BackupInfo = IDL.Record({ 'state' : BackupStatus });
+  const Result_6 = IDL.Variant({ 'Ok' : BackupInfo, 'Err' : IDL.Text });
+  const BackupJob = IDL.Record({ 'name' : IDL.Text, 'amount' : IDL.Nat64 });
+  const Result_7 = IDL.Variant({ 'Ok' : IDL.Vec(BackupJob), 'Err' : IDL.Text });
   const Result_8 = IDL.Variant({ 'Ok' : IDL.Nat, 'Err' : IDL.Text });
-  const Result_9 = IDL.Variant({ 'Ok' : IDL.Null, 'Err' : IDL.Text });
-  const Result_10 = IDL.Variant({
+  const Result_9 = IDL.Variant({
     'Ok' : IDL.Vec(IDL.Tuple(IDL.Text, IDL.Vec(IDL.Principal))),
     'Err' : IDL.Text,
   });
   const CycleRecord = IDL.Record({ 'ts' : IDL.Nat64, 'balance' : IDL.Nat });
-  const Result_11 = IDL.Variant({
+  const Result_10 = IDL.Variant({
     'Ok' : IDL.Vec(CycleRecord),
     'Err' : IDL.Text,
   });
@@ -127,16 +105,25 @@ export const idlFactory = ({ IDL }) => {
     'records' : IDL.Vec(CycleRecord),
     'estimate_remaining' : IDL.Nat64,
   });
-  const Result_12 = IDL.Variant({ 'Ok' : CycleInfo, 'Err' : IDL.Text });
-  const Result_13 = IDL.Variant({ 'Ok' : IDL.Bool, 'Err' : IDL.Text });
+  const Result_11 = IDL.Variant({ 'Ok' : CycleInfo, 'Err' : IDL.Text });
+  const Result_12 = IDL.Variant({ 'Ok' : IDL.Bool, 'Err' : IDL.Text });
   const LogEntry = IDL.Record({
     'ts' : IDL.Nat64,
     'msg' : IDL.Text,
     'kind' : IDL.Text,
   });
-  const Result_14 = IDL.Variant({ 'Ok' : IDL.Vec(LogEntry), 'Err' : IDL.Text });
-  const Result_15 = IDL.Variant({
+  const Result_13 = IDL.Variant({ 'Ok' : IDL.Vec(LogEntry), 'Err' : IDL.Text });
+  const Result_14 = IDL.Variant({
     'Ok' : IDL.Opt(IDL.Vec(IDL.Tuple(IDL.Principal, IDL.Text))),
+    'Err' : IDL.Text,
+  });
+  const ByteReadResponse = IDL.Record({
+    'data' : IDL.Vec(IDL.Nat8),
+    'hash' : IDL.Text,
+    'name' : IDL.Text,
+  });
+  const Result_15 = IDL.Variant({
+    'Ok' : IDL.Opt(ByteReadResponse),
     'Err' : IDL.Text,
   });
   const Result_16 = IDL.Variant({ 'Ok' : UserApp, 'Err' : EgoError });
@@ -172,79 +159,84 @@ export const idlFactory = ({ IDL }) => {
   return IDL.Service({
     'admin_export' : IDL.Func([], [IDL.Vec(IDL.Nat8)], []),
     'admin_wallet_add' : IDL.Func([IDL.Vec(WalletImport)], [], []),
-    'admin_wallet_app_list' : IDL.Func([IDL.Nat64], [Result], []),
-    'admin_wallet_cash_flow_list' : IDL.Func([IDL.Nat64], [Result_1], []),
+    'admin_wallet_app_get' : IDL.Func([IDL.Principal], [Result], []),
     'admin_wallet_cycle_recharge' : IDL.Func(
         [AdminWalletCycleRechargeRequest],
+        [Result_1],
+        [],
+      ),
+    'admin_wallet_provider_add' : IDL.Func(
+        [AdminWalletProviderAddRequest],
         [Result_2],
         [],
       ),
-    'admin_wallet_list' : IDL.Func([IDL.Nat64], [Result_3], []),
-    'admin_wallet_provider_add' : IDL.Func(
-        [AdminWalletProviderAddRequest],
-        [Result_4],
-        [],
-      ),
-    'admin_wallet_provider_delete' : IDL.Func([IDL.Principal], [Result_4], []),
-    'admin_wallet_provider_list' : IDL.Func([], [Result_5], []),
-    'app_main_get' : IDL.Func([IDL.Text], [Result_6], []),
-    'app_main_list' : IDL.Func([], [Result_7], []),
-    'app_main_release' : IDL.Func([EgoStoreApp], [Result_2], []),
+    'admin_wallet_provider_delete' : IDL.Func([IDL.Principal], [Result_2], []),
+    'app_main_get' : IDL.Func([IDL.Text], [Result_3], []),
+    'app_main_list' : IDL.Func([], [Result_4], []),
+    'app_main_release' : IDL.Func([EgoStoreApp], [Result_1], []),
+    'backup_change_status' : IDL.Func([BackupStatus], [Result_5], []),
+    'backup_info_get' : IDL.Func([], [Result_6], []),
+    'backup_job_list' : IDL.Func([], [Result_7], []),
     'balance_get' : IDL.Func([], [Result_8], ['query']),
-    'ego_canister_add' : IDL.Func([IDL.Text, IDL.Principal], [Result_9], []),
-    'ego_canister_list' : IDL.Func([], [Result_10], []),
-    'ego_canister_remove' : IDL.Func([IDL.Text, IDL.Principal], [Result_9], []),
-    'ego_controller_add' : IDL.Func([IDL.Principal], [Result_9], []),
-    'ego_controller_remove' : IDL.Func([IDL.Principal], [Result_9], []),
-    'ego_controller_set' : IDL.Func([IDL.Vec(IDL.Principal)], [Result_9], []),
-    'ego_cycle_check' : IDL.Func([], [Result_9], []),
-    'ego_cycle_estimate_set' : IDL.Func([IDL.Nat64], [Result_9], []),
-    'ego_cycle_history' : IDL.Func([], [Result_11], []),
-    'ego_cycle_info' : IDL.Func([], [Result_12], []),
-    'ego_cycle_recharge' : IDL.Func([IDL.Nat], [Result_9], []),
+    'ego_canister_add' : IDL.Func([IDL.Text, IDL.Principal], [Result_5], []),
+    'ego_canister_list' : IDL.Func([], [Result_9], []),
+    'ego_canister_remove' : IDL.Func([IDL.Text, IDL.Principal], [Result_5], []),
+    'ego_controller_add' : IDL.Func([IDL.Principal], [Result_5], []),
+    'ego_controller_remove' : IDL.Func([IDL.Principal], [Result_5], []),
+    'ego_controller_set' : IDL.Func([IDL.Vec(IDL.Principal)], [Result_5], []),
+    'ego_cycle_check' : IDL.Func([], [Result_5], []),
+    'ego_cycle_estimate_set' : IDL.Func([IDL.Nat64], [Result_5], []),
+    'ego_cycle_history' : IDL.Func([], [Result_10], []),
+    'ego_cycle_info' : IDL.Func([], [Result_11], []),
+    'ego_cycle_recharge' : IDL.Func([IDL.Nat], [Result_5], []),
     'ego_cycle_threshold_get' : IDL.Func([], [Result_8], []),
-    'ego_is_op' : IDL.Func([], [Result_13], ['query']),
-    'ego_is_owner' : IDL.Func([], [Result_13], ['query']),
-    'ego_is_user' : IDL.Func([], [Result_13], ['query']),
-    'ego_log_list' : IDL.Func([IDL.Nat64], [Result_14], ['query']),
-    'ego_op_add' : IDL.Func([IDL.Principal], [Result_9], []),
-    'ego_op_list' : IDL.Func([], [Result_15], []),
-    'ego_op_remove' : IDL.Func([IDL.Principal], [Result_9], []),
-    'ego_owner_add' : IDL.Func([IDL.Principal], [Result_9], []),
+    'ego_is_op' : IDL.Func([], [Result_12], ['query']),
+    'ego_is_owner' : IDL.Func([], [Result_12], ['query']),
+    'ego_is_user' : IDL.Func([], [Result_12], ['query']),
+    'ego_log_list' : IDL.Func([IDL.Nat64], [Result_13], ['query']),
+    'ego_op_add' : IDL.Func([IDL.Principal], [Result_5], []),
+    'ego_op_list' : IDL.Func([], [Result_14], []),
+    'ego_op_remove' : IDL.Func([IDL.Principal], [Result_5], []),
+    'ego_owner_add' : IDL.Func([IDL.Principal], [Result_5], []),
     'ego_owner_add_with_name' : IDL.Func(
         [IDL.Text, IDL.Principal],
-        [Result_9],
+        [Result_5],
         [],
       ),
-    'ego_owner_list' : IDL.Func([], [Result_15], []),
-    'ego_owner_remove' : IDL.Func([IDL.Principal], [Result_9], []),
-    'ego_owner_set' : IDL.Func([IDL.Vec(IDL.Principal)], [Result_9], []),
+    'ego_owner_list' : IDL.Func([], [Result_14], []),
+    'ego_owner_remove' : IDL.Func([IDL.Principal], [Result_5], []),
+    'ego_owner_set' : IDL.Func([IDL.Vec(IDL.Principal)], [Result_5], []),
     'ego_runtime_cycle_threshold_get' : IDL.Func([], [Result_8], []),
-    'ego_user_add' : IDL.Func([IDL.Principal], [Result_9], []),
-    'ego_user_list' : IDL.Func([], [Result_15], []),
-    'ego_user_remove' : IDL.Func([IDL.Principal], [Result_9], []),
-    'ego_user_set' : IDL.Func([IDL.Vec(IDL.Principal)], [Result_9], []),
+    'ego_user_add' : IDL.Func([IDL.Principal], [Result_5], []),
+    'ego_user_list' : IDL.Func([], [Result_14], []),
+    'ego_user_remove' : IDL.Func([IDL.Principal], [Result_5], []),
+    'ego_user_set' : IDL.Func([IDL.Vec(IDL.Principal)], [Result_5], []),
+    'job_data_export' : IDL.Func(
+        [IDL.Text, IDL.Opt(IDL.Nat64)],
+        [Result_15],
+        [],
+      ),
     'wallet_app_install' : IDL.Func([IDL.Text], [Result_16], []),
     'wallet_app_install_v2' : IDL.Func([AppInstallRequest], [Result_16], []),
     'wallet_app_list' : IDL.Func([], [Result_17], []),
     'wallet_app_reinstall_by_wallet_v2' : IDL.Func(
         [AppReInstallRequest],
-        [Result_4],
+        [Result_2],
         [],
       ),
-    'wallet_app_remove' : IDL.Func([IDL.Principal], [Result_4], []),
-    'wallet_app_upgrade' : IDL.Func([IDL.Principal], [Result_4], []),
-    'wallet_app_upgrade_by_wallet' : IDL.Func([IDL.Principal], [Result_4], []),
+    'wallet_app_remove' : IDL.Func([IDL.Principal], [Result_2], []),
+    'wallet_app_upgrade' : IDL.Func([IDL.Principal], [Result_2], []),
+    'wallet_app_upgrade_by_wallet' : IDL.Func([IDL.Principal], [Result_2], []),
     'wallet_app_upgrade_by_wallet_v2' : IDL.Func(
         [AppReInstallRequest],
-        [Result_4],
+        [Result_2],
         [],
       ),
-    'wallet_app_upgrade_v2' : IDL.Func([AppUpgradeRequest], [Result_4], []),
-    'wallet_canister_track' : IDL.Func([IDL.Principal], [Result_4], []),
-    'wallet_canister_track_self' : IDL.Func([IDL.Principal], [Result_4], []),
-    'wallet_canister_untrack' : IDL.Func([IDL.Principal], [Result_4], []),
-    'wallet_canister_untrack_self' : IDL.Func([IDL.Principal], [Result_4], []),
+    'wallet_app_upgrade_v2' : IDL.Func([AppUpgradeRequest], [Result_2], []),
+    'wallet_canister_track' : IDL.Func([IDL.Principal], [Result_2], []),
+    'wallet_canister_track_self' : IDL.Func([IDL.Principal], [Result_2], []),
+    'wallet_canister_untrack' : IDL.Func([IDL.Principal], [Result_2], []),
+    'wallet_canister_untrack_self' : IDL.Func([IDL.Principal], [Result_2], []),
     'wallet_cycle_balance' : IDL.Func([], [Result_18], []),
     'wallet_cycle_charge' : IDL.Func(
         [WalletCycleChargeRequest],
@@ -256,7 +248,7 @@ export const idlFactory = ({ IDL }) => {
     'wallet_main_register' : IDL.Func([IDL.Principal], [Result_21], []),
     'wallet_order_list' : IDL.Func([], [Result_22], []),
     'wallet_order_new' : IDL.Func([IDL.Float32], [Result_23], []),
-    'wallet_order_notify' : IDL.Func([IDL.Nat64], [Result_2], []),
+    'wallet_order_notify' : IDL.Func([IDL.Nat64], [Result_1], []),
     'wallet_tenant_get' : IDL.Func([], [Result_21], []),
   });
 };

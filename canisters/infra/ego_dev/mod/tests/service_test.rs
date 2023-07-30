@@ -474,11 +474,6 @@ async fn app_version_release() {
   assert_eq!(AppVersionStatus::RELEASED, app_version.status);
 }
 
-fn get_md5(data: &Vec<u8>) -> String {
-  let digest = md5::compute(data);
-  return format!("{:?}", digest);
-}
-
 #[tokio::test]
 async fn app_version_upload_wasm() {
   set_up();

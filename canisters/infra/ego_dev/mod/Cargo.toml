@@ -20,6 +20,7 @@ ic-ledger-types = { workspace = true }
 ego_types = { workspace = true }
 ego_macros = { workspace = true }
 ego_lib = { workspace = true }
+ego_backup = { workspace = true }
 
 ic-stable-structures = { workspace = true }
 ciborium = { workspace = true }

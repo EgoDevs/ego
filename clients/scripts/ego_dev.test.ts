@@ -61,6 +61,7 @@ describe('ego_dev_import', () => {
     let developers = []
     Object.entries(ego_dev['developers']).forEach(([_, developer]) => {
       developer['developer_id'] = Principal.fromText(developer['developer_id'])
+      developer['last_update'] = 0
       developers.push(developer)
     })
     ego_dev['developers'] = developers;
@@ -73,6 +74,8 @@ describe('ego_dev_import', () => {
 
       app['developer_id'] = Principal.fromText(app['developer_id'])
       app['audit_version'] = app['audit_version'] ? [app['audit_version']] : []
+
+      app['last_update'] = 0
 
       app['versions'].forEach((app_version) => {
         app_version['id'] = 0
@@ -90,6 +93,8 @@ describe('ego_dev_import', () => {
         app_version['wasm']['canister_type'] = canister_type
 
         app_version['wasm'] = [app_version['wasm']]
+
+        app_version['last_update'] = 0
       })
 
       apps.push(app)

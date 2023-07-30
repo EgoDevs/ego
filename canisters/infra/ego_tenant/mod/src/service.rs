@@ -27,7 +27,7 @@ impl EgoTenantService {
     canister_id: &Principal,
     next_check_time: u64,
   ) {
-    let mut task = Task::new(&canister_id,  next_check_time, None);
+    let mut task = Task::new(&canister_id, next_check_time, None);
     task.save();
   }
 

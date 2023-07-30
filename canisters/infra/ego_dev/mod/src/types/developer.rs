@@ -1,11 +1,14 @@
 use std::borrow::Cow;
-use candid::{CandidType, Decode, Deserialize, Encode, Principal};
-use serde::Serialize;
-use ic_stable_structures::{BoundedStorable, Storable};
 
-use ego_types::app::{AppId};
-use crate::memory::DEVELOPERS;
+use candid::{CandidType, Decode, Deserialize, Encode, Principal};
+use ic_stable_structures::{BoundedStorable, Storable};
 use ic_stable_structures::storable::Blob;
+use serde::Serialize;
+
+use ego_types::app::AppId;
+use ego_utils::util::time;
+
+use crate::memory::DEVELOPERS;
 use crate::types::ego_dev_app::EgoDevApp;
 
 #[derive(CandidType, Serialize, Deserialize, Clone, Debug)]
@@ -15,6 +18,7 @@ pub struct Developer {
   pub is_app_auditor: bool,
   pub is_manager: bool,
   pub created_apps: Vec<AppId>,
+  pub last_update: u64,    // mini second
 }
 
 impl Developer {
@@ -25,6 +29,7 @@ impl Developer {
       is_app_auditor: false,
       is_manager: false,
       created_apps: vec![],
+      last_update: 0,
     }
   }
 
@@ -32,6 +37,17 @@ impl Developer {
     DEVELOPERS.with(|cell| {
       let inst = cell.borrow();
       inst.iter()
+        .map(|(_, developer)| {
+          developer
+        }).collect()
+    })
+  }
+
+  pub fn by_last_update(last_update: u64) -> Vec<Developer> {
+    DEVELOPERS.with(|cell| {
+      let inst = cell.borrow();
+      inst.iter()
+        .filter(|(_, developer)| developer.last_update > last_update)
         .map(|(_, developer)| {
           developer
         }).collect()
@@ -62,10 +78,11 @@ impl Developer {
     })
   }
 
-  pub fn save(&self) {
+  pub fn save(&mut self) {
     DEVELOPERS.with(|cell| {
       let mut inst = cell.borrow_mut();
       let key = Blob::try_from(self.developer_id.as_slice()).unwrap();
+      self.last_update = time();
       inst.insert(key, self.clone());
     });
   }
