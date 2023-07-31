@@ -57,7 +57,7 @@ type Order = record {
   wallet_id : principal;
 };
 type OrderStatus = variant { NEW; SUCCESS };
-type Result = variant { Ok : opt UserApp_1; Err : EgoError };
+type Result = variant { Ok : UserApp; Err : EgoError };
 type Result_1 = variant { Ok : bool; Err : EgoError };
 type Result_10 = variant { Ok : vec CycleRecord; Err : text };
 type Result_11 = variant { Ok : CycleInfo; Err : text };
@@ -68,15 +68,14 @@ type Result_14 = variant {
   Err : text;
 };
 type Result_15 = variant { Ok : opt ByteReadResponse; Err : text };
-type Result_16 = variant { Ok : UserApp; Err : EgoError };
-type Result_17 = variant { Ok : vec UserApp; Err : EgoError };
-type Result_18 = variant { Ok : nat; Err : EgoError };
-type Result_19 = variant { Ok : WalletCycleChargeResponse; Err : EgoError };
+type Result_16 = variant { Ok : vec UserApp; Err : EgoError };
+type Result_17 = variant { Ok : nat; Err : EgoError };
+type Result_18 = variant { Ok : WalletCycleChargeResponse; Err : EgoError };
+type Result_19 = variant { Ok : vec CashFlow; Err : EgoError };
 type Result_2 = variant { Ok; Err : EgoError };
-type Result_20 = variant { Ok : vec CashFlow; Err : EgoError };
-type Result_21 = variant { Ok : principal; Err : EgoError };
-type Result_22 = variant { Ok : vec Order; Err : EgoError };
-type Result_23 = variant { Ok : nat64; Err : EgoError };
+type Result_20 = variant { Ok : principal; Err : EgoError };
+type Result_21 = variant { Ok : vec Order; Err : EgoError };
+type Result_22 = variant { Ok : nat64; Err : EgoError };
 type Result_3 = variant { Ok : App; Err : EgoError };
 type Result_4 = variant { Ok : vec App; Err : EgoError };
 type Result_5 = variant { Ok; Err : text };
@@ -87,13 +86,6 @@ type Result_9 = variant { Ok : vec record { text; vec principal }; Err : text };
 type UserApp = record {
   app : App;
   canister : Canister;
-  latest_version : Version;
-  wallet_id : opt principal;
-};
-type UserApp_1 = record {
-  app : App;
-  canister : Canister;
-  last_update : nat64;
   latest_version : Version;
   wallet_id : opt principal;
 };
@@ -121,7 +113,7 @@ type Wasm = record {
 service : () -> {
   admin_export : () -> (vec nat8);
   admin_wallet_add : (vec WalletImport) -> ();
-  admin_wallet_app_get : (principal) -> (Result);
+  admin_wallet_app_get : (principal, principal) -> (Result);
   admin_wallet_cycle_recharge : (AdminWalletCycleRechargeRequest) -> (Result_1);
   admin_wallet_provider_add : (AdminWalletProviderAddRequest) -> (Result_2);
   admin_wallet_provider_delete : (principal) -> (Result_2);
@@ -162,9 +154,9 @@ service : () -> {
   ego_user_remove : (principal) -> (Result_5);
   ego_user_set : (vec principal) -> (Result_5);
   job_data_export : (text, opt nat64) -> (Result_15);
-  wallet_app_install : (text) -> (Result_16);
-  wallet_app_install_v2 : (AppInstallRequest) -> (Result_16);
-  wallet_app_list : () -> (Result_17);
+  wallet_app_install : (text) -> (Result);
+  wallet_app_install_v2 : (AppInstallRequest) -> (Result);
+  wallet_app_list : () -> (Result_16);
   wallet_app_reinstall_by_wallet_v2 : (AppReInstallRequest) -> (Result_2);
   wallet_app_remove : (principal) -> (Result_2);
   wallet_app_upgrade : (principal) -> (Result_2);
@@ -175,13 +167,13 @@ service : () -> {
   wallet_canister_track_self : (principal) -> (Result_2);
   wallet_canister_untrack : (principal) -> (Result_2);
   wallet_canister_untrack_self : (principal) -> (Result_2);
-  wallet_cycle_balance : () -> (Result_18);
-  wallet_cycle_charge : (WalletCycleChargeRequest) -> (Result_19);
-  wallet_cycle_list : () -> (Result_20);
-  wallet_main_new : (principal) -> (Result_16);
-  wallet_main_register : (principal) -> (Result_21);
-  wallet_order_list : () -> (Result_22);
-  wallet_order_new : (float32) -> (Result_23);
+  wallet_cycle_balance : () -> (Result_17);
+  wallet_cycle_charge : (WalletCycleChargeRequest) -> (Result_18);
+  wallet_cycle_list : () -> (Result_19);
+  wallet_main_new : (principal) -> (Result);
+  wallet_main_register : (principal) -> (Result_20);
+  wallet_order_list : () -> (Result_21);
+  wallet_order_new : (float32) -> (Result_22);
   wallet_order_notify : (nat64) -> (Result_1);
-  wallet_tenant_get : () -> (Result_21);
+  wallet_tenant_get : () -> (Result_20);
 }

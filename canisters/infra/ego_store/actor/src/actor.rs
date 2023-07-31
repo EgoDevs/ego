@@ -555,10 +555,10 @@ pub fn admin_wallet_add(wallets: Vec<WalletImport>) {
 ///
 #[update(name = "admin_wallet_app_get", guard = "owner_guard")]
 #[candid_method(update, rename = "admin_wallet_app_get")]
-pub fn admin_wallet_app_get(canister_id: Principal) -> Result<Option<user_app::UserApp>, EgoError> {
+pub fn admin_wallet_app_get(_wallet_id: Principal, canister_id: Principal) -> Result<UserApp, EgoError> {
   info_log_add(format!("admin_wallet_app_get canister_id: {}", canister_id).as_str());
 
-  Ok(user_app::UserApp::get(&canister_id))
+  Ok(user_app::UserApp::get(&canister_id).expect("canister not exists").into_ego_user_app())
 }
 
 /********************  数据导出   ********************/

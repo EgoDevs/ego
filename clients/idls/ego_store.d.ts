@@ -73,7 +73,7 @@ export interface Order {
 }
 export type OrderStatus = { 'NEW' : null } |
   { 'SUCCESS' : null };
-export type Result = { 'Ok' : [] | [UserApp_1] } |
+export type Result = { 'Ok' : UserApp } |
   { 'Err' : EgoError };
 export type Result_1 = { 'Ok' : boolean } |
   { 'Err' : EgoError };
@@ -89,23 +89,21 @@ export type Result_14 = { 'Ok' : [] | [Array<[Principal, string]>] } |
   { 'Err' : string };
 export type Result_15 = { 'Ok' : [] | [ByteReadResponse] } |
   { 'Err' : string };
-export type Result_16 = { 'Ok' : UserApp } |
+export type Result_16 = { 'Ok' : Array<UserApp> } |
   { 'Err' : EgoError };
-export type Result_17 = { 'Ok' : Array<UserApp> } |
+export type Result_17 = { 'Ok' : bigint } |
   { 'Err' : EgoError };
-export type Result_18 = { 'Ok' : bigint } |
+export type Result_18 = { 'Ok' : WalletCycleChargeResponse } |
   { 'Err' : EgoError };
-export type Result_19 = { 'Ok' : WalletCycleChargeResponse } |
+export type Result_19 = { 'Ok' : Array<CashFlow> } |
   { 'Err' : EgoError };
 export type Result_2 = { 'Ok' : null } |
   { 'Err' : EgoError };
-export type Result_20 = { 'Ok' : Array<CashFlow> } |
+export type Result_20 = { 'Ok' : Principal } |
   { 'Err' : EgoError };
-export type Result_21 = { 'Ok' : Principal } |
+export type Result_21 = { 'Ok' : Array<Order> } |
   { 'Err' : EgoError };
-export type Result_22 = { 'Ok' : Array<Order> } |
-  { 'Err' : EgoError };
-export type Result_23 = { 'Ok' : bigint } |
+export type Result_22 = { 'Ok' : bigint } |
   { 'Err' : EgoError };
 export type Result_3 = { 'Ok' : App } |
   { 'Err' : EgoError };
@@ -124,13 +122,6 @@ export type Result_9 = { 'Ok' : Array<[string, Array<Principal>]> } |
 export interface UserApp {
   'app' : App,
   'canister' : Canister,
-  'latest_version' : Version,
-  'wallet_id' : [] | [Principal],
-}
-export interface UserApp_1 {
-  'app' : App,
-  'canister' : Canister,
-  'last_update' : bigint,
   'latest_version' : Version,
   'wallet_id' : [] | [Principal],
 }
@@ -162,7 +153,7 @@ export interface Wasm {
 export interface _SERVICE {
   'admin_export' : ActorMethod<[], Uint8Array | number[]>,
   'admin_wallet_add' : ActorMethod<[Array<WalletImport>], undefined>,
-  'admin_wallet_app_get' : ActorMethod<[Principal], Result>,
+  'admin_wallet_app_get' : ActorMethod<[Principal, Principal], Result>,
   'admin_wallet_cycle_recharge' : ActorMethod<
     [AdminWalletCycleRechargeRequest],
     Result_1
@@ -209,9 +200,9 @@ export interface _SERVICE {
   'ego_user_remove' : ActorMethod<[Principal], Result_5>,
   'ego_user_set' : ActorMethod<[Array<Principal>], Result_5>,
   'job_data_export' : ActorMethod<[string, [] | [bigint]], Result_15>,
-  'wallet_app_install' : ActorMethod<[string], Result_16>,
-  'wallet_app_install_v2' : ActorMethod<[AppInstallRequest], Result_16>,
-  'wallet_app_list' : ActorMethod<[], Result_17>,
+  'wallet_app_install' : ActorMethod<[string], Result>,
+  'wallet_app_install_v2' : ActorMethod<[AppInstallRequest], Result>,
+  'wallet_app_list' : ActorMethod<[], Result_16>,
   'wallet_app_reinstall_by_wallet_v2' : ActorMethod<
     [AppReInstallRequest],
     Result_2
@@ -228,13 +219,13 @@ export interface _SERVICE {
   'wallet_canister_track_self' : ActorMethod<[Principal], Result_2>,
   'wallet_canister_untrack' : ActorMethod<[Principal], Result_2>,
   'wallet_canister_untrack_self' : ActorMethod<[Principal], Result_2>,
-  'wallet_cycle_balance' : ActorMethod<[], Result_18>,
-  'wallet_cycle_charge' : ActorMethod<[WalletCycleChargeRequest], Result_19>,
-  'wallet_cycle_list' : ActorMethod<[], Result_20>,
-  'wallet_main_new' : ActorMethod<[Principal], Result_16>,
-  'wallet_main_register' : ActorMethod<[Principal], Result_21>,
-  'wallet_order_list' : ActorMethod<[], Result_22>,
-  'wallet_order_new' : ActorMethod<[number], Result_23>,
+  'wallet_cycle_balance' : ActorMethod<[], Result_17>,
+  'wallet_cycle_charge' : ActorMethod<[WalletCycleChargeRequest], Result_18>,
+  'wallet_cycle_list' : ActorMethod<[], Result_19>,
+  'wallet_main_new' : ActorMethod<[Principal], Result>,
+  'wallet_main_register' : ActorMethod<[Principal], Result_20>,
+  'wallet_order_list' : ActorMethod<[], Result_21>,
+  'wallet_order_new' : ActorMethod<[number], Result_22>,
   'wallet_order_notify' : ActorMethod<[bigint], Result_1>,
-  'wallet_tenant_get' : ActorMethod<[], Result_21>,
+  'wallet_tenant_get' : ActorMethod<[], Result_20>,
 }
