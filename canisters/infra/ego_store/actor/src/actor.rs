@@ -495,6 +495,16 @@ pub async fn wallet_main_new(user_id: Principal) -> Result<UserApp, EgoError> {
 
 /********************  methods for astro_deployer   ********************/
 ///
+/// 返回wallet_provider列表
+///
+#[update(name = "admin_wallet_provider_list", guard = "owner_guard")]
+#[candid_method(update, rename = "admin_wallet_provider_list")]
+pub fn admin_wallet_provider_list() -> Result<Vec<WalletProvider>, EgoError> {
+  info_log_add("admin_wallet_provider_list");
+
+  Ok(WalletProvider::list())
+}
+///
 /// 添加wallet_provider
 ///
 #[update(name = "admin_wallet_provider_add", guard = "owner_guard")]
