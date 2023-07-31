@@ -96,10 +96,12 @@ impl UserApp {
   }
 
   pub fn into_ego_user_app(&self) -> ego_types::app::UserApp {
+    let ego_store_app = EgoStoreApp::get(&self.app.app_id).expect("ego store app not exists");
+
     ego_types::app::UserApp {
       app: self.app.clone(),
       canister: self.canister.clone(),
-      latest_version: self.latest_version,
+      latest_version: ego_store_app.app.current_version,
       wallet_id: self.wallet_id,
     }
   }
