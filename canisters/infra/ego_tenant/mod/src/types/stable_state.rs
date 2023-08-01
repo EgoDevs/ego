@@ -9,11 +9,12 @@ use serde::Serialize;
 use ego_types::cycle_info::CycleInfo;
 use ego_types::registry::Registry;
 use ego_types::user::User;
+use crate::state::{backup_info_pre_upgrade, cycle_info_pre_upgrade, registry_pre_upgrade, users_pre_upgrade};
 
 const STATE_SIZE: u32 = 4 * 1024 * 1024; // 4M
 
 // stable state
-#[derive(CandidType, Deserialize, Serialize)]
+#[derive(CandidType, Deserialize, Serialize, Debug)]
 pub struct StableState {
   pub users: Option<User>,
   pub registry: Option<Registry>,
@@ -28,6 +29,17 @@ impl Default for StableState {
       registry: None,
       cycle_info: None,
       backup_info: None,
+    }
+  }
+}
+
+impl StableState {
+  pub fn load() -> Self {
+    StableState {
+      users: Some(users_pre_upgrade()),
+      registry: Some(registry_pre_upgrade()),
+      cycle_info: Some(cycle_info_pre_upgrade()),
+      backup_info: Some(backup_info_pre_upgrade()),
     }
   }
 }

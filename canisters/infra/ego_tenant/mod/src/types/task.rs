@@ -35,23 +35,28 @@ impl Task {
     }
   }
 
-  pub fn by_last_update(last_update: u64) -> Vec<Task> {
+  pub fn len() -> u64 {
     TASKS.with(|cell| {
       let inst = cell.borrow();
-      inst.iter()
-        .filter(|(_, task)| task.last_update > last_update)
-        .map(|(_, task)| {
-          task
-        }).collect()
+      inst.len()
+    })
+  }
+
+  pub fn by_last_update(last_update: u64) -> Vec<Task> {
+    Self::iter(|(_, task)| {
+      match task.last_update >= last_update {
+        true => {Some(task)}
+        false => {None}
+      }
     })
   }
 
   pub fn by_sentinel(sentinel: u64) -> Vec<Task> {
-    TASKS.with(|cell| {
-      let inst = cell.borrow();
-      inst.iter().filter(|(_, task)| task.next_check_time <= sentinel && task.try_count < MAX_TRY_COUNT)
-        .map(|(_, task)| task.clone()).collect()
-    })
+    Self::iter(|(_, task)|
+      match task.next_check_time <= sentinel && task.try_count < MAX_TRY_COUNT {
+        true => {Some(task)}
+        false => {None}
+      })
   }
 
   pub fn list() -> Vec<Task> {
@@ -73,17 +78,25 @@ impl Task {
     TASKS.with(|cell| {
       let mut inst = cell.borrow_mut();
       let key = Blob::try_from(self.canister_id.as_slice()).unwrap();
-      self.last_update = time() / 1000000000;
+      self.last_update = time();
       inst.insert(key, self.clone())
     });
   }
 
-  pub fn remove(&self) {
+  pub fn remove(canister_id: &Principal) {
     TASKS.with(|cell| {
       let mut inst = cell.borrow_mut();
-      let key = Blob::try_from(self.canister_id.as_slice()).unwrap();
+      let key = Blob::try_from(canister_id.as_slice()).unwrap();
       inst.remove(&key);
     });
+  }
+
+  fn iter<F>(filter : F) -> Vec<Task>
+  where F: FnMut((Blob<29>, Task)) -> Option<Task>{
+    TASKS.with(|cell| {
+      let inst = cell.borrow();
+      inst.iter().filter_map(filter).collect()
+    })
   }
 }
 

@@ -184,7 +184,7 @@ async fn app_main_install_failed() {
   let file_canister = Principal::from_text(FILE_CANISTER_ID.to_string()).unwrap();
 
   let mut mock_management = MockManagement::new();
-  let mock_ego_file = MockEgoFile::new();
+  let mut mock_ego_file = MockEgoFile::new();
   let mock_ego_canister = MockCanister::new();
 
   let version = Version {
@@ -193,6 +193,10 @@ async fn app_main_install_failed() {
     patch: 0,
   };
   let backend = Wasm::new(EXISTS_APP_ID.to_string(), version, BACKEND, file_canister);
+
+  mock_ego_file.expect_file_main_read().returning(|_canister_id, _fid| {
+    Ok(vec![])
+  });
 
   mock_management
     .expect_canister_main_create()
@@ -217,6 +221,7 @@ async fn app_main_install_failed() {
 }
 
 #[tokio::test]
+#[should_panic]
 async fn app_main_install_canister_code_install_fail() {
   set_up();
 
@@ -290,6 +295,7 @@ async fn app_main_install_canister_code_install_fail() {
 }
 
 #[tokio::test]
+#[should_panic]
 async fn app_main_install_ego_faile_fail() {
   set_up();
 

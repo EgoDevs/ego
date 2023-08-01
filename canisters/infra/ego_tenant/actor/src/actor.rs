@@ -230,21 +230,9 @@ async fn wallet_cycle_recharge(cycles: u128) -> Result<(), EgoError> {
 pub fn admin_task_list(last_update: u64) -> Result<Vec<Task>, EgoError> {
   info_log_add("canister_task_list");
 
-  let tasks = Task::by_last_update(last_update);
-  Ok(tasks)
+  Ok(Task::by_last_update(last_update))
 }
 
-#[update(name = "admin_task_add", guard = "owner_guard")]
-#[candid_method(update, rename = "admin_task_add")]
-pub fn admin_task_add(tasks: Vec<Task>) {
-  info_log_add("admin_task_add");
-
-  tasks.iter().for_each(|task| {
-    info_log_add(format!("task added canister_id:{}", task.canister_id).as_str());
-    let mut t = Task::new(&task.canister_id, task.next_check_time, None);
-    t.save();
-  });
-}
 
 
 /********************  notify  ********************/
@@ -268,15 +256,10 @@ fn task_run() {
 /********************  数据导出   ********************/
 #[update(name = "admin_export", guard = "owner_guard")]
 #[candid_method(update, rename = "admin_export")]
-async fn admin_export() -> Vec<u8> {
+pub fn admin_export() -> Vec<u8> {
   info_log_add("admin_export");
 
-  let state = StableState {
-    users: Some(users_pre_upgrade()),
-    registry: Some(registry_pre_upgrade()),
-    cycle_info: Some(cycle_info_pre_upgrade()),
-    backup_info: Some(backup_info_pre_upgrade()),
-  };
+  let state = StableState::load();
 
   let data_export = DataExport {
     state,
@@ -285,6 +268,19 @@ async fn admin_export() -> Vec<u8> {
 
   serde_json::to_vec(&data_export).unwrap()
 }
+
+#[update(name = "admin_import", guard = "owner_guard")]
+#[candid_method(update, rename = "admin_import")]
+pub fn admin_import(tasks: Vec<Task>) {
+  info_log_add("admin_task_add");
+
+  tasks.iter().for_each(|task| {
+    info_log_add(format!("task added canister_id:{}", task.canister_id).as_str());
+    let mut t = Task::new(&task.canister_id, task.next_check_time, None);
+    t.save();
+  });
+}
+
 
 /********************  methods for ego_cycle_threshold_get   ********************/
 pub fn cycle_threshold_get() -> u128 {

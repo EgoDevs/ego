@@ -111,7 +111,6 @@ fn canister_main_untrack() {
 }
 
 #[test]
-#[should_panic]
 fn canister_main_untrack_not_exists_task() {
   set_up();
 

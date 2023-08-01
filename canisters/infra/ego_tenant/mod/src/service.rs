@@ -32,8 +32,7 @@ impl EgoTenantService {
   }
 
   pub fn canister_main_untrack(canister_id: &Principal) {
-    let task = Task::get(canister_id).expect("task not exists");
-    task.remove();
+    Task::remove(canister_id);
   }
 
   pub async fn app_main_install<F: TEgoFile, M: TIcManagement, EC: TEgoCanister>(

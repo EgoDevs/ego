@@ -18,7 +18,7 @@ pub fn job_list() -> Vec<BackupJob> {
 
   jobs.push(BackupJob {
     name: "tasks".to_string(),
-    amount: Task::list().len() as usize,
+    amount: Task::len() as usize,
   });
 
   jobs
