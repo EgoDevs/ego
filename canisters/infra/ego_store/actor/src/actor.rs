@@ -61,10 +61,7 @@ fn post_upgrade() {
 #[candid_method(update, rename = "app_main_list")]
 pub fn app_main_list() -> Result<Vec<App>, EgoError> {
   info_log_add("app_main_list");
-  match EgoStoreService::app_main_list() {
-    Ok(apps) => Ok(apps),
-    Err(e) => Err(e),
-  }
+  Ok(EgoStoreService::app_main_list())
 }
 
 #[update(name = "app_main_get")]
@@ -72,8 +69,8 @@ pub fn app_main_list() -> Result<Vec<App>, EgoError> {
 pub fn app_main_get(app_id: AppId) -> Result<App, EgoError> {
   info_log_add("app_main_get");
   match EgoStoreService::app_main_get(&app_id) {
-    Ok(ego_store_app) => Ok(ego_store_app.app),
-    Err(e) => Err(e),
+    Some(ego_store_app) => Ok(ego_store_app.app),
+    None => Err(EgoError::from(EgoStoreErr::AppNotExists)),
   }
 }
 
@@ -105,7 +102,7 @@ pub fn wallet_app_list() -> Result<Vec<UserApp>, EgoError> {
   let wallet_id = ic_cdk::caller();
 
   let user_apps = EgoStoreService::wallet_app_list(&wallet_id).iter().map(|user_app| {
-    user_app.into_ego_user_app()
+    user_app.clone().into()
   }).collect();
   Ok(user_apps)
 }
@@ -127,7 +124,7 @@ pub async fn wallet_app_install(app_id: AppId) -> Result<UserApp, EgoError> {
   let user_app =
     EgoStoreService::wallet_app_install(ego_tenant, ego_canister, &wallet_id, &app).await?;
 
-  Ok(user_app.into_ego_user_app())
+  Ok(user_app.into())
 }
 
 #[update(name = "wallet_app_install_v2")]
@@ -149,7 +146,7 @@ pub async fn wallet_app_install_v2(req: AppInstallRequest) -> Result<UserApp, Eg
   let user_app =
     EgoStoreService::wallet_app_install(ego_tenant, ego_canister, &wallet_id, &app).await?;
 
-  Ok(user_app.into_ego_user_app())
+  Ok(user_app.into())
 }
 
 /// canister自己升级自己
@@ -372,14 +369,7 @@ pub fn wallet_cycle_list() -> Result<Vec<CashFlow>, EgoError> {
 
   let cash_flows = EgoStoreService::wallet_cash_flow_list(&wallet_id);
 
-  Ok(cash_flows.iter().map(|cash_flow| CashFlow {
-    cash_flow_type: cash_flow.cash_flow_type.clone(),
-    cycles: cash_flow.cycles,
-    balance: cash_flow.balance,
-    created_at: cash_flow.created_at,
-    operator: cash_flow.operator.clone(),
-    comment: cash_flow.comment.clone(),
-  }).collect())
+  Ok(cash_flows.iter().map(|cash_flow| cash_flow.clone().into()).collect())
 }
 
 /********************  methods for ego_tenant  ********************/
@@ -490,7 +480,7 @@ pub async fn wallet_main_new(user_id: Principal) -> Result<UserApp, EgoError> {
     "Register Account".to_string(),
   );
 
-  Ok(user_app.into_ego_user_app())
+  Ok(user_app.into())
 }
 
 /********************  methods for astro_deployer   ********************/
@@ -504,6 +494,7 @@ pub fn admin_wallet_provider_list() -> Result<Vec<WalletProvider>, EgoError> {
 
   Ok(WalletProvider::list())
 }
+
 ///
 /// 添加wallet_provider
 ///
@@ -513,7 +504,6 @@ pub fn admin_wallet_provider_add(req: AdminWalletProviderAddRequest) -> Result<(
   info_log_add("admin_wallet_provider_add");
 
   let wallet_provider = WalletProvider::new(&req.wallet_provider, &req.wallet_app_id);
-
   wallet_provider.save();
   Ok(())
 }
@@ -526,39 +516,9 @@ pub fn admin_wallet_provider_add(req: AdminWalletProviderAddRequest) -> Result<(
 pub fn admin_wallet_provider_delete(wallet_provider_id: Principal) -> Result<(), EgoError> {
   info_log_add("admin_wallet_provider_delete");
 
-  let wallet_provider = WalletProvider::get(&wallet_provider_id).unwrap();
-  wallet_provider.remove();
+  WalletProvider::remove(&wallet_provider_id);
   Ok(())
 }
-
-///
-/// 导入
-///
-#[update(name = "admin_wallet_add", guard = "owner_guard")]
-#[candid_method(update, rename = "admin_wallet_add")]
-pub fn admin_wallet_add(wallets: Vec<WalletImport>) {
-  info_log_add("admin_wallet_add");
-
-  wallets.iter().for_each(|wallet| {
-    let mut w = Wallet::new(&wallet.tenant_id, &wallet.wallet_id, &wallet.user_id);
-    w.cycles = wallet.cycles;
-    w.save();
-
-    wallet.user_apps.iter().for_each(|app| {
-      info_log_add(format!("admin_wallet_app_add app_id:{}", app.app.app_id).as_str());
-      let mut user_app = ego_store_mod::types::user_app::UserApp::new(&app.app, app.canister.clone(), Some(wallet.wallet_id));
-      user_app.latest_version = app.latest_version;
-      user_app.save();
-    });
-
-    wallet.cash_flows.iter().for_each(|cash_flow| {
-      let mut c_f = cash_flow::CashFlow::new(wallet.wallet_id, cash_flow.cash_flow_type.clone(), cash_flow.cycles, cash_flow.balance, &cash_flow.operator, cash_flow.comment.clone());
-      c_f.created_at = cash_flow.created_at / 1000000000;
-      c_f.save();
-    })
-  });
-}
-
 
 ///
 /// 返回某个Canister
@@ -568,7 +528,7 @@ pub fn admin_wallet_add(wallets: Vec<WalletImport>) {
 pub fn admin_wallet_app_get(_wallet_id: Principal, canister_id: Principal) -> Result<UserApp, EgoError> {
   info_log_add(format!("admin_wallet_app_get canister_id: {}", canister_id).as_str());
 
-  Ok(user_app::UserApp::get(&canister_id).expect("canister not exists").into_ego_user_app())
+  Ok(user_app::UserApp::get(&canister_id).expect("canister not exists").into())
 }
 
 /********************  数据导出   ********************/
@@ -598,6 +558,34 @@ fn admin_export() -> Vec<u8> {
 
   serde_json::to_vec(&data_export).unwrap()
 }
+
+///
+/// 导入
+///
+#[update(name = "admin_import", guard = "owner_guard")]
+#[candid_method(update, rename = "admin_import")]
+pub fn admin_import(wallets: Vec<WalletImport>) {
+  info_log_add("admin_import");
+
+  wallets.iter().for_each(|wallet| {
+    let mut w = Wallet::new(&wallet.tenant_id, &wallet.wallet_id, &wallet.user_id);
+    w.cycles = wallet.cycles;
+    w.save();
+
+    wallet.user_apps.iter().for_each(|app| {
+      info_log_add(format!("admin_wallet_app_add app_id:{}", app.app.app_id).as_str());
+      let mut user_app = ego_store_mod::types::user_app::UserApp::new(&app.app, &app.canister, Some(wallet.wallet_id));
+      user_app.save();
+    });
+
+    wallet.cash_flows.iter().for_each(|cash_flow| {
+      let mut c_f = cash_flow::CashFlow::new(&wallet.wallet_id, cash_flow.cash_flow_type.clone(), cash_flow.cycles, cash_flow.balance, &cash_flow.operator, cash_flow.comment.clone());
+      c_f.created_at = cash_flow.created_at / 1000000000;
+      c_f.save();
+    })
+  });
+}
+
 
 /********************  methods for ego_cycle_threshold_get   ********************/
 pub fn cycle_threshold_get() -> u128 {

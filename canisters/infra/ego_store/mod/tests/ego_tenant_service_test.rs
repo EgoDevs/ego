@@ -42,7 +42,7 @@ pub fn set_up() {
   // add user app
   let backend_principal = Principal::from_text(EXISTS_USER_APP_BACKEND.to_string()).unwrap();
   let mut user_app = UserApp::new(&app,
-                                  Canister::new(backend_principal, CanisterType::BACKEND), Some(wallet.wallet_id));
+                                  &Canister::new(backend_principal, CanisterType::BACKEND), Some(wallet.wallet_id));
   user_app.save();
 }
 

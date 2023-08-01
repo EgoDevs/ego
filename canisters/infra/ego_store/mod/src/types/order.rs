@@ -27,13 +27,7 @@ pub struct Order {
   pub amount: f32,
   pub memo: Memo,
   pub status: OrderStatus,
-  pub last_update: u64,  // mini second
-}
-
-#[derive(CandidType, Serialize, Deserialize, Clone, Debug, PartialEq)]
-pub enum OrderType {
-  APP,
-  RECHARGE,
+  pub last_update: u64,  // second
 }
 
 impl Order {
@@ -50,7 +44,7 @@ impl Order {
     subaccount = Subaccount(bytes);
     let to = AccountIdentifier::new(store_id, &subaccount);
 
-    Order {
+    Self {
       wallet_id: wallet_id.clone(),
       from,
       to,
@@ -61,42 +55,34 @@ impl Order {
     }
   }
 
-  pub fn list() -> Vec<Order> {
+  pub fn len() -> u64 {
     ORDERS.with(|cell| {
       let inst = cell.borrow();
-      inst.iter()
-        .map(|(_, order)| {
-          order
-        }).collect()
+      inst.len()
     })
   }
 
-  pub fn by_wallet_id(wallet_id: &Principal) -> Vec<Order> {
-    ORDERS.with(|cell| {
-      let inst = cell.borrow();
-      inst.iter()
-        .filter(|(_, order)| order.wallet_id == wallet_id.clone())
-        .map(|(_, order)| {
-          order
-        }).collect()
+  pub fn list() -> Vec<Self> {
+    Self::iter(|(_, order)| Some(order))
+  }
+
+  pub fn by_wallet_id(wallet_id: &Principal) -> Vec<Self> {
+    Self::iter(|(_, order)| match order.wallet_id == *wallet_id {
+      true => { Some(order) }
+      false => { None }
     })
   }
 
-  pub fn by_last_update(last_update: u64) -> Vec<Order> {
-    ORDERS.with(|cell| {
-      let inst = cell.borrow();
-      inst.iter()
-        .filter(|(_, order)| order.last_update > last_update)
-        .map(|(_, order)| {
-          order
-        }).collect()
+  pub fn by_last_update(last_update: u64) -> Vec<Self> {
+    Self::iter(|(_, order)| match order.last_update >= last_update {
+      true => { Some(order) }
+      false => { None }
     })
   }
 
-  pub fn get(memo: Memo) -> Option<Order> {
+  pub fn get(memo: Memo) -> Option<Self> {
     ORDERS.with(|cell| {
       let inst = cell.borrow_mut();
-
       inst.get(&memo.0)
     })
   }
@@ -108,6 +94,14 @@ impl Order {
 
       inst.insert(self.memo.0, self.clone());
     });
+  }
+
+  fn iter<F>(filter: F) -> Vec<Self>
+    where F: FnMut((u64, Self)) -> Option<Self> {
+    ORDERS.with(|cell| {
+      let inst = cell.borrow();
+      inst.iter().filter_map(filter).collect()
+    })
   }
 }
 

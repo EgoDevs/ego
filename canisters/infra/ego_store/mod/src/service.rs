@@ -19,13 +19,12 @@ use crate::types::wallet::Wallet;
 pub struct EgoStoreService {}
 
 impl EgoStoreService {
-  pub fn app_main_list() -> Result<Vec<App>, EgoError> {
-    let apps = EgoStoreApp::list().iter().map(|ego_store_app| ego_store_app.app.clone()).collect();
-    Ok(apps)
+  pub fn app_main_list() -> Vec<App> {
+    EgoStoreApp::list().iter().map(|ego_store_app| ego_store_app.app.clone()).collect()
   }
 
-  pub fn app_main_get(app_id: &AppId) -> Result<EgoStoreApp, EgoError> {
-    EgoStoreApp::get(app_id).ok_or(EgoError::from(EgoStoreErr::AppNotExists))
+  pub fn app_main_get(app_id: &AppId) -> Option<EgoStoreApp> {
+    EgoStoreApp::get(app_id)
   }
 
   pub fn wallet_main_get(
@@ -53,16 +52,13 @@ impl EgoStoreService {
     wallet_id: &Principal,
     canister_id: &Principal,
   ) -> Result<UserApp, EgoError> {
-    let user_app = UserApp::get(canister_id).ok_or(EgoError::from(EgoStoreErr::AppNotExists))?;
-    match user_app.wallet_id.is_some() && user_app.wallet_id.unwrap() == *wallet_id {
-      true => {
-        Ok(user_app)
-      }
-      false => {
-        error_log_add("wallet_app_get: app not exists");
-        Err(EgoStoreErr::AppNotExists.into())
-      }
-    }
+    UserApp::by_wallet_id_and_id(wallet_id, canister_id).ok_or(EgoError::from(EgoStoreErr::AppNotExists))
+  }
+
+  pub fn ego_store_app_get(
+    app_id: &AppId,
+  ) -> Result<EgoStoreApp, EgoError> {
+    EgoStoreApp::get(app_id).ok_or(EgoError::from(EgoStoreErr::AppNotExists))
   }
 
   pub async fn wallet_app_install<T: TEgoTenant, EC: TEgoCanister>(
@@ -72,7 +68,7 @@ impl EgoStoreService {
     ego_store_app: &EgoStoreApp,
   ) -> Result<UserApp, EgoError> {
     info_log_add("3 get wallet");
-    let mut wallet = EgoStoreService::wallet_main_get(wallet_id)?;
+    let wallet = EgoStoreService::wallet_main_get(wallet_id)?;
 
     info_log_add("4 get ego_tenant_id relative to wallet");
     let ego_tenant_id = wallet.tenant_id;
@@ -90,11 +86,10 @@ impl EgoStoreService {
 
     let mut user_app = UserApp::new(
       &ego_store_app.app,
-      Canister::new(canister_id, ego_store_app.wasm.canister_type.clone()),
+      &Canister::new(canister_id, ego_store_app.wasm.canister_type.clone()),
       Some(wallet_id.clone()),
     );
-
-    wallet.app_install(&mut user_app);
+    user_app.save();
 
     info_log_add("6 track canister");
     ego_tenant.canister_main_track(ego_tenant_id, &canister_id);
@@ -117,11 +112,10 @@ impl EgoStoreService {
     canister_id: &Principal,
   ) -> Result<(), EgoError> {
     info_log_add("1 get user_app to be upgrade");
-
-    let mut user_app = EgoStoreService::wallet_app_get(wallet_id, canister_id)?;
+    let mut user_app = Self::wallet_app_get(wallet_id, canister_id)?;
 
     info_log_add("2 get app to be upgrade");
-    let ego_store_app = EgoStoreApp::get(&user_app.app.app_id).ok_or(EgoError::from(EgoStoreErr::AppNotExists))?;
+    let ego_store_app = Self::ego_store_app_get(&user_app.app.app_id)?;
 
     info_log_add(
       format!(
@@ -132,7 +126,7 @@ impl EgoStoreService {
     );
 
     info_log_add("4 get ego tenant id relative to wallet");
-    let mut wallet = EgoStoreService::wallet_main_get(wallet_id)?;
+    let wallet = EgoStoreService::wallet_main_get(wallet_id)?;
     let ego_tenant_id = wallet.tenant_id;
 
     info_log_add("5 call ego tenant to upgrade canister");
@@ -144,7 +138,8 @@ impl EgoStoreService {
       )
       .await?;
 
-    wallet.app_upgrade(&mut user_app, &ego_store_app.app.current_version);
+    user_app.app.current_version = ego_store_app.app.current_version.clone();
+    user_app.save();
 
     info_log_add("6 set app info");
     ego_canister.ego_app_info_update(
@@ -165,7 +160,7 @@ impl EgoStoreService {
   ) -> Result<(), EgoError> {
     info_log_add("1 get user_app to be reinstall");
 
-    let mut user_app = EgoStoreService::wallet_app_get(wallet_id, canister_id)?;
+    let mut user_app = Self::wallet_app_get(wallet_id, canister_id)?;
 
     info_log_add("2 get app to be reinstall");
 
@@ -180,7 +175,7 @@ impl EgoStoreService {
     );
 
     info_log_add("4 get ego tenant id relative to wallet");
-    let mut wallet = EgoStoreService::wallet_main_get(&wallet_id)?;
+    let wallet = EgoStoreService::wallet_main_get(&wallet_id)?;
     let ego_tenant_id = wallet.tenant_id;
 
     info_log_add("5 call ego tenant to reinstall canister");
@@ -192,7 +187,8 @@ impl EgoStoreService {
       )
       .await?;
 
-    wallet.app_upgrade(&mut user_app, &ego_store_app.app.current_version);
+    user_app.app.current_version = ego_store_app.app.current_version.clone();
+    user_app.save();
 
     info_log_add("6 set app info");
     ego_canister.ego_app_info_update(
@@ -212,17 +208,17 @@ impl EgoStoreService {
   ) -> Result<(), EgoError> {
     info_log_add("1 get user_app to be delete");
 
-    let user_app = EgoStoreService::wallet_app_get(wallet_id, canister_id).unwrap();
+    let user_app = Self::wallet_app_get(wallet_id, canister_id).unwrap();
 
     info_log_add("2 get ego tenant id relative to wallet");
-    let mut wallet = EgoStoreService::wallet_main_get(wallet_id)?;
+    let wallet = EgoStoreService::wallet_main_get(wallet_id)?;
     let ego_tenant_id = wallet.tenant_id;
 
     info_log_add("3 call ego tenant to delete canister");
     ego_tenant.app_main_delete(ego_tenant_id, &user_app.canister.canister_id);
 
     info_log_add("4 remove the user app from wallet");
-    wallet.app_remove(&user_app);
+    UserApp::remove(&user_app.canister.canister_id);
 
     Ok(())
   }
@@ -238,7 +234,7 @@ impl EgoStoreService {
 
     info_log_add("2 get user app");
     // confirm user app exists
-    let _ = EgoStoreService::wallet_app_get(wallet_id, canister_id)?;
+    let _ = Self::wallet_app_get(wallet_id, canister_id)?;
 
     info_log_add("3 track canister");
     ego_tenant.canister_main_track(ego_tenant_id, canister_id);
@@ -258,7 +254,7 @@ impl EgoStoreService {
 
     info_log_add("2 get user app");
     // confirm user app exists
-    let _ = EgoStoreService::wallet_app_get(wallet_id, canister_id)?;
+    let _ = Self::wallet_app_get(wallet_id, canister_id)?;
     info_log_add("3 untrack canister");
     ego_tenant.canister_main_untrack(ego_tenant_id, canister_id);
 
@@ -403,11 +399,9 @@ impl EgoStoreService {
 
     let mut user_app = UserApp::new(
       &ego_store_app.app,
-      Canister::new(canister_id, ego_store_app.wasm.canister_type), Some(wallet_provider),
+      &Canister::new(canister_id, ego_store_app.wasm.canister_type), Some(wallet_provider),
     );
-
-    let mut wallet = EgoStoreService::wallet_main_get(&canister_id)?;
-    wallet.app_install(&mut user_app);
+    user_app.save();
 
     info_log_add("7 track canister");
     ego_tenant.canister_main_track(ego_tenant_id, &canister_id);

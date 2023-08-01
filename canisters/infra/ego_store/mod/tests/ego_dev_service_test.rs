@@ -45,7 +45,7 @@ fn app_main_release_new_app() {
   set_up();
 
   // before new app release
-  let apps = EgoStoreService::app_main_list().unwrap();
+  let apps = EgoStoreService::app_main_list();
   assert_eq!(1, apps.len());
 
   // add app
@@ -70,7 +70,7 @@ fn app_main_release_new_app() {
   let result = EgoStoreService::app_main_release(&mut ego_store_app);
   assert!(result.is_ok());
 
-  let apps = EgoStoreService::app_main_list().unwrap();
+  let apps = EgoStoreService::app_main_list();
   assert_eq!(2, apps.len());
 
   let ego_store_app = EgoStoreService::app_main_get(&NEW_APP_ID.to_string()).unwrap();
@@ -82,7 +82,7 @@ fn app_main_release_new_app_version() {
   set_up();
 
   // before new app release
-  let apps = EgoStoreService::app_main_list().unwrap();
+  let apps = EgoStoreService::app_main_list();
   assert_eq!(1, apps.len());
 
   // add app
@@ -106,7 +106,7 @@ fn app_main_release_new_app_version() {
   let result = EgoStoreService::app_main_release(&mut ego_store_app);
   assert!(result.is_ok());
 
-  let apps = EgoStoreService::app_main_list().unwrap();
+  let apps = EgoStoreService::app_main_list();
   assert_eq!(1, apps.len());
 
   let app = EgoStoreService::app_main_get(&EXISTS_APP_ID.to_string()).unwrap();

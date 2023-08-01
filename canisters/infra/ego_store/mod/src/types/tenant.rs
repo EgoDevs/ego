@@ -37,13 +37,20 @@ impl Ord for Tenant {
 
 impl Tenant {
   pub fn new(tenant_id: &Principal) -> Self {
-    Tenant {
+    Self {
       canister_id: tenant_id.clone(),
       wallet_count: 0,
     }
   }
 
-  pub fn list() -> Vec<Tenant> {
+  pub fn len() -> u64 {
+    TENANTS.with(|cell| {
+      let inst = cell.borrow();
+      inst.len()
+    })
+  }
+
+  pub fn list() -> Vec<Self> {
     TENANTS.with(|cell| {
       let inst = cell.borrow();
       inst.iter()
@@ -53,7 +60,7 @@ impl Tenant {
     })
   }
 
-  pub fn get(canister_id: &Principal) -> Option<Tenant> {
+  pub fn get(canister_id: &Principal) -> Option<Self> {
     TENANTS.with(|cell| {
       let inst = cell.borrow_mut();
       let key = Blob::try_from(canister_id.as_slice()).unwrap();

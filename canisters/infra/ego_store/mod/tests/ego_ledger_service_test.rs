@@ -1,4 +1,5 @@
 use candid::Principal;
+use ic_ledger_types::Memo;
 use mockall::mock;
 
 use ego_store_mod::c2c::ego_ledger::TEgoLedger;
@@ -63,6 +64,14 @@ fn wallet_order_new() {
 }
 
 #[test]
+fn wallet_order_list() {
+  set_up();
+  let wallet_id = Principal::from_text(EXISTS_WALLET_ID).unwrap();
+  let orders = EgoStoreService::wallet_order_list(&wallet_id);
+  assert_eq!(1, orders.len())
+}
+
+#[test]
 fn wallet_order_notify() {
   set_up();
 
@@ -71,6 +80,10 @@ fn wallet_order_notify() {
   // get order list before make order
   let orders = Order::by_wallet_id(&exist_wallet_id);
   assert_eq!(1, orders.len());
+
+  // get cash flow list before make order
+  let cash_flows = EgoStoreService::wallet_cash_flow_list(&exist_wallet_id);
+  assert_eq!(0, cash_flows.len());
 
   let wallet = Wallet::get(&exist_wallet_id).unwrap();
   assert_eq!(256, wallet.cycles);
@@ -91,6 +104,20 @@ fn wallet_order_notify() {
 
   let wallet = Wallet::get(&exist_wallet_id).unwrap();
   assert_eq!(1200256, wallet.cycles);
+
+  let cash_flows = EgoStoreService::wallet_cash_flow_list(&exist_wallet_id);
+  assert_eq!(1, cash_flows.len());
+}
+
+#[test]
+fn wallet_order_notify_failed_not_exists_memo() {
+  set_up();
+
+  let ledger_principal = Principal::from_text(LEDGER_ID.to_string()).unwrap();
+
+  // notify order
+  let result = EgoStoreService::wallet_order_notify(Memo(100), &ledger_principal);
+  assert!(result.is_err());
 }
 
 #[test]

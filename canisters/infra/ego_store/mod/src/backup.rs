@@ -24,37 +24,37 @@ pub fn job_list() -> Vec<BackupJob> {
 
   jobs.push(BackupJob {
     name: "ego_store_apps".to_string(),
-    amount: EgoStoreApp::list().len() as usize,
+    amount: EgoStoreApp::len() as usize,
   });
 
   jobs.push(BackupJob {
     name: "tenants".to_string(),
-    amount: Tenant::list().len() as usize,
+    amount: Tenant::len() as usize,
   });
 
   jobs.push(BackupJob {
     name: "wallet_providers".to_string(),
-    amount: WalletProvider::list().len() as usize,
+    amount: WalletProvider::len() as usize,
   });
 
   jobs.push(BackupJob {
     name: "wallets".to_string(),
-    amount: Wallet::list().len() as usize,
+    amount: Wallet::len() as usize,
   });
 
   jobs.push(BackupJob {
     name: "user_apps".to_string(),
-    amount: UserApp::list().len() as usize,
+    amount: UserApp::len() as usize,
   });
 
   jobs.push(BackupJob {
     name: "orders".to_string(),
-    amount: Order::list().len() as usize,
+    amount: Order::len() as usize,
   });
 
   jobs.push(BackupJob {
     name: "cash_flows".to_string(),
-    amount: CashFlow::list().len() as usize,
+    amount: CashFlow::len() as usize,
   });
 
   jobs

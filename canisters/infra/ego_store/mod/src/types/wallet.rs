@@ -6,13 +6,12 @@ use ic_stable_structures::{BoundedStorable, Storable};
 use ic_stable_structures::storable::Blob;
 use serde::Serialize;
 
-use ego_types::app::{CashFlowType, EgoError, Version};
+use ego_types::app::{CashFlowType, EgoError};
 use ego_utils::util::time;
 
 use crate::memory::WALLETS;
 use crate::types::cash_flow::CashFlow;
 use crate::types::EgoStoreErr;
-use crate::types::user_app::UserApp;
 
 #[derive(CandidType, Serialize, Deserialize, Clone, Debug)]
 pub struct Wallet {
@@ -25,26 +24,13 @@ pub struct Wallet {
 
 impl Wallet {
   pub fn new(tenant_id: &Principal, wallet_id: &Principal, user_id: &Principal) -> Self {
-    Wallet {
+    Self {
       tenant_id: tenant_id.clone(),
       wallet_id: wallet_id.clone(),
       user_id: user_id.clone(),
       cycles: 0,
       last_update: 0,
     }
-  }
-
-  pub fn app_install(&mut self, user_app: &mut UserApp) {
-    user_app.save();
-  }
-
-  pub fn app_upgrade(&mut self, user_app: &mut UserApp, latest_version: &Version) {
-    user_app.app.current_version = latest_version.clone();
-    user_app.save();
-  }
-
-  pub fn app_remove(&mut self, user_app: &UserApp) {
-    user_app.remove();
   }
 
   pub fn cycle_charge(
@@ -58,7 +44,7 @@ impl Wallet {
       self.save();
 
       let mut cash_flow = CashFlow::new(
-        self.wallet_id,
+        &self.wallet_id,
         CashFlowType::CHARGE,
         cycle,
         self.cycles,
@@ -83,7 +69,7 @@ impl Wallet {
     self.save();
 
     let mut cash_flow = CashFlow::new(
-      self.wallet_id,
+      &self.wallet_id,
       CashFlowType::RECHARGE,
       cycle,
       self.cycles,
@@ -94,32 +80,31 @@ impl Wallet {
     Ok(())
   }
 
-  pub fn by_last_update(last_update: u64) -> Vec<Wallet> {
+  pub fn len() -> u64 {
     WALLETS.with(|cell| {
       let inst = cell.borrow();
-      inst.iter()
-        .filter(|(_, wallet)| wallet.last_update > last_update)
-        .map(|(_, wallet)| {
-          wallet
-        }).collect()
+      inst.len()
     })
   }
 
-  pub fn list() -> Vec<Wallet> {
-    WALLETS.with(|cell| {
-      let inst = cell.borrow_mut();
-      inst.iter().map(|(_, wallet)| wallet).collect()
+  pub fn by_last_update(last_update: u64) -> Vec<Self> {
+    Self::iter(|(_, wallet)| match wallet.last_update >= last_update {
+      true => { Some(wallet) }
+      false => { None }
     })
   }
 
-  pub fn get(wallet_id: &Principal) -> Option<Wallet> {
+  pub fn list() -> Vec<Self> {
+    Self::iter(|(_, wallet)| Some(wallet))
+  }
+
+  pub fn get(wallet_id: &Principal) -> Option<Self> {
     WALLETS.with(|cell| {
       let inst = cell.borrow_mut();
       let key = Blob::try_from(wallet_id.as_slice()).unwrap();
       inst.get(&key)
     })
   }
-
 
   pub fn save(&mut self) {
     WALLETS.with(|cell| {
@@ -128,6 +113,14 @@ impl Wallet {
       self.last_update = time();
       inst.insert(key, self.clone());
     });
+  }
+
+  fn iter<F>(filter: F) -> Vec<Self>
+    where F: FnMut((Blob<29>, Self)) -> Option<Self> {
+    WALLETS.with(|cell| {
+      let inst = cell.borrow();
+      inst.iter().filter_map(filter).collect()
+    })
   }
 }
 

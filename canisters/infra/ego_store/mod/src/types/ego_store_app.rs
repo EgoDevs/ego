@@ -15,45 +15,33 @@ use crate::types::app_key::AppKey;
 pub struct EgoStoreApp {
   pub app: App,
   pub wasm: Wasm,
-  pub last_update: u64, // mini second
-}
-
-impl EgoStoreApp {
-  pub fn to_string(&self) -> String {
-    format!(
-      "app_id: {:?},category:{:?},current_version:{:?},",
-      self.app.app_id, self.app.category, self.app.current_version
-    )
-  }
+  pub last_update: u64, // second
 }
 
 impl EgoStoreApp {
   pub fn new(app: &App, wasm: &Wasm) -> Self {
-    EgoStoreApp { app: app.clone(), wasm: wasm.clone(), last_update: 0 }
+    Self { app: app.clone(), wasm: wasm.clone(), last_update: 0 }
   }
 
-  pub fn list() -> Vec<EgoStoreApp> {
+  pub fn len() -> u64 {
     EGO_STORE_APPS.with(|cell| {
       let inst = cell.borrow();
-      inst.iter()
-        .map(|(_, ego_store_app)| {
-          ego_store_app
-        }).collect()
+      inst.len()
     })
   }
 
-  pub fn by_last_update(last_update: u64) -> Vec<EgoStoreApp> {
-    EGO_STORE_APPS.with(|cell| {
-      let inst = cell.borrow();
-      inst.iter()
-        .filter(|(_, ego_store_app)| ego_store_app.last_update > last_update)
-        .map(|(_, ego_store_app)| {
-          ego_store_app
-        }).collect()
+  pub fn list() -> Vec<Self> {
+    Self::iter(|(_, ego_store_app)| Some(ego_store_app))
+  }
+
+  pub fn by_last_update(last_update: u64) -> Vec<Self> {
+    Self::iter(|(_, ego_store_app)| match ego_store_app.last_update >= last_update {
+      true => { Some(ego_store_app) }
+      false => { None }
     })
   }
 
-  pub fn get(app_id: &AppId) -> Option<EgoStoreApp> {
+  pub fn get(app_id: &AppId) -> Option<Self> {
     EGO_STORE_APPS.with(|cell| {
       let inst = cell.borrow_mut();
       inst.get(&AppKey::new(&app_id))
@@ -66,6 +54,14 @@ impl EgoStoreApp {
       self.last_update = time();
       inst.insert(AppKey::new(&self.app.app_id), self.clone());
     });
+  }
+
+  fn iter<F>(filter: F) -> Vec<Self>
+    where F: FnMut((AppKey, Self)) -> Option<Self> {
+    EGO_STORE_APPS.with(|cell| {
+      let inst = cell.borrow();
+      inst.iter().filter_map(filter).collect()
+    })
   }
 }
 

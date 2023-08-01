@@ -18,20 +18,27 @@ pub struct WalletProvider {
 
 impl WalletProvider {
   pub fn new(wallet_provider: &Principal, app_id: &AppId) -> Self {
-    WalletProvider {
+    Self {
       wallet_provider: wallet_provider.clone(),
       app_id: app_id.clone(),
     }
   }
 
-  pub fn list() -> Vec<WalletProvider> {
+  pub fn len() -> u64 {
+    WALLET_PROVIDERS.with(|cell| {
+      let inst = cell.borrow();
+      inst.len()
+    })
+  }
+
+  pub fn list() -> Vec<Self> {
     WALLET_PROVIDERS.with(|cell| {
       let inst = cell.borrow_mut();
       inst.iter().map(|(_, wallet_provider)| wallet_provider).collect()
     })
   }
 
-  pub fn get(wallet_provider: &Principal) -> Option<WalletProvider> {
+  pub fn get(wallet_provider: &Principal) -> Option<Self> {
     WALLET_PROVIDERS.with(|cell| {
       let inst = cell.borrow_mut();
       let key = Blob::try_from(wallet_provider.as_slice()).unwrap();
@@ -47,10 +54,10 @@ impl WalletProvider {
     });
   }
 
-  pub fn remove(&self) {
+  pub fn remove(wallet_provider: &Principal) {
     WALLET_PROVIDERS.with(|cell| {
       let mut inst = cell.borrow_mut();
-      let key = Blob::try_from(self.wallet_provider.as_slice()).unwrap();
+      let key = Blob::try_from(wallet_provider.as_slice()).unwrap();
       inst.remove(&key)
     });
   }

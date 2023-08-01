@@ -20,14 +20,14 @@ pub struct CashFlow {
   pub balance: u128,
   // balance after the operation
   pub created_at: u64,
-  // mini second
+  // second
   pub operator: Principal,
   pub comment: String,
 }
 
 impl CashFlow {
   pub fn new(
-    wallet_id: Principal,
+    wallet_id: &Principal,
     cash_flow_type: CashFlowType,
     cycles: u128,
     balance: u128,
@@ -35,47 +35,44 @@ impl CashFlow {
     comment: String,
   ) -> Self {
     let next_id = SEQ.with(|cell| cell.borrow_mut().next_number("cash_flow", 0));
-    CashFlow {
+    Self {
       id: next_id,
-      wallet_id: wallet_id.clone(),
+      wallet_id: *wallet_id,
       cash_flow_type,
       cycles,
       balance,
       created_at: 0,
-      operator: operator.clone(),
+      operator: *operator,
       comment,
     }
   }
 
-  pub fn list() -> Vec<CashFlow> {
+  pub fn len() -> u64 {
     CASH_FLOWS.with(|cell| {
       let inst = cell.borrow();
-      inst.iter()
-        .map(|(_, cash_flow)| {
-          cash_flow
-        }).collect()
+      inst.len()
     })
   }
 
-  pub fn by_last_update(last_update: u64) -> Vec<CashFlow> {
-    CASH_FLOWS.with(|cell| {
-      let inst = cell.borrow();
-      inst.iter()
-        .filter(|(_, cash_flow)| cash_flow.created_at > last_update)
-        .map(|(_, cash_flow)| {
-          cash_flow
-        }).collect()
+  pub fn list() -> Vec<Self> {
+    Self::iter(|(_, cash_flow)| Some(cash_flow))
+  }
+
+  pub fn by_last_update(last_update: u64) -> Vec<Self> {
+    Self::iter(|(_, cash_flow)| match cash_flow.created_at >= last_update {
+      true => {
+        Some(cash_flow)
+      }
+      false => { None }
     })
   }
 
-  pub fn by_wallet_id(wallet_id: &Principal) -> Vec<CashFlow> {
-    CASH_FLOWS.with(|cell| {
-      let inst = cell.borrow();
-      inst.iter()
-        .filter(|(_, cash_flow)| cash_flow.wallet_id == wallet_id.clone())
-        .map(|(_, cash_flow)| {
-          cash_flow
-        }).collect()
+  pub fn by_wallet_id(wallet_id: &Principal) -> Vec<Self> {
+    Self::iter(|(_, cash_flow)| match cash_flow.wallet_id == *wallet_id {
+      true => {
+        Some(cash_flow)
+      }
+      false => { None }
     })
   }
 
@@ -89,7 +86,17 @@ impl CashFlow {
     });
   }
 
-  pub fn into_ego_cash_flow(&self) -> ego_types::app::CashFlow {
+  fn iter<F>(filter: F) -> Vec<Self>
+    where F: FnMut((u64, Self)) -> Option<Self> {
+    CASH_FLOWS.with(|cell| {
+      let inst = cell.borrow();
+      inst.iter().filter_map(filter).collect()
+    })
+  }
+}
+
+impl Into<ego_types::app::CashFlow> for CashFlow {
+  fn into(self) -> ego_types::app::CashFlow {
     ego_types::app::CashFlow {
       cash_flow_type: self.cash_flow_type.clone(),
       cycles: self.cycles,
