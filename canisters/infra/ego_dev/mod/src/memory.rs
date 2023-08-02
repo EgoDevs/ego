@@ -6,7 +6,7 @@ use crate::types::app_key::AppKey;
 use crate::types::app_version::AppVersion;
 use crate::types::developer::Developer;
 use crate::types::ego_dev_app::EgoDevApp;
-use crate::types::ego_file::EgoFile;
+use crate::types::file::File;
 use crate::types::stable_state::StableState;
 
 pub const MB: u32 = 1024 * 1024;
@@ -38,7 +38,7 @@ thread_local! {
         RefCell::new(StableBTreeMap::init(mm.borrow().get(EGO_DEV_APP_MEM_ID)))
     });
 
-    pub static FILES: RefCell<StableBTreeMap<Blob<29>, EgoFile, VM>> = MEMORY_MANAGER.with(|mm| {
+    pub static FILES: RefCell<StableBTreeMap<Blob<29>, File, VM>> = MEMORY_MANAGER.with(|mm| {
         RefCell::new(StableBTreeMap::init(mm.borrow().get(FILE_MEM_ID)))
     });
 

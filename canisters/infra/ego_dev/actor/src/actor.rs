@@ -11,7 +11,7 @@ use ego_dev_mod::c2c::ego_file::EgoFile;
 use ego_dev_mod::c2c::ego_store::EgoStore;
 use ego_dev_mod::service::*;
 use ego_dev_mod::state::*;
-use ego_dev_mod::types::{AdminAppCreateBackendRequest, AppMainNewRequest, AppVersionSetFrontendAddressRequest, AppVersionUploadWasmRequest, DataExport, developer, DevImportV1, ego_file, EgoDevErr, UserRoleSetRequest};
+use ego_dev_mod::types::{AdminAppCreateBackendRequest, AppMainNewRequest, AppVersionSetFrontendAddressRequest, AppVersionUploadWasmRequest, DataExport, developer, DevImportV1, EgoDevErr, file, UserRoleSetRequest};
 use ego_dev_mod::types::app_version::AppVersion;
 use ego_dev_mod::types::developer::Developer;
 use ego_dev_mod::types::ego_dev_app::EgoDevApp;
@@ -68,8 +68,14 @@ pub async fn developer_main_register(name: String) -> Result<Developer, EgoError
 pub fn developer_main_get() -> Result<Developer, EgoError> {
   info_log_add("developer_main_get");
 
-  let developer = Developer::get(&caller()).ok_or(EgoError::from(EgoDevErr::NotADeveloper))?;
-  Ok(developer)
+  match Developer::get(&caller()) {
+    None => {
+      Err(EgoDevErr::NotADeveloper.into())
+    }
+    Some(developer) => {
+      Ok(developer)
+    }
+  }
 }
 
 // 创建的应用列表
@@ -77,8 +83,8 @@ pub fn developer_main_get() -> Result<Developer, EgoError> {
 #[candid_method(query, rename = "developer_app_list")]
 pub fn developer_app_list() -> Result<Vec<EgoDevApp>, EgoError> {
   info_log_add("developer_app_list");
-  let developer = Developer::get(&caller()).expect("developer not exists");
-  let apps = developer.developer_app_list();
+
+  let apps = EgoDevApp::by_developer_id(&caller());
 
   Ok(apps)
 }
@@ -89,14 +95,12 @@ pub fn developer_app_list() -> Result<Vec<EgoDevApp>, EgoError> {
 pub fn developer_app_get(app_id: AppId) -> Result<EgoDevApp, EgoError> {
   info_log_add("developer_app_get");
 
-  let ego_dev_app = EgoDevApp::get(&app_id).expect("app not exists");
-
-  match ego_dev_app.developer_id == caller() {
-    true => {
-      Ok(ego_dev_app)
+  match EgoDevApp::by_developer_id_and_id(&caller(), &app_id) {
+    None => {
+      Err(EgoDevErr::AppNotExists.into())
     }
-    false => {
-      Err(EgoDevErr::UnAuthorized.into())
+    Some(ego_dev_app) => {
+      Ok(ego_dev_app)
     }
   }
 }
@@ -210,18 +214,18 @@ pub fn app_version_wait_for_audit() -> Result<Vec<EgoDevApp>, EgoError> {
 // 通过当前版本审核
 #[update(name = "app_version_approve", guard = "auditor_guard")]
 #[candid_method(update, rename = "app_version_approve")]
-pub fn app_version_approve(app_id: AppId, version: Version) -> Result<AppVersion, EgoError> {
+pub fn app_version_approve(app_id: AppId) -> Result<AppVersion, EgoError> {
   info_log_add("app_version_approve");
-  let app_version = EgoDevService::app_version_approve(&app_id, &version)?;
+  let app_version = EgoDevService::app_version_approve(&app_id)?;
   Ok(app_version)
 }
 
 // 驳回当前版本审核
 #[update(name = "app_version_reject", guard = "auditor_guard")]
 #[candid_method(update, rename = "app_version_reject")]
-pub fn app_version_reject(app_id: AppId, version: Version) -> Result<AppVersion, EgoError> {
+pub fn app_version_reject(app_id: AppId) -> Result<AppVersion, EgoError> {
   info_log_add("app_version_reject");
-  let app_version = EgoDevService::app_version_reject(&app_id, &version)?;
+  let app_version = EgoDevService::app_version_reject(&app_id)?;
   Ok(app_version)
 }
 
@@ -353,7 +357,7 @@ fn admin_export() -> Vec<u8> {
   let dev_export = DataExport {
     state,
     ego_dev_apps: EgoDevApp::list(),
-    files: ego_file::EgoFile::list(),
+    files: file::File::list(),
     developers: Developer::list(),
     app_versions: AppVersion::list(),
   };
@@ -367,7 +371,7 @@ fn admin_import(request: DevImportV1) {
   info_log_add("admin_import");
 
   request.ego_files.iter().for_each(|e_f| {
-    let ego_file = ego_file::EgoFile {
+    let ego_file = file::File {
       wasm_count: e_f.wasm_count,
       canister_id: e_f.canister_id,
     };
@@ -387,18 +391,15 @@ fn admin_import(request: DevImportV1) {
   });
 
   request.apps.iter().for_each(|app| {
-    let mut ids = vec![];
     app.versions.iter().for_each(|app_version_v1| {
       let mut app_version = AppVersion::new(&app_version_v1.app_id, &app_version_v1.file_id, &app_version_v1.version);
       app_version.wasm = app_version_v1.wasm.clone();
       app_version.status = app_version_v1.status;
       app_version.save();
-      ids.push(app_version.id);
     });
     let mut ego_dev_app = EgoDevApp {
       app: app.app.clone(),
       developer_id: app.developer_id,
-      versions: ids,
       audit_version: app.audit_version,
       last_update: 0,
     };

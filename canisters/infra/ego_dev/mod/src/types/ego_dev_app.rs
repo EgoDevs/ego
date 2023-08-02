@@ -19,27 +19,13 @@ use crate::types::EgoDevErr;
 pub struct EgoDevApp {
   pub app: App,
   pub developer_id: Principal,
-  pub versions: Vec<u64>,
   pub audit_version: Option<Version>,
-  pub last_update: u64,    // mini second
-}
-
-impl EgoDevApp {
-  pub fn to_string(&self) -> String {
-    format!(
-      "app_id: {:?},user_id:{:?},category:{:?},release_version:{:?},versions:{:?},",
-      self.app.app_id,
-      self.developer_id.to_text(),
-      self.app.category,
-      self.app.current_version,
-      self.versions
-    )
-  }
+  pub last_update: u64,    // second
 }
 
 impl EgoDevApp {
   pub fn new(
-    user_id: &Principal,
+    developer_id: &Principal,
     app_id: &AppId,
     name: &str,
     logo: &str,
@@ -57,38 +43,14 @@ impl EgoDevApp {
         Version::default(),
         price,
       ),
-      developer_id: user_id.clone(),
+      developer_id: developer_id.clone(),
       audit_version: None,
-      versions: vec![],
       last_update: 0,
     }
   }
 
   pub fn version_get(&self, version: &Version) -> Option<AppVersion> {
-    let app_versions: Vec<AppVersion> = self.versions
-      .iter()
-      .filter_map(|id| {
-        match AppVersion::get(id) {
-          None => {
-            None
-          }
-          Some(app_version) => {
-            match app_version.version == *version {
-              true => {
-                Some(app_version)
-              }
-              false => {
-                None
-              }
-            }
-          }
-        }
-      }).collect();
-    if app_versions.is_empty() {
-      None
-    } else {
-      Some(app_versions.get(0).unwrap().clone())
-    }
+    AppVersion::get_by_app_id_and_version(&self.app.app_id, version)
   }
 
   pub fn version_new(
@@ -99,113 +61,175 @@ impl EgoDevApp {
     match self.version_get(version) {
       Some(_) => Err(EgoDevErr::VersionExists.into()),
       None => {
-        let app_version =
+        let mut app_version =
           AppVersion::new(&self.app.app_id, ego_file_canister_id, version);
-        self.versions.push(app_version.id);
+        app_version.save();
         Ok(app_version)
       }
     }
   }
 
   pub fn version_submit(&mut self, version: &Version) -> Result<AppVersion, EgoError> {
-    self.audit_version = Some(version.clone());
+    if self.audit_version.is_some() {
+      return Err(EgoDevErr::OperationNotPermitted.into());
+    }
 
     match self.version_get(version) {
       Some(mut app_version) => {
-        app_version.status = AppVersionStatus::SUBMITTED;
+        match app_version.status {
+          AppVersionStatus::NEW | AppVersionStatus::REJECTED | AppVersionStatus::REVOKED => {
+            self.audit_version = Some(version.clone());
+            self.save();
 
-        Ok(app_version)
+            app_version.status = AppVersionStatus::SUBMITTED;
+            app_version.save();
+
+            Ok(app_version)
+          }
+          _ => {
+            Err(EgoDevErr::OperationNotPermitted.into())
+          }
+        }
       }
       None => Err(EgoDevErr::VersionNotExists.into()),
     }
   }
 
   pub fn version_revoke(&mut self, version: &Version) -> Result<AppVersion, EgoError> {
-    self.audit_version = None;
-
     match self.version_get(version) {
       Some(mut app_version) => {
-        app_version.status = AppVersionStatus::REVOKED;
-        Ok(app_version)
+        match app_version.status {
+          AppVersionStatus::SUBMITTED => {
+            self.audit_version = None;
+            self.save();
+
+            app_version.status = AppVersionStatus::REVOKED;
+            app_version.save();
+            Ok(app_version)
+          }
+          AppVersionStatus::RELEASED => {
+            app_version.status = AppVersionStatus::REVOKED;
+            app_version.save();
+            Ok(app_version)
+          }
+          _ => {
+            Err(EgoDevErr::OperationNotPermitted.into())
+          }
+        }
       }
       None => Err(EgoDevErr::VersionNotExists.into()),
     }
   }
 
   pub fn version_release(&mut self, version: &Version) -> Result<AppVersion, EgoError> {
-    self.app.current_version = version.clone();
-
     match self.version_get(version) {
       Some(mut app_version) => {
-        app_version.status = AppVersionStatus::RELEASED;
-        Ok(app_version)
+        match app_version.status {
+          AppVersionStatus::APPROVED => {
+            self.app.current_version = version.clone();
+            self.save();
+
+            app_version.status = AppVersionStatus::RELEASED;
+            app_version.save();
+            Ok(app_version)
+          }
+          _ => {
+            Err(EgoDevErr::OperationNotPermitted.into())
+          }
+        }
       }
       None => Err(EgoDevErr::VersionNotExists.into()),
     }
   }
 
-  pub fn version_approve(&mut self, version: &Version) -> Result<AppVersion, EgoError> {
-    self.audit_version = None;
+  pub fn version_approve(&mut self) -> Result<AppVersion, EgoError> {
+    if self.audit_version.is_none() {
+      return Err(EgoDevErr::OperationNotPermitted.into());
+    }
 
-    match self.version_get(version) {
+    match self.version_get(&self.audit_version.unwrap()) {
       Some(mut app_version) => {
+        self.audit_version = None;
+        self.save();
+
         app_version.status = AppVersionStatus::APPROVED;
+        app_version.save();
+
         Ok(app_version)
       }
       None => Err(EgoDevErr::VersionNotExists.into()),
     }
   }
 
-  pub fn version_reject(&mut self, version: &Version) -> Result<AppVersion, EgoError> {
-    self.audit_version = None;
+  pub fn version_reject(&mut self) -> Result<AppVersion, EgoError> {
+    if self.audit_version.is_none() {
+      return Err(EgoDevErr::OperationNotPermitted.into());
+    }
 
-    match self.version_get(version) {
+    match self.version_get(&self.audit_version.unwrap()) {
       Some(mut app_version) => {
+        self.audit_version = None;
+        self.save();
+
         app_version.status = AppVersionStatus::REJECTED;
+        app_version.save();
         Ok(app_version)
       }
       None => Err(EgoDevErr::VersionNotExists.into()),
     }
   }
 
-  pub fn released_version(&self) -> Result<AppVersion, EgoError> {
-    match self.version_get(&self.app.current_version) {
-      Some(app_version) => Ok(app_version.clone()),
-      None => Err(EgoDevErr::VersionNotExists.into()),
-    }
+  pub fn released_version(&self) -> Option<AppVersion> {
+    self.version_get(&self.app.current_version)
   }
 
   pub fn list() -> Vec<EgoDevApp> {
-    EGO_DEV_APPS.with(|cell| {
-      let inst = cell.borrow();
-      inst.iter()
-        .map(|(_, app)| {
-          app
-        }).collect()
-    })
+    Self::iter(|(_, ego_dev_app)| Some(ego_dev_app))
   }
 
   pub fn by_last_update(last_update: u64) -> Vec<EgoDevApp> {
-    EGO_DEV_APPS.with(|cell| {
-      let inst = cell.borrow();
-      inst.iter()
-        .filter(|(_, ego_dev_app)| ego_dev_app.last_update > last_update)
-        .map(|(_, ego_dev_app)| {
-          ego_dev_app
-        }).collect()
+    Self::iter(|(_, ego_dev_app)| {
+      match ego_dev_app.last_update >= last_update {
+        true => { Some(ego_dev_app) }
+        false => { None }
+      }
     })
   }
 
+  pub fn by_developer_id(developer_id: &Principal) -> Vec<EgoDevApp> {
+    Self::iter(|(_, ego_dev_app)| {
+      match ego_dev_app.developer_id == *developer_id {
+        true => { Some(ego_dev_app) }
+        false => { None }
+      }
+    })
+  }
+
+  pub fn by_developer_id_and_id(developer_id: &Principal, app_id: &AppId) -> Option<EgoDevApp> {
+    match EgoDevApp::get(app_id) {
+      None => { None }
+      Some(ego_dev_app) => {
+        match ego_dev_app.developer_id == *developer_id {
+          true => { Some(ego_dev_app) }
+          false => { None }
+        }
+      }
+    }
+  }
+
   pub fn version_wait_for_audit() -> Vec<EgoDevApp> {
+    Self::iter(|(_, ego_dev_app)| {
+      match ego_dev_app.audit_version.is_some() {
+        true => { Some(ego_dev_app) }
+        false => { None }
+      }
+    })
+  }
+
+  pub fn len() -> u64 {
     EGO_DEV_APPS.with(|cell| {
       let inst = cell.borrow();
-      inst.iter()
-        .filter(|(_, app)| {
-          app.audit_version.is_some()
-        })
-        .map(|(_, app)| {
-          app
-        }).collect()
+      inst.len()
     })
   }
 
@@ -216,24 +240,6 @@ impl EgoDevApp {
     })
   }
 
-  pub fn get_developer_app(developer_id: &Principal, app_id: &AppId) -> Result<Option<EgoDevApp>, EgoError> {
-    match EgoDevApp::get(app_id) {
-      None => {
-        Ok(None)
-      }
-      Some(ego_dev_app) => {
-        match ego_dev_app.developer_id == *developer_id {
-          true => {
-            Ok(Some(ego_dev_app))
-          }
-          false => {
-            Err(EgoDevErr::UnAuthorized.into())
-          }
-        }
-      }
-    }
-  }
-
   pub fn save(&mut self) {
     EGO_DEV_APPS.with(|cell| {
       let mut inst = cell.borrow_mut();
@@ -241,6 +247,14 @@ impl EgoDevApp {
       self.last_update = time();
       inst.insert(key, self.clone());
     });
+  }
+
+  fn iter<F>(filter: F) -> Vec<Self>
+    where F: FnMut((AppKey, Self)) -> Option<Self> {
+    EGO_DEV_APPS.with(|cell| {
+      let inst = cell.borrow();
+      inst.iter().filter_map(filter).collect()
+    })
   }
 }
 

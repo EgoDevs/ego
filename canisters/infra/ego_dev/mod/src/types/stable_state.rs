@@ -11,6 +11,8 @@ use ego_types::registry::Registry;
 use ego_types::seq::Seq;
 use ego_types::user::User;
 
+use crate::state::{backup_info_pre_upgrade, cycle_info_pre_upgrade, registry_pre_upgrade, seq_pre_upgrade, users_pre_upgrade};
+
 const STATE_SIZE: u32 = 4 * 1024 * 1024; // 4M
 
 #[derive(CandidType, Deserialize, Serialize)]
@@ -33,6 +35,19 @@ impl Default for StableState {
     }
   }
 }
+
+impl StableState {
+  pub fn load() -> Self {
+    StableState {
+      users: Some(users_pre_upgrade()),
+      registry: Some(registry_pre_upgrade()),
+      cycle_info: Some(cycle_info_pre_upgrade()),
+      backup_info: Some(backup_info_pre_upgrade()),
+      seq: Some(seq_pre_upgrade()),
+    }
+  }
+}
+
 
 impl Storable for StableState {
   fn to_bytes(&self) -> Cow<[u8]> {

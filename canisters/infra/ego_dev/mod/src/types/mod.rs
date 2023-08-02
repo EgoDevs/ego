@@ -8,11 +8,11 @@ use ego_types::app::Version;
 
 use crate::types::app_version::AppVersion;
 use crate::types::ego_dev_app::EgoDevApp;
-use crate::types::ego_file::EgoFile;
+use crate::types::file::File;
 use crate::types::stable_state::StableState;
 
 pub mod stable_state;
-pub mod ego_file;
+pub mod file;
 pub mod app_key;
 pub mod ego_dev_app;
 pub mod developer;
@@ -42,6 +42,7 @@ impl From<EgoDevErr> for EgoError {
       EgoDevErr::AppNotExists => EgoError::new(1002, "ego-dev: app not exists"),
       EgoDevErr::VersionExists => EgoError::new(1003, "ego-dev: version exists"),
       EgoDevErr::VersionNotExists => EgoError::new(1004, "ego-dev: version not exists"),
+
       EgoDevErr::NoFile => EgoError::new(1006, "ego-dev: no ego_file canister configured"),
       EgoDevErr::UnAuthorized => EgoError::new(1007, "ego-dev: unauthorized"),
       EgoDevErr::WasmExists => EgoError::new(1008, "ego-dev: wasm exists"),
@@ -162,7 +163,7 @@ pub struct AdminAppCreateResponse {
 pub struct DataExport {
   pub state: StableState,
   pub ego_dev_apps: Vec<EgoDevApp>,
-  pub files: Vec<EgoFile>,
+  pub files: Vec<File>,
   pub developers: Vec<Developer>,
   pub app_versions: Vec<AppVersion>,
 }
@@ -171,7 +172,7 @@ pub struct DataExport {
 #[derive(CandidType, Deserialize, Serialize)]
 pub struct DevImportV1 {
   pub apps: Vec<EgoDevAppV1>,
-  pub ego_files: Vec<EgoFile>,
+  pub ego_files: Vec<File>,
   pub developers: Vec<Developer>,
 }
 

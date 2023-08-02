@@ -9,7 +9,6 @@ use ego_types::app::AppId;
 use ego_utils::util::time;
 
 use crate::memory::DEVELOPERS;
-use crate::types::ego_dev_app::EgoDevApp;
 
 #[derive(CandidType, Serialize, Deserialize, Clone, Debug)]
 pub struct Developer {
@@ -18,7 +17,7 @@ pub struct Developer {
   pub is_app_auditor: bool,
   pub is_manager: bool,
   pub created_apps: Vec<AppId>,
-  pub last_update: u64,    // mini second
+  pub last_update: u64,    // second
 }
 
 impl Developer {
@@ -33,34 +32,22 @@ impl Developer {
     }
   }
 
-  pub fn list() -> Vec<Developer> {
+  pub fn len() -> u64 {
     DEVELOPERS.with(|cell| {
       let inst = cell.borrow();
-      inst.iter()
-        .map(|(_, developer)| {
-          developer
-        }).collect()
+      inst.len()
     })
+  }
+
+  pub fn list() -> Vec<Developer> {
+    Self::iter(|(_, developer)| Some(developer))
   }
 
   pub fn by_last_update(last_update: u64) -> Vec<Developer> {
-    DEVELOPERS.with(|cell| {
-      let inst = cell.borrow();
-      inst.iter()
-        .filter(|(_, developer)| developer.last_update > last_update)
-        .map(|(_, developer)| {
-          developer
-        }).collect()
+    Self::iter(|(_, developer)| match developer.last_update >= last_update {
+      true => { Some(developer) }
+      false => { None }
     })
-  }
-
-  pub fn developer_app_list(&self) -> Vec<EgoDevApp> {
-    let created_apps = self
-      .created_apps
-      .iter()
-      .filter_map(|app_id| EgoDevApp::get(app_id))
-      .collect();
-    created_apps
   }
 
   pub fn get(developer_id: &Principal) -> Option<Developer> {
@@ -72,9 +59,9 @@ impl Developer {
   }
 
   pub fn list_by_name(name: &str) -> Vec<Developer> {
-    DEVELOPERS.with(|cell| {
-      let inst = cell.borrow();
-      inst.iter().filter(|(_, developer)| developer.name == *name).map(|(_, developer)| developer).collect()
+    Self::iter(|(_, developer)| match developer.name == *name {
+      true => { Some(developer) }
+      false => { None }
     })
   }
 
@@ -85,6 +72,14 @@ impl Developer {
       self.last_update = time();
       inst.insert(key, self.clone());
     });
+  }
+
+  fn iter<F>(filter: F) -> Vec<Self>
+    where F: FnMut((Blob<29>, Self)) -> Option<Self> {
+    DEVELOPERS.with(|cell| {
+      let inst = cell.borrow();
+      inst.iter().filter_map(filter).collect()
+    })
   }
 }
 

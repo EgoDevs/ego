@@ -8,7 +8,7 @@ use crate::state::{backup_info_pre_upgrade, cycle_info_pre_upgrade, info_log_add
 use crate::types::app_version::AppVersion;
 use crate::types::developer::Developer;
 use crate::types::ego_dev_app::EgoDevApp;
-use crate::types::ego_file::EgoFile;
+use crate::types::file::File;
 use crate::types::stable_state::StableState;
 
 pub fn job_list() -> Vec<BackupJob> {
@@ -21,22 +21,22 @@ pub fn job_list() -> Vec<BackupJob> {
 
   jobs.push(BackupJob {
     name: "ego_dev_apps".to_string(),
-    amount: EgoDevApp::list().len() as usize,
+    amount: EgoDevApp::len() as usize,
   });
 
   jobs.push(BackupJob {
     name: "files".to_string(),
-    amount: EgoFile::list().len() as usize,
+    amount: File::len() as usize,
   });
 
   jobs.push(BackupJob {
     name: "developers".to_string(),
-    amount: Developer::list().len() as usize,
+    amount: Developer::len() as usize,
   });
 
   jobs.push(BackupJob {
     name: "app_versions".to_string(),
-    amount: AppVersion::list().len() as usize,
+    amount: AppVersion::len() as usize,
   });
 
   jobs
@@ -68,7 +68,7 @@ pub fn record_export(name: String, last_update: Option<u64>) -> Option<ByteReadR
       serde_json::to_vec(&data).unwrap()
     }
     "files" => {
-      let data = EgoFile::list();
+      let data = File::list();
       serde_json::to_vec(&data).unwrap()
     }
     "developers" => {

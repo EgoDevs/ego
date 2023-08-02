@@ -10,40 +10,47 @@ use serde::Serialize;
 use crate::memory::FILES;
 
 #[derive(CandidType, Serialize, Deserialize, Clone, Debug)]
-pub struct EgoFile {
+pub struct File {
   pub wasm_count: u16,
   pub canister_id: Principal,
 }
 
-impl Eq for EgoFile {}
+impl Eq for File {}
 
-impl PartialEq<Self> for EgoFile {
+impl PartialEq<Self> for File {
   fn eq(&self, other: &Self) -> bool {
     self.canister_id == other.canister_id
   }
 }
 
-impl PartialOrd<Self> for EgoFile {
+impl PartialOrd<Self> for File {
   fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
     Some(self.wasm_count.cmp(&other.wasm_count))
   }
 }
 
-impl Ord for EgoFile {
+impl Ord for File {
   fn cmp(&self, other: &Self) -> Ordering {
     self.wasm_count.cmp(&other.wasm_count)
   }
 }
 
-impl EgoFile {
+impl File {
   pub fn new(canister_id: &Principal) -> Self {
-    EgoFile {
+    File {
       canister_id: canister_id.clone(),
       wasm_count: 0,
     }
   }
 
-  pub fn list() -> Vec<EgoFile> {
+  pub fn len() -> u64 {
+    FILES.with(|cell| {
+      let inst = cell.borrow();
+      inst.len()
+    })
+  }
+
+  pub fn list() -> Vec<File> {
     FILES.with(|cell| {
       let inst = cell.borrow();
       inst.iter()
@@ -53,7 +60,7 @@ impl EgoFile {
     })
   }
 
-  pub fn get(canister_id: &Principal) -> Option<EgoFile> {
+  pub fn get(canister_id: &Principal) -> Option<File> {
     FILES.with(|cell| {
       let inst = cell.borrow_mut();
       let key = Blob::try_from(canister_id.as_slice()).unwrap();
@@ -70,7 +77,7 @@ impl EgoFile {
   }
 }
 
-impl Storable for EgoFile {
+impl Storable for File {
   fn to_bytes(&self) -> Cow<[u8]> {
     Cow::Owned(Encode!(self).unwrap())
   }
@@ -80,7 +87,7 @@ impl Storable for EgoFile {
   }
 }
 
-impl BoundedStorable for EgoFile {
+impl BoundedStorable for File {
   const MAX_SIZE: u32 = 64;
   const IS_FIXED_SIZE: bool = false;
 }

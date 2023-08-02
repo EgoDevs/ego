@@ -20,7 +20,7 @@ pub struct AppVersion {
   pub status: AppVersionStatus,
   pub file_id: Principal,
   pub wasm: Option<Wasm>,
-  pub last_update: u64,    // mini second
+  pub last_update: u64,    // second
 }
 
 #[derive(
@@ -63,6 +63,7 @@ impl AppVersion {
         ASSET,
         frontend_id.clone(),
       ));
+      self.save();
     }
   }
 
@@ -74,27 +75,36 @@ impl AppVersion {
         BACKEND,
         self.file_id,
       ));
+      self.save();
     }
   }
 
-  pub fn list() -> Vec<AppVersion> {
+  pub fn len() -> u64 {
     APP_VERSIONS.with(|cell| {
       let inst = cell.borrow();
-      inst.iter()
-        .map(|(_, app_version)| {
-          app_version
-        }).collect()
+      inst.len()
+    })
+  }
+
+  pub fn list() -> Vec<AppVersion> {
+    Self::iter(|(_, app_version)| Some(app_version))
+  }
+
+  pub fn by_app_id(app_id: &AppId) -> Vec<AppVersion> {
+    Self::iter(|(_, app_version)| match app_version.app_id == *app_id {
+      true => {
+        Some(app_version)
+      }
+      false => { None }
     })
   }
 
   pub fn by_last_update(last_update: u64) -> Vec<AppVersion> {
-    APP_VERSIONS.with(|cell| {
-      let inst = cell.borrow();
-      inst.iter()
-        .filter(|(_, app_version)| app_version.last_update > last_update)
-        .map(|(_, app_version)| {
-          app_version
-        }).collect()
+    Self::iter(|(_, app_version)| match app_version.last_update >= last_update {
+      true => {
+        Some(app_version)
+      }
+      false => { None }
     })
   }
 
@@ -105,12 +115,26 @@ impl AppVersion {
     })
   }
 
+  pub fn get_by_app_id_and_version(app_id: &AppId, version: &Version) -> Option<AppVersion> {
+    Self::by_app_id(app_id).iter().find(|app_version| {
+      app_version.version == *version
+    }).cloned()
+  }
+
   pub fn save(&mut self) {
     APP_VERSIONS.with(|cell| {
       let mut inst = cell.borrow_mut();
       self.last_update = time();
       inst.insert(self.id, self.clone());
     });
+  }
+
+  fn iter<F>(filter: F) -> Vec<Self>
+    where F: FnMut((u64, Self)) -> Option<Self> {
+    APP_VERSIONS.with(|cell| {
+      let inst = cell.borrow();
+      inst.iter().filter_map(filter).collect()
+    })
   }
 }
 
