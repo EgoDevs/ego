@@ -61,7 +61,7 @@ export const idlFactory = ({ IDL }) => {
     'versions' : IDL.Vec(AppVersion),
     'audit_version' : IDL.Opt(Version),
   });
-  const EgoFile = IDL.Record({
+  const File = IDL.Record({
     'canister_id' : IDL.Principal,
     'wasm_count' : IDL.Nat16,
   });
@@ -75,7 +75,7 @@ export const idlFactory = ({ IDL }) => {
   });
   const DevImportV1 = IDL.Record({
     'apps' : IDL.Vec(EgoDevAppV1),
-    'ego_files' : IDL.Vec(EgoFile),
+    'ego_files' : IDL.Vec(File),
     'developers' : IDL.Vec(Developer),
   });
   const AppVersionSetFrontendAddressRequest = IDL.Record({
@@ -93,7 +93,6 @@ export const idlFactory = ({ IDL }) => {
   const EgoDevApp = IDL.Record({
     'app' : App,
     'developer_id' : IDL.Principal,
-    'versions' : IDL.Vec(IDL.Nat64),
     'last_update' : IDL.Nat64,
     'audit_version' : IDL.Opt(Version),
   });
@@ -166,9 +165,9 @@ export const idlFactory = ({ IDL }) => {
     'admin_app_transfer' : IDL.Func([IDL.Text], [Result_1], []),
     'admin_export' : IDL.Func([], [IDL.Vec(IDL.Nat8)], []),
     'admin_import' : IDL.Func([DevImportV1], [], []),
-    'app_version_approve' : IDL.Func([IDL.Text, Version], [Result], []),
+    'app_version_approve' : IDL.Func([IDL.Text], [Result], []),
     'app_version_new' : IDL.Func([IDL.Text, Version], [Result], []),
-    'app_version_reject' : IDL.Func([IDL.Text, Version], [Result], []),
+    'app_version_reject' : IDL.Func([IDL.Text], [Result], []),
     'app_version_release' : IDL.Func([IDL.Text, Version], [Result], []),
     'app_version_revoke' : IDL.Func([IDL.Text, Version], [Result], []),
     'app_version_set_frontend_address' : IDL.Func(

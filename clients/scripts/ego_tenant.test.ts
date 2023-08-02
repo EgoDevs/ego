@@ -64,6 +64,6 @@ describe('ego_tenant_import', () => {
       tasks.push(task)
     }
 
-    await actor.admin_task_add(tasks)
+    await actor.admin_import(tasks)
   });
 });

@@ -51,7 +51,7 @@ type Wasm = record {
 };
 service : () -> {
   admin_export : () -> (vec nat8);
-  admin_task_add : (vec Task) -> ();
+  admin_import : (vec Task) -> ();
   admin_task_list : (nat64) -> (Result);
   app_main_delete : (principal) -> (Result_1);
   app_main_install : (AppMainInstallRequest) -> (Result_2);

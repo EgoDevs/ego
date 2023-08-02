@@ -18,7 +18,7 @@ members = [
     "lib/ego_types",
     "lib/ego_macros",
     "lib/ego_lib",
-    "lib/ego_inner_rpc"
+    "lib/ego_inner_rpc",
 ]
 
 [workspace.dependencies]

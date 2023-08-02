@@ -112,6 +112,6 @@ describe('ego_store_import', () => {
 
       walls.push(wallet)
     }
-    await actor.admin_wallet_add(walls)
+    await actor.admin_import(walls)
   });
 });

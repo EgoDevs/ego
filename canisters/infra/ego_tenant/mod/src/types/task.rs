@@ -60,10 +60,7 @@ impl Task {
   }
 
   pub fn list() -> Vec<Task> {
-    TASKS.with(|cell| {
-      let inst = cell.borrow();
-      inst.iter().map(|(_, task)| task).collect()
-    })
+    Self::iter(|(_, task)| Some(task))
   }
 
   pub fn get(canister_id: &Principal) -> Option<Task> {

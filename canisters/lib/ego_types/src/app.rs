@@ -5,7 +5,7 @@ use candid::{CandidType, Deserialize, Principal};
 use ic_cdk::api::call::RejectionCode;
 use serde::Serialize;
 
-#[derive(Clone, Debug, CandidType, Deserialize, Serialize)]
+#[derive(Clone, Debug, CandidType, Deserialize, Serialize, PartialEq)]
 pub struct EgoError {
   pub code: u16,
   pub msg: String,
@@ -251,7 +251,7 @@ pub struct CashFlow {
   pub comment: String,
 }
 
-#[derive(CandidType, Serialize, Deserialize, Clone, Debug)]
+#[derive(CandidType, Serialize, Deserialize, Clone, Debug, PartialEq)]
 pub enum CashFlowType {
   CHARGE,
   RECHARGE,

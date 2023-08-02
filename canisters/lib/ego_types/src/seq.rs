@@ -33,4 +33,12 @@ impl Seq {
 
     number
   }
+
+  pub fn set_number(&mut self, key: &str, number: u64) {
+    self.seqs.insert(key.to_string(), number);
+  }
+
+  pub fn get_number(&mut self, key: &str) -> Option<u64> {
+    self.seqs.get(key).cloned()
+  }
 }

@@ -1,6 +1,6 @@
 use candid::Principal;
 
-// return mini seconds
+// return seconds
 pub fn time() -> u64 {
   #[cfg(not(target_arch = "wasm32"))]
   {
@@ -12,7 +12,7 @@ pub fn time() -> u64 {
 
   #[cfg(target_arch = "wasm32")]
   {
-    ic_cdk::api::time() / 1000000
+    ic_cdk::api::time() / 1000_000_000
   }
 }
 

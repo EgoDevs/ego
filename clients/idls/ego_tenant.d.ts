@@ -82,7 +82,7 @@ export interface Wasm {
 }
 export interface _SERVICE {
   'admin_export' : ActorMethod<[], Uint8Array | number[]>,
-  'admin_task_add' : ActorMethod<[Array<Task>], undefined>,
+  'admin_import' : ActorMethod<[Array<Task>], undefined>,
   'admin_task_list' : ActorMethod<[bigint], Result>,
   'app_main_delete' : ActorMethod<[Principal], Result_1>,
   'app_main_install' : ActorMethod<[AppMainInstallRequest], Result_2>,

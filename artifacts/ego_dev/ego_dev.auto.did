@@ -67,7 +67,7 @@ type CycleInfo = record {
 type CycleRecord = record { ts : nat64; balance : nat };
 type DevImportV1 = record {
   apps : vec EgoDevAppV1;
-  ego_files : vec EgoFile;
+  ego_files : vec File;
   developers : vec Developer;
 };
 type Developer = record {
@@ -81,7 +81,6 @@ type Developer = record {
 type EgoDevApp = record {
   app : App;
   developer_id : principal;
-  versions : vec nat64;
   last_update : nat64;
   audit_version : opt Version;
 };
@@ -92,7 +91,7 @@ type EgoDevAppV1 = record {
   audit_version : opt Version;
 };
 type EgoError = record { msg : text; code : nat16 };
-type EgoFile = record { canister_id : principal; wasm_count : nat16 };
+type File = record { canister_id : principal; wasm_count : nat16 };
 type LogEntry = record { ts : nat64; msg : text; kind : text };
 type Result = variant { Ok : AppVersion; Err : EgoError };
 type Result_1 = variant { Ok; Err : EgoError };
@@ -135,9 +134,9 @@ service : () -> {
   admin_app_transfer : (text) -> (Result_1);
   admin_export : () -> (vec nat8);
   admin_import : (DevImportV1) -> ();
-  app_version_approve : (text, Version) -> (Result);
+  app_version_approve : (text) -> (Result);
   app_version_new : (text, Version) -> (Result);
-  app_version_reject : (text, Version) -> (Result);
+  app_version_reject : (text) -> (Result);
   app_version_release : (text, Version) -> (Result);
   app_version_revoke : (text, Version) -> (Result);
   app_version_set_frontend_address : (AppVersionSetFrontendAddressRequest) -> (

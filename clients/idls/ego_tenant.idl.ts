@@ -85,7 +85,7 @@ export const idlFactory = ({ IDL }) => {
   });
   return IDL.Service({
     'admin_export' : IDL.Func([], [IDL.Vec(IDL.Nat8)], []),
-    'admin_task_add' : IDL.Func([IDL.Vec(Task)], [], []),
+    'admin_import' : IDL.Func([IDL.Vec(Task)], [], []),
     'admin_task_list' : IDL.Func([IDL.Nat64], [Result], []),
     'app_main_delete' : IDL.Func([IDL.Principal], [Result_1], []),
     'app_main_install' : IDL.Func([AppMainInstallRequest], [Result_2], []),

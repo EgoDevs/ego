@@ -158,7 +158,7 @@ export interface Wasm {
 }
 export interface _SERVICE {
   'admin_export' : ActorMethod<[], Uint8Array | number[]>,
-  'admin_wallet_add' : ActorMethod<[Array<WalletImport>], undefined>,
+  'admin_import' : ActorMethod<[Array<WalletImport>], undefined>,
   'admin_wallet_app_get' : ActorMethod<[Principal, Principal], Result>,
   'admin_wallet_cycle_recharge' : ActorMethod<
     [AdminWalletCycleRechargeRequest],
