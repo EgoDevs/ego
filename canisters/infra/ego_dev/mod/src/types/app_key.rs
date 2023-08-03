@@ -1,5 +1,4 @@
 use std::borrow::Cow;
-use std::cmp::Ordering;
 
 use candid::{Decode, Encode};
 use candid::{CandidType, Deserialize};
@@ -8,29 +7,9 @@ use serde::Serialize;
 
 use ego_types::app::AppId;
 
-#[derive(CandidType, Serialize, Deserialize, Clone, Debug)]
+#[derive(CandidType, Serialize, Deserialize, Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub struct AppKey {
   pub app_id: AppId,
-}
-
-impl Eq for AppKey {}
-
-impl PartialEq<Self> for AppKey {
-  fn eq(&self, other: &Self) -> bool {
-    self.app_id == other.app_id
-  }
-}
-
-impl PartialOrd<Self> for AppKey {
-  fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-    Some(self.app_id.cmp(&other.app_id))
-  }
-}
-
-impl Ord for AppKey {
-  fn cmp(&self, other: &Self) -> Ordering {
-    self.app_id.cmp(&other.app_id)
-  }
 }
 
 impl AppKey {
