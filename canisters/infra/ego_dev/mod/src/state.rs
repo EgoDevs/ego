@@ -44,39 +44,6 @@ pub fn post_upgrade() {
     let config_borrow = config.borrow();
     let state = config_borrow.get();
 
-    match &state.users {
-      None => {}
-      Some(users) => {
-        users_post_upgrade(users.clone());
-      }
-    }
-
-    match &state.registry {
-      None => {}
-      Some(registry) => {
-        registry_post_upgrade(registry.clone());
-      }
-    }
-
-    match &state.cycle_info {
-      None => {}
-      Some(cycle_info) => {
-        cycle_info_post_upgrade(cycle_info.clone());
-      }
-    }
-
-    match &state.backup_info {
-      None => {}
-      Some(backup_info) => {
-        backup_info_post_upgrade(backup_info.clone());
-      }
-    }
-
-    match &state.seq {
-      None => {}
-      Some(seq) => {
-        seq_post_upgrade(seq.clone());
-      }
-    }
+    StableState::restore(state.to_owned());
   });
 }

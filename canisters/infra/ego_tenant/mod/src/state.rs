@@ -25,12 +25,7 @@ fn on_canister_added(name: &str, canister_id: Principal) {
 
 pub fn pre_upgrade() {
   // composite StableState
-  let stable_state = StableState {
-    users: Some(users_pre_upgrade()),
-    registry: Some(registry_pre_upgrade()),
-    cycle_info: Some(cycle_info_pre_upgrade()),
-    backup_info: Some(backup_info_pre_upgrade()),
-  };
+  let stable_state = StableState::load();
 
   CONFIG.with(|config| {
     config.borrow_mut().set(stable_state).expect("persist stable state failed");
@@ -42,32 +37,6 @@ pub fn post_upgrade() {
     let config_borrow = config.borrow();
     let state = config_borrow.get();
 
-    match &state.users {
-      None => {}
-      Some(users) => {
-        users_post_upgrade(users.clone());
-      }
-    }
-
-    match &state.registry {
-      None => {}
-      Some(registry) => {
-        registry_post_upgrade(registry.clone());
-      }
-    }
-
-    match &state.cycle_info {
-      None => {}
-      Some(cycle_info) => {
-        cycle_info_post_upgrade(cycle_info.clone());
-      }
-    }
-
-    match &state.backup_info {
-      None => {}
-      Some(backup_info) => {
-        backup_info_post_upgrade(backup_info.clone());
-      }
-    }
+    StableState::restore(state.to_owned());
   });
 }

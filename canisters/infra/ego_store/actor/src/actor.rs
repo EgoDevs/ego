@@ -537,13 +537,7 @@ pub fn admin_wallet_app_get(_wallet_id: Principal, canister_id: Principal) -> Re
 fn admin_export() -> Vec<u8> {
   info_log_add("admin_export");
 
-  let state = StableState {
-    users: Some(users_pre_upgrade()),
-    registry: Some(registry_pre_upgrade()),
-    cycle_info: Some(cycle_info_pre_upgrade()),
-    backup_info: Some(backup_info_pre_upgrade()),
-    seq: Some(seq_pre_upgrade()),
-  };
+  let state = StableState::load();
 
   let data_export = DataExport {
     state,
