@@ -14,7 +14,7 @@ inject_backup_data!();
 /********************  methods for ego_registry   ********************/
 fn on_canister_added(name: &str, canister_id: Principal) {
   info_log_add(&format!(
-    "on_canister_added name: {}, canister_id: {}",
+    "ego_tenant: on_canister_added name: {}, canister_id: {}",
     name, canister_id
   ));
   let _ = match name {
