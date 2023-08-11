@@ -6,6 +6,7 @@ use ego_types::app::Version;
 
 use crate::c2c::ego_file::TEgoFile;
 use crate::c2c::ego_store::TEgoStore;
+use crate::state::info_log_add;
 use crate::types::app_version::{AppVersion, AppVersionStatus};
 use crate::types::developer::Developer;
 use crate::types::ego_dev_app::EgoDevApp;
@@ -170,6 +171,7 @@ impl EgoDevService {
     version: &Version,
     ego_store: S,
   ) -> Result<AppVersion, EgoError> {
+    info_log_add("update ego_dev_app version");
     let mut ego_dev_app = EgoDevApp::by_developer_id_and_id(caller, app_id).ok_or(EgoError::from(EgoDevErr::AppNotExists))?;
 
     let app_version = ego_dev_app.version_release(version)?;
@@ -177,6 +179,7 @@ impl EgoDevService {
     ego_dev_app.app.app_hash_update();
     ego_dev_app.save();
 
+    info_log_add("release to ego_store");
     ego_store.app_main_release(ego_dev_app.app, app_version.clone().wasm.unwrap());
 
     Ok(app_version)

@@ -294,7 +294,13 @@ pub async fn admin_app_create(
   )
     .await?;
 
-  info_log_add("5. app_version_release");
+  info_log_add("5. app_version_submit");
+  EgoDevService::app_version_submit(&caller, &request.app_id, &request.version).expect("app_version_submit should success");
+
+  info_log_add("6. app_version_approve");
+  EgoDevService::app_version_approve(&request.app_id).expect("app_version_approve should success");
+
+  info_log_add("7. app_version_release");
   let ego_store_id = canister_get_one("ego_store").unwrap();
   let ego_store = EgoStore::new(ego_store_id);
 
