@@ -28,7 +28,7 @@ inject_backup_api!();
 #[candid_method(init)]
 pub fn init() {
   let caller = caller();
-  info_log_add(format!("init, caller is {}", caller.clone()).as_str());
+  info_log_add(format!("ego_dev: init, caller is {}", caller.clone()).as_str());
 
   info_log_add("==> add caller as the owner");
   owner_add(caller.clone());

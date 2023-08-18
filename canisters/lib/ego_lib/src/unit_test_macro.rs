@@ -131,7 +131,7 @@ macro_rules! inject_mock_ego_store {
             // v2 interface
             async fn wallet_app_install_v2(&self, req: AppInstallRequest) -> Result<UserApp, EgoError>;
             async fn wallet_app_upgrade_v2(&self, req: AppUpgradeRequest);
-            async fn wallet_app_reinstall_by_wallet_v2(&self, req: AppReInstallRequest) -> Result<UserApp, EgoError>;
+            async fn wallet_app_reinstall_by_wallet_v2(&self, req: AppReInstallRequest);
             async fn wallet_app_upgrade_by_wallet_v2(&self, req: WalletUpgradeAppRequest);
           }
         }

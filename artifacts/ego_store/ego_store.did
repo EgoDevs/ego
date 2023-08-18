@@ -116,7 +116,7 @@ type Wasm = record {
   canister_type : CanisterType;
 };
 service : () -> {
-  admin_export : () -> (vec nat8);
+  admin_export_v2 : () -> (vec nat8);
   admin_import : (vec WalletImport) -> ();
   admin_wallet_app_get : (principal, principal) -> (Result);
   admin_wallet_cycle_recharge : (AdminWalletCycleRechargeRequest) -> (Result_1);

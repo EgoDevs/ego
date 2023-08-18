@@ -33,7 +33,7 @@ pub const CHECK_DURATION: u64 = 600; // 每 10 分钟，检查有没有需要检
 #[candid_method(init)]
 fn init() {
   let caller = caller();
-  info_log_add(format!("init, caller is {}", caller.clone()).as_str());
+  info_log_add(format!("ego_tenant: init, caller is {}", caller.clone()).as_str());
 
   info_log_add("==> add caller as the owner");
   owner_add(caller.clone());

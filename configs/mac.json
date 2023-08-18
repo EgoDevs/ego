@@ -1,1 +1,23 @@
-{"ego_tenant":{"local":"rwlgt-iiaaa-aaaaa-aaaaa-cai"},"ego_dev":{"local":"rrkah-fqaaa-aaaaa-aaaaq-cai"},"ego_file":{"local":"ryjl3-tyaaa-aaaaa-aaaba-cai"},"ego_store":{"local":"r7inp-6aaaa-aaaaa-aaabq-cai"},"ego_ops":{"local":"rkp4c-7iaaa-aaaaa-aaaca-cai"},"ego_ledger":{"local":"rno2w-sqaaa-aaaaa-aaacq-cai"},"ego_record":{"local":"renrk-eyaaa-aaaaa-aaada-cai"}}
+{
+  "ego_tenant": {
+    "local": "rwlgt-iiaaa-aaaaa-aaaaa-cai"
+  },
+  "ego_dev": {
+    "local": "rrkah-fqaaa-aaaaa-aaaaq-cai"
+  },
+  "ego_file": {
+    "local": "ryjl3-tyaaa-aaaaa-aaaba-cai"
+  },
+  "ego_store": {
+    "local": "r7inp-6aaaa-aaaaa-aaabq-cai"
+  },
+  "ego_ops": {
+    "local": "rkp4c-7iaaa-aaaaa-aaaca-cai"
+  },
+  "ego_ledger": {
+    "local": "rno2w-sqaaa-aaaaa-aaacq-cai"
+  },
+  "ego_record": {
+    "local": "renrk-eyaaa-aaaaa-aaada-cai"
+  }
+}

@@ -126,7 +126,7 @@ impl EgoStoreService {
     );
 
     info_log_add("4 get ego tenant id relative to wallet");
-    let wallet = EgoStoreService::wallet_main_get(wallet_id)?;
+    let wallet = EgoStoreService::wallet_main_get(wallet_id).expect("wallet not exists");
     let ego_tenant_id = wallet.tenant_id;
 
     info_log_add("5 call ego tenant to upgrade canister");

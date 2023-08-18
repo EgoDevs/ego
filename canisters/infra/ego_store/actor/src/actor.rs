@@ -36,7 +36,7 @@ pub const GIFT_CYCLES_AMOUNT: u128 = 1_000_000_000_000;
 #[candid_method(init)]
 fn init() {
   let caller = caller();
-  info_log_add(format!("init, caller is {}", caller.clone()).as_str());
+  info_log_add(format!("ego_store: init, caller is {}", caller.clone()).as_str());
 
   info_log_add("==> add caller as the owner");
   owner_add(caller.clone());
@@ -77,8 +77,10 @@ pub fn app_main_get(app_id: AppId) -> Result<App, EgoError> {
 #[update(name = "wallet_main_register")]
 #[candid_method(update, rename = "wallet_main_register")]
 pub fn wallet_main_register(user_id: Principal) -> Result<Principal, EgoError> {
-  info_log_add("wallet_main_register");
   let wallet_id = caller();
+
+  info_log_add(format!("wallet_main_register wallet_id: {}, user_id: {}", wallet_id, user_id).as_str());
+
   let tenant_id = EgoStoreService::wallet_main_register(&wallet_id, &user_id)?;
 
   Ok(tenant_id)
@@ -212,8 +214,12 @@ pub async fn wallet_app_upgrade_by_wallet(canister_id: Principal) -> Result<(), 
 #[update(name = "wallet_app_upgrade_by_wallet_v2")]
 #[candid_method(update, rename = "wallet_app_upgrade_by_wallet_v2")]
 pub async fn wallet_app_upgrade_by_wallet_v2(req: WalletUpgradeAppRequest) -> Result<(), EgoError> {
-  let wallet_id = caller();
   let canister_id = req.canister_id;
+
+  let user_app = user_app::UserApp::get(&canister_id).expect("user app not exists");
+  info_log_add(format!("{:?}", user_app.wallet_id).as_str());
+  let wallet_id = user_app.wallet_id.unwrap_or(caller());
+
   let ego_tenant = EgoTenantInner::new();
   let ego_canister = EgoCanister::new();
 
@@ -532,10 +538,10 @@ pub fn admin_wallet_app_get(_wallet_id: Principal, canister_id: Principal) -> Re
 }
 
 /********************  数据导出   ********************/
-#[update(name = "admin_export", guard = "owner_guard")]
-#[candid_method(update, rename = "admin_export")]
+#[update(name = "admin_export_v2", guard = "owner_guard")]
+#[candid_method(update, rename = "admin_export_v2")]
 fn admin_export() -> Vec<u8> {
-  info_log_add("admin_export");
+  info_log_add("admin_export_v2");
 
   let state = StableState::load();
 

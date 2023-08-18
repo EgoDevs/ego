@@ -157,7 +157,7 @@ export const idlFactory = ({ IDL }) => {
   const Result_22 = IDL.Variant({ 'Ok' : IDL.Vec(Order), 'Err' : EgoError });
   const Result_23 = IDL.Variant({ 'Ok' : IDL.Nat64, 'Err' : EgoError });
   return IDL.Service({
-    'admin_export' : IDL.Func([], [IDL.Vec(IDL.Nat8)], []),
+    'admin_export_v2' : IDL.Func([], [IDL.Vec(IDL.Nat8)], []),
     'admin_import' : IDL.Func([IDL.Vec(WalletImport)], [], []),
     'admin_wallet_app_get' : IDL.Func(
         [IDL.Principal, IDL.Principal],

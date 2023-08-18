@@ -157,7 +157,7 @@ export interface Wasm {
   'canister_type' : CanisterType,
 }
 export interface _SERVICE {
-  'admin_export' : ActorMethod<[], Uint8Array | number[]>,
+  'admin_export_v2' : ActorMethod<[], Uint8Array | number[]>,
   'admin_import' : ActorMethod<[Array<WalletImport>], undefined>,
   'admin_wallet_app_get' : ActorMethod<[Principal, Principal], Result>,
   'admin_wallet_cycle_recharge' : ActorMethod<

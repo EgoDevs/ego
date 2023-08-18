@@ -19,15 +19,11 @@ use ego_types::user::User;
 inject_ego_api!();
 inject_cycle_info_api!();
 
-#[derive(Clone, Debug, CandidType, Deserialize)]
-pub struct InitArg {
-  init_caller: Option<Principal>,
-}
-
 #[init]
 #[candid_method(init)]
-pub fn init(arg: InitArg) {
-  let caller = arg.init_caller.unwrap_or(caller());
+pub fn init() {
+  let caller = caller();
+  info_log_add(format!("ego_file: init, caller is {}", caller.clone()).as_str());
 
   info_log_add("==> create stable page for state");
   let pages_to_grow = HEADER_SIZE / WASM_PAGE_SIZE;
