@@ -399,7 +399,7 @@ impl EgoStoreService {
 
     let mut user_app = UserApp::new(
       &ego_store_app.app,
-      &Canister::new(canister_id, ego_store_app.wasm.canister_type), Some(wallet_provider),
+      &Canister::new(canister_id, ego_store_app.wasm.canister_type), Some(canister_id),
     );
     user_app.save();
 

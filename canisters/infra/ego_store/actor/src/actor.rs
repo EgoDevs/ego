@@ -30,7 +30,7 @@ inject_ego_api!();
 inject_cycle_info_api!();
 inject_backup_api!();
 
-pub const GIFT_CYCLES_AMOUNT: u128 = 1_000_000_000_000;
+pub const GIFT_CYCLES_AMOUNT: u128 = 500_000_000_000;
 
 #[init]
 #[candid_method(init)]
@@ -536,6 +536,19 @@ pub fn admin_wallet_app_get(_wallet_id: Principal, canister_id: Principal) -> Re
 
   Ok(user_app::UserApp::get(&canister_id).expect("canister not exists").into())
 }
+
+#[update(name = "admin_wallet_app_transfer", guard = "owner_guard")]
+#[candid_method(update, rename = "admin_wallet_app_transfer")]
+pub fn admin_wallet_app_transfer(wallet_id: Principal, canister_id: Principal) -> Result<(), EgoError> {
+  info_log_add(format!("admin_wallet_app_transfer wallet_id: {}, canister_id: {}", wallet_id, canister_id).as_str());
+
+  let mut user_app = ego_store_mod::types::user_app::UserApp::get(&canister_id).expect("user app not exists");
+  user_app.wallet_id = Some(wallet_id);
+  user_app.save();
+
+  Ok(())
+}
+
 
 /********************  数据导出   ********************/
 #[update(name = "admin_export_v2", guard = "owner_guard")]
