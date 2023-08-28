@@ -210,6 +210,11 @@ impl EgoTenantService {
     let mut current_cycle = records[0].balance;
     let current_ts: u64 = records[0].ts; // second
 
+    task.last_cycle = Some(current_cycle);
+    task.try_count = 0;
+    task.next_check_time = current_ts + NEXT_CHECK_DURATION;
+    task.save();
+
     let mut last_cycle = 0;
     let mut last_ts: u64 = 0;
 
@@ -230,6 +235,7 @@ impl EgoTenantService {
       )
         .as_str(),
     );
+
     if current_cycle < threshold {
       let cycle_required_to_top_up = threshold.mul(15).div(10) - current_cycle;
 
@@ -240,15 +246,20 @@ impl EgoTenantService {
         )
           .as_str(),
       );
-      EgoTenantService::wallet_cycle_recharge(
+      match EgoTenantService::wallet_cycle_recharge(
         management,
         ego_store,
         task,
         cycle_required_to_top_up,
       )
-        .await?;
+        .await{
+        Ok(_) => {
+          current_cycle = threshold.mul(15).div(10);
+        }
+        Err(_) => {
 
-      current_cycle = threshold.mul(15).div(10);
+        }
+      }
     } else {
       info_log_add("1.2. cycle enough");
     }
@@ -278,14 +289,6 @@ impl EgoTenantService {
 
     info_log_add(format!("4. estimate_duration: {}", estimate_duration).as_str());
     ego_canister.ego_cycle_estimate_set(*canister_id, estimate_duration);
-
-    let next_time = current_ts + NEXT_CHECK_DURATION;
-    info_log_add(format!("5. update next_time to : {}", next_time).as_str());
-
-    task.next_check_time = next_time;
-    task.last_cycle = Some(current_cycle);
-    task.try_count = 0;
-    task.save();
 
     Ok(())
   }

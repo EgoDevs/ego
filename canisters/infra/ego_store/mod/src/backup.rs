@@ -1,6 +1,7 @@
 /********************  methods for backup_lib  ********************/
 use ego_backup::backup_info::{BackupJob, ByteReadResponse};
 use ic_cdk::trap;
+use serde::Serialize;
 
 use ego_utils::util::get_md5;
 
@@ -61,9 +62,9 @@ pub fn job_list() -> Vec<BackupJob> {
 }
 
 /********************  methods for export  ********************/
-pub fn record_export(name: String, last_update: Option<u64>) -> Option<ByteReadResponse> {
-  info_log_add(format!("record_export name: {}, last_update: {:?}", name, last_update).as_str());
-  let data = match name.as_str() {
+pub fn record_export(name: String, start: usize, end: usize, last_update: Option<u64>) -> Option<ByteReadResponse> {
+  info_log_add(format!("record_export name: {}, start: {}, end: {}, last_update: {:?}", name, start, end, last_update).as_str());
+  let (data, total) = match name.as_str() {
     "config" => {
       let data = StableState {
         users: Some(users_pre_upgrade()),
@@ -72,10 +73,11 @@ pub fn record_export(name: String, last_update: Option<u64>) -> Option<ByteReadR
         backup_info: Some(backup_info_pre_upgrade()),
         seq: Some(seq_pre_upgrade()),
       };
-      serde_json::to_vec(&data).unwrap()
+      let data = serde_json::to_vec(&data).unwrap();
+      (data, 1)
     }
     "ego_store_apps" => {
-      let data = match last_update {
+      let records = match last_update {
         None => {
           EgoStoreApp::list()
         }
@@ -83,18 +85,18 @@ pub fn record_export(name: String, last_update: Option<u64>) -> Option<ByteReadR
           EgoStoreApp::by_last_update(ts)
         }
       };
-      serde_json::to_vec(&data).unwrap()
+      get_result(&records, start, end)
     }
     "tenants" => {
-      let data = Tenant::list();
-      serde_json::to_vec(&data).unwrap()
+      let records = Tenant::list();
+      get_result(&records, start, end)
     }
     "wallet_providers" => {
-      let data = WalletProvider::list();
-      serde_json::to_vec(&data).unwrap()
+      let records = WalletProvider::list();
+      get_result(&records, start, end)
     }
     "wallets" => {
-      let data = match last_update {
+      let records = match last_update {
         None => {
           Wallet::list()
         }
@@ -102,10 +104,11 @@ pub fn record_export(name: String, last_update: Option<u64>) -> Option<ByteReadR
           Wallet::by_last_update(ts)
         }
       };
-      serde_json::to_vec(&data).unwrap()
+
+      get_result(&records, start, end)
     }
     "user_apps" => {
-      let data = match last_update {
+      let records = match last_update {
         None => {
           UserApp::list()
         }
@@ -113,10 +116,11 @@ pub fn record_export(name: String, last_update: Option<u64>) -> Option<ByteReadR
           UserApp::by_last_update(ts)
         }
       };
-      serde_json::to_vec(&data).unwrap()
+
+      get_result(&records, start, end)
     }
     "orders" => {
-      let data = match last_update {
+      let records = match last_update {
         None => {
           Order::list()
         }
@@ -124,10 +128,11 @@ pub fn record_export(name: String, last_update: Option<u64>) -> Option<ByteReadR
           Order::by_last_update(ts)
         }
       };
-      serde_json::to_vec(&data).unwrap()
+
+      get_result(&records, start, end)
     }
     "cash_flows" => {
-      let data = match last_update {
+      let records = match last_update {
         None => {
           CashFlow::list()
         }
@@ -135,7 +140,8 @@ pub fn record_export(name: String, last_update: Option<u64>) -> Option<ByteReadR
           CashFlow::by_last_update(ts)
         }
       };
-      serde_json::to_vec(&data).unwrap()
+
+      get_result(&records, start, end)
     }
     _ => trap("no job matched")
   };
@@ -146,7 +152,20 @@ pub fn record_export(name: String, last_update: Option<u64>) -> Option<ByteReadR
     name: name.clone(),
     data,
     hash,
+    total,
   };
 
   Some(resp)
+}
+
+fn get_result<T: Serialize>(records: &Vec<T>, mut start: usize, mut end: usize) -> (Vec<u8>, usize) {
+  let total = records.len();
+  if start > total {
+    start = 0
+  }
+  if end > total {
+    end = total
+  }
+  let data = serde_json::to_vec(&records[start..end]).unwrap();
+  (data, total)
 }

@@ -1,1 +1,23 @@
-{"ego_tenant":{"ic":"2pz3r-eqaaa-aaaah-adjqq-cai"}}
+{
+  "ego_tenant": {
+    "ic": "nvgee-xyaaa-aaaah-ab7aq-cai"
+  },
+  "ego_dev": {
+    "ic": "n4fpy-bqaaa-aaaah-ab7ba-cai"
+  },
+  "ego_file": {
+    "ic": "n3ejm-miaaa-aaaah-ab7bq-cai"
+  },
+  "ego_store": {
+    "ic": "nodyb-naaaa-aaaah-ab7ca-cai"
+  },
+  "ego_ops": {
+    "ic": "njc6v-ayaaa-aaaah-ab7cq-cai"
+  },
+  "ego_ledger": {
+    "ic": "nabvj-wqaaa-aaaah-ab7da-cai"
+  },
+  "ego_record": {
+    "ic": "2gyec-vyaaa-aaaah-acmua-cai"
+  }
+}

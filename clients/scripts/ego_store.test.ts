@@ -14,7 +14,7 @@ describe('ego_store_export', () => {
   it('export', async () => {
     const actor = await egoActor;
 
-    const data = await actor.admin_export();
+    const data = await actor.admin_export_v2();
 
     const json = JSON.parse(Buffer.from(data).toString()) as { [key: string]: any }[];
 

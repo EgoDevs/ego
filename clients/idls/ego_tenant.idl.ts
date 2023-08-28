@@ -86,6 +86,7 @@ export const idlFactory = ({ IDL }) => {
   return IDL.Service({
     'admin_export' : IDL.Func([], [IDL.Vec(IDL.Nat8)], []),
     'admin_import' : IDL.Func([IDL.Vec(Task)], [], []),
+    'admin_task_check' : IDL.Func([IDL.Principal], [], []),
     'admin_task_list' : IDL.Func([IDL.Nat64], [Result], []),
     'app_main_delete' : IDL.Func([IDL.Principal], [Result_1], []),
     'app_main_install' : IDL.Func([AppMainInstallRequest], [Result_2], []),
@@ -140,6 +141,7 @@ export const idlFactory = ({ IDL }) => {
         [Result_14],
         [],
       ),
+    'reset_next_check_time' : IDL.Func([], [], []),
     'wallet_cycle_recharge' : IDL.Func([IDL.Nat], [Result_1], []),
   });
 };

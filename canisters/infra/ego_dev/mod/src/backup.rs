@@ -1,6 +1,7 @@
 /********************  methods for backup_lib  ********************/
 use ego_backup::backup_info::{BackupJob, ByteReadResponse};
 use ic_cdk::trap;
+use serde::Serialize;
 
 use ego_utils::util::get_md5;
 
@@ -43,21 +44,22 @@ pub fn job_list() -> Vec<BackupJob> {
 }
 
 /********************  methods for export  ********************/
-pub fn record_export(name: String, last_update: Option<u64>) -> Option<ByteReadResponse> {
-  info_log_add(format!("record_export name: {}, last_update: {:?}", name, last_update).as_str());
-  let data = match name.as_str() {
+pub fn record_export(name: String, start: usize, end: usize, last_update: Option<u64>) -> Option<ByteReadResponse> {
+  info_log_add(format!("record_export name: {}, start: {}, end: {}, last_update: {:?}", name, start, end, last_update).as_str());
+  let (data, total) = match name.as_str() {
     "config" => {
-      let data = StableState {
+      let records = StableState {
         users: Some(users_pre_upgrade()),
         registry: Some(registry_pre_upgrade()),
         cycle_info: Some(cycle_info_pre_upgrade()),
         backup_info: Some(backup_info_pre_upgrade()),
         seq: Some(seq_pre_upgrade()),
       };
-      serde_json::to_vec(&data).unwrap()
+      let data = serde_json::to_vec(&records).unwrap();
+      (data, 1)
     }
     "ego_dev_apps" => {
-      let data = match last_update {
+      let records = match last_update {
         None => {
           EgoDevApp::list()
         }
@@ -65,14 +67,14 @@ pub fn record_export(name: String, last_update: Option<u64>) -> Option<ByteReadR
           EgoDevApp::by_last_update(ts)
         }
       };
-      serde_json::to_vec(&data).unwrap()
+      get_result(&records, start, end)
     }
     "files" => {
-      let data = File::list();
-      serde_json::to_vec(&data).unwrap()
+      let records = File::list();
+      get_result(&records, start, end)
     }
     "developers" => {
-      let data = match last_update {
+      let records = match last_update {
         None => {
           Developer::list()
         }
@@ -80,10 +82,10 @@ pub fn record_export(name: String, last_update: Option<u64>) -> Option<ByteReadR
           Developer::by_last_update(ts)
         }
       };
-      serde_json::to_vec(&data).unwrap()
+      get_result(&records, start, end)
     }
     "app_versions" => {
-      let data = match last_update {
+      let records = match last_update {
         None => {
           AppVersion::list()
         }
@@ -91,7 +93,7 @@ pub fn record_export(name: String, last_update: Option<u64>) -> Option<ByteReadR
           AppVersion::by_last_update(ts)
         }
       };
-      serde_json::to_vec(&data).unwrap()
+      get_result(&records, start, end)
     }
     _ => trap("no job matched")
   };
@@ -102,7 +104,20 @@ pub fn record_export(name: String, last_update: Option<u64>) -> Option<ByteReadR
     name: name.clone(),
     data,
     hash,
+    total,
   };
 
   Some(resp)
+}
+
+fn get_result<T: Serialize>(records: &Vec<T>, mut start: usize, mut end: usize) -> (Vec<u8>, usize) {
+  let total = records.len();
+  if start > total {
+    start = 0
+  }
+  if end > total {
+    end = total
+  }
+  let data = serde_json::to_vec(&records[start..end]).unwrap();
+  (data, total)
 }

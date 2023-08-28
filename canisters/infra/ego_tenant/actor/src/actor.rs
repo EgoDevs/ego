@@ -18,7 +18,7 @@ use ego_tenant_mod::state::*;
 use ego_tenant_mod::types::{AppMainInstallRequest, AppMainReInstallRequest, AppMainUpgradeRequest, DataExport, task};
 use ego_tenant_mod::types::EgoTenantErr::CanisterNotFounded;
 use ego_tenant_mod::types::stable_state::StableState;
-use ego_tenant_mod::types::task::Task;
+use ego_tenant_mod::types::task::{MAX_TRY_COUNT, Task};
 use ego_types::app::EgoError;
 use ego_utils::util::time;
 
@@ -233,13 +233,36 @@ pub fn admin_task_list(last_update: u64) -> Result<Vec<Task>, EgoError> {
   Ok(Task::by_last_update(last_update))
 }
 
+#[update(name = "reset_next_check_time", guard = "owner_guard")]
+#[candid_method(update, rename = "reset_next_check_time")]
+pub fn reset_next_check_time() {
+  info_log_add("reset_next_check_time");
 
+  let now = time() as i64;
+
+  for task in Task::list().iter_mut() {
+    if (now - task.next_check_time as i64).abs() > NEXT_CHECK_DURATION  as i64{
+      task.next_check_time = 0;
+      task.try_count = MAX_TRY_COUNT - 1;
+      task.save()
+    }
+  }
+}
+
+#[update(name = "admin_task_check", guard = "owner_guard")]
+#[candid_method(update, rename = "admin_task_check")]
+pub fn admin_task_check(canister_id: Principal) {
+  let ego_canister = EgoCanister::new();
+  info_log_add(format!("calling ego_cycle_check on {}", canister_id).as_str());
+
+  ego_canister.ego_cycle_check(canister_id);
+}
 
 /********************  notify  ********************/
 fn task_run() {
   info_log_add("task_run");
 
-  let sentinel = time() / 1000; // convert to second
+  let sentinel = time(); // convert to second
   let tasks = Task::by_sentinel(sentinel);
 
   for mut task in tasks {

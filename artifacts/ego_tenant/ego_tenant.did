@@ -52,6 +52,7 @@ type Wasm = record {
 service : () -> {
   admin_export : () -> (vec nat8);
   admin_import : (vec Task) -> ();
+  admin_task_check : (principal) -> ();
   admin_task_list : (nat64) -> (Result);
   app_main_delete : (principal) -> (Result_1);
   app_main_install : (AppMainInstallRequest) -> (Result_2);
@@ -94,5 +95,6 @@ service : () -> {
   ego_user_remove : (principal) -> (Result_4);
   ego_user_set : (vec principal) -> (Result_4);
   job_data_export : (text, opt nat64) -> (Result_14);
+  reset_next_check_time : () -> ();
   wallet_cycle_recharge : (nat) -> (Result_1);
 }

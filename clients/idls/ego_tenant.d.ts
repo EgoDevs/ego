@@ -83,6 +83,7 @@ export interface Wasm {
 export interface _SERVICE {
   'admin_export' : ActorMethod<[], Uint8Array | number[]>,
   'admin_import' : ActorMethod<[Array<Task>], undefined>,
+  'admin_task_check' : ActorMethod<[Principal], undefined>,
   'admin_task_list' : ActorMethod<[bigint], Result>,
   'app_main_delete' : ActorMethod<[Principal], Result_1>,
   'app_main_install' : ActorMethod<[AppMainInstallRequest], Result_2>,
@@ -125,5 +126,6 @@ export interface _SERVICE {
   'ego_user_remove' : ActorMethod<[Principal], Result_4>,
   'ego_user_set' : ActorMethod<[Array<Principal>], Result_4>,
   'job_data_export' : ActorMethod<[string, [] | [bigint]], Result_14>,
+  'reset_next_check_time' : ActorMethod<[], undefined>,
   'wallet_cycle_recharge' : ActorMethod<[bigint], Result_1>,
 }

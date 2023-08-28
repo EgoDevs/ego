@@ -2,68 +2,58 @@ import { idlFactory as Idl } from '../idls/ego_tenant.idl';
 import { _SERVICE as Service } from '../idls/ego_tenant';
 
 import { getActor, identity, getCanisterId } from '@ego-js/utils';
-
-import fs from 'fs';
+import fs from "fs";
 import {Principal} from "@dfinity/principal";
 
-const file_path = '/tmp/ego_tenant.json'
 
-describe('ego_tenant_export', () => {
+describe('reset_next_check_time', () => {
+  const egoActor = getActor<Service>(identity(), Idl, getCanisterId('ego_tenant')!);
+
+  it('reset_next_check_time', async () => {
+    const actor = await egoActor;
+
+    const response = await actor.reset_next_check_time();
+
+    console.log(response)
+  });
+});
+
+describe('tenant_logs', () => {
+  const egoActor = getActor<Service>(identity(), Idl, getCanisterId('ego_tenant')!);
+
+  it('logs', async () => {
+    const actor = await egoActor;
+
+    const response = await actor.ego_log_list(BigInt(20));
+    response.Ok.forEach(log => {
+      let date = new Date(Number(log.ts))
+      console.log(date + ' / ' + log.msg)
+    })
+
+  });
+});
+
+describe('export_tasks', () => {
   const egoActor = getActor<Service>(identity(), Idl, getCanisterId('ego_tenant')!);
 
   it('export', async () => {
     const actor = await egoActor;
 
-    const data = await actor.admin_export();
-
+    const response = await actor.job_data_export('tasks', []);
+    const data = response.Ok[0].data
     const json = JSON.parse(Buffer.from(data).toString()) as { [key: string]: any }[];
+    fs.writeFileSync('/tmp/tasks.json', JSON.stringify(json));
 
-    fs.writeFileSync(file_path, JSON.stringify(json));
   });
 });
 
-describe('ego_tenant_import', () => {
+describe('admin_task_check', () => {
   const egoActor = getActor<Service>(identity(), Idl, getCanisterId('ego_tenant')!);
 
-  it('import', async () => {
+  it('admin_task_check', async () => {
     const actor = await egoActor;
 
-    const data = fs.readFileSync(file_path);
-    const json = JSON.parse(data.toString()) as any[];
-
-    const task_offset = 0
-
-    console.log('1. restore users')
-    Object.entries(json['users']['owners']).forEach(([key, value]) => {
-      actor.ego_owner_add(Principal.fromText(value))
-    })
-
-    Object.entries(json['users']['users']).forEach(([key, value]) => {
-      actor.ego_user_add(Principal.fromText(value))
-    })
-
-    Object.entries(json['users']['ops']).forEach(([key, value]) => {
-      actor.ego_op_add(Principal.fromText(value))
-    })
-
-    console.log('2. restore registry')
-    Object.entries(json['registry']['canisters']).forEach(([key, value]) => {
-      console.log(key + " / " + value)
-      actor.ego_canister_add(key, Principal.fromText(value + ''))
-    })
-
-    console.log('3. restore tasks')
-    let tasks = []
-    for(let task of Object.values(json['ego_tenant']['tasks'])) {
-      task['wallet_id'] = Principal.fromText(task['wallet_id'])
-      task['canister_id'] = Principal.fromText(task['canister_id'])
-      task['last_update'] = 0
-      task['last_cycle'] = []
-      task['try_count'] = 0
-
-      tasks.push(task)
-    }
-
-    await actor.admin_import(tasks)
+    const response = await actor.admin_task_check(Principal.fromText('ws5yv-piaaa-aaaah-ac6tq-cai'));
+    console.log(response)
   });
 });

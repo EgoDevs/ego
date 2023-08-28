@@ -10,7 +10,7 @@ use ego_utils::util::time;
 
 use crate::memory::TASKS;
 
-const MAX_TRY_COUNT: u8 = 5; // 4M
+pub const MAX_TRY_COUNT: u8 = 5; // 4M
 
 // Task
 #[derive(CandidType, Deserialize, Serialize, Clone, Debug)]

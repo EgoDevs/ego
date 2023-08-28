@@ -1,16 +1,14 @@
 import {getActor, getCanisterId, identity} from "@ego-js/utils";
-import { _SERVICE as EgoDevService } from '@/idls/ego_dev';
-import { idlFactory } from '@/idls/ego_dev.idl';
+import { _SERVICE as Service } from '@/idls/ego_store';
+import { idlFactory } from '@/idls/ego_store.idl';
 import {ActorSubclass} from "@dfinity/agent";
 import {Principal} from "@dfinity/principal";
 
-describe('fix', () => {
+describe('add_owner', () => {
     test('fix', async () => {
-        let actor = await getOperator<EgoDevService>('ego_dev');
-        await actor.ego_canister_add('ego_file', Principal.fromText(getCanisterId("ego_file")!));
-        await actor.ego_canister_add('ego_store', Principal.fromText(getCanisterId("ego_store")!));
-        await actor.ego_canister_add('ego_tenant', Principal.fromText(getCanisterId("ego_tenant")!));
-        await actor.ego_canister_add('ego_record', Principal.fromText(getCanisterId("ego_record")!));
+        let actor = await getOperator<Service>('ego_tenant');
+        await actor.ego_owner_add(Principal.fromText('el7s7-33f72-jqhxg-cvbuv-omslr-obd22-qhrhb-bv26n-sjle3-ulxaz-6ae'))
+
     });
 });
 
