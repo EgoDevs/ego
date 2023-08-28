@@ -23,7 +23,12 @@ type AppUpgradeRequest = record { wallet_id : principal };
 type BackupInfo = record { state : BackupStatus };
 type BackupJob = record { name : text; amount : nat64 };
 type BackupStatus = variant { MAINTAINING; RUNNING };
-type ByteReadResponse = record { data : vec nat8; hash : text; name : text };
+type ByteReadResponse = record {
+  total : nat64;
+  data : vec nat8;
+  hash : text;
+  name : text;
+};
 type Canister = record {
   canister_id : principal;
   canister_type : CanisterType;
@@ -160,7 +165,7 @@ service : () -> {
   ego_user_list : () -> (Result_15);
   ego_user_remove : (principal) -> (Result_6);
   ego_user_set : (vec principal) -> (Result_6);
-  job_data_export : (text, opt nat64) -> (Result_16);
+  job_data_export : (text, nat64, nat64, opt nat64) -> (Result_16);
   wallet_app_install : (text) -> (Result);
   wallet_app_install_v2 : (AppInstallRequest) -> (Result);
   wallet_app_list : () -> (Result_17);

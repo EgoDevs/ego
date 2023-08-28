@@ -57,7 +57,12 @@ type AppVersionUploadWasmRequest = record {
 type BackupInfo = record { state : BackupStatus };
 type BackupJob = record { name : text; amount : nat64 };
 type BackupStatus = variant { MAINTAINING; RUNNING };
-type ByteReadResponse = record { data : vec nat8; hash : text; name : text };
+type ByteReadResponse = record {
+  total : nat64;
+  data : vec nat8;
+  hash : text;
+  name : text;
+};
 type CanisterType = variant { BACKEND; ASSET };
 type Category = variant { System; Vault };
 type CycleInfo = record {
@@ -183,7 +188,7 @@ service : () -> {
   ego_user_list : () -> (Result_15);
   ego_user_remove : (principal) -> (Result_4);
   ego_user_set : (vec principal) -> (Result_4);
-  job_data_export : (text, opt nat64) -> (Result_16);
+  job_data_export : (text, nat64, nat64, opt nat64) -> (Result_16);
   user_main_list : (text) -> (Result_17) query;
   user_role_set : (UserRoleSetRequest) -> (Result_2);
 }

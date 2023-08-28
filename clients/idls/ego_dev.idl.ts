@@ -143,6 +143,7 @@ export const idlFactory = ({ IDL }) => {
     'Err' : IDL.Text,
   });
   const ByteReadResponse = IDL.Record({
+    'total' : IDL.Nat64,
     'data' : IDL.Vec(IDL.Nat8),
     'hash' : IDL.Text,
     'name' : IDL.Text,
@@ -225,7 +226,7 @@ export const idlFactory = ({ IDL }) => {
     'ego_user_remove' : IDL.Func([IDL.Principal], [Result_4], []),
     'ego_user_set' : IDL.Func([IDL.Vec(IDL.Principal)], [Result_4], []),
     'job_data_export' : IDL.Func(
-        [IDL.Text, IDL.Opt(IDL.Nat64)],
+        [IDL.Text, IDL.Nat64, IDL.Nat64, IDL.Opt(IDL.Nat64)],
         [Result_16],
         [],
       ),

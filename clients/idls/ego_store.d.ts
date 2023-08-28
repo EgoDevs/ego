@@ -28,6 +28,7 @@ export interface BackupJob { 'name' : string, 'amount' : bigint }
 export type BackupStatus = { 'MAINTAINING' : null } |
   { 'RUNNING' : null };
 export interface ByteReadResponse {
+  'total' : bigint,
   'data' : Uint8Array | number[],
   'hash' : string,
   'name' : string,
@@ -207,7 +208,10 @@ export interface _SERVICE {
   'ego_user_list' : ActorMethod<[], Result_15>,
   'ego_user_remove' : ActorMethod<[Principal], Result_6>,
   'ego_user_set' : ActorMethod<[Array<Principal>], Result_6>,
-  'job_data_export' : ActorMethod<[string, [] | [bigint]], Result_16>,
+  'job_data_export' : ActorMethod<
+    [string, bigint, bigint, [] | [bigint]],
+    Result_16
+  >,
   'wallet_app_install' : ActorMethod<[string], Result>,
   'wallet_app_install_v2' : ActorMethod<[AppInstallRequest], Result>,
   'wallet_app_list' : ActorMethod<[], Result_17>,
