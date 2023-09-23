@@ -29,26 +29,6 @@ export const idlFactory = ({ IDL }) => {
     'latest_version' : Version,
     'wallet_id' : IDL.Opt(IDL.Principal),
   });
-  const CashFlowType = IDL.Variant({
-    'CHARGE' : IDL.Null,
-    'RECHARGE' : IDL.Null,
-  });
-  const CashFlow = IDL.Record({
-    'balance' : IDL.Nat,
-    'operator' : IDL.Principal,
-    'created_at' : IDL.Nat64,
-    'comment' : IDL.Text,
-    'cycles' : IDL.Nat,
-    'cash_flow_type' : CashFlowType,
-  });
-  const WalletImport = IDL.Record({
-    'user_apps' : IDL.Vec(UserApp),
-    'user_id' : IDL.Principal,
-    'tenant_id' : IDL.Principal,
-    'cycles' : IDL.Nat,
-    'cash_flows' : IDL.Vec(CashFlow),
-    'wallet_id' : IDL.Principal,
-  });
   const EgoError = IDL.Record({ 'msg' : IDL.Text, 'code' : IDL.Nat16 });
   const Result = IDL.Variant({ 'Ok' : UserApp, 'Err' : EgoError });
   const Result_1 = IDL.Variant({ 'Ok' : IDL.Null, 'Err' : EgoError });
@@ -143,6 +123,18 @@ export const idlFactory = ({ IDL }) => {
     'Ok' : WalletCycleChargeResponse,
     'Err' : EgoError,
   });
+  const CashFlowType = IDL.Variant({
+    'CHARGE' : IDL.Null,
+    'RECHARGE' : IDL.Null,
+  });
+  const CashFlow = IDL.Record({
+    'balance' : IDL.Nat,
+    'operator' : IDL.Principal,
+    'created_at' : IDL.Nat64,
+    'comment' : IDL.Text,
+    'cycles' : IDL.Nat,
+    'cash_flow_type' : CashFlowType,
+  });
   const Result_20 = IDL.Variant({ 'Ok' : IDL.Vec(CashFlow), 'Err' : EgoError });
   const Result_21 = IDL.Variant({ 'Ok' : IDL.Principal, 'Err' : EgoError });
   const OrderStatus = IDL.Variant({ 'NEW' : IDL.Null, 'SUCCESS' : IDL.Null });
@@ -158,8 +150,6 @@ export const idlFactory = ({ IDL }) => {
   const Result_22 = IDL.Variant({ 'Ok' : IDL.Vec(Order), 'Err' : EgoError });
   const Result_23 = IDL.Variant({ 'Ok' : IDL.Nat64, 'Err' : EgoError });
   return IDL.Service({
-    'admin_export_v2' : IDL.Func([], [IDL.Vec(IDL.Nat8)], []),
-    'admin_import' : IDL.Func([IDL.Vec(WalletImport)], [], []),
     'admin_wallet_app_get' : IDL.Func(
         [IDL.Principal, IDL.Principal],
         [Result],
@@ -222,9 +212,19 @@ export const idlFactory = ({ IDL }) => {
     'ego_user_list' : IDL.Func([], [Result_15], []),
     'ego_user_remove' : IDL.Func([IDL.Principal], [Result_6], []),
     'ego_user_set' : IDL.Func([IDL.Vec(IDL.Principal)], [Result_6], []),
-    'job_data_export' : IDL.Func(
-        [IDL.Text, IDL.Nat64, IDL.Nat64, IDL.Opt(IDL.Nat64)],
+    'job_data_backup' : IDL.Func(
+        [IDL.Text, IDL.Nat64, IDL.Nat64],
         [Result_16],
+        [],
+      ),
+    'job_data_export' : IDL.Func(
+        [IDL.Text, IDL.Nat64, IDL.Nat64, IDL.Nat64],
+        [Result_16],
+        [],
+      ),
+    'job_data_restore' : IDL.Func(
+        [IDL.Text, IDL.Vec(IDL.Nat8)],
+        [Result_6],
         [],
       ),
     'wallet_app_install' : IDL.Func([IDL.Text], [Result], []),

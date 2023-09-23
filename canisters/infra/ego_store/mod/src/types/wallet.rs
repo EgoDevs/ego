@@ -87,15 +87,15 @@ impl Wallet {
     })
   }
 
-  pub fn by_last_update(last_update: u64) -> Vec<Self> {
-    Self::iter(|(_, wallet)| match wallet.last_update >= last_update {
+  pub fn by_last_update(start: usize, end: usize, last_update: u64) -> Vec<Self> {
+    Self::iter(start, end, |(_, wallet)| match wallet.last_update >= last_update {
       true => { Some(wallet) }
       false => { None }
     })
   }
 
-  pub fn list() -> Vec<Self> {
-    Self::iter(|(_, wallet)| Some(wallet))
+  pub fn list(start: usize, end: usize) -> Vec<Self> {
+    Self::iter(start, end, |(_, wallet)| Some(wallet))
   }
 
   pub fn get(wallet_id: &Principal) -> Option<Self> {
@@ -115,11 +115,33 @@ impl Wallet {
     });
   }
 
-  fn iter<F>(filter: F) -> Vec<Self>
-    where F: FnMut((Blob<29>, Self)) -> Option<Self> {
+  fn iter<F>(start: usize, end: usize, filter: F) -> Vec<Self>
+    where F: Fn((Blob<29>, Self)) -> Option<Self> {
+    let mut idx = 0;
+
     WALLETS.with(|cell| {
       let inst = cell.borrow();
-      inst.iter().filter_map(filter).collect()
+      inst.iter().filter_map(|entry| {
+        if idx >= end {
+          // 如果过了上界，直接忽略
+          None
+        } else {
+          match filter(entry) {
+            None => {
+              None
+            }
+            Some(record) => {
+              let ret = if idx >= start && idx < end {
+                Some(record)
+              } else {
+                None
+              };
+              idx += 1;
+              ret
+            }
+          }
+        }
+      }).collect()
     })
   }
 }

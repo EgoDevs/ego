@@ -1,7 +1,7 @@
 /********************  methods for backup_lib  ********************/
 use ego_backup::backup_info::{BackupJob, ByteReadResponse};
+use ego_backup::util::{get_bin_result, get_json_result};
 use ic_cdk::trap;
-use serde::Serialize;
 
 use ego_utils::util::get_md5;
 
@@ -62,7 +62,7 @@ pub fn job_list() -> Vec<BackupJob> {
 }
 
 /********************  methods for export  ********************/
-pub fn record_export(name: String, start: usize, end: usize, last_update: Option<u64>) -> Option<ByteReadResponse> {
+pub fn record_export(name: String, start: usize, end: usize, last_update: u64) -> Option<ByteReadResponse> {
   info_log_add(format!("record_export name: {}, start: {}, end: {}, last_update: {:?}", name, start, end, last_update).as_str());
   let (data, total) = match name.as_str() {
     "config" => {
@@ -77,71 +77,33 @@ pub fn record_export(name: String, start: usize, end: usize, last_update: Option
       (data, 1)
     }
     "ego_store_apps" => {
-      let records = match last_update {
-        None => {
-          EgoStoreApp::list()
-        }
-        Some(ts) => {
-          EgoStoreApp::by_last_update(ts)
-        }
-      };
-      get_result(&records, start, end)
+      let records = EgoStoreApp::by_last_update(start, end, last_update);
+      get_json_result(&records)
     }
     "tenants" => {
-      let records = Tenant::list();
-      get_result(&records, start, end)
+      let records = Tenant::list(start, end);
+      get_json_result(&records)
     }
     "wallet_providers" => {
-      let records = WalletProvider::list();
-      get_result(&records, start, end)
+      let records = WalletProvider::list(start, end);
+      get_json_result(&records)
     }
     "wallets" => {
-      let records = match last_update {
-        None => {
-          Wallet::list()
-        }
-        Some(ts) => {
-          Wallet::by_last_update(ts)
-        }
-      };
-
-      get_result(&records, start, end)
+      let records = Wallet::by_last_update(start, end, last_update);
+      get_json_result(&records)
     }
     "user_apps" => {
-      let records = match last_update {
-        None => {
-          UserApp::list()
-        }
-        Some(ts) => {
-          UserApp::by_last_update(ts)
-        }
-      };
-
-      get_result(&records, start, end)
+      let records = UserApp::by_last_update(start, end, last_update);
+      get_json_result(&records)
     }
     "orders" => {
-      let records = match last_update {
-        None => {
-          Order::list()
-        }
-        Some(ts) => {
-          Order::by_last_update(ts)
-        }
-      };
-
-      get_result(&records, start, end)
+      let records = Order::by_last_update(start, end, last_update);
+      get_json_result(&records)
     }
     "cash_flows" => {
-      let records = match last_update {
-        None => {
-          CashFlow::list()
-        }
-        Some(ts) => {
-          CashFlow::by_last_update(ts)
-        }
-      };
+      let records = CashFlow::by_last_update(start, end, last_update);
 
-      get_result(&records, start, end)
+      get_json_result(&records)
     }
     _ => trap("no job matched")
   };
@@ -158,14 +120,122 @@ pub fn record_export(name: String, start: usize, end: usize, last_update: Option
   Some(resp)
 }
 
-fn get_result<T: Serialize>(records: &Vec<T>, mut start: usize, mut end: usize) -> (Vec<u8>, usize) {
-  let total = records.len();
-  if start > total {
-    start = 0
-  }
-  if end > total {
-    end = total
-  }
-  let data = serde_json::to_vec(&records[start..end]).unwrap();
-  (data, total)
+
+/********************  methods for backup/restore  ********************/
+pub fn data_backup(name: String, start: usize, end: usize) -> Option<ByteReadResponse> {
+  let (data, total) = match name.as_str() {
+    "config" => {
+      let records = StableState {
+        users: Some(users_pre_upgrade()),
+        registry: Some(registry_pre_upgrade()),
+        cycle_info: Some(cycle_info_pre_upgrade()),
+        backup_info: Some(backup_info_pre_upgrade()),
+        seq: Some(seq_pre_upgrade()),
+      };
+      let data = candid::encode_one(&records).unwrap();
+      (data, 1)
+    }
+    "ego_store_apps" => {
+      let records = EgoStoreApp::list(start, end);
+      get_bin_result(&records)
+    }
+    "tenants" => {
+      let records = Tenant::list(start, end);
+      get_bin_result(&records)
+    }
+    "wallet_providers" => {
+      let records = WalletProvider::list(start, end);
+      get_bin_result(&records)
+    }
+    "wallets" => {
+      let records = Wallet::list(start, end);
+      get_bin_result(&records)
+    }
+    "user_apps" => {
+      let records = UserApp::list(start, end);
+      get_bin_result(&records)
+    }
+    "orders" => {
+      let records = Order::list(start, end);
+      get_bin_result(&records)
+    }
+    "cash_flows" => {
+      let records = CashFlow::list(start, end);
+
+      get_bin_result(&records)
+    }
+    _ => trap("no job matched")
+  };
+
+  let hash = get_md5(&data);
+
+  let resp = ByteReadResponse {
+    name: name.clone(),
+    data,
+    hash,
+    total,
+  };
+
+  Some(resp)
+}
+
+pub fn data_restore(name: String, data: Vec<u8>) -> Result<(), String> {
+  match name.as_str() {
+    "config" => {
+      let config: StableState = candid::decode_one(data.as_slice()).unwrap();
+      StableState::restore(config);
+    }
+    "ego_store_apps" => {
+      let mut records: Vec<EgoStoreApp> = candid::decode_one(data.as_slice()).unwrap();
+
+      records.iter_mut().for_each(|record| {
+        record.save();
+      })
+    }
+    "tenants" => {
+      let mut records: Vec<Tenant> = candid::decode_one(data.as_slice()).unwrap();
+
+      records.iter_mut().for_each(|record| {
+        record.save();
+      })
+    }
+    "wallet_providers" => {
+      let mut records: Vec<WalletProvider> = candid::decode_one(data.as_slice()).unwrap();
+
+      records.iter_mut().for_each(|record| {
+        record.save();
+      })
+    }
+    "wallets" => {
+      let mut records: Vec<Wallet> = candid::decode_one(data.as_slice()).unwrap();
+
+      records.iter_mut().for_each(|record| {
+        record.save();
+      })
+    }
+    "user_apps" => {
+      let mut records: Vec<UserApp> = candid::decode_one(data.as_slice()).unwrap();
+
+      records.iter_mut().for_each(|record| {
+        record.save();
+      })
+    }
+    "orders" => {
+      let mut records: Vec<Order> = candid::decode_one(data.as_slice()).unwrap();
+
+      records.iter_mut().for_each(|record| {
+        record.save();
+      })
+    }
+    "cash_flows" => {
+      let mut records: Vec<CashFlow> = candid::decode_one(data.as_slice()).unwrap();
+
+      records.iter_mut().for_each(|record| {
+        record.save();
+      })
+    }
+    _ => trap("no job matched")
+  };
+
+  Ok(())
 }

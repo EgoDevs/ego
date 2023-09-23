@@ -6,8 +6,8 @@ import {Principal} from "@dfinity/principal";
 
 describe('add_owner', () => {
     test('fix', async () => {
-        let actor = await getOperator<Service>('ego_tenant');
-        await actor.ego_owner_add(Principal.fromText('el7s7-33f72-jqhxg-cvbuv-omslr-obd22-qhrhb-bv26n-sjle3-ulxaz-6ae'))
+        let actor = await getOperator<Service>('ego_dev');
+        await actor.ego_owner_add(Principal.fromText('rdmx6-jaaaa-aaaaa-aaadq-cai'))
 
     });
 });

@@ -137,9 +137,19 @@ export const idlFactory = ({ IDL }) => {
     'ego_user_list' : IDL.Func([], [Result_13], []),
     'ego_user_remove' : IDL.Func([IDL.Principal], [Result_4], []),
     'ego_user_set' : IDL.Func([IDL.Vec(IDL.Principal)], [Result_4], []),
-    'job_data_export' : IDL.Func(
-        [IDL.Text, IDL.Nat64, IDL.Nat64, IDL.Opt(IDL.Nat64)],
+    'job_data_backup' : IDL.Func(
+        [IDL.Text, IDL.Nat64, IDL.Nat64],
         [Result_14],
+        [],
+      ),
+    'job_data_export' : IDL.Func(
+        [IDL.Text, IDL.Nat64, IDL.Nat64, IDL.Nat64],
+        [Result_14],
+        [],
+      ),
+    'job_data_restore' : IDL.Func(
+        [IDL.Text, IDL.Vec(IDL.Nat8)],
+        [Result_4],
         [],
       ),
     'reset_next_check_time' : IDL.Func([], [], []),

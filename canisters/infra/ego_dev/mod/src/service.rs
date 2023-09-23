@@ -217,7 +217,7 @@ impl EgoDevService {
   }
 
   pub fn ego_file_get() -> Result<Principal, EgoError> {
-    let ego_files = File::list();
+    let ego_files = File::list(0, File::len() as usize);
 
     if ego_files.is_empty() {
       Err(EgoDevErr::NoFile.into())

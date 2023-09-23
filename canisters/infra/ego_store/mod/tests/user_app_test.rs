@@ -76,14 +76,14 @@ pub fn by_last_update() {
 
   let now = time();
 
-  assert_eq!(1, UserApp::by_last_update(now).len());
+  assert_eq!(1, UserApp::by_last_update(0, 100, now).len());
 }
 
 #[test]
 pub fn list() {
   set_up();
 
-  let apps = UserApp::list();
+  let apps = UserApp::list(0, 100);
 
   assert_eq!(1, apps.len());
   assert_eq!(EXISTS_APP_ID, apps.get(0).unwrap().app.app_id);
@@ -135,7 +135,7 @@ pub fn by_wallet_id_and_id() {
 pub fn into() {
   set_up();
 
-  let user_apps = UserApp::list();
+  let user_apps = UserApp::list(0, 100);
 
   let user_app = user_apps.get(0).unwrap();
 

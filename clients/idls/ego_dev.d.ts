@@ -74,11 +74,6 @@ export interface CycleInfo {
   'estimate_remaining' : bigint,
 }
 export interface CycleRecord { 'ts' : bigint, 'balance' : bigint }
-export interface DevImportV1 {
-  'apps' : Array<EgoDevAppV1>,
-  'ego_files' : Array<File>,
-  'developers' : Array<Developer>,
-}
 export interface Developer {
   'name' : string,
   'is_app_auditor' : boolean,
@@ -93,14 +88,7 @@ export interface EgoDevApp {
   'last_update' : bigint,
   'audit_version' : [] | [Version],
 }
-export interface EgoDevAppV1 {
-  'app' : App,
-  'developer_id' : Principal,
-  'versions' : Array<AppVersion>,
-  'audit_version' : [] | [Version],
-}
 export interface EgoError { 'msg' : string, 'code' : number }
-export interface File { 'canister_id' : Principal, 'wasm_count' : number }
 export interface LogEntry { 'ts' : bigint, 'msg' : string, 'kind' : string }
 export type Result = { 'Ok' : AppVersion } |
   { 'Err' : EgoError };
@@ -157,8 +145,6 @@ export interface Wasm {
 export interface _SERVICE {
   'admin_app_create' : ActorMethod<[AdminAppCreateBackendRequest], Result>,
   'admin_app_transfer' : ActorMethod<[string], Result_1>,
-  'admin_export' : ActorMethod<[], Uint8Array | number[]>,
-  'admin_import' : ActorMethod<[DevImportV1], undefined>,
   'app_version_approve' : ActorMethod<[string], Result>,
   'app_version_new' : ActorMethod<[string, Version], Result>,
   'app_version_reject' : ActorMethod<[string], Result>,
@@ -212,10 +198,9 @@ export interface _SERVICE {
   'ego_user_list' : ActorMethod<[], Result_15>,
   'ego_user_remove' : ActorMethod<[Principal], Result_4>,
   'ego_user_set' : ActorMethod<[Array<Principal>], Result_4>,
-  'job_data_export' : ActorMethod<
-    [string, bigint, bigint, [] | [bigint]],
-    Result_16
-  >,
+  'job_data_backup' : ActorMethod<[string, bigint, bigint], Result_16>,
+  'job_data_export' : ActorMethod<[string, bigint, bigint, bigint], Result_16>,
+  'job_data_restore' : ActorMethod<[string, Uint8Array | number[]], Result_4>,
   'user_main_list' : ActorMethod<[string], Result_17>,
   'user_role_set' : ActorMethod<[UserRoleSetRequest], Result_2>,
 }

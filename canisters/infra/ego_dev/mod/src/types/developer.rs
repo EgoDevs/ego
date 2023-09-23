@@ -39,12 +39,12 @@ impl Developer {
     })
   }
 
-  pub fn list() -> Vec<Developer> {
-    Self::iter(|(_, developer)| Some(developer))
+  pub fn list(start: usize, end: usize) -> Vec<Developer> {
+    Self::iter(start, end, |(_, developer)| Some(developer))
   }
 
-  pub fn by_last_update(last_update: u64) -> Vec<Developer> {
-    Self::iter(|(_, developer)| match developer.last_update >= last_update {
+  pub fn by_last_update(start: usize, end: usize, last_update: u64) -> Vec<Developer> {
+    Self::iter(start, end, |(_, developer)| match developer.last_update >= last_update {
       true => { Some(developer) }
       false => { None }
     })
@@ -59,7 +59,7 @@ impl Developer {
   }
 
   pub fn list_by_name(name: &str) -> Vec<Developer> {
-    Self::iter(|(_, developer)| match developer.name == *name {
+    Self::iter(0, Self::len() as usize, |(_, developer)| match developer.name == *name {
       true => { Some(developer) }
       false => { None }
     })
@@ -74,11 +74,33 @@ impl Developer {
     });
   }
 
-  fn iter<F>(filter: F) -> Vec<Self>
-    where F: FnMut((Blob<29>, Self)) -> Option<Self> {
+  fn iter<F>(start: usize, end: usize, filter: F) -> Vec<Self>
+    where F: Fn((Blob<29>, Self)) -> Option<Self> {
+    let mut idx = 0;
+
     DEVELOPERS.with(|cell| {
       let inst = cell.borrow();
-      inst.iter().filter_map(filter).collect()
+      inst.iter().filter_map(|entry| {
+        if idx >= end {
+          // 如果过了上界，直接忽略
+          None
+        } else {
+          match filter(entry) {
+            None => {
+              None
+            }
+            Some(record) => {
+              let ret = if idx >= start && idx < end {
+                Some(record)
+              } else {
+                None
+              };
+              idx += 1;
+              ret
+            }
+          }
+        }
+      }).collect()
     })
   }
 }

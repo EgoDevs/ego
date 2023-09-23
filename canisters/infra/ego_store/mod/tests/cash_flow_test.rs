@@ -52,7 +52,7 @@ pub fn by_last_update() {
 
   let now = time();
 
-  assert_eq!(3, CashFlow::by_last_update(now).len());
+  assert_eq!(3, CashFlow::by_last_update(0, 100, now).len());
 }
 
 #[test]
@@ -70,7 +70,7 @@ pub fn list() {
 
   let wallet1 = Principal::from_text(CANISTER_ID1.to_string()).unwrap();
 
-  let cash_flows = CashFlow::list();
+  let cash_flows = CashFlow::list(0, 100);
 
   assert_eq!(3, cash_flows.len());
   assert_eq!(wallet1, cash_flows.get(0).unwrap().wallet_id);
@@ -80,7 +80,7 @@ pub fn list() {
 pub fn into() {
   set_up();
 
-  let cash_flows = CashFlow::list();
+  let cash_flows = CashFlow::list(0, 100);
 
   let cash_flow = cash_flows.get(0).unwrap();
   let c_f: ego_types::app::CashFlow = cash_flow.clone().into();

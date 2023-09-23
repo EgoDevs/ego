@@ -105,13 +105,13 @@ fn admin_wallet_provider_add() {
   let wallet_provider = Principal::from_text(WALLET_PROVIDER_ID.to_string()).unwrap();
 
   // before add
-  assert_eq!(0, WalletProvider::list().len());
+  assert_eq!(0, WalletProvider::list(0, 100).len());
 
   let wallet_provider = WalletProvider::new(&wallet_provider, &WALLET_APP_ID.to_string());
   wallet_provider.save();
 
   // after add
-  assert_eq!(1, WalletProvider::list().len());
+  assert_eq!(1, WalletProvider::list(0, 100).len());
 }
 
 #[test]
@@ -160,13 +160,13 @@ fn admin_ego_tenant_add() {
   let tenant_id = Principal::from_text(TENANT_ID).unwrap();
 
   // before add
-  assert_eq!(0, Tenant::list().len());
+  assert_eq!(0, Tenant::list(0, 100).len());
 
   let tenant = Tenant::new(&tenant_id);
   tenant.save();
 
   // after add
-  assert_eq!(1, Tenant::list().len());
+  assert_eq!(1, Tenant::list(0, 100).len());
 }
 
 #[tokio::test]

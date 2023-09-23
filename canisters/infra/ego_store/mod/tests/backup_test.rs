@@ -129,7 +129,7 @@ fn test_job_list() {
 fn test_export_config() {
   set_up();
 
-  let result = record_export("config".to_string(), 0, 1000, None).expect("record not founded");
+  let result = record_export("config".to_string(), 0, 1000, 0).expect("record not founded");
   assert_eq!("config", result.name);
   let stable_state: StableState = serde_json::from_slice(&result.data).unwrap();
   assert_eq!(1, stable_state.seq.clone().unwrap().get_number("order").unwrap());
@@ -140,43 +140,43 @@ fn test_export_config() {
 fn test_export() {
   set_up();
 
-  let result = record_export("ego_store_apps".to_string(), 0, 1000, None).expect("record not founded");
+  let result = record_export("ego_store_apps".to_string(), 0, 1000, 0).expect("record not founded");
   assert_eq!("ego_store_apps", result.name);
   let ego_store_apps: Vec<EgoStoreApp> = serde_json::from_slice(&result.data).unwrap();
   assert_eq!(1, ego_store_apps.len());
   assert_eq!(EXISTS_APP_ID, ego_store_apps.get(0).unwrap().app.app_id);
 
-  let result = record_export("tenants".to_string(), 0, 1000, None).expect("record not founded");
+  let result = record_export("tenants".to_string(), 0, 1000, 0).expect("record not founded");
   assert_eq!("tenants", result.name);
   let tenants: Vec<Tenant> = serde_json::from_slice(&result.data).unwrap();
   assert_eq!(1, tenants.len());
   assert_eq!(TENANT_ID1, tenants.get(0).unwrap().canister_id.to_string());
 
-  let result = record_export("wallet_providers".to_string(), 0, 1000, None).expect("record not founded");
+  let result = record_export("wallet_providers".to_string(), 0, 1000, 0).expect("record not founded");
   assert_eq!("wallet_providers", result.name);
   let wallet_providers: Vec<WalletProvider> = serde_json::from_slice(&result.data).unwrap();
   assert_eq!(1, wallet_providers.len());
   assert_eq!(WALLET_PROVIDER_ID, wallet_providers.get(0).unwrap().wallet_provider.to_string());
 
-  let result = record_export("wallets".to_string(), 0, 1000, None).expect("record not founded");
+  let result = record_export("wallets".to_string(), 0, 1000, 0).expect("record not founded");
   assert_eq!("wallets", result.name);
   let wallets: Vec<Wallet> = serde_json::from_slice(&result.data).unwrap();
   assert_eq!(1, wallets.len());
   assert_eq!(WALLET_ID1, wallets.get(0).unwrap().wallet_id.to_string());
 
-  let result = record_export("user_apps".to_string(), 0, 1000, None).expect("record not founded");
+  let result = record_export("user_apps".to_string(), 0, 1000, 0).expect("record not founded");
   assert_eq!("user_apps", result.name);
   let user_apps: Vec<UserApp> = serde_json::from_slice(&result.data).unwrap();
   assert_eq!(1, user_apps.len());
   assert_eq!(WALLET_ID1, user_apps.get(0).unwrap().wallet_id.unwrap().to_string());
 
-  let result = record_export("orders".to_string(), 0, 1000, None).expect("record not founded");
+  let result = record_export("orders".to_string(), 0, 1000, 0).expect("record not founded");
   assert_eq!("orders", result.name);
   let orders: Vec<Order> = serde_json::from_slice(&result.data).unwrap();
   assert_eq!(1, orders.len());
   assert_eq!(WALLET_ID1, orders.get(0).unwrap().wallet_id.to_string());
 
-  let result = record_export("cash_flows".to_string(), 0, 1000, None).expect("record not founded");
+  let result = record_export("cash_flows".to_string(), 0, 1000, 0).expect("record not founded");
   assert_eq!("cash_flows", result.name);
   let cash_flows: Vec<CashFlow> = serde_json::from_slice(&result.data).unwrap();
   assert_eq!(1, cash_flows.len());
@@ -187,7 +187,7 @@ fn test_export() {
 fn test_export_with_last_update() {
   set_up();
 
-  let last_update = Some(time() + 100);
+  let last_update = time() + 100;
 
   let result = record_export("ego_store_apps".to_string(), 0, 1000, last_update).expect("record not founded");
   assert_eq!("ego_store_apps", result.name);

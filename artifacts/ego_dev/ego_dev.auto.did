@@ -70,11 +70,6 @@ type CycleInfo = record {
   estimate_remaining : nat64;
 };
 type CycleRecord = record { ts : nat64; balance : nat };
-type DevImportV1 = record {
-  apps : vec EgoDevAppV1;
-  ego_files : vec File;
-  developers : vec Developer;
-};
 type Developer = record {
   name : text;
   is_app_auditor : bool;
@@ -89,14 +84,7 @@ type EgoDevApp = record {
   last_update : nat64;
   audit_version : opt Version;
 };
-type EgoDevAppV1 = record {
-  app : App;
-  developer_id : principal;
-  versions : vec AppVersion;
-  audit_version : opt Version;
-};
 type EgoError = record { msg : text; code : nat16 };
-type File = record { canister_id : principal; wasm_count : nat16 };
 type LogEntry = record { ts : nat64; msg : text; kind : text };
 type Result = variant { Ok : AppVersion; Err : EgoError };
 type Result_1 = variant { Ok; Err : EgoError };
@@ -137,8 +125,6 @@ type Wasm = record {
 service : () -> {
   admin_app_create : (AdminAppCreateBackendRequest) -> (Result);
   admin_app_transfer : (text) -> (Result_1);
-  admin_export : () -> (vec nat8);
-  admin_import : (DevImportV1) -> ();
   app_version_approve : (text) -> (Result);
   app_version_new : (text, Version) -> (Result);
   app_version_reject : (text) -> (Result);
@@ -188,7 +174,9 @@ service : () -> {
   ego_user_list : () -> (Result_15);
   ego_user_remove : (principal) -> (Result_4);
   ego_user_set : (vec principal) -> (Result_4);
-  job_data_export : (text, nat64, nat64, opt nat64) -> (Result_16);
+  job_data_backup : (text, nat64, nat64) -> (Result_16);
+  job_data_export : (text, nat64, nat64, nat64) -> (Result_16);
+  job_data_restore : (text, vec nat8) -> (Result_4);
   user_main_list : (text) -> (Result_17) query;
   user_role_set : (UserRoleSetRequest) -> (Result_2);
 }

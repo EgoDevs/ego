@@ -92,9 +92,9 @@ fn canister_main_track() {
 
   let canister_principal = Principal::from_text(TEST_CANISTER_ID.to_string()).unwrap();
 
-  let len_before = Task::list().len();
+  let len_before = Task::list(0, 100).len();
   EgoTenantService::canister_main_track(&canister_principal, 0);
-  let len_after = Task::list().len();
+  let len_after = Task::list(0, 100).len();
   assert!(len_after == len_before + 1);
 }
 
@@ -104,9 +104,9 @@ fn canister_main_untrack() {
 
   let canister_principal = Principal::from_text(EXISTS_CANISTER_ID.to_string()).unwrap();
 
-  let len_before = Task::list().len();
+  let len_before = Task::list(0, 100).len();
   EgoTenantService::canister_main_untrack(&canister_principal);
-  let len_after = Task::list().len();
+  let len_after = Task::list(0, 100).len();
   assert!(len_after == len_before - 1);
 }
 

@@ -1,5 +1,4 @@
 export const idlFactory = ({ IDL }) => {
-  const InitArg = IDL.Record({ 'init_caller' : IDL.Opt(IDL.Principal) });
   const Result = IDL.Variant({ 'Ok' : IDL.Nat, 'Err' : IDL.Text });
   const Result_1 = IDL.Variant({ 'Ok' : IDL.Null, 'Err' : IDL.Text });
   const Result_2 = IDL.Variant({
@@ -75,7 +74,4 @@ export const idlFactory = ({ IDL }) => {
     'state_restore' : IDL.Func([], [Result_9], []),
   });
 };
-export const init = ({ IDL }) => {
-  const InitArg = IDL.Record({ 'init_caller' : IDL.Opt(IDL.Principal) });
-  return [InitArg];
-};
+export const init = ({ IDL }) => { return []; };

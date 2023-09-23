@@ -126,10 +126,9 @@ export interface _SERVICE {
   'ego_user_list' : ActorMethod<[], Result_13>,
   'ego_user_remove' : ActorMethod<[Principal], Result_4>,
   'ego_user_set' : ActorMethod<[Array<Principal>], Result_4>,
-  'job_data_export' : ActorMethod<
-    [string, bigint, bigint, [] | [bigint]],
-    Result_14
-  >,
+  'job_data_backup' : ActorMethod<[string, bigint, bigint], Result_14>,
+  'job_data_export' : ActorMethod<[string, bigint, bigint, bigint], Result_14>,
+  'job_data_restore' : ActorMethod<[string, Uint8Array | number[]], Result_4>,
   'reset_next_check_time' : ActorMethod<[], undefined>,
   'wallet_cycle_recharge' : ActorMethod<[bigint], Result_1>,
 }

@@ -52,7 +52,7 @@ pub fn by_last_update() {
 
   let now = time();
 
-  assert_eq!(3, Order::by_last_update(now).len());
+  assert_eq!(3, Order::by_last_update(0, 100, now).len());
 }
 
 #[test]
@@ -70,7 +70,7 @@ pub fn list() {
 
   let wallet1 = Principal::from_text(WALLET1.to_string()).unwrap();
 
-  let orders = Order::list();
+  let orders = Order::list(0, 100);
 
   assert_eq!(3, orders.len());
   assert_eq!(wallet1, orders.get(0).unwrap().wallet_id);

@@ -39,7 +39,7 @@ pub fn len() {
 pub fn list() {
   set_up();
 
-  let wallet_providers = WalletProvider::list();
+  let wallet_providers = WalletProvider::list(0, 100);
 
   assert_eq!(1, wallet_providers.len());
   assert_eq!(WALLET_PROVIDER_ID, wallet_providers.get(0).unwrap().wallet_provider.to_string());

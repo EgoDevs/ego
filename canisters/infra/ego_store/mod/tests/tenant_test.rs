@@ -36,7 +36,7 @@ pub fn list() {
 
   let tenant_id1 = Principal::from_text(TENANT_ID1.to_string()).unwrap();
 
-  let tenants = Tenant::list();
+  let tenants = Tenant::list(0, 100);
 
   assert_eq!(1, tenants.len());
   assert_eq!(tenant_id1, tenants.get(0).unwrap().canister_id);

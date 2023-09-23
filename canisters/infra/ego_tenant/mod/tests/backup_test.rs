@@ -41,7 +41,7 @@ fn test_job_list(){
 fn test_export_config(){
   set_up();
 
-  let result = record_export("config".to_string(), 0, 1000, None).expect("record not founded");
+  let result = record_export("config".to_string(), 0, 1000, 0).expect("record not founded");
 
   assert_eq!("config", result.name);
   assert_eq!(r#"{"users":{"owners":{"225da-yaaaa-aaaah-qahrq-cai":"225da-yaaaa-aaaah-qahrq-cai"},"users":{},"ops":{}},"registry":{"canisters":{"test":["22fyd-yaaaa-aaaaf-aml4q-cai"]}},"cycle_info":{"records":[],"estimate_remaining":0},"backup_info":{"state":"RUNNING"}}"#, String::from_utf8(result.data).unwrap())
@@ -51,7 +51,7 @@ fn test_export_config(){
 fn test_export_tasks(){
   set_up();
 
-  let result = record_export("tasks".to_string(), 0, 1000,None).expect("record not founded");
+  let result = record_export("tasks".to_string(), 0, 1000,0).expect("record not founded");
 
   assert_eq!("tasks", result.name);
   let tasks: Vec<Task> = serde_json::from_slice(&result.data).unwrap();
@@ -64,7 +64,7 @@ fn test_export_tasks(){
 fn test_export_tasks_with_last_update(){
   set_up();
 
-  let result = record_export("tasks".to_string(), 0, 1000,Some(time() + 1)).expect("record not founded");
+  let result = record_export("tasks".to_string(), 0, 1000,time() + 1).expect("record not founded");
 
   assert_eq!("tasks", result.name);
   let tasks: Vec<Task> = serde_json::from_slice(&result.data).unwrap();

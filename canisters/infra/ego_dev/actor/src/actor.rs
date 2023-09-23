@@ -11,11 +11,10 @@ use ego_dev_mod::c2c::ego_file::EgoFile;
 use ego_dev_mod::c2c::ego_store::EgoStore;
 use ego_dev_mod::service::*;
 use ego_dev_mod::state::*;
-use ego_dev_mod::types::{AdminAppCreateBackendRequest, AppMainNewRequest, AppVersionSetFrontendAddressRequest, AppVersionUploadWasmRequest, DataExport, developer, DevImportV1, EgoDevErr, file, UserRoleSetRequest};
+use ego_dev_mod::types::{AdminAppCreateBackendRequest, AppMainNewRequest, AppVersionSetFrontendAddressRequest, AppVersionUploadWasmRequest, EgoDevErr, UserRoleSetRequest};
 use ego_dev_mod::types::app_version::AppVersion;
 use ego_dev_mod::types::developer::Developer;
 use ego_dev_mod::types::ego_dev_app::EgoDevApp;
-use ego_dev_mod::types::stable_state::StableState;
 use ego_macros::{inject_cycle_info_api, inject_ego_api};
 use ego_types::app::{AppId, Version};
 use ego_types::app::EgoError;
@@ -344,68 +343,6 @@ pub async fn admin_app_transfer(app_id: AppId) -> Result<(), EgoError> {
       Ok(())
     }
   }
-}
-
-/********************  数据导出   ********************/
-#[update(name = "admin_export", guard = "owner_guard")]
-#[candid_method(update, rename = "admin_export")]
-fn admin_export() -> Vec<u8> {
-  info_log_add("admin_export");
-
-  let state = StableState::load();
-
-  let dev_export = DataExport {
-    state,
-    ego_dev_apps: EgoDevApp::list(),
-    files: file::File::list(),
-    developers: Developer::list(),
-    app_versions: AppVersion::list(),
-  };
-
-  serde_json::to_vec(&dev_export).unwrap()
-}
-
-#[update(name = "admin_import", guard = "owner_guard")]
-#[candid_method(update, rename = "admin_import")]
-fn admin_import(request: DevImportV1) {
-  info_log_add("admin_import");
-
-  request.ego_files.iter().for_each(|e_f| {
-    let ego_file = file::File {
-      wasm_count: e_f.wasm_count,
-      canister_id: e_f.canister_id,
-    };
-    ego_file.save();
-  });
-
-  request.developers.iter().for_each(|d| {
-    let mut developer = developer::Developer {
-      developer_id: d.developer_id.clone(),
-      name: d.name.clone(),
-      is_app_auditor: d.is_app_auditor,
-      is_manager: d.is_manager,
-      created_apps: d.created_apps.clone(),
-      last_update: d.last_update,
-    };
-    developer.save();
-  });
-
-  request.apps.iter().for_each(|app| {
-    app.versions.iter().for_each(|app_version_v1| {
-      let mut app_version = AppVersion::new(&app_version_v1.app_id, &app_version_v1.file_id, &app_version_v1.version);
-      app_version.wasm = app_version_v1.wasm.clone();
-      app_version.status = app_version_v1.status;
-      app_version.save();
-    });
-    let mut ego_dev_app = EgoDevApp {
-      app: app.app.clone(),
-      developer_id: app.developer_id,
-      audit_version: app.audit_version,
-      last_update: 0,
-    };
-
-    ego_dev_app.save();
-  });
 }
 
 /********************  guard  ********************/

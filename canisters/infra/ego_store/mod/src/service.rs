@@ -20,7 +20,7 @@ pub struct EgoStoreService {}
 
 impl EgoStoreService {
   pub fn app_main_list() -> Vec<App> {
-    EgoStoreApp::list().iter().map(|ego_store_app| ego_store_app.app.clone()).collect()
+    EgoStoreApp::list(0, EgoStoreApp::len() as usize).iter().map(|ego_store_app| ego_store_app.app.clone()).collect()
   }
 
   pub fn app_main_get(app_id: &AppId) -> Option<EgoStoreApp> {
@@ -454,7 +454,7 @@ impl EgoStoreService {
   }
 
   pub fn tenant_get() -> Result<Principal, EgoError> {
-    let tenants = Tenant::list();
+    let tenants = Tenant::list(0, Tenant::len() as usize);
 
     if tenants.len() == 0 {
       error_log_add("tenant_get: no tenant");

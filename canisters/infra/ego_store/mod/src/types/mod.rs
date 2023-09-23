@@ -1,14 +1,7 @@
 use candid::{CandidType, Deserialize, Principal};
 use serde::Serialize;
 
-use ego_types::app::{AppId, CashFlow, EgoError, UserApp};
-
-use crate::types::ego_store_app::EgoStoreApp;
-use crate::types::order::Order;
-use crate::types::stable_state::StableState;
-use crate::types::tenant::Tenant;
-use crate::types::wallet::Wallet;
-use crate::types::wallet_provider::WalletProvider;
+use ego_types::app::{AppId, EgoError};
 
 pub mod app_key;
 pub mod cash_flow;
@@ -84,11 +77,6 @@ pub struct WalletCycleChargeResponse {
 }
 
 #[derive(CandidType, Deserialize, Serialize)]
-pub struct WalletMainNewRequest {
-  pub user_id: Principal,
-}
-
-#[derive(CandidType, Deserialize, Serialize)]
 pub struct AdminWalletProviderAddRequest {
   pub wallet_provider: Principal,
   pub wallet_app_id: AppId,
@@ -99,39 +87,4 @@ pub struct AdminWalletCycleRechargeRequest {
   pub wallet_id: Principal,
   pub cycle: u128,
   pub comment: String,
-}
-
-#[derive(CandidType, Deserialize, Serialize)]
-pub struct WalletImport {
-  pub wallet_id: Principal,
-  pub tenant_id: Principal,
-  pub cycles: u128,
-  pub user_id: Principal,
-  pub user_apps: Vec<UserApp>,
-  pub cash_flows: Vec<CashFlow>,
-}
-
-#[derive(CandidType, Deserialize, Serialize)]
-pub struct AdminWalletAppListRequest {
-  pub wallet_id: Option<Principal>,
-  pub ts: u64,
-}
-
-#[derive(CandidType, Deserialize, Serialize)]
-pub struct AdminWalletCashFlowListRequest {
-  pub wallet_id: Option<Principal>,
-  pub ts: u64,
-}
-
-// for export
-#[derive(CandidType, Deserialize, Serialize)]
-pub struct DataExport {
-  pub state: StableState,
-  pub ego_store_apps: Vec<EgoStoreApp>,
-  pub tenants: Vec<Tenant>,
-  pub wallet_providers: Vec<WalletProvider>,
-  pub wallets: Vec<Wallet>,
-  pub user_apps: Vec<user_app::UserApp>,
-  pub orders: Vec<Order>,
-  pub cash_flows: Vec<cash_flow::CashFlow>,
 }

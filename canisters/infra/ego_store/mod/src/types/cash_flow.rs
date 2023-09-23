@@ -54,12 +54,12 @@ impl CashFlow {
     })
   }
 
-  pub fn list() -> Vec<Self> {
-    Self::iter(|(_, cash_flow)| Some(cash_flow))
+  pub fn list(start: usize, end: usize) -> Vec<Self> {
+    Self::iter(start, end, |(_, cash_flow)| Some(cash_flow))
   }
 
-  pub fn by_last_update(last_update: u64) -> Vec<Self> {
-    Self::iter(|(_, cash_flow)| match cash_flow.created_at >= last_update {
+  pub fn by_last_update(start: usize, end: usize, last_update: u64) -> Vec<Self> {
+    Self::iter(start, end, |(_, cash_flow)| match cash_flow.created_at >= last_update {
       true => {
         Some(cash_flow)
       }
@@ -68,7 +68,7 @@ impl CashFlow {
   }
 
   pub fn by_wallet_id(wallet_id: &Principal) -> Vec<Self> {
-    Self::iter(|(_, cash_flow)| match cash_flow.wallet_id == *wallet_id {
+    Self::iter(0, Self::len() as usize, |(_, cash_flow)| match cash_flow.wallet_id == *wallet_id {
       true => {
         Some(cash_flow)
       }
@@ -86,11 +86,33 @@ impl CashFlow {
     });
   }
 
-  fn iter<F>(filter: F) -> Vec<Self>
-    where F: FnMut((u64, Self)) -> Option<Self> {
+  fn iter<F>(start: usize, end: usize, filter: F) -> Vec<Self>
+    where F: Fn((u64, Self)) -> Option<Self> {
+    let mut idx = 0;
+
     CASH_FLOWS.with(|cell| {
       let inst = cell.borrow();
-      inst.iter().filter_map(filter).collect()
+      inst.iter().filter_map(|entry| {
+        if idx >= end {
+          // 如果过了上界，直接忽略
+          None
+        } else {
+          match filter(entry) {
+            None => {
+              None
+            }
+            Some(record) => {
+              let ret = if idx >= start && idx < end {
+                Some(record)
+              } else {
+                None
+              };
+              idx += 1;
+              ret
+            }
+          }
+        }
+      }).collect()
     })
   }
 }

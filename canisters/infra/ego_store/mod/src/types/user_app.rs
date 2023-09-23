@@ -37,14 +37,14 @@ impl UserApp {
     })
   }
 
-  pub fn list() -> Vec<Self> {
-    Self::iter(|(_, user_app)| {
+  pub fn list(start: usize, end: usize) -> Vec<Self> {
+    Self::iter(start, end, |(_, user_app)| {
       Some(user_app)
     })
   }
 
-  pub fn by_last_update(last_update: u64) -> Vec<Self> {
-    Self::iter(|(_, user_app)| match user_app.last_update >= last_update {
+  pub fn by_last_update(start: usize, end: usize, last_update: u64) -> Vec<Self> {
+    Self::iter(start, end, |(_, user_app)| match user_app.last_update >= last_update {
       true => {
         Some(user_app)
       }
@@ -55,7 +55,7 @@ impl UserApp {
   }
 
   pub fn by_wallet_id(wallet_id: &Principal) -> Vec<Self> {
-    Self::iter(|(_, user_app)| match user_app.wallet_id.is_some() && user_app.wallet_id.unwrap() == *wallet_id {
+    Self::iter(0, Self::len() as usize, |(_, user_app)| match user_app.wallet_id.is_some() && user_app.wallet_id.unwrap() == *wallet_id {
       true => {
         Some(user_app)
       }
@@ -106,11 +106,34 @@ impl UserApp {
     });
   }
 
-  fn iter<F>(filter: F) -> Vec<Self>
-    where F: FnMut((Blob<29>, Self)) -> Option<Self> {
+  fn iter<F>(start: usize, end: usize, filter: F) -> Vec<Self>
+    where F: Fn((Blob<29>, Self)) -> Option<Self> {
+
+    let mut idx = 0;
+
     USER_APPS.with(|cell| {
       let inst = cell.borrow();
-      inst.iter().filter_map(filter).collect()
+      inst.iter().filter_map(|entry| {
+        if idx >= end {
+          // 如果过了上界，直接忽略
+          None
+        } else {
+          match filter(entry) {
+            None => {
+              None
+            }
+            Some(record) => {
+              let ret = if idx >= start && idx < end {
+                Some(record)
+              } else {
+                None
+              };
+              idx += 1;
+              ret
+            }
+          }
+        }
+      }).collect()
     })
   }
 }

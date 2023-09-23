@@ -77,14 +77,14 @@ pub fn by_last_update() {
 
   let now = time();
 
-  assert_eq!(1, EgoStoreApp::by_last_update(now).len());
+  assert_eq!(1, EgoStoreApp::by_last_update(0, 100, now).len());
 }
 
 #[test]
 pub fn list() {
   set_up();
 
-  let apps = EgoStoreApp::list();
+  let apps = EgoStoreApp::list(0, 100);
 
   assert_eq!(1, apps.len());
   assert_eq!(EXISTS_APP_ID, apps.get(0).unwrap().app.app_id);

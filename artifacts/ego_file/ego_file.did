@@ -4,7 +4,6 @@ type CycleInfo = record {
 };
 type CycleRecord = record { ts : nat64; balance : nat };
 type EgoError = record { msg : text; code : nat16 };
-type InitArg = record { init_caller : opt principal };
 type LogEntry = record { ts : nat64; msg : text; kind : text };
 type Result = variant { Ok : nat; Err : text };
 type Result_1 = variant { Ok; Err : text };
@@ -16,7 +15,7 @@ type Result_6 = variant { Ok : vec LogEntry; Err : text };
 type Result_7 = variant { Ok : opt vec record { principal; text }; Err : text };
 type Result_8 = variant { Ok : vec nat8; Err : EgoError };
 type Result_9 = variant { Ok : bool; Err : EgoError };
-service : (InitArg) -> {
+service : () -> {
   balance_get : () -> (Result) query;
   ego_canister_add : (text, principal) -> (Result_1);
   ego_canister_list : () -> (Result_2);

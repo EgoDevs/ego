@@ -36,7 +36,7 @@ pub fn list() {
 
   let ego_file_id = Principal::from_text(FILE_ID1.to_string()).unwrap();
 
-  let files = File::list();
+  let files = File::list(0, 100);
 
   assert_eq!(1, files.len());
   assert_eq!(ego_file_id, files.get(0).unwrap().canister_id);

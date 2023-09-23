@@ -230,7 +230,7 @@ async fn wallet_cycle_recharge(cycles: u128) -> Result<(), EgoError> {
 pub fn admin_task_list(last_update: u64) -> Result<Vec<Task>, EgoError> {
   info_log_add("canister_task_list");
 
-  Ok(Task::by_last_update(last_update))
+  Ok(Task::by_last_update(0, Task::len() as usize, last_update))
 }
 
 #[update(name = "reset_next_check_time", guard = "owner_guard")]
@@ -240,7 +240,7 @@ pub fn reset_next_check_time() {
 
   let now = time() as i64;
 
-  for task in Task::list().iter_mut() {
+  for task in Task::list(0, Task::len() as usize).iter_mut() {
     if (now - task.next_check_time as i64).abs() > NEXT_CHECK_DURATION  as i64{
       task.next_check_time = 0;
       task.try_count = MAX_TRY_COUNT - 1;
@@ -286,7 +286,7 @@ pub fn admin_export() -> Vec<u8> {
 
   let data_export = DataExport {
     state,
-    tasks: task::Task::list(),
+    tasks: task::Task::list(0, Task::len() as usize),
   };
 
   serde_json::to_vec(&data_export).unwrap()

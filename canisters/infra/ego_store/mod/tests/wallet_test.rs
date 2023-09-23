@@ -54,7 +54,7 @@ pub fn by_last_update() {
 
   let now = time();
 
-  assert_eq!(1, Wallet::by_last_update(now).len());
+  assert_eq!(1, Wallet::by_last_update(0, 100, now).len());
 }
 
 #[test]
@@ -62,7 +62,7 @@ pub fn list() {
   set_up();
 
   let wallet1 = Principal::from_text(WALLET_ID1.to_string()).unwrap();
-  let wallets = Wallet::list();
+  let wallets = Wallet::list(0, 100);
 
   assert_eq!(1, wallets.len());
   assert_eq!(wallet1, wallets.get(0).unwrap().wallet_id);

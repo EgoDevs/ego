@@ -99,7 +99,9 @@ service : () -> {
   ego_user_list : () -> (Result_13);
   ego_user_remove : (principal) -> (Result_4);
   ego_user_set : (vec principal) -> (Result_4);
-  job_data_export : (text, nat64, nat64, opt nat64) -> (Result_14);
+  job_data_backup : (text, nat64, nat64) -> (Result_14);
+  job_data_export : (text, nat64, nat64, nat64) -> (Result_14);
+  job_data_restore : (text, vec nat8) -> (Result_4);
   reset_next_check_time : () -> ();
   wallet_cycle_recharge : (nat) -> (Result_1);
 }

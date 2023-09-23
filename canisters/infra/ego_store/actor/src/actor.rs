@@ -17,8 +17,6 @@ use ego_store_mod::state::*;
 use ego_store_mod::types::*;
 use ego_store_mod::types::ego_store_app::EgoStoreApp;
 use ego_store_mod::types::order::Order;
-use ego_store_mod::types::stable_state::StableState;
-use ego_store_mod::types::wallet::Wallet;
 use ego_store_mod::types::wallet_provider::WalletProvider;
 use ego_types::app::{App, AppId};
 use ego_types::app::CashFlow;
@@ -498,7 +496,7 @@ pub async fn wallet_main_new(user_id: Principal) -> Result<UserApp, EgoError> {
 pub fn admin_wallet_provider_list() -> Result<Vec<WalletProvider>, EgoError> {
   info_log_add("admin_wallet_provider_list");
 
-  Ok(WalletProvider::list())
+  Ok(WalletProvider::list(0, WalletProvider::len() as usize))
 }
 
 ///
@@ -547,56 +545,6 @@ pub fn admin_wallet_app_transfer(wallet_id: Principal, canister_id: Principal) -
   user_app.save();
 
   Ok(())
-}
-
-
-/********************  数据导出   ********************/
-#[update(name = "admin_export_v2", guard = "owner_guard")]
-#[candid_method(update, rename = "admin_export_v2")]
-fn admin_export() -> Vec<u8> {
-  info_log_add("admin_export_v2");
-
-  let state = StableState::load();
-
-  let data_export = DataExport {
-    state,
-    ego_store_apps: ego_store_app::EgoStoreApp::list(),
-    tenants: tenant::Tenant::list(),
-    wallet_providers: wallet_provider::WalletProvider::list(),
-    wallets: wallet::Wallet::list(),
-    user_apps: user_app::UserApp::list(),
-    orders: order::Order::list(),
-    cash_flows: cash_flow::CashFlow::list(),
-  };
-
-  serde_json::to_vec(&data_export).unwrap()
-}
-
-///
-/// 导入
-///
-#[update(name = "admin_import", guard = "owner_guard")]
-#[candid_method(update, rename = "admin_import")]
-pub fn admin_import(wallets: Vec<WalletImport>) {
-  info_log_add("admin_import");
-
-  wallets.iter().for_each(|wallet| {
-    let mut w = Wallet::new(&wallet.tenant_id, &wallet.wallet_id, &wallet.user_id);
-    w.cycles = wallet.cycles;
-    w.save();
-
-    wallet.user_apps.iter().for_each(|app| {
-      info_log_add(format!("admin_wallet_app_add app_id:{}", app.app.app_id).as_str());
-      let mut user_app = ego_store_mod::types::user_app::UserApp::new(&app.app, &app.canister, Some(wallet.wallet_id));
-      user_app.save();
-    });
-
-    wallet.cash_flows.iter().for_each(|cash_flow| {
-      let mut c_f = cash_flow::CashFlow::new(&wallet.wallet_id, cash_flow.cash_flow_type.clone(), cash_flow.cycles, cash_flow.balance, &cash_flow.operator, cash_flow.comment.clone());
-      c_f.created_at = cash_flow.created_at / 1000000000;
-      c_f.save();
-    })
-  });
 }
 
 

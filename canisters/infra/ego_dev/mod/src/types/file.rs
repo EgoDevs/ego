@@ -50,14 +50,8 @@ impl File {
     })
   }
 
-  pub fn list() -> Vec<File> {
-    FILES.with(|cell| {
-      let inst = cell.borrow();
-      inst.iter()
-        .map(|(_, file)| {
-          file
-        }).collect()
-    })
+  pub fn list(start: usize, end: usize) -> Vec<File> {
+    Self::iter(start, end, |(_, file)| Some(file))
   }
 
   pub fn get(canister_id: &Principal) -> Option<File> {
@@ -74,6 +68,36 @@ impl File {
       let key = Blob::try_from(self.canister_id.as_slice()).unwrap();
       inst.insert(key, self.clone());
     });
+  }
+
+  fn iter<F>(start: usize, end: usize, filter: F) -> Vec<Self>
+    where F: Fn((Blob<29>, Self)) -> Option<Self> {
+    let mut idx = 0;
+
+    FILES.with(|cell| {
+      let inst = cell.borrow();
+      inst.iter().filter_map(|entry| {
+        if idx >= end {
+          // 如果过了上界，直接忽略
+          None
+        } else {
+          match filter(entry) {
+            None => {
+              None
+            }
+            Some(record) => {
+              let ret = if idx >= start && idx < end {
+                Some(record)
+              } else {
+                None
+              };
+              idx += 1;
+              ret
+            }
+          }
+        }
+      }).collect()
+    })
   }
 }
 

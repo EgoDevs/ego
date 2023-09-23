@@ -57,14 +57,14 @@ pub fn by_last_update() {
 
   let now = time();
 
-  assert_eq!(1, Developer::by_last_update(now).len());
+  assert_eq!(1, Developer::by_last_update(0, 100, now).len());
 }
 
 #[test]
 pub fn list() {
   set_up();
 
-  let developers = Developer::list();
+  let developers = Developer::list(0, 100);
 
   assert_eq!(1, developers.len());
   assert_eq!(DEVELOPER_ID1, developers.get(0).unwrap().developer_id.to_string());

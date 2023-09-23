@@ -39,7 +39,7 @@ pub fn by_last_update() {
   task2.save();
 
   // task1 and task2
-  assert_eq!(2, Task::by_last_update(now).len());
+  assert_eq!(2, Task::by_last_update(0, 100, now).len());
 }
 
 #[test]
@@ -68,7 +68,7 @@ pub fn list() {
 
   let canister1 = Principal::from_text(CANISTER_ID1.to_string()).unwrap();
 
-  let tasks = Task::list();
+  let tasks = Task::list(0, 100);
 
   assert_eq!(1, tasks.len());
   assert_eq!(canister1, tasks.get(0).unwrap().canister_id);

@@ -139,14 +139,6 @@ export interface WalletCycleChargeRequest {
   'comment' : string,
 }
 export interface WalletCycleChargeResponse { 'ret' : boolean }
-export interface WalletImport {
-  'user_apps' : Array<UserApp>,
-  'user_id' : Principal,
-  'tenant_id' : Principal,
-  'cycles' : bigint,
-  'cash_flows' : Array<CashFlow>,
-  'wallet_id' : Principal,
-}
 export interface WalletProvider {
   'app_id' : string,
   'wallet_provider' : Principal,
@@ -158,8 +150,6 @@ export interface Wasm {
   'canister_type' : CanisterType,
 }
 export interface _SERVICE {
-  'admin_export_v2' : ActorMethod<[], Uint8Array | number[]>,
-  'admin_import' : ActorMethod<[Array<WalletImport>], undefined>,
   'admin_wallet_app_get' : ActorMethod<[Principal, Principal], Result>,
   'admin_wallet_app_transfer' : ActorMethod<[Principal, Principal], Result_1>,
   'admin_wallet_cycle_recharge' : ActorMethod<
@@ -208,10 +198,9 @@ export interface _SERVICE {
   'ego_user_list' : ActorMethod<[], Result_15>,
   'ego_user_remove' : ActorMethod<[Principal], Result_6>,
   'ego_user_set' : ActorMethod<[Array<Principal>], Result_6>,
-  'job_data_export' : ActorMethod<
-    [string, bigint, bigint, [] | [bigint]],
-    Result_16
-  >,
+  'job_data_backup' : ActorMethod<[string, bigint, bigint], Result_16>,
+  'job_data_export' : ActorMethod<[string, bigint, bigint, bigint], Result_16>,
+  'job_data_restore' : ActorMethod<[string, Uint8Array | number[]], Result_6>,
   'wallet_app_install' : ActorMethod<[string], Result>,
   'wallet_app_install_v2' : ActorMethod<[AppInstallRequest], Result>,
   'wallet_app_list' : ActorMethod<[], Result_17>,

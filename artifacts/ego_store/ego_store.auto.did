@@ -105,14 +105,6 @@ type WalletCycleChargeRequest = record {
   comment : text;
 };
 type WalletCycleChargeResponse = record { ret : bool };
-type WalletImport = record {
-  user_apps : vec UserApp;
-  user_id : principal;
-  tenant_id : principal;
-  cycles : nat;
-  cash_flows : vec CashFlow;
-  wallet_id : principal;
-};
 type WalletProvider = record { app_id : text; wallet_provider : principal };
 type Wasm = record {
   canister_id : principal;
@@ -121,8 +113,6 @@ type Wasm = record {
   canister_type : CanisterType;
 };
 service : () -> {
-  admin_export_v2 : () -> (vec nat8);
-  admin_import : (vec WalletImport) -> ();
   admin_wallet_app_get : (principal, principal) -> (Result);
   admin_wallet_app_transfer : (principal, principal) -> (Result_1);
   admin_wallet_cycle_recharge : (AdminWalletCycleRechargeRequest) -> (Result_2);
@@ -165,7 +155,9 @@ service : () -> {
   ego_user_list : () -> (Result_15);
   ego_user_remove : (principal) -> (Result_6);
   ego_user_set : (vec principal) -> (Result_6);
-  job_data_export : (text, nat64, nat64, opt nat64) -> (Result_16);
+  job_data_backup : (text, nat64, nat64) -> (Result_16);
+  job_data_export : (text, nat64, nat64, nat64) -> (Result_16);
+  job_data_restore : (text, vec nat8) -> (Result_6);
   wallet_app_install : (text) -> (Result);
   wallet_app_install_v2 : (AppInstallRequest) -> (Result);
   wallet_app_list : () -> (Result_17);

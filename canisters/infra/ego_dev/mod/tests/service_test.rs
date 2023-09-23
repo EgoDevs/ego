@@ -124,12 +124,12 @@ pub fn set_up() {
 
 #[test]
 fn admin_file_add() {
-  let len_before = File::list().len();
+  let len_before = File::list(0, 100).len();
 
   let file_canister = Principal::from_text(FILE_CANISTER_ID.to_string()).unwrap();
   EgoDevService::admin_ego_file_add(&file_canister);
 
-  let len_after = File::list().len();
+  let len_after = File::list(0, 100).len();
 
   assert!(len_after == len_before + 1);
 }

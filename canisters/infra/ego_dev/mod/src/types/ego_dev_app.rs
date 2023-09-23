@@ -183,12 +183,12 @@ impl EgoDevApp {
     self.version_get(&self.app.current_version)
   }
 
-  pub fn list() -> Vec<EgoDevApp> {
-    Self::iter(|(_, ego_dev_app)| Some(ego_dev_app))
+  pub fn list(start: usize, end: usize) -> Vec<EgoDevApp> {
+    Self::iter(start, end, |(_, ego_dev_app)| Some(ego_dev_app))
   }
 
-  pub fn by_last_update(last_update: u64) -> Vec<EgoDevApp> {
-    Self::iter(|(_, ego_dev_app)| {
+  pub fn by_last_update(start: usize, end: usize, last_update: u64) -> Vec<EgoDevApp> {
+    Self::iter(start, end, |(_, ego_dev_app)| {
       match ego_dev_app.last_update >= last_update {
         true => { Some(ego_dev_app) }
         false => { None }
@@ -197,7 +197,7 @@ impl EgoDevApp {
   }
 
   pub fn by_developer_id(developer_id: &Principal) -> Vec<EgoDevApp> {
-    Self::iter(|(_, ego_dev_app)| {
+    Self::iter(0, Self::len() as usize, |(_, ego_dev_app)| {
       match ego_dev_app.developer_id == *developer_id {
         true => { Some(ego_dev_app) }
         false => { None }
@@ -218,7 +218,7 @@ impl EgoDevApp {
   }
 
   pub fn version_wait_for_audit() -> Vec<EgoDevApp> {
-    Self::iter(|(_, ego_dev_app)| {
+    Self::iter(0, Self::len() as usize, |(_, ego_dev_app)| {
       match ego_dev_app.audit_version.is_some() {
         true => { Some(ego_dev_app) }
         false => { None }
@@ -249,11 +249,33 @@ impl EgoDevApp {
     });
   }
 
-  fn iter<F>(filter: F) -> Vec<Self>
-    where F: FnMut((AppKey, Self)) -> Option<Self> {
+  fn iter<F>(start: usize, end: usize, filter: F) -> Vec<Self>
+    where F: Fn((AppKey, Self)) -> Option<Self> {
+    let mut idx = 0;
+
     EGO_DEV_APPS.with(|cell| {
       let inst = cell.borrow();
-      inst.iter().filter_map(filter).collect()
+      inst.iter().filter_map(|entry| {
+        if idx >= end {
+          // 如果过了上界，直接忽略
+          None
+        } else {
+          match filter(entry) {
+            None => {
+              None
+            }
+            Some(record) => {
+              let ret = if idx >= start && idx < end {
+                Some(record)
+              } else {
+                None
+              };
+              idx += 1;
+              ret
+            }
+          }
+        }
+      }).collect()
     })
   }
 }

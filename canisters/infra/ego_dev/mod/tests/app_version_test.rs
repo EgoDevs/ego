@@ -47,14 +47,14 @@ pub fn by_last_update() {
 
   let now = time();
 
-  assert_eq!(1, AppVersion::by_last_update(now).len());
+  assert_eq!(1, AppVersion::by_last_update(0, 100, now).len());
 }
 
 #[test]
 pub fn list() {
   set_up();
 
-  let app_versions = AppVersion::list();
+  let app_versions = AppVersion::list(0, 100);
 
   assert_eq!(1, app_versions.len());
   let app_version = app_versions.get(0).unwrap();
