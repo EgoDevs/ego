@@ -113,7 +113,7 @@ pub async fn wallet_app_install(app_id: AppId) -> Result<UserApp, EgoError> {
   info_log_add("wallet_app_install");
 
   info_log_add(format!("1 get app [{}] to be install", app_id).as_str());
-  let app = EgoStoreApp::get(&app_id).expect("app not exists");
+  let app = EgoStoreApp::get(&app_id).expect(format!("app [{}] not exists", app_id).as_str());
 
   let wallet_id = caller();
   info_log_add(format!("2 get wallet_id {}", wallet_id).as_str());
