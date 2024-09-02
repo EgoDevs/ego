@@ -1,5 +1,6 @@
 import type { Principal } from '@dfinity/principal';
 import type { ActorMethod } from '@dfinity/agent';
+import type { IDL } from '@dfinity/candid';
 
 export interface CycleInfo {
   'records' : Array<CycleRecord>,
@@ -67,3 +68,5 @@ export interface _SERVICE {
   'state_persist' : ActorMethod<[], Result_9>,
   'state_restore' : ActorMethod<[], Result_9>,
 }
+export declare const idlFactory: IDL.InterfaceFactory;
+export declare const init: (args: { IDL: typeof IDL }) => IDL.Type[];

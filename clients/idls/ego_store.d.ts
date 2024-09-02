@@ -1,5 +1,6 @@
 import type { Principal } from '@dfinity/principal';
 import type { ActorMethod } from '@dfinity/agent';
+import type { IDL } from '@dfinity/candid';
 
 export interface AdminWalletCycleRechargeRequest {
   'cycle' : bigint,
@@ -230,3 +231,5 @@ export interface _SERVICE {
   'wallet_order_notify' : ActorMethod<[bigint], Result_2>,
   'wallet_tenant_get' : ActorMethod<[], Result_21>,
 }
+export declare const idlFactory: IDL.InterfaceFactory;
+export declare const init: (args: { IDL: typeof IDL }) => IDL.Type[];

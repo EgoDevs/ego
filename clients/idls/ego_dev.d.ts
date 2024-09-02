@@ -1,5 +1,6 @@
 import type { Principal } from '@dfinity/principal';
 import type { ActorMethod } from '@dfinity/agent';
+import type { IDL } from '@dfinity/candid';
 
 export interface AdminAppCreateBackendRequest {
   'logo' : string,
@@ -204,3 +205,5 @@ export interface _SERVICE {
   'user_main_list' : ActorMethod<[string], Result_17>,
   'user_role_set' : ActorMethod<[UserRoleSetRequest], Result_2>,
 }
+export declare const idlFactory: IDL.InterfaceFactory;
+export declare const init: (args: { IDL: typeof IDL }) => IDL.Type[];

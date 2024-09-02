@@ -1,5 +1,6 @@
 import type { Principal } from '@dfinity/principal';
 import type { ActorMethod } from '@dfinity/agent';
+import type { IDL } from '@dfinity/candid';
 
 export interface AdminAppCreateRequest {
   'logo' : string,
@@ -97,3 +98,5 @@ export interface _SERVICE {
   'ego_user_remove' : ActorMethod<[Principal], Result_2>,
   'ego_user_set' : ActorMethod<[Array<Principal>], Result_2>,
 }
+export declare const idlFactory: IDL.InterfaceFactory;
+export declare const init: (args: { IDL: typeof IDL }) => IDL.Type[];

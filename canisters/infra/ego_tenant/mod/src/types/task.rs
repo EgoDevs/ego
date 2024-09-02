@@ -45,18 +45,18 @@ impl Task {
   pub fn by_last_update(start: usize, end: usize, last_update: u64) -> Vec<Task> {
     Self::iter(start, end, |(_, task)| {
       match task.last_update >= last_update {
-        true => {Some(task)}
-        false => {None}
+        true => { Some(task) }
+        false => { None }
       }
     })
   }
 
   pub fn by_sentinel(sentinel: u64) -> Vec<Task> {
     Self::iter(0, Self::len() as usize, |(_, task)|
-      match task.next_check_time <= sentinel && task.try_count < MAX_TRY_COUNT {
-        true => {Some(task)}
-        false => {None}
-      })
+    match task.next_check_time <= sentinel && task.try_count < MAX_TRY_COUNT {
+      true => { Some(task) }
+      false => { None }
+    })
   }
 
   pub fn list(start: usize, end: usize) -> Vec<Task> {
@@ -88,30 +88,27 @@ impl Task {
     });
   }
 
-  fn iter<F>(start: usize, end: usize, filter : F) -> Vec<Task>
-  where F: Fn((Blob<29>, Task)) -> Option<Task>{
+  fn iter<F>(start: usize, end: usize, filter: F) -> Vec<Task>
+  where
+    F: Fn((Blob<29>, Task)) -> Option<Task>,
+  {
     let mut idx = 0;
 
     TASKS.with(|cell| {
       let inst = cell.borrow();
-      inst.iter().filter_map(|entry| {
-        if idx >= end {
-          // 如果过了上界，直接忽略
-          None
-        } else {
-          match filter(entry) {
-            None => {
+      inst.iter().skip(start).take(end - start).filter_map(|entry| {
+        match filter(entry) {
+          None => {
+            None
+          }
+          Some(record) => {
+            let ret = if idx >= start && idx < end {
+              Some(record)
+            } else {
               None
-            }
-            Some(record) => {
-              let ret = if idx >= start && idx < end {
-                Some(record)
-              } else {
-                None
-              };
-              idx += 1;
-              ret
-            }
+            };
+            idx += 1;
+            ret
           }
         }
       }).collect()
