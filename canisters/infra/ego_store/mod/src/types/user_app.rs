@@ -107,32 +107,13 @@ impl UserApp {
   }
 
   fn iter<F>(start: usize, end: usize, filter: F) -> Vec<Self>
-    where F: Fn((Blob<29>, Self)) -> Option<Self> {
-
-    let mut idx = 0;
-
+  where
+    F: Fn((Blob<29>, Self)) -> Option<Self>,
+  {
     USER_APPS.with(|cell| {
       let inst = cell.borrow();
-      inst.iter().filter_map(|entry| {
-        if idx >= end {
-          // 如果过了上界，直接忽略
-          None
-        } else {
-          match filter(entry) {
-            None => {
-              None
-            }
-            Some(record) => {
-              let ret = if idx >= start && idx < end {
-                Some(record)
-              } else {
-                None
-              };
-              idx += 1;
-              ret
-            }
-          }
-        }
+      inst.iter().skip(start).take(end - start).filter_map(|entry| {
+        filter(entry)
       }).collect()
     })
   }

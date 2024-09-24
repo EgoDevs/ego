@@ -92,25 +92,11 @@ impl Task {
   where
     F: Fn((Blob<29>, Task)) -> Option<Task>,
   {
-    let mut idx = 0;
-
     TASKS.with(|cell| {
       let inst = cell.borrow();
+
       inst.iter().skip(start).take(end - start).filter_map(|entry| {
-        match filter(entry) {
-          None => {
-            None
-          }
-          Some(record) => {
-            let ret = if idx >= start && idx < end {
-              Some(record)
-            } else {
-              None
-            };
-            idx += 1;
-            ret
-          }
-        }
+        filter(entry)
       }).collect()
     })
   }
