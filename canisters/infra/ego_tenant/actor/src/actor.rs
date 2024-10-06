@@ -241,7 +241,7 @@ pub fn reset_next_check_time() {
   let now = time() as i64;
 
   for task in Task::list(0, Task::len() as usize).iter_mut() {
-    if (now - task.next_check_time as i64).abs() > NEXT_CHECK_DURATION  as i64{
+    if (now - task.next_check_time as i64).abs() > NEXT_CHECK_DURATION as i64 {
       task.next_check_time = 0;
       task.try_count = MAX_TRY_COUNT - 1;
       task.save()
@@ -304,6 +304,31 @@ pub fn admin_import(tasks: Vec<Task>) {
   });
 }
 
+#[update(name = "delegate_controller_add", guard = "owner_guard")]
+#[candid_method(update, rename = "delegate_controller_add")]
+pub async fn delegate_controller_add(target_canister: Principal, principal: Principal) -> Result<String, String> {
+  info_log_add(format!("delegate_controller_add. target_canister: {:?}, principal: {:?}", target_canister, principal).as_str());
+
+  match ego_lib::ic_management::controller_add(target_canister.clone(), principal.clone()).await {
+    Ok(_) => { Ok("Success".to_owned()) }
+    Err(error) => {
+      Err(error.msg)
+    }
+  }
+}
+
+#[update(name = "delegate_controller_remove", guard = "owner_guard")]
+#[candid_method(update, rename = "delegate_controller_remove")]
+pub async fn delegate_controller_remove(target_canister: Principal, principal: Principal) -> Result<String, String> {
+  info_log_add(format!("delegate_controller_remove. target_canister: {:?}, principal: {:?}", target_canister, principal).as_str());
+
+  match ego_lib::ic_management::controller_remove(target_canister.clone(), principal.clone()).await {
+    Ok(_) => { Ok("Success".to_owned()) }
+    Err(error) => {
+      Err(error.msg)
+    }
+  }
+}
 
 /********************  methods for ego_cycle_threshold_get   ********************/
 pub fn cycle_threshold_get() -> u128 {
