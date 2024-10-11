@@ -12,7 +12,7 @@ use crate::memory::ORDERS;
 use crate::state::SEQ;
 
 #[derive(
-CandidType, Serialize, Deserialize, Clone, Copy, Debug, Ord, PartialOrd, Eq, PartialEq,
+  CandidType, Serialize, Deserialize, Clone, Copy, Debug, Ord, PartialOrd, Eq, PartialEq,
 )]
 pub enum OrderStatus {
   NEW,
@@ -97,31 +97,13 @@ impl Order {
   }
 
   fn iter<F>(start: usize, end: usize, filter: F) -> Vec<Self>
-    where F: Fn((u64, Self)) -> Option<Self> {
-    let mut idx = 0;
-
+  where
+    F: Fn((u64, Self)) -> Option<Self>,
+  {
     ORDERS.with(|cell| {
       let inst = cell.borrow();
-      inst.iter().filter_map(|entry| {
-        if idx >= end {
-          // 如果过了上界，直接忽略
-          None
-        } else {
-          match filter(entry) {
-            None => {
-              None
-            }
-            Some(record) => {
-              let ret = if idx >= start && idx < end {
-                Some(record)
-              } else {
-                None
-              };
-              idx += 1;
-              ret
-            }
-          }
-        }
+      inst.iter().skip(start).take(end - start).filter_map(|entry| {
+        filter(entry)
       }).collect()
     })
   }

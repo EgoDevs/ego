@@ -38,15 +38,17 @@ export type Result = { 'Ok' : Array<Task> } |
   { 'Err' : EgoError };
 export type Result_1 = { 'Ok' : null } |
   { 'Err' : EgoError };
-export type Result_10 = { 'Ok' : CycleInfo } |
+export type Result_10 = { 'Ok' : Array<CycleRecord> } |
   { 'Err' : string };
-export type Result_11 = { 'Ok' : boolean } |
+export type Result_11 = { 'Ok' : CycleInfo } |
   { 'Err' : string };
-export type Result_12 = { 'Ok' : Array<LogEntry> } |
+export type Result_12 = { 'Ok' : boolean } |
   { 'Err' : string };
-export type Result_13 = { 'Ok' : [] | [Array<[Principal, string]>] } |
+export type Result_13 = { 'Ok' : Array<LogEntry> } |
   { 'Err' : string };
-export type Result_14 = { 'Ok' : [] | [ByteReadResponse] } |
+export type Result_14 = { 'Ok' : [] | [Array<[Principal, string]>] } |
+  { 'Err' : string };
+export type Result_15 = { 'Ok' : [] | [ByteReadResponse] } |
   { 'Err' : string };
 export type Result_2 = { 'Ok' : Principal } |
   { 'Err' : EgoError };
@@ -60,9 +62,9 @@ export type Result_6 = { 'Ok' : Array<BackupJob> } |
   { 'Err' : string };
 export type Result_7 = { 'Ok' : bigint } |
   { 'Err' : string };
-export type Result_8 = { 'Ok' : Array<[string, Array<Principal>]> } |
+export type Result_8 = { 'Ok' : string } |
   { 'Err' : string };
-export type Result_9 = { 'Ok' : Array<CycleRecord> } |
+export type Result_9 = { 'Ok' : Array<[string, Array<Principal>]> } |
   { 'Err' : string };
 export interface Task {
   'canister_id' : Principal,
@@ -97,8 +99,10 @@ export interface _SERVICE {
   'balance_get' : ActorMethod<[], Result_7>,
   'canister_main_track' : ActorMethod<[Principal], Result_1>,
   'canister_main_untrack' : ActorMethod<[Principal], Result_1>,
+  'delegate_controller_add' : ActorMethod<[Principal, Principal], Result_8>,
+  'delegate_controller_remove' : ActorMethod<[Principal, Principal], Result_8>,
   'ego_canister_add' : ActorMethod<[string, Principal], Result_4>,
-  'ego_canister_list' : ActorMethod<[], Result_8>,
+  'ego_canister_list' : ActorMethod<[], Result_9>,
   'ego_canister_remove' : ActorMethod<[string, Principal], Result_4>,
   'ego_controller_add' : ActorMethod<[Principal], Result_4>,
   'ego_controller_remove' : ActorMethod<[Principal], Result_4>,
@@ -106,29 +110,29 @@ export interface _SERVICE {
   'ego_cycle_check' : ActorMethod<[], Result_4>,
   'ego_cycle_check_cb' : ActorMethod<[Array<CycleRecord>, bigint], Result_1>,
   'ego_cycle_estimate_set' : ActorMethod<[bigint], Result_4>,
-  'ego_cycle_history' : ActorMethod<[], Result_9>,
-  'ego_cycle_info' : ActorMethod<[], Result_10>,
+  'ego_cycle_history' : ActorMethod<[], Result_10>,
+  'ego_cycle_info' : ActorMethod<[], Result_11>,
   'ego_cycle_recharge' : ActorMethod<[bigint], Result_4>,
   'ego_cycle_threshold_get' : ActorMethod<[], Result_7>,
-  'ego_is_op' : ActorMethod<[], Result_11>,
-  'ego_is_owner' : ActorMethod<[], Result_11>,
-  'ego_is_user' : ActorMethod<[], Result_11>,
-  'ego_log_list' : ActorMethod<[bigint], Result_12>,
+  'ego_is_op' : ActorMethod<[], Result_12>,
+  'ego_is_owner' : ActorMethod<[], Result_12>,
+  'ego_is_user' : ActorMethod<[], Result_12>,
+  'ego_log_list' : ActorMethod<[bigint], Result_13>,
   'ego_op_add' : ActorMethod<[Principal], Result_4>,
-  'ego_op_list' : ActorMethod<[], Result_13>,
+  'ego_op_list' : ActorMethod<[], Result_14>,
   'ego_op_remove' : ActorMethod<[Principal], Result_4>,
   'ego_owner_add' : ActorMethod<[Principal], Result_4>,
   'ego_owner_add_with_name' : ActorMethod<[string, Principal], Result_4>,
-  'ego_owner_list' : ActorMethod<[], Result_13>,
+  'ego_owner_list' : ActorMethod<[], Result_14>,
   'ego_owner_remove' : ActorMethod<[Principal], Result_4>,
   'ego_owner_set' : ActorMethod<[Array<Principal>], Result_4>,
   'ego_runtime_cycle_threshold_get' : ActorMethod<[], Result_7>,
   'ego_user_add' : ActorMethod<[Principal], Result_4>,
-  'ego_user_list' : ActorMethod<[], Result_13>,
+  'ego_user_list' : ActorMethod<[], Result_14>,
   'ego_user_remove' : ActorMethod<[Principal], Result_4>,
   'ego_user_set' : ActorMethod<[Array<Principal>], Result_4>,
-  'job_data_backup' : ActorMethod<[string, bigint, bigint], Result_14>,
-  'job_data_export' : ActorMethod<[string, bigint, bigint, bigint], Result_14>,
+  'job_data_backup' : ActorMethod<[string, bigint, bigint], Result_15>,
+  'job_data_export' : ActorMethod<[string, bigint, bigint, bigint], Result_15>,
   'job_data_restore' : ActorMethod<[string, Uint8Array | number[]], Result_4>,
   'reset_next_check_time' : ActorMethod<[], undefined>,
   'wallet_cycle_recharge' : ActorMethod<[bigint], Result_1>,

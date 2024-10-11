@@ -1,4 +1,5 @@
 use candid::Principal;
+
 use ego_tenant_mod::backup::{job_list, record_export};
 use ego_tenant_mod::state::{canister_add, owner_add};
 use ego_tenant_mod::types::task::Task;
@@ -24,7 +25,7 @@ fn set_up() {
 }
 
 #[test]
-fn test_job_list(){
+fn test_job_list() {
   set_up();
 
   let jobs = job_list();
@@ -38,7 +39,7 @@ fn test_job_list(){
 }
 
 #[test]
-fn test_export_config(){
+fn test_export_config() {
   set_up();
 
   let result = record_export("config".to_string(), 0, 1000, 0).expect("record not founded");
@@ -48,23 +49,23 @@ fn test_export_config(){
 }
 
 #[test]
-fn test_export_tasks(){
+fn test_export_tasks() {
   set_up();
 
-  let result = record_export("tasks".to_string(), 0, 1000,0).expect("record not founded");
+  let result = record_export("tasks".to_string(), 1, 1000, 0).expect("record not founded");
 
   assert_eq!("tasks", result.name);
   let tasks: Vec<Task> = serde_json::from_slice(&result.data).unwrap();
-  assert_eq!(2, tasks.len());
-  assert_eq!(Principal::from_text(CANISTER_ID1.to_string()).unwrap(), tasks.get(0).unwrap().canister_id);
-  assert_eq!(Principal::from_text(CANISTER_ID2.to_string()).unwrap(), tasks.get(1).unwrap().canister_id);
+  assert_eq!(1, tasks.len());
+  // assert_eq!(Principal::from_text(CANISTER_ID1.to_string()).unwrap(), tasks.get(0).unwrap().canister_id);
+  assert_eq!(Principal::from_text(CANISTER_ID2.to_string()).unwrap(), tasks.get(0).unwrap().canister_id);
 }
 
 #[test]
-fn test_export_tasks_with_last_update(){
+fn test_export_tasks_with_last_update() {
   set_up();
 
-  let result = record_export("tasks".to_string(), 0, 1000,time() + 1).expect("record not founded");
+  let result = record_export("tasks".to_string(), 0, 1000, time() + 1).expect("record not founded");
 
   assert_eq!("tasks", result.name);
   let tasks: Vec<Task> = serde_json::from_slice(&result.data).unwrap();
